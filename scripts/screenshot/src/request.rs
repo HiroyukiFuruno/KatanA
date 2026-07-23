@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use std::collections::HashMap;
 
 use crate::capture::PngBounds;
 
@@ -18,6 +19,14 @@ pub struct Fixture {
     pub workspace_dir: Option<String>,
     #[serde(default)]
     pub settings: FixtureSettings,
+    pub http_server: Option<HttpServerFixture>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct HttpServerFixture {
+    pub mount_prefix: String,
+    #[serde(default)]
+    pub redirects: HashMap<String, String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -70,6 +79,14 @@ pub enum Step {
     AssertHtmlBrowserOrigin(AssertHtmlBrowserOriginStep),
     /// Assert pixels directly in the active KRR RGBA frame.
     AssertHtmlBrowserFrameContainsRgb(AssertHtmlBrowserFrameContainsRgbStep),
+    /// Assert that the KRR frame dimensions equal the native HTML display rect.
+    AssertHtmlBrowserViewportMatchesDisplayRect,
+    /// Assert that the composed HTML display corners contain the page-owned color.
+    AssertHtmlBrowserDisplayCornersRgb(AssertHtmlBrowserDisplayCornersRgbStep),
+    /// Assert principal-document and subresource requests received by the loopback fixture.
+    AssertHttpRequests(AssertHttpRequestsStep),
+    /// Assert URL-tab history entries by final document URL suffix.
+    AssertUrlHistory(AssertUrlHistoryStep),
     /// Assert that the active diff review state matches the expected content.
     AssertDiffReview(AssertDiffReviewStep),
     /// Trigger a named UI action (e.g. toggle_toc, toggle_split_view).
@@ -186,12 +203,35 @@ pub struct AssertActiveDocumentStep {
 #[derive(Debug, Deserialize)]
 pub struct AssertHtmlBrowserOriginStep {
     pub origin_ends_with: String,
+    #[serde(default = "default_async_assert_timeout_seconds")]
+    pub timeout_seconds: f64,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct AssertHtmlBrowserFrameContainsRgbStep {
     pub rgb: [u8; 3],
     pub min_pixels: u64,
+    #[serde(default = "default_async_assert_timeout_seconds")]
+    pub timeout_seconds: f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AssertHtmlBrowserDisplayCornersRgbStep {
+    pub rgb: [u8; 3],
+    #[serde(default)]
+    pub tolerance: u8,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AssertHttpRequestsStep {
+    pub paths: Vec<String>,
+    #[serde(default = "default_async_assert_timeout_seconds")]
+    pub timeout_seconds: f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AssertUrlHistoryStep {
+    pub origin_suffixes: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -225,6 +265,11 @@ pub struct DragStep {
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum UiAction {
+    /// Open a URL served by the request's loopback HTTP fixture.
+    OpenFixtureUrl {
+        path: String,
+        wait_seconds: f64,
+    },
     ToggleToc,
     ToggleSplitView,
     ToggleSettings,
@@ -406,6 +451,10 @@ fn default_wait_seconds() -> f64 {
     3.0
 }
 
+fn default_async_assert_timeout_seconds() -> f64 {
+    10.0
+}
+
 fn default_open_file_wait() -> f64 {
     1.0
 }
@@ -436,7 +485,22 @@ mod tests {
             r#"{
                 "schema_version": "1",
                 "name": "browser-evidence",
+                "fixture": {
+                    "http_server": {
+                        "mount_prefix": "/app/",
+                        "redirects": { "/start": "/app/index.html" }
+                    }
+                },
                 "steps": [
+                    {
+                        "type": "action",
+                        "action": {
+                            "open_fixture_url": {
+                                "path": "/start",
+                                "wait_seconds": 0.5
+                            }
+                        }
+                    },
                     {
                         "type": "action",
                         "action": {
@@ -495,11 +559,27 @@ mod tests {
                         "min_changed_pixels": 100
                     },
                     {
-                        "type": "assert_screenshot_contains_rgb",
+                      "type": "assert_screenshot_contains_rgb",
                         "screenshot": "after",
                         "rgb": [184, 242, 208],
                         "tolerance": 2,
-                        "min_pixels": 100
+                      "min_pixels": 100
+                    },
+                    {
+                      "type": "assert_html_browser_viewport_matches_display_rect"
+                    },
+                    {
+                      "type": "assert_html_browser_display_corners_rgb",
+                      "rgb": [216, 243, 220],
+                      "tolerance": 2
+                    },
+                    {
+                      "type": "assert_http_requests",
+                      "paths": ["/start", "/app/index.html"]
+                    },
+                    {
+                      "type": "assert_url_history",
+                      "origin_suffixes": ["/app/index.html"]
                     }
                 ]
             }"#,

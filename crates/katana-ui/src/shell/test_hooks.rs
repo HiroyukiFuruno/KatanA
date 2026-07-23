@@ -80,6 +80,24 @@ impl KatanaApp {
     }
 
     #[doc(hidden)]
+    pub fn html_browser_frame_viewport_for_test(&self) -> Option<(f32, f32)> {
+        let active_path = self.state.active_path()?;
+        self.tab_previews
+            .iter()
+            .find(|preview| preview.path == active_path)
+            .and_then(|preview| preview.pane.html_browser_frame_viewport())
+    }
+
+    #[doc(hidden)]
+    pub fn html_browser_frame_scroll_metrics_for_test(&self) -> Option<(f32, f32)> {
+        let active_path = self.state.active_path()?;
+        self.tab_previews
+            .iter()
+            .find(|preview| preview.path == active_path)
+            .and_then(|preview| preview.pane.html_browser_frame_scroll_metrics())
+    }
+
+    #[doc(hidden)]
     pub fn html_browser_display_rect_for_test(&self) -> Option<eframe::egui::Rect> {
         let active_path = self.state.active_path()?;
         self.tab_previews

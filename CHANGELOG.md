@@ -2,6 +2,18 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.36] - 2026-07-22 15:29:23 (UTC)
+
+### ✨ Improvements
+
+- **Browser-compatible HTML styling**: HTML pages now apply structured stylesheet cascade, custom properties, responsive rules, flex and grid layouts, box sizing, overflow, tables, typography, external images, and embedded SVG more consistently.
+- **Web URL documents**: User-entered web pages now retain their final URL after redirects, load relative stylesheets, scripts, and images from that origin, and follow in-page links through the active tab history.
+
+### 🐛 Bug Fixes
+
+- **JavaScript event propagation**: Click handlers can use standard event methods such as `stopPropagation()` and `preventDefault()` with capture, target, and bubble ordering instead of failing with an invalid event object.
+- **Edge-to-edge HTML viewport**: HTML page pixels now fill the native preview bounds without an extra application frame, border, padding, or background around the document.
+
 ## [0.22.35] - 2026-07-22 02:09:02 (UTC)
 
 ### 🐛 Bug Fixes

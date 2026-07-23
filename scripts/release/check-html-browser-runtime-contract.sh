@@ -10,8 +10,8 @@ if [[ -z "$TARGET_VERSION" ]]; then
     exit 1
 fi
 TARGET_VERSION="${TARGET_VERSION#v}"
-if [[ "$TARGET_VERSION" != "0.22.35" ]]; then
-    error "The HTML runtime contract applies only to v0.22.35; received v${TARGET_VERSION}."
+if [[ "$TARGET_VERSION" != "0.22.36" ]]; then
+    error "The HTML runtime contract applies only to v0.22.36; received v${TARGET_VERSION}."
     exit 1
 fi
 

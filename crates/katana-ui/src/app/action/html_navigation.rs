@@ -9,15 +9,14 @@ impl KatanaApp {
         let Some(active_path) = self.state.active_path() else {
             return;
         };
-        let navigation = self
+        while let Some(navigation) = self
             .tab_previews
             .iter_mut()
             .find(|preview| preview.path == active_path)
-            .and_then(|preview| preview.pane.take_html_browser_navigation());
-        let Some(navigation) = navigation else {
-            return;
-        };
-        self.handle_html_navigation(ctx, active_path, navigation);
+            .and_then(|preview| preview.pane.take_html_browser_navigation())
+        {
+            self.handle_html_navigation(ctx, active_path.clone(), navigation);
+        }
     }
 
     fn handle_html_navigation(
@@ -195,6 +194,12 @@ mod tests {
     use crate::shell::TabPreviewCache;
     use crate::state::HtmlSource;
     use std::sync::Arc;
+    use std::{
+        io::{Read, Write},
+        net::TcpListener,
+        thread,
+        time::{Duration, Instant},
+    };
 
     #[test]
     fn top_level_navigation_moves_the_existing_browser_session_to_the_target_path() {
@@ -236,6 +241,45 @@ mod tests {
         );
     }
 
+    #[test]
+    fn consecutive_navigation_intents_preserve_active_tab_and_queue_order() -> TestResult {
+        let (base_url, server) = navigation_server()?;
+        let mut app = test_app();
+        let active_path = std::path::PathBuf::from("Katana://URL/initial.html");
+        let first = format!("{base_url}/first");
+        let second = format!("{base_url}/second");
+
+        app.replace_html_document(
+            source("https://example.com/initial"),
+            active_path.clone(),
+            None,
+        );
+
+        let ctx = egui::Context::default();
+        app.handle_html_navigation(&ctx, active_path.clone(), first);
+        app.handle_html_navigation(&ctx, active_path.clone(), second.clone());
+        wait_for_navigation_queue(&mut app)?;
+
+        let source = app
+            .state
+            .url_tab
+            .source_for_document(&active_path)
+            .ok_or("active source missing after navigation")?;
+        assert_eq!(app.state.active_path(), Some(active_path.clone()));
+        assert_eq!(source.source_url, second);
+        assert_eq!(
+            app.html_browser_navigation_history_for_test(),
+            Some(vec![
+                "https://example.com/initial".to_string(),
+                format!("{base_url}/first"),
+                format!("{base_url}/second"),
+            ])
+        );
+
+        server.join().map_err(|_| "navigation server panicked")??;
+        Ok(())
+    }
+
     fn preview(path: std::path::PathBuf) -> TabPreviewCache {
         TabPreviewCache {
             path,
@@ -260,5 +304,58 @@ mod tests {
             Arc::new(katana_platform::InMemoryCacheService::default()),
         );
         KatanaApp::new(state)
+    }
+
+    type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+
+    fn navigation_server() -> TestResult<(String, thread::JoinHandle<std::io::Result<()>>)> {
+        let listener = TcpListener::bind("127.0.0.1:0")?;
+        let url = format!("http://{}", listener.local_addr()?);
+        let server = thread::spawn(move || {
+            for _ in 0..2 {
+                let (mut stream, _) = listener.accept()?;
+                let mut request = [0; 1024];
+                let read = stream.read(&mut request)?;
+                let request_line = String::from_utf8_lossy(&request[..read]).to_string();
+                let path = request_line
+                    .lines()
+                    .next()
+                    .and_then(|line| line.split_whitespace().nth(1))
+                    .unwrap_or("/first")
+                    .to_string();
+                if path == "/first" {
+                    std::thread::sleep(Duration::from_millis(80));
+                }
+                let body = if path.contains("/first") {
+                    "<html><body>first</body></html>"
+                } else {
+                    "<html><body>second</body></html>"
+                };
+                write!(
+                    &mut stream,
+                    "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    body.len(),
+                    body
+                )?;
+            }
+            Ok(())
+        });
+        Ok((url, server))
+    }
+
+    fn wait_for_navigation_queue(app: &mut KatanaApp) -> TestResult {
+        let ctx = egui::Context::default();
+        let deadline = Instant::now() + Duration::from_secs(2);
+        while app.state.url_tab.is_loading {
+            app.poll_url_source(&ctx);
+            app.poll_html_browser_navigation(&ctx);
+            if Instant::now() >= deadline {
+                return Err("timed out waiting for navigation queue".into());
+            }
+            thread::sleep(Duration::from_millis(5));
+        }
+        app.poll_url_source(&ctx);
+        app.poll_html_browser_navigation(&ctx);
+        Ok(())
     }
 }

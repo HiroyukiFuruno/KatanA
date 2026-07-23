@@ -5,14 +5,24 @@ use katana_document_viewer::browser_session::HtmlBrowserViewport;
 pub(super) struct BrowserFrame {
     pub(super) generation: u64,
     pub(super) viewport: HtmlBrowserViewport,
+    pub(super) scroll_y: f32,
+    pub(super) content_height: f32,
     pub(super) pixels: Vec<u8>,
 }
 
 impl BrowserFrame {
-    pub(super) fn new(generation: u64, viewport: HtmlBrowserViewport, pixels: Vec<u8>) -> Self {
+    pub(super) fn new(
+        generation: u64,
+        viewport: HtmlBrowserViewport,
+        scroll_y: f32,
+        content_height: f32,
+        pixels: Vec<u8>,
+    ) -> Self {
         Self {
             generation,
             viewport,
+            scroll_y,
+            content_height,
             pixels,
         }
     }

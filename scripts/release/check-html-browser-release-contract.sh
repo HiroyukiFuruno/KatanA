@@ -11,8 +11,8 @@ if [[ -z "$TARGET_VERSION" ]]; then
 fi
 TARGET_VERSION="${TARGET_VERSION#v}"
 
-if [[ "$TARGET_VERSION" != "0.22.35" ]]; then
-    error "The browser-equivalent HTML release contract applies only to v0.22.35; received v${TARGET_VERSION}."
+if [[ "$TARGET_VERSION" != "0.22.36" ]]; then
+    error "The browser-equivalent HTML release contract applies only to v0.22.36; received v${TARGET_VERSION}."
     exit 1
 fi
 
@@ -23,13 +23,13 @@ CARGO_LOCK=${KATANA_CARGO_LOCK:-${ROOT_DIR}/Cargo.lock}
 CARGO_CONFIG=${KATANA_CARGO_CONFIG:-${ROOT_DIR}/.cargo/config.toml}
 HTML_SPEC=${KATANA_HTML_SPEC:-${ROOT_DIR}/openspec/specs/html-file-preview/spec.md}
 RUNTIME_GUARD=${KATANA_HTML_RUNTIME_CONTRACT_GUARD:-${ROOT_DIR}/scripts/release/check-html-browser-runtime-contract.sh}
-ACCEPTANCE_REQUEST=${KATANA_HTML_ACCEPTANCE_REQUEST:-${ROOT_DIR}/scripts/screenshot/examples/v0-22-35-html-headless-preview.json}
-IMAGE_CONTROLS_REQUEST=${KATANA_IMAGE_CONTROLS_REQUEST:-${ROOT_DIR}/scripts/screenshot/examples/v0-22-35-light-image-controls.json}
-ACCEPTANCE_INDEX=${KATANA_HTML_ACCEPTANCE_INDEX:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-35-html-browser/index.html}
-ACCEPTANCE_LINKED=${KATANA_HTML_ACCEPTANCE_LINKED:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-35-html-browser/linked-panel.html}
-ACCEPTANCE_STYLE=${KATANA_HTML_ACCEPTANCE_STYLE:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-35-html-browser/style.css}
-ACCEPTANCE_SCRIPT=${KATANA_HTML_ACCEPTANCE_SCRIPT:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-35-html-browser/actions.js}
-ACCEPTANCE_IMAGE=${KATANA_HTML_ACCEPTANCE_IMAGE:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-35-html-browser/resource-image.svg}
+ACCEPTANCE_REQUEST=${KATANA_HTML_ACCEPTANCE_REQUEST:-${ROOT_DIR}/scripts/screenshot/examples/v0-22-36-html-headless-preview.json}
+IMAGE_CONTROLS_REQUEST=${KATANA_IMAGE_CONTROLS_REQUEST:-${ROOT_DIR}/scripts/screenshot/examples/v0-22-36-light-image-controls.json}
+ACCEPTANCE_INDEX=${KATANA_HTML_ACCEPTANCE_INDEX:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-36-html-browser/index.html}
+ACCEPTANCE_LINKED=${KATANA_HTML_ACCEPTANCE_LINKED:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-36-html-browser/linked-panel.html}
+ACCEPTANCE_STYLE=${KATANA_HTML_ACCEPTANCE_STYLE:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-36-html-browser/style.css}
+ACCEPTANCE_SCRIPT=${KATANA_HTML_ACCEPTANCE_SCRIPT:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-36-html-browser/actions.js}
+ACCEPTANCE_IMAGE=${KATANA_HTML_ACCEPTANCE_IMAGE:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-36-html-browser/resource-image.svg}
 ACCEPTANCE_RUNNER=${KATANA_HTML_ACCEPTANCE_RUNNER:-${ROOT_DIR}/scripts/screenshot/src/main.rs}
 ACCEPTANCE_CARGO_TOML=${KATANA_HTML_ACCEPTANCE_CARGO_TOML:-${ROOT_DIR}/scripts/screenshot/Cargo.toml}
 ACCEPTANCE_CARGO_LOCK=${KATANA_HTML_ACCEPTANCE_CARGO_LOCK:-${ROOT_DIR}/scripts/screenshot/Cargo.lock}
@@ -51,7 +51,7 @@ if [[ -z "${KATANA_RELEASE_ROOT:-}" ]] &&
 fi
 
 if grep -Eq 'executor_native|native_window|--native-window' "$ACCEPTANCE_RUNNER"; then
-    error "v0.22.35 acceptance runner must remain headless-only."
+    error "v0.22.36 acceptance runner must remain headless-only."
     exit 1
 fi
 
@@ -63,8 +63,8 @@ from pathlib import Path
 request_path, index_path, linked_path, style_path, script_path, image_path = map(Path, sys.argv[1:])
 request = json.loads(request_path.read_text())
 steps = request.get("steps", [])
-if request.get("name") != "v0-22-35-html-headless-preview":
-    raise SystemExit("acceptance request must be the v0.22.35 headless preview")
+if request.get("name") != "v0-22-36-html-headless-preview":
+    raise SystemExit("acceptance request must be the v0.22.36 headless preview")
 workspace_files = {
     entry.get("name"): entry for entry in request.get("fixture", {}).get("workspace_files", [])
 }
@@ -72,6 +72,12 @@ workspace_files = {
 for name in ("index.html", "linked-panel.html", "style.css", "actions.js", "resource-image.svg"):
     if name not in workspace_files:
         raise SystemExit(f"acceptance fixture is missing workspace file {name}")
+
+http_server = request.get("fixture", {}).get("http_server", {})
+if http_server.get("mount_prefix") != "/app/":
+    raise SystemExit("acceptance fixture must mount its workspace at /app/")
+if http_server.get("redirects", {}).get("/start") != "/app/index.html":
+    raise SystemExit("acceptance fixture must redirect /start to /app/index.html")
 
 actions = [step.get("action") for step in steps if step.get("type") == "action"]
 structured_actions = {
@@ -93,6 +99,9 @@ if any(click.get("search_bounds") is not None for click in rgb_clicks):
 for required_action in ("type_text", "resize_window"):
     if required_action not in structured_actions:
         raise SystemExit(f"acceptance scenario is missing {required_action}")
+open_url = structured_actions.get("open_fixture_url")
+if not isinstance(open_url, dict) or open_url.get("path") != "/start":
+    raise SystemExit("acceptance scenario must open the redirecting loopback URL")
 typed_text = structured_actions["type_text"].get("text")
 if not isinstance(typed_text, str) or not any(ord(character) > 127 for character in typed_text):
     raise SystemExit("acceptance scenario must exercise committed non-ASCII IME text")
@@ -105,6 +114,45 @@ scroll_directions = {
 }
 if not {"down", "up"}.issubset(scroll_directions):
     raise SystemExit("acceptance scenario must scroll down and back up through the KRR viewport")
+
+step_types = {step.get("type") for step in steps}
+for required_type in (
+    "assert_html_browser_viewport_matches_display_rect",
+    "assert_html_browser_display_corners_rgb",
+    "assert_http_requests",
+    "assert_url_history",
+):
+    if required_type not in step_types:
+        raise SystemExit(f"acceptance scenario is missing {required_type}")
+corner_assertion = next(
+    step for step in steps if step.get("type") == "assert_html_browser_display_corners_rgb"
+)
+if corner_assertion.get("rgb") != [216, 243, 220]:
+    raise SystemExit("acceptance scenario must prove the page-owned color at every HTML viewport corner")
+requested_paths = {
+    path
+    for step in steps
+    if step.get("type") == "assert_http_requests"
+    for path in step.get("paths", [])
+}
+required_paths = {
+    "/start",
+    "/app/index.html",
+    "/app/style.css",
+    "/app/actions.js",
+    "/app/resource-image.svg",
+    "/app/linked-panel.html",
+}
+if not required_paths.issubset(requested_paths):
+    raise SystemExit(f"acceptance scenario is missing HTTP request assertions: {sorted(required_paths - requested_paths)}")
+history_suffixes = {
+    suffix
+    for step in steps
+    if step.get("type") == "assert_url_history"
+    for suffix in step.get("origin_suffixes", [])
+}
+if not {"/app/index.html", "/app/linked-panel.html#linked-target"}.issubset(history_suffixes):
+    raise SystemExit("acceptance scenario must prove both URL documents in tab history")
 
 raw_frame_markers = {
     tuple(step.get("rgb", []))
@@ -209,8 +257,9 @@ def require_browser_state(
         )
 
 
+require_browser_state("01-initial-render", "/app/index.html", [38, 184, 166])
 require_browser_state(
-    "06-fragment-navigation", "index.html#fragment-target", [214, 245, 227]
+    "06-fragment-navigation", "/app/index.html#fragment-target", [214, 245, 227]
 )
 for screenshot in (
     "07-link-navigation",
@@ -229,7 +278,7 @@ active_document_positions = [
 fragment_position = screenshot_positions["06-fragment-navigation"]
 navigation_position = screenshot_positions["07-link-navigation"]
 if not any(
-    fragment_position < position < navigation_position and path == "index.html"
+    fragment_position < position < navigation_position and path == "Katana://URL"
     for position, path in active_document_positions
 ):
     raise SystemExit("acceptance scenario must keep index.html active after same-document fragment navigation")
@@ -240,13 +289,14 @@ for screenshot in ("07-link-navigation", "08-reloaded-linked-panel", "09-resized
         default=len(steps),
     )
     if not any(
-        position < assertion_position < next_screenshot and path == "linked-panel.html"
+        position < assertion_position < next_screenshot and path == "Katana://URL"
         for assertion_position, path in active_document_positions
     ):
         raise SystemExit(f"acceptance scenario must keep linked-panel.html active after {screenshot}")
 
 index = index_path.read_text()
 for marker in (
+    'id="app-root"',
     'rel="stylesheet" href="style.css"',
     'id="resource-image" src="resource-image.svg"',
     'id="embedded-mermaid-svg"',
@@ -264,6 +314,13 @@ for marker in (
         raise SystemExit(f"acceptance index fixture is missing marker: {marker}")
 style = style_path.read_text()
 for marker in (
+    ":root",
+    "--page-edge",
+    "box-sizing: border-box",
+    "grid-template-columns",
+    "var(--space)",
+    "!important",
+    "@media (max-width: 900px)",
     ".status",
     "#e6f5ef",
     "#4f9dff",
@@ -283,6 +340,8 @@ for marker in (
     "#ffe08a",
     "#a7ddff",
     "event.preventDefault()",
+    "event.stopPropagation()",
+    "Parent click listener must not run",
     "#ffd1dc",
     "Same-document fragment requested by KRR V8",
     "Input state preserved:",
@@ -310,8 +369,8 @@ import sys
 from pathlib import Path
 
 request = json.loads(Path(sys.argv[1]).read_text())
-if request.get("name") != "v0-22-35-light-image-controls":
-    raise SystemExit("image controls request must target v0.22.35")
+if request.get("name") != "v0-22-36-light-image-controls":
+    raise SystemExit("image controls request must target v0.22.36")
 
 settings = request.get("fixture", {}).get("settings", {})
 if settings.get("theme") != "light" or settings.get("preview_show_diagram_controls") is not True:
@@ -407,11 +466,11 @@ with acceptance_lock_path.open("rb") as handle:
 dependencies = cargo.get("workspace", {}).get("dependencies", {})
 manifest_release_lines = {
     "katana-document-viewer": (0, 3, 3),
-    "katana-render-runtime": (0, 4, 5),
+    "katana-render-runtime": (0, 4, 6),
 }
 minimum_lock_versions = {
     "katana-document-viewer": (0, 3, 3),
-    "katana-render-runtime": (0, 4, 5),
+    "katana-render-runtime": (0, 4, 6),
 }
 
 
@@ -507,8 +566,8 @@ fi
 required_markers=(
     "Browser-equivalent HTML session is the only interactive preview path"
     "The system MUST NOT fall back to static HTML rendering"
-    "v0.22.35 release must prove the published browser chain"
-    'minimum resolved version of KDV `0.3.3` and KRR `0.4.5`'
+    "v0.22.36 release must prove the published browser chain"
+    'minimum resolved version of KDV `0.3.3` and KRR `0.4.6`'
     "raw KRR frame pixels"
 )
 for marker in "${required_markers[@]}"; do

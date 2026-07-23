@@ -83,10 +83,7 @@ impl ValidatedHttpUrl {
         } else {
             response.url
         };
-        let source_url = ValidatedHttpUrl::parse(&response_url)
-            .map_err(HtmlSourceError::InvalidRedirectUrl)?
-            .as_str()
-            .to_string();
+        let source_url = self.final_document_url(&response_url)?;
         let raw_html =
             String::from_utf8(response.bytes).map_err(|_| HtmlSourceError::InvalidUtf8)?;
 
@@ -95,6 +92,19 @@ impl ValidatedHttpUrl {
             origin: source_url.clone(),
             source_url,
         })
+    }
+
+    fn final_document_url(&self, response_url: &str) -> Result<String, HtmlSourceError> {
+        let response_url =
+            ValidatedHttpUrl::parse(response_url).map_err(HtmlSourceError::InvalidRedirectUrl)?;
+        let mut final_url = url::Url::parse(response_url.as_str())
+            .map_err(|_| HtmlSourceError::InvalidRedirectUrl(UrlValidationError::Malformed))?;
+        let requested_url = url::Url::parse(self.as_str())
+            .map_err(|_| HtmlSourceError::InvalidRedirectUrl(UrlValidationError::Malformed))?;
+        if final_url.fragment().is_none() {
+            final_url.set_fragment(requested_url.fragment());
+        }
+        Ok(final_url.to_string())
     }
 }
 
@@ -151,6 +161,30 @@ mod tests {
 
         assert_eq!(source.raw_html, "<html></html>");
         assert_eq!(source.origin, "https://example.com/page");
+    }
+
+    #[test]
+    fn response_inherits_requested_fragment_when_http_final_url_omits_it() {
+        let request =
+            ValidatedHttpUrl::parse("https://example.com/start#linked-target").expect("request");
+        let mut redirected = response(200, "text/html", b"<html></html>".to_vec());
+        redirected.url = "https://example.com/final".to_string();
+
+        let source = request.process_response(Ok(redirected)).expect("source");
+
+        assert_eq!(source.origin, "https://example.com/final#linked-target");
+        assert_eq!(source.source_url, source.origin);
+    }
+
+    #[test]
+    fn response_fragment_overrides_requested_fragment() {
+        let request = ValidatedHttpUrl::parse("https://example.com/start#old").expect("request");
+        let mut redirected = response(200, "text/html", b"<html></html>".to_vec());
+        redirected.url = "https://example.com/final#new".to_string();
+
+        let source = request.process_response(Ok(redirected)).expect("source");
+
+        assert_eq!(source.origin, "https://example.com/final#new");
     }
 
     #[test]

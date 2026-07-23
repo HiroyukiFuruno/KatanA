@@ -34,6 +34,11 @@ pub enum HtmlSourceError {
     InvalidUtf8,
 }
 
+pub(crate) type PendingUrlRequest = (
+    std::sync::mpsc::Receiver<Result<HtmlSource, HtmlSourceError>>,
+    Option<std::path::PathBuf>,
+);
+
 impl std::fmt::Display for HtmlSourceError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -67,8 +72,7 @@ pub struct UrlTabState {
     pub active_tab: Option<usize>,
     pub is_loading: bool,
     pub last_error: Option<HtmlSourceError>,
-    pub(crate) response_rx: Option<std::sync::mpsc::Receiver<Result<HtmlSource, HtmlSourceError>>>,
-    pub(crate) pending_document_path: Option<std::path::PathBuf>,
+    pub(crate) pending_url_requests: VecDeque<PendingUrlRequest>,
 }
 
 impl Default for UrlTabState {
@@ -86,8 +90,7 @@ impl UrlTabState {
             active_tab: None,
             is_loading: false,
             last_error: None,
-            response_rx: None,
-            pending_document_path: None,
+            pending_url_requests: VecDeque::new(),
         }
     }
 

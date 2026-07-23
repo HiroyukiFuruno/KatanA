@@ -1,6 +1,7 @@
 mod capture;
 mod executor_harness;
 mod fixture;
+mod http_fixture;
 mod request;
 
 use anyhow::{Context, Result};

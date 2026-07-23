@@ -1,4 +1,4 @@
-use eframe::egui::{self, Pos2, Vec2};
+use eframe::egui::{self, Pos2};
 use katana_document_viewer::browser_session::{
     BrowserSessionAdapter, BrowserSessionRequest, BrowserSessionUpdate, HtmlBrowserSource,
     HtmlBrowserViewport,
@@ -28,7 +28,7 @@ mod pane;
 mod view;
 
 use frame::BrowserFrame;
-use geometry::{browser_viewport_for_ui, frame_display_size, frame_position, frame_scroll_delta};
+use geometry::{frame_display_size, frame_position, frame_scroll_delta};
 
 pub(crate) struct HtmlBrowserSurface {
     adapter: Option<BrowserSessionAdapter>,
@@ -43,7 +43,7 @@ pub(crate) struct HtmlBrowserSurface {
     last_display_rect: Option<egui::Rect>,
     error: Option<String>,
     frame_update_deadline: Option<std::time::Instant>,
-    pending_navigation_url: Option<String>,
+    pending_navigation_urls: VecDeque<String>,
     navigation_history: VecDeque<String>,
 }
 
@@ -69,7 +69,7 @@ impl HtmlBrowserSurface {
             last_display_rect: None,
             error: None,
             frame_update_deadline: Some(std::time::Instant::now() + FRAME_UPDATE_TIMEOUT),
-            pending_navigation_url: None,
+            pending_navigation_urls: VecDeque::new(),
             navigation_history: VecDeque::from([initial_origin]),
         }
     }
@@ -88,7 +88,7 @@ impl HtmlBrowserSurface {
             last_display_rect: None,
             error: Some(error),
             frame_update_deadline: None,
-            pending_navigation_url: None,
+            pending_navigation_urls: VecDeque::new(),
             navigation_history: VecDeque::new(),
         }
     }
@@ -113,6 +113,8 @@ impl HtmlBrowserSurface {
                     self.frame = Some(BrowserFrame::new(
                         frame.generation,
                         frame.viewport,
+                        frame.scroll_y,
+                        frame.content_height,
                         frame.pixels,
                     ));
                     self.update_texture(ctx);
@@ -120,7 +122,8 @@ impl HtmlBrowserSurface {
                     self.frame_update_deadline = None;
                 }
                 BrowserSessionUpdate::Navigation(navigation) => {
-                    self.pending_navigation_url = Some(navigation.url.as_str().to_string());
+                    self.pending_navigation_urls
+                        .push_back(navigation.url.as_str().to_string());
                 }
                 BrowserSessionUpdate::Error(error) => {
                     self.record_adapter_error("receive worker update", None, error);
@@ -136,26 +139,6 @@ impl HtmlBrowserSurface {
         } else {
             self.frame_update_deadline = None;
         }
-    }
-
-    fn resize_to_ui(&mut self, ui: &egui::Ui) {
-        let Some(adapter) = &self.adapter else {
-            return;
-        };
-        let size = ui.available_size().max(Vec2::splat(1.0));
-        let Some(viewport) = browser_viewport_for_ui(size, ui.ctx().pixels_per_point()) else {
-            return;
-        };
-        if self.viewport == Some(viewport) {
-            return;
-        }
-        if let Err(error) = adapter.resize(viewport) {
-            self.record_adapter_error("resize", None, error);
-            return;
-        }
-        self.discard_bootstrap_frame(viewport);
-        self.viewport = Some(viewport);
-        self.await_frame();
     }
 
     fn await_frame(&mut self) {
@@ -197,7 +180,9 @@ impl HtmlBrowserSurface {
 
 #[cfg(test)]
 mod tests {
+    use super::geometry::browser_viewport_for_ui;
     use super::*;
+    use eframe::egui::Vec2;
     use katana_document_viewer::browser_session::BrowserSessionAdapterError;
 
     const DEVICE_SCALE_FACTOR: f32 = 2.0;
@@ -205,15 +190,33 @@ mod tests {
     const UI_HEIGHT: f32 = 50.0;
     const FRAME_WIDTH: u32 = 200;
     const FRAME_HEIGHT: u32 = 100;
+    const MAX_TEXTURE_SIDE: usize = 2048;
 
     #[test]
     fn browser_viewport_uses_physical_pixels_for_high_density_ui() {
-        let viewport = browser_viewport_for_ui(Vec2::new(UI_WIDTH, UI_HEIGHT), DEVICE_SCALE_FACTOR);
+        let viewport = browser_viewport_for_ui(
+            Vec2::new(UI_WIDTH, UI_HEIGHT),
+            DEVICE_SCALE_FACTOR,
+            MAX_TEXTURE_SIDE,
+        );
 
         assert_eq!(
             viewport,
             HtmlBrowserViewport::new(FRAME_WIDTH, FRAME_HEIGHT, DEVICE_SCALE_FACTOR).ok()
         );
+    }
+
+    #[test]
+    fn browser_viewport_preserves_logical_size_within_texture_limits() -> Result<(), String> {
+        let logical = Vec2::new(1079.0, 642.5);
+        let viewport = browser_viewport_for_ui(logical, DEVICE_SCALE_FACTOR, MAX_TEXTURE_SIDE)
+            .ok_or_else(|| "limited browser viewport was not created".to_string())?;
+
+        assert!(viewport.width <= MAX_TEXTURE_SIDE as u32);
+        assert!(viewport.height <= MAX_TEXTURE_SIDE as u32);
+        assert!((viewport.logical_width() - logical.x).abs() <= 0.5);
+        assert!((viewport.logical_height() - logical.y).abs() <= 0.5);
+        Ok(())
     }
 
     #[test]
@@ -259,7 +262,7 @@ mod tests {
     fn runtime_error_discards_the_stale_browser_frame() {
         let viewport = HtmlBrowserViewport::new(1, 1, 1.0).unwrap();
         let mut surface = HtmlBrowserSurface::failed("initial".to_string());
-        surface.frame = Some(BrowserFrame::new(1, viewport, vec![0, 0, 0, 255]));
+        surface.frame = Some(BrowserFrame::new(1, viewport, 0.0, 1.0, vec![0, 0, 0, 255]));
         surface.last_pointer_position = Some(egui::pos2(1.0, 1.0));
         surface.primary_pointer_pressed = true;
         surface.focused = true;
@@ -344,7 +347,13 @@ mod tests {
         let bootstrap = HtmlBrowserViewport::new(1, 1, 1.0).unwrap();
         let requested = HtmlBrowserViewport::new(320, 240, 1.0).unwrap();
         let mut surface = HtmlBrowserSurface::failed("test".to_string());
-        surface.frame = Some(BrowserFrame::new(1, bootstrap, vec![255, 255, 255, 255]));
+        surface.frame = Some(BrowserFrame::new(
+            1,
+            bootstrap,
+            0.0,
+            1.0,
+            vec![255, 255, 255, 255],
+        ));
 
         assert!(surface.accepts_frame_viewport(bootstrap));
         surface.discard_bootstrap_frame(requested);
@@ -362,6 +371,8 @@ mod tests {
         surface.frame = Some(BrowserFrame::new(
             1,
             viewport,
+            0.0,
+            1.0,
             vec![232, 199, 255, 255, 0, 0, 0, 255],
         ));
 

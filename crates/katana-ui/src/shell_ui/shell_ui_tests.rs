@@ -312,6 +312,84 @@ mod tests {
     }
 
     #[test]
+    fn split_preview_html_display_rect_matches_preview_panel() {
+        let ctx = test_context();
+        let temp_dir = tempfile::tempdir().unwrap();
+        let path = temp_dir.path().join("padding.html");
+        std::fs::write(&path, "<h1>PaddingHeading</h1>\n<p>Body</p>").unwrap();
+        let mut state = AppState::new(
+            Default::default(),
+            Default::default(),
+            Default::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state
+            .document
+            .open_documents
+            .push(katana_core::document::Document::new(
+                &path,
+                "<h1>PaddingHeading</h1>\n<p>Body</p>",
+            ));
+        state.document.active_doc_idx = Some(0);
+        let mut app = KatanaApp::new(state);
+        app.refresh_preview(path.as_path(), "<h1>PaddingHeading</h1>\n<p>Body</p>");
+
+        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
+                crate::views::layout::split::HorizontalSplit::new(
+
+                    &egui_ctx,
+                    &mut app,
+                    PaneOrder::EditorFirst,
+                ).show(ui);
+            });
+        });
+
+        let pane = app
+            .tab_previews
+            .iter()
+            .find(|preview| preview.path == path)
+            .expect("expected active html tab preview");
+        assert!(pane.pane.has_html_browser());
+
+        let preview_rect = egui::containers::panel::PanelState::load(
+            &ctx,
+            crate::views::panels::preview::PreviewLogicOps::preview_panel_id(
+                Some(path.as_path()),
+                "preview_panel_h_right",
+            ),
+        )
+        .expect("preview panel rect")
+        .outer_rect;
+        let browser_rect = app
+            .html_browser_display_rect_for_test()
+            .expect("html browser display rect");
+
+        assert!(
+            (browser_rect.left() - preview_rect.left()).abs() <= 1.0,
+            "html browser left edge should match preview panel left edge, got diff {}",
+            (browser_rect.left() - preview_rect.left()).abs()
+        );
+        assert!(
+            (browser_rect.top() - preview_rect.top()).abs() <= 1.0,
+            "html browser top edge should match preview panel top edge, got diff {}",
+            (browser_rect.top() - preview_rect.top()).abs()
+        );
+        assert!(
+            (browser_rect.width() - preview_rect.width()).abs() <= 1.0,
+            "html browser width should match preview panel width, got diff {}",
+            (browser_rect.width() - preview_rect.width()).abs()
+        );
+        assert!(
+            (browser_rect.height() - preview_rect.height()).abs() <= 1.0,
+            "html browser height should match preview panel height, got diff {}",
+            (browser_rect.height() - preview_rect.height()).abs()
+        );
+    }
+
+    #[test]
     fn new_horizontal_split_starts_at_half_width_even_if_another_tab_has_panel_state() {
         let ctx = test_context();
         let active = PathBuf::from("/tmp/active.md");

@@ -33,6 +33,21 @@ impl HtmlBrowserSurface {
                 .count() as u64
         })
     }
+
+    pub(super) fn frame_viewport(&self) -> Option<(f32, f32)> {
+        self.frame.as_ref().map(|frame| {
+            (
+                frame.viewport.logical_width(),
+                frame.viewport.logical_height(),
+            )
+        })
+    }
+
+    pub(super) fn frame_scroll_metrics(&self) -> Option<(f32, f32)> {
+        self.frame
+            .as_ref()
+            .map(|frame| (frame.scroll_y, frame.content_height))
+    }
 }
 
 impl PreviewPane {
@@ -68,6 +83,18 @@ impl PreviewPane {
             .and_then(|browser| browser.frame_matching_rgb_pixels(expected))
     }
 
+    pub(crate) fn html_browser_frame_viewport(&self) -> Option<(f32, f32)> {
+        self.html_browser
+            .as_ref()
+            .and_then(HtmlBrowserSurface::frame_viewport)
+    }
+
+    pub(crate) fn html_browser_frame_scroll_metrics(&self) -> Option<(f32, f32)> {
+        self.html_browser
+            .as_ref()
+            .and_then(HtmlBrowserSurface::frame_scroll_metrics)
+    }
+
     pub(crate) fn html_browser_display_rect(&self) -> Option<egui::Rect> {
         self.html_browser
             .as_ref()
@@ -83,7 +110,7 @@ impl PreviewPane {
     pub(crate) fn take_html_browser_navigation(&mut self) -> Option<String> {
         self.html_browser
             .as_mut()
-            .and_then(|browser| browser.pending_navigation_url.take())
+            .and_then(|browser| browser.pending_navigation_urls.pop_front())
     }
 
     pub(crate) fn show_html_browser(&mut self, ui: &mut egui::Ui) -> egui::Rect {
@@ -91,5 +118,37 @@ impl PreviewPane {
             .as_mut()
             .expect("HTML browser is present when its surface is shown")
             .show(ui)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::PreviewPane;
+    use crate::preview_pane::image_html_surface::HtmlBrowserSurface;
+
+    #[test]
+    fn queued_html_navigation_urls_are_taken_in_request_order() {
+        let mut surface = HtmlBrowserSurface::start(
+            katana_document_viewer::browser_session::HtmlBrowserSource::new(
+                "<p>html</p>",
+                "https://example.com/index.html",
+            )
+            .expect("browser source"),
+        );
+        surface
+            .pending_navigation_urls
+            .push_back("https://example.com/first".to_string());
+        surface
+            .pending_navigation_urls
+            .push_back("https://example.com/second".to_string());
+
+        let mut pane = PreviewPane::default();
+        pane.html_browser = Some(surface);
+        let first = pane.take_html_browser_navigation();
+        let second = pane.take_html_browser_navigation();
+
+        assert_eq!(first.as_deref(), Some("https://example.com/first"));
+        assert_eq!(second.as_deref(), Some("https://example.com/second"));
+        assert_eq!(pane.take_html_browser_navigation(), None);
     }
 }

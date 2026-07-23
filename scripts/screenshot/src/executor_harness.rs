@@ -1,10 +1,11 @@
 use crate::capture::PngBounds;
+use crate::http_fixture::FixtureHttpServer;
 use crate::request::{
     AssertActiveDocumentStep, AssertDiffReviewStep, AssertHtmlBrowserFrameContainsRgbStep,
     AssertHtmlBrowserOriginStep, ClickButton, Fixture, ScrollDirection, Step, UiAction,
     VideoFormat,
 };
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use egui_kittest::{kittest::Queryable, Harness};
 use katana_core::markdown::ExporterTrait;
 use katana_core::system::ProcessService;
@@ -19,7 +20,7 @@ use katana_ui::state::command_palette_providers::{
     AppCommandProvider, MarkdownContentProvider, WorkspaceFileProvider,
 };
 use std::path::{Component, Path, PathBuf};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tempfile::TempDir;
 
 const HARNESS_PIXELS_PER_POINT: f32 = 2.0;
@@ -108,6 +109,14 @@ pub fn run(
     let workspace_dir_owned = workspace_dir.map(|p| p.to_path_buf());
     let workspace_dir_for_lookup = workspace_dir_owned.clone();
     let output_dir = output_dir.to_path_buf();
+    let http_server = fixture
+        .http_server
+        .as_ref()
+        .map(|config| {
+            let root = workspace_dir.context("HTTP fixture requires a workspace directory")?;
+            FixtureHttpServer::start(root, config)
+        })
+        .transpose()?;
 
     let mut harness = Harness::builder()
         .with_size(egui::vec2(width, height))
@@ -183,6 +192,14 @@ pub fn run(
             Step::AssertActiveDocument(_) => "assert_active_document",
             Step::AssertHtmlBrowserOrigin(_) => "assert_html_browser_origin",
             Step::AssertHtmlBrowserFrameContainsRgb(_) => "assert_html_browser_frame_contains_rgb",
+            Step::AssertHtmlBrowserViewportMatchesDisplayRect => {
+                "assert_html_browser_viewport_matches_display_rect"
+            }
+            Step::AssertHtmlBrowserDisplayCornersRgb(_) => {
+                "assert_html_browser_display_corners_rgb"
+            }
+            Step::AssertHttpRequests(_) => "assert_http_requests",
+            Step::AssertUrlHistory(_) => "assert_url_history",
             Step::AssertDiffReview(_) => "assert_diff_review",
             Step::Action(_) => "action",
             Step::Drag(_) => "drag",
@@ -301,9 +318,25 @@ pub fn run(
                 println!("  recorded: {}", out.display());
             }
             Step::Scroll(s) => {
+                let scroll_expectation = harness
+                    .state_mut()
+                    .html_browser_frame_scroll_metrics_for_test()
+                    .and_then(|(scroll_y, _)| {
+                        let viewport_height = harness
+                            .state_mut()
+                            .html_browser_frame_viewport_for_test()?
+                            .1;
+                        let display_height = harness
+                            .state_mut()
+                            .html_browser_display_rect_for_test()?
+                            .height();
+                        (display_height > 0.0)
+                            .then_some((scroll_y, viewport_height / display_height))
+                    });
                 let fps = recording.as_ref().map(|r| r.fps as f64).unwrap_or(60.0);
                 let frames = ((s.duration_seconds * fps) as usize).max(1);
                 let delta_per_frame = s.pixels / frames as f32;
+                let mut delivered_browser_pixels = 0.0;
                 for _ in 0..frames {
                     let viewport = harness.ctx.viewport_rect();
                     let pos = egui::pos2(viewport.center().x, viewport.center().y);
@@ -319,6 +352,10 @@ pub fn run(
                         phase: egui::TouchPhase::Move,
                     });
                     harness.step();
+                    if let Some((_, browser_scale)) = scroll_expectation {
+                        let smooth_y = harness.ctx.input(|input| input.smooth_scroll_delta.y);
+                        delivered_browser_pixels += (-smooth_y * browser_scale).abs();
+                    }
                     maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
                     sleep_frame(fps);
                 }
@@ -338,6 +375,17 @@ pub fn run(
                     harness.step();
                     maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
                     sleep_frame(fps);
+                }
+                if matches!(s.direction, ScrollDirection::Up | ScrollDirection::Down) {
+                    if let Some((initial_scroll, _)) = scroll_expectation {
+                        wait_for_browser_scroll(
+                            &mut harness,
+                            recording.as_mut(),
+                            initial_scroll,
+                            s.direction,
+                            delivered_browser_pixels,
+                        )?;
+                    }
                 }
             }
             Step::ExportPng(s) => {
@@ -428,16 +476,101 @@ pub fn run(
                 assert_active_document(&mut harness, s)?;
             }
             Step::AssertHtmlBrowserOrigin(s) => {
-                assert_html_browser_origin(&mut harness, s)?;
+                assert_html_browser_origin(&mut harness, recording.as_mut(), s)?;
             }
             Step::AssertHtmlBrowserFrameContainsRgb(s) => {
-                assert_html_browser_frame_contains_rgb(&mut harness, s)?;
+                assert_html_browser_frame_contains_rgb(&mut harness, recording.as_mut(), s)?;
+            }
+            Step::AssertHtmlBrowserViewportMatchesDisplayRect => {
+                assert_html_browser_viewport_matches_display_rect(&mut harness)?;
+            }
+            Step::AssertHtmlBrowserDisplayCornersRgb(s) => {
+                let image = harness.render().map_err(|error| {
+                    anyhow::anyhow!("render failed before corner assertion: {error}")
+                })?;
+                let display = harness
+                    .state_mut()
+                    .html_browser_display_rect_for_test()
+                    .context("expected an active HTML display rect")?;
+                let bounds = physical_png_bounds(
+                    display,
+                    image.width(),
+                    image.height(),
+                    HARNESS_PIXELS_PER_POINT,
+                )
+                .context("HTML display rect is outside the composed screenshot")?;
+                let corners = [
+                    (bounds.x, bounds.y),
+                    (bounds.x + bounds.width - 1, bounds.y),
+                    (bounds.x, bounds.y + bounds.height - 1),
+                    (bounds.x + bounds.width - 1, bounds.y + bounds.height - 1),
+                ];
+                for (x, y) in corners {
+                    let pixel = image.get_pixel(x, y).0;
+                    ensure!(
+                        pixel[..3]
+                            .iter()
+                            .zip(s.rgb)
+                            .all(|(actual, expected)| actual.abs_diff(expected) <= s.tolerance),
+                        "HTML display corner ({x}, {y}) is rgb({},{},{}), expected {:?} +/- {}",
+                        pixel[0],
+                        pixel[1],
+                        pixel[2],
+                        s.rgb,
+                        s.tolerance
+                    );
+                }
+                println!("  HTML display corners matched page RGB: {:?}", s.rgb);
+            }
+            Step::AssertHttpRequests(s) => {
+                let server = http_server
+                    .as_ref()
+                    .context("assert_http_requests requires fixture.http_server")?;
+                assert_http_requests(&mut harness, recording.as_mut(), server, s)?;
+            }
+            Step::AssertUrlHistory(s) => {
+                let history = harness
+                    .state_mut()
+                    .app_state_for_test()
+                    .url_tab
+                    .history
+                    .iter()
+                    .cloned()
+                    .collect::<Vec<_>>();
+                for suffix in &s.origin_suffixes {
+                    ensure!(
+                        history.iter().any(|url| url.ends_with(suffix)),
+                        "URL history is missing suffix {suffix:?}; recorded {history:?}"
+                    );
+                }
+                println!("  URL history matched: {:?}", s.origin_suffixes);
             }
             Step::AssertDiffReview(s) => {
                 assert_diff_review(&mut harness, s)?;
             }
             Step::Action(a) => {
                 match &a.action {
+                    UiAction::OpenFixtureUrl { path, wait_seconds } => {
+                        let server = http_server
+                            .as_ref()
+                            .context("open_fixture_url requires fixture.http_server")?;
+                        let url = server.url(path)?;
+                        println!(
+                            "  queue fixture URL {url}; pending before queue: {:?}",
+                            harness.state_mut().pending_action_for_test()
+                        );
+                        harness.state_mut().trigger_action(AppAction::OpenUrl(url));
+                        harness.ctx.request_repaint();
+                        step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                        let app = harness.state_mut();
+                        println!(
+                            "  URL action state: pending={:?}, loading={}, input={:?}, error={:?}",
+                            app.pending_action_for_test(),
+                            app.app_state_for_test().url_tab.is_loading,
+                            app.app_state_for_test().url_tab.input,
+                            app.app_state_for_test().url_tab.last_error,
+                        );
+                    }
                     UiAction::OpenSettingsTab { tab } => {
                         if !harness.state_mut().app_state_mut().layout.show_settings {
                             harness
@@ -750,8 +883,21 @@ pub fn run(
                             region.center_x as f32 / HARNESS_PIXELS_PER_POINT,
                             region.center_y as f32 / HARNESS_PIXELS_PER_POINT,
                         );
+                        let browser_geometry = harness
+                            .state_mut()
+                            .html_browser_display_rect_for_test()
+                            .zip(
+                                harness
+                                    .state_mut()
+                                    .html_browser_frame_viewport_for_test(),
+                            )
+                            .zip(
+                                harness
+                                    .state_mut()
+                                    .html_browser_frame_scroll_metrics_for_test(),
+                            );
                         println!(
-                            "  click RGB({},{},{}): region {}..={}, {}..={} ({} pixels); harness point ({:.1}, {:.1})",
+                            "  click RGB({},{},{}): region {}..={}, {}..={} ({} pixels); harness point ({:.1}, {:.1}); browser geometry {browser_geometry:?}",
                             rgb[0],
                             rgb[1],
                             rgb[2],
@@ -823,6 +969,7 @@ pub fn run(
                                 AppAction::ConfirmCurrentDiffReviewFile
                             }
                             UiAction::OpenSettingsTab { .. }
+                            | UiAction::OpenFixtureUrl { .. }
                             | UiAction::ForceOpenAccordion { .. }
                             | UiAction::OpenIconsAdvancedPanel
                             | UiAction::ScrollDown { .. }
@@ -941,43 +1088,171 @@ fn assert_active_document(
 
 fn assert_html_browser_origin(
     harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
     assertion: &AssertHtmlBrowserOriginStep,
 ) -> Result<()> {
-    harness.run_steps(120);
-    let origin = harness
-        .state_mut()
-        .html_browser_origin_for_test()
-        .context("expected the active document to have a KRR browser origin")?;
-    if !origin.ends_with(&assertion.origin_ends_with) {
-        bail!(
-            "HTML browser origin assertion failed: expected origin to end with {:?}, got {:?}",
-            assertion.origin_ends_with,
-            origin
-        );
+    let deadline = async_assert_deadline(assertion.timeout_seconds)?;
+    loop {
+        let origin = harness.state_mut().html_browser_origin_for_test();
+        if origin
+            .as_deref()
+            .is_some_and(|origin| origin.ends_with(&assertion.origin_ends_with))
+        {
+            println!(
+                "  HTML browser origin matched: {}",
+                origin.unwrap_or_default()
+            );
+            return Ok(());
+        }
+        if Instant::now() >= deadline {
+            bail!(
+                "HTML browser origin did not end with {:?} within {:.2}s; last origin was {:?}",
+                assertion.origin_ends_with,
+                assertion.timeout_seconds,
+                origin
+            );
+        }
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        sleep_frame(60.0);
     }
-    println!("  HTML browser origin matched: {origin}");
-    Ok(())
 }
 
 fn assert_html_browser_frame_contains_rgb(
     harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
     assertion: &AssertHtmlBrowserFrameContainsRgbStep,
 ) -> Result<()> {
-    harness.run_steps(120);
-    let matching = harness
-        .state_mut()
-        .html_browser_frame_matching_rgb_pixels_for_test(assertion.rgb)
-        .context("expected the active document to have a complete KRR browser frame")?;
-    if matching < assertion.min_pixels {
-        bail!(
-            "KRR frame contains {matching} pixels at rgb({},{},{}), expected at least {}",
-            assertion.rgb[0],
-            assertion.rgb[1],
-            assertion.rgb[2],
-            assertion.min_pixels
-        );
+    let deadline = async_assert_deadline(assertion.timeout_seconds)?;
+    loop {
+        let matching = harness
+            .state_mut()
+            .html_browser_frame_matching_rgb_pixels_for_test(assertion.rgb)
+            .unwrap_or(0);
+        if matching >= assertion.min_pixels {
+            println!("  matching KRR frame RGB pixels: {matching}");
+            return Ok(());
+        }
+        if Instant::now() >= deadline {
+            bail!(
+                "KRR frame contains {matching} pixels at rgb({},{},{}), expected at least {} within {:.2}s",
+                assertion.rgb[0],
+                assertion.rgb[1],
+                assertion.rgb[2],
+                assertion.min_pixels,
+                assertion.timeout_seconds
+            );
+        }
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        sleep_frame(60.0);
     }
-    println!("  matching KRR frame RGB pixels: {matching}");
+}
+
+fn assert_http_requests(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    server: &FixtureHttpServer,
+    assertion: &crate::request::AssertHttpRequestsStep,
+) -> Result<()> {
+    let deadline = async_assert_deadline(assertion.timeout_seconds)?;
+    loop {
+        let actual = server.requested_paths()?;
+        let missing = assertion
+            .paths
+            .iter()
+            .filter(|path| !actual.contains(path))
+            .cloned()
+            .collect::<Vec<_>>();
+        if missing.is_empty() {
+            server.assert_requested(&assertion.paths)?;
+            return Ok(());
+        }
+        if Instant::now() >= deadline {
+            let app = harness.state_mut();
+            let pending = format!("{:?}", app.pending_action_for_test());
+            let url_tab = &app.app_state_for_test().url_tab;
+            let url_loading = url_tab.is_loading;
+            let url_input = &url_tab.input;
+            let url_error = &url_tab.last_error;
+            let active_path = app.app_state_for_test().active_path();
+            bail!(
+                "fixture HTTP requests are missing {missing:?} after {:.2}s; received {actual:?}; pending_action={pending}; url_loading={url_loading}; url_input={url_input:?}; url_error={url_error:?}; active_path={active_path:?}",
+                assertion.timeout_seconds,
+            );
+        }
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        sleep_frame(60.0);
+    }
+}
+
+fn async_assert_deadline(timeout_seconds: f64) -> Result<Instant> {
+    ensure!(
+        timeout_seconds.is_finite() && timeout_seconds > 0.0,
+        "async assertion timeout must be a positive finite number"
+    );
+    Ok(Instant::now() + Duration::from_secs_f64(timeout_seconds))
+}
+
+fn wait_for_browser_scroll(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    initial_scroll: f32,
+    direction: ScrollDirection,
+    pixels: f32,
+) -> Result<()> {
+    const SCROLL_TIMEOUT_SECONDS: f64 = 10.0;
+    const SCROLL_TOLERANCE: f32 = 1.0;
+    let deadline = async_assert_deadline(SCROLL_TIMEOUT_SECONDS)?;
+    loop {
+        let (scroll_y, content_height) = harness
+            .state_mut()
+            .html_browser_frame_scroll_metrics_for_test()
+            .context("expected HTML browser scroll metrics")?;
+        let viewport_height = harness
+            .state_mut()
+            .html_browser_frame_viewport_for_test()
+            .context("expected HTML browser viewport while waiting for scroll")?
+            .1;
+        let max_scroll = (content_height - viewport_height).max(0.0);
+        let expected = match direction {
+            ScrollDirection::Down => (initial_scroll + pixels).min(max_scroll),
+            ScrollDirection::Up => (initial_scroll - pixels).max(0.0),
+            ScrollDirection::Left | ScrollDirection::Right => initial_scroll,
+        };
+        if (scroll_y - expected).abs() <= SCROLL_TOLERANCE {
+            println!("  HTML browser scroll settled: {scroll_y:.2}/{max_scroll:.2}");
+            return Ok(());
+        }
+        if Instant::now() >= deadline {
+            bail!(
+                "HTML browser scroll did not settle within {SCROLL_TIMEOUT_SECONDS:.2}s: expected {expected:.2}, observed {scroll_y:.2}, max {max_scroll:.2}"
+            );
+        }
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        sleep_frame(60.0);
+    }
+}
+
+fn assert_html_browser_viewport_matches_display_rect(
+    harness: &mut Harness<'_, KatanaApp>,
+) -> Result<()> {
+    harness.run_steps(120);
+    let app = harness.state_mut();
+    let display = app
+        .html_browser_display_rect_for_test()
+        .context("expected an active HTML display rect")?;
+    let viewport = app
+        .html_browser_frame_viewport_for_test()
+        .context("expected an active KRR frame viewport")?;
+    let display_size = (display.width(), display.height());
+    ensure!(
+        (viewport.0 - display_size.0).abs() <= 1.0 && (viewport.1 - display_size.1).abs() <= 1.0,
+        "KRR viewport {viewport:?} does not match HTML display rect {display_size:?}"
+    );
+    println!("  KRR viewport matches HTML display rect: {viewport:?}");
     Ok(())
 }
 
@@ -1393,9 +1668,7 @@ fn click_node(harness: &mut Harness<'_, KatanaApp>, label: &str, button: ClickBu
         physical_rect.center().x / HARNESS_PIXELS_PER_POINT,
         physical_rect.center().y / HARNESS_PIXELS_PER_POINT,
     );
-    println!(
-        "  click accessibility node {label:?}: {physical_rect:?} -> {logical_pos:?}"
-    );
+    println!("  click accessibility node {label:?}: {physical_rect:?} -> {logical_pos:?}");
     click_at(harness, logical_pos, button);
 }
 
