@@ -110,7 +110,16 @@ impl KatanaApp {
             return;
         };
         let path = self.state.document.open_documents[idx].path.clone();
-        if let Some(source) = self.state.url_tab.source_for_document(&path).cloned() {
+        if let Some(source) = self
+            .state
+            .url_tab
+            .source_for_document(&path)
+            .filter(|source| {
+                source.source_url.starts_with("http://")
+                    || source.source_url.starts_with("https://")
+            })
+            .cloned()
+        {
             match crate::app::url_source::ValidatedHttpUrl::parse(&source.source_url) {
                 Ok(url) => self.fetch_html_url(ctx, url, Some(path)),
                 Err(error) => self

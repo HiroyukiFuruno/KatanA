@@ -7,7 +7,11 @@ impl HtmlBrowserSurface {
     pub(crate) fn navigate(&mut self, source: HtmlBrowserSource) {
         let origin = source.origin.as_str().to_owned();
         let Some(adapter) = self.adapter.as_ref() else {
-            *self = Self::start(source);
+            self.pending_source = Some(source);
+            self.document_origin = Some(origin.clone());
+            self.pending_navigation_urls.clear();
+            self.error = None;
+            self.record_navigation(origin);
             return;
         };
         let navigation = match HtmlBrowserNavigation::new(source) {

@@ -19,6 +19,7 @@ pub struct UrlTab {
 pub enum UrlValidationError {
     Empty,
     UnsupportedScheme,
+    UnsupportedFileHost,
     MissingHost,
     Malformed,
 }
@@ -27,10 +28,25 @@ pub enum UrlValidationError {
 pub enum HtmlSourceError {
     InvalidUrl(UrlValidationError),
     InvalidRedirectUrl(UrlValidationError),
+    LocalFile {
+        url: String,
+        reason: String,
+    },
     Network(String),
-    HttpStatus { status: u16, status_text: String },
-    NonHtmlContentType { content_type: Option<String> },
-    BodyTooLarge { limit: usize, actual: usize },
+    HttpStatus {
+        status: u16,
+        status_text: String,
+        url: String,
+        server: Option<String>,
+        cloudflare_challenge: bool,
+    },
+    NonHtmlContentType {
+        content_type: Option<String>,
+    },
+    BodyTooLarge {
+        limit: usize,
+        actual: usize,
+    },
     InvalidUtf8,
 }
 
@@ -46,11 +62,34 @@ impl std::fmt::Display for HtmlSourceError {
             Self::InvalidRedirectUrl(error) => {
                 write!(formatter, "Invalid final redirect URL: {error:?}")
             }
+            Self::LocalFile { url, reason } => {
+                write!(formatter, "Local HTML file error: {url}: {reason}")
+            }
             Self::Network(error) => write!(formatter, "Network error: {error}"),
             Self::HttpStatus {
                 status,
                 status_text,
-            } => write!(formatter, "HTTP {status}: {status_text}"),
+                url,
+                server,
+                cloudflare_challenge,
+            } => {
+                let server = server
+                    .as_deref()
+                    .map_or("server not disclosed", |server| server);
+                if *cloudflare_challenge {
+                    return write!(
+                        formatter,
+                        "Main document request failed: HTTP {status}: {status_text}. URL: {url}. \
+                         Server: {server}. Cause: browser verification challenge \
+                         (cf-mitigated=challenge); CSS and JavaScript were not started."
+                    );
+                }
+                write!(
+                    formatter,
+                    "Main document request failed: HTTP {status}: {status_text}. \
+                     URL: {url}. Server: {server}."
+                )
+            }
             Self::NonHtmlContentType { content_type } => {
                 write!(formatter, "Expected HTML content, got {content_type:?}")
             }
@@ -126,6 +165,11 @@ impl UrlTabState {
             .map(|tab| &tab.source)
     }
 
+    pub(crate) fn cancel_pending_url_requests(&mut self) {
+        self.pending_url_requests.clear();
+        self.is_loading = false;
+    }
+
     pub fn fail(&mut self, error: HtmlSourceError) {
         self.is_loading = false;
         self.last_error = Some(error);
@@ -174,5 +218,25 @@ mod tests {
             state.source_for_document(&path).unwrap().origin,
             "https://example.com"
         );
+    }
+
+    #[test]
+    fn http_status_error_includes_url_server_and_cloudflare_marker_when_printed() {
+        let error = HtmlSourceError::HttpStatus {
+            status: 403,
+            status_text: "Forbidden".to_string(),
+            url: "https://example.com/".to_string(),
+            server: Some("cloudflare".to_string()),
+            cloudflare_challenge: true,
+        };
+        let rendered = error.to_string();
+
+        assert!(rendered.contains("Main document request failed"));
+        assert!(rendered.contains("HTTP 403: Forbidden"));
+        assert!(rendered.contains("URL: https://example.com/"));
+        assert!(rendered.contains("Server: cloudflare"));
+        assert!(rendered.contains("browser verification challenge"));
+        assert!(rendered.contains("cf-mitigated=challenge"));
+        assert!(rendered.contains("CSS and JavaScript were not started"));
     }
 }

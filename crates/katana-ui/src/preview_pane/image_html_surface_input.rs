@@ -197,6 +197,12 @@ mod tests {
         )
         .map_err(|error| error.to_string())?;
         let mut surface = HtmlBrowserSurface::start(source);
+        assert!(
+            surface.start_pending_session(
+                katana_document_viewer::browser_session::HtmlBrowserViewport::new(320, 240, 1.0)
+                    .map_err(|error| error.to_string())?
+            )
+        );
         surface.frame_update_deadline = None;
 
         surface.dispatch(HtmlBrowserInput::KeyDown {

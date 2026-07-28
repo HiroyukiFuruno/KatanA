@@ -25,6 +25,13 @@ use tempfile::TempDir;
 
 const HARNESS_PIXELS_PER_POINT: f32 = 2.0;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct HtmlBrowserFrameIdentity {
+    document_path: PathBuf,
+    origin: String,
+    generation: u64,
+}
+
 struct ActiveRecording {
     output_name: String,
     format: VideoFormat,
@@ -104,6 +111,7 @@ pub fn run(
 
     let locale = fixture.settings.locale.as_deref().unwrap_or("en");
     katana_ui::i18n::I18nOps::set_language(locale);
+    let auto_select_first_file = !steps.iter().any(step_opens_document);
 
     let settings_path = config_dir.join("settings.json");
     let workspace_dir_owned = workspace_dir.map(|p| p.to_path_buf());
@@ -223,13 +231,17 @@ pub fn run(
                     }
                 }
                 // Auto-select the first file so editor is populated
-                let first = harness
-                    .state_mut()
-                    .app_state_mut()
-                    .workspace
-                    .data
-                    .as_ref()
-                    .and_then(|ws| first_file_in_tree(&ws.tree));
+                let first = auto_select_first_file
+                    .then(|| {
+                        harness
+                            .state_mut()
+                            .app_state_mut()
+                            .workspace
+                            .data
+                            .as_ref()
+                            .and_then(|ws| first_file_in_tree(&ws.tree))
+                    })
+                    .flatten();
                 if let Some(path) = first {
                     harness
                         .state_mut()
@@ -433,14 +445,25 @@ pub fn run(
                     });
                 match path {
                     Some(p) => {
+                        let previous_frame = html_browser_frame_identity(&mut harness);
                         harness
                             .state_mut()
                             .trigger_action(AppAction::SelectDocument(p));
-                        let fps = recording.as_ref().map(|r| r.fps as f64).unwrap_or(60.0);
-                        let frames = ((s.wait_seconds * fps) as usize).max(30);
-                        for _ in 0..frames {
-                            harness.step();
-                            maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
+                        if s.wait_for_html_frame {
+                            let elapsed = wait_for_html_browser_frame(
+                                &mut harness,
+                                recording.as_mut(),
+                                previous_frame,
+                                s.wait_seconds,
+                            )?;
+                            assert_first_frame_latency(elapsed, s.max_first_frame_seconds)?;
+                        } else {
+                            let fps = recording.as_ref().map(|r| r.fps as f64).unwrap_or(60.0);
+                            let frames = ((s.wait_seconds * fps) as usize).max(30);
+                            for _ in 0..frames {
+                                harness.step();
+                                maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
+                            }
                         }
                     }
                     None => {
@@ -550,6 +573,19 @@ pub fn run(
             }
             Step::Action(a) => {
                 match &a.action {
+                    UiAction::OpenUrl {
+                        url,
+                        timeout_seconds,
+                        expected_error_contains,
+                    } => {
+                        open_url_and_wait_for_html_frame(
+                            &mut harness,
+                            recording.as_mut(),
+                            url,
+                            *timeout_seconds,
+                            expected_error_contains.as_deref(),
+                        )?;
+                    }
                     UiAction::OpenFixtureUrl { path, wait_seconds } => {
                         let server = http_server
                             .as_ref()
@@ -830,9 +866,74 @@ pub fn run(
                         y,
                         button,
                         wait_seconds,
+                        wait_for_html_frame,
                     } => {
-                        click_at(&mut harness, egui::pos2(*x, *y), *button);
-                        step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                        if *wait_for_html_frame {
+                            click_at_and_wait_for_html_frame(
+                                &mut harness,
+                                recording.as_mut(),
+                                egui::pos2(*x, *y),
+                                *button,
+                                *wait_seconds,
+                            )?;
+                        } else {
+                            click_at(&mut harness, egui::pos2(*x, *y), *button);
+                            step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                        }
+                    }
+                    UiAction::ClickHtmlViewportFraction {
+                        x_fraction,
+                        y_fraction,
+                        button,
+                        wait_seconds,
+                        wait_for_html_frame,
+                    } => {
+                        let position = html_viewport_fraction_position(
+                            &mut harness,
+                            *x_fraction,
+                            *y_fraction,
+                        )?;
+                        if *wait_for_html_frame {
+                            click_at_and_wait_for_html_frame(
+                                &mut harness,
+                                recording.as_mut(),
+                                position,
+                                *button,
+                                *wait_seconds,
+                            )?;
+                        } else {
+                            click_at(&mut harness, position, *button);
+                            step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                        }
+                    }
+                    UiAction::PressKey {
+                        key,
+                        wait_seconds,
+                        wait_for_html_frame,
+                    } => {
+                        let key = screenshot_key(key)?;
+                        if *wait_for_html_frame {
+                            press_key_and_wait_for_html_frames(
+                                &mut harness,
+                                recording.as_mut(),
+                                key,
+                                *wait_seconds,
+                            )?;
+                        } else {
+                            press_key(&mut harness, key);
+                            step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                        }
+                    }
+                    UiAction::BurstHtmlInput {
+                        count,
+                        timeout_seconds,
+                    } => {
+                        dispatch_html_input_burst_and_wait(
+                            &mut harness,
+                            recording.as_mut(),
+                            *count,
+                            *timeout_seconds,
+                        )?;
                     }
                     UiAction::ClickRgbRegion {
                         rgb,
@@ -886,11 +987,7 @@ pub fn run(
                         let browser_geometry = harness
                             .state_mut()
                             .html_browser_display_rect_for_test()
-                            .zip(
-                                harness
-                                    .state_mut()
-                                    .html_browser_frame_viewport_for_test(),
-                            )
+                            .zip(harness.state_mut().html_browser_frame_viewport_for_test())
                             .zip(
                                 harness
                                     .state_mut()
@@ -969,6 +1066,7 @@ pub fn run(
                                 AppAction::ConfirmCurrentDiffReviewFile
                             }
                             UiAction::OpenSettingsTab { .. }
+                            | UiAction::OpenUrl { .. }
                             | UiAction::OpenFixtureUrl { .. }
                             | UiAction::ForceOpenAccordion { .. }
                             | UiAction::OpenIconsAdvancedPanel
@@ -990,6 +1088,9 @@ pub fn run(
                             | UiAction::ClickNode { .. }
                             | UiAction::HoverAt { .. }
                             | UiAction::ClickAt { .. }
+                            | UiAction::ClickHtmlViewportFraction { .. }
+                            | UiAction::PressKey { .. }
+                            | UiAction::BurstHtmlInput { .. }
                             | UiAction::ClickRgbRegion { .. }
                             | UiAction::TypeText { .. }
                             | UiAction::ResizeWindow { .. }
@@ -1650,7 +1751,6 @@ fn click_node(harness: &mut Harness<'_, KatanaApp>, label: &str, button: ClickBu
     );
     let all_rects: Vec<_> = harness
         .get_all_by_label(label)
-        .into_iter()
         .map(|node| node.rect())
         .collect();
     let visible_rects: Vec<_> = all_rects
@@ -1710,28 +1810,108 @@ fn apply_lint_fixes_for_active_file(
 }
 
 fn click_at(harness: &mut Harness<'_, KatanaApp>, pos: egui::Pos2, button: ClickButton) {
-    let pointer_button = match button {
-        ClickButton::Primary => egui::PointerButton::Primary,
-        ClickButton::Secondary => egui::PointerButton::Secondary,
-    };
+    move_pointer(harness, pos);
+    send_pointer_button_state(harness, pos, button, true);
+    send_pointer_button_state(harness, pos, button, false);
+}
+
+fn move_pointer(harness: &mut Harness<'_, KatanaApp>, pos: egui::Pos2) {
     harness
         .input_mut()
         .events
         .push(egui::Event::PointerMoved(pos));
+    harness.step();
+}
+
+fn send_pointer_button_state(
+    harness: &mut Harness<'_, KatanaApp>,
+    pos: egui::Pos2,
+    button: ClickButton,
+    pressed: bool,
+) {
+    let pointer_button = match button {
+        ClickButton::Primary => egui::PointerButton::Primary,
+        ClickButton::Secondary => egui::PointerButton::Secondary,
+    };
     harness.input_mut().events.push(egui::Event::PointerButton {
         pos,
         button: pointer_button,
-        pressed: true,
+        pressed,
         modifiers: egui::Modifiers::NONE,
     });
     harness.step();
-    harness.input_mut().events.push(egui::Event::PointerButton {
-        pos,
-        button: pointer_button,
-        pressed: false,
+}
+
+fn screenshot_key(key: &str) -> Result<egui::Key> {
+    match key.trim().to_ascii_lowercase().as_str() {
+        "arrowdown" | "down" => Ok(egui::Key::ArrowDown),
+        "arrowleft" | "left" => Ok(egui::Key::ArrowLeft),
+        "arrowright" | "right" => Ok(egui::Key::ArrowRight),
+        "arrowup" | "up" => Ok(egui::Key::ArrowUp),
+        "end" => Ok(egui::Key::End),
+        "enter" => Ok(egui::Key::Enter),
+        "escape" | "esc" => Ok(egui::Key::Escape),
+        "home" => Ok(egui::Key::Home),
+        "space" => Ok(egui::Key::Space),
+        value => anyhow::bail!("unsupported screenshot key {value:?}"),
+    }
+}
+
+fn press_key(harness: &mut Harness<'_, KatanaApp>, key: egui::Key) {
+    for pressed in [true, false] {
+        send_key_state(harness, key, pressed);
+    }
+}
+
+fn send_key_state(harness: &mut Harness<'_, KatanaApp>, key: egui::Key, pressed: bool) {
+    harness.input_mut().events.push(egui::Event::Key {
+        key,
+        physical_key: None,
+        pressed,
+        repeat: false,
         modifiers: egui::Modifiers::NONE,
     });
     harness.step();
+}
+
+fn press_key_and_wait_for_html_frames(
+    harness: &mut Harness<'_, KatanaApp>,
+    recording: Option<&mut ActiveRecording>,
+    key: egui::Key,
+    timeout_seconds: f64,
+) -> Result<()> {
+    let previous_generation = harness
+        .state_mut()
+        .html_browser_frame_generation_for_test()
+        .context("wait_for_html_frame requires an active HTML browser frame")?;
+    send_key_state(harness, key, true);
+    send_key_state(harness, key, false);
+    wait_for_html_browser_frame_advance_and_idle(
+        harness,
+        recording,
+        previous_generation,
+        timeout_seconds,
+    )
+}
+
+fn dispatch_html_input_burst_and_wait(
+    harness: &mut Harness<'_, KatanaApp>,
+    recording: Option<&mut ActiveRecording>,
+    count: u32,
+    timeout_seconds: f64,
+) -> Result<()> {
+    ensure!(count > 0, "HTML browser input burst count must be positive");
+    let previous_generation = current_html_browser_frame_generation(harness)?;
+    harness
+        .state_mut()
+        .dispatch_html_browser_input_burst_for_test(count)
+        .map_err(anyhow::Error::msg)?;
+    wait_for_html_browser_frame_advance_and_idle(
+        harness,
+        recording,
+        previous_generation,
+        timeout_seconds,
+    )
 }
 
 fn perform_drag_by_labels(
@@ -1811,6 +1991,270 @@ fn step_for_seconds(
         sleep_frame(fps);
     }
     Ok(())
+}
+
+fn step_opens_document(step: &Step) -> bool {
+    match step {
+        Step::OpenFile(_) => true,
+        Step::Action(action) => matches!(
+            &action.action,
+            UiAction::OpenUrl { .. } | UiAction::OpenFixtureUrl { .. }
+        ),
+        _ => false,
+    }
+}
+
+fn html_browser_frame_identity(
+    harness: &mut Harness<'_, KatanaApp>,
+) -> Option<HtmlBrowserFrameIdentity> {
+    let app = harness.state_mut();
+    Some(HtmlBrowserFrameIdentity {
+        document_path: app.app_state_for_test().active_path()?,
+        origin: app.html_browser_origin_for_test()?,
+        generation: app.html_browser_frame_generation_for_test()?,
+    })
+}
+
+fn html_browser_frame_advanced(
+    previous: Option<&HtmlBrowserFrameIdentity>,
+    current: Option<&HtmlBrowserFrameIdentity>,
+) -> bool {
+    current.is_some_and(|current| Some(current) != previous)
+}
+
+fn wait_for_html_browser_frame_advance_and_idle(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    previous_generation: u64,
+    timeout_seconds: f64,
+) -> Result<()> {
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    loop {
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        let generation = harness.state_mut().html_browser_frame_generation_for_test();
+        let idle = harness.state_mut().html_browser_is_idle_for_test();
+        if generation.is_some_and(|current| current > previous_generation) && idle == Some(true) {
+            return Ok(());
+        }
+        if Instant::now() >= deadline {
+            bail!(
+                "HTML browser did not drain after generation {previous_generation} within {timeout_seconds:.2}s (latest generation: {generation:?}, adapter idle: {idle:?})"
+            );
+        }
+        sleep_frame(60.0);
+    }
+}
+
+fn wait_for_html_browser_idle(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    timeout_seconds: f64,
+) -> Result<()> {
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    loop {
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        let idle = harness.state_mut().html_browser_is_idle_for_test();
+        if idle == Some(true) {
+            return Ok(());
+        }
+        if Instant::now() >= deadline {
+            bail!(
+                "HTML browser did not become idle within {timeout_seconds:.2}s (adapter idle: {idle:?})"
+            );
+        }
+        sleep_frame(60.0);
+    }
+}
+
+fn click_at_and_wait_for_html_frame(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    position: egui::Pos2,
+    button: ClickButton,
+    timeout_seconds: f64,
+) -> Result<()> {
+    let display_rect = harness
+        .state_mut()
+        .html_browser_display_rect_for_test()
+        .context("wait_for_html_frame requires an active HTML display rect")?;
+    let staging_position = click_staging_position(display_rect, position);
+
+    move_pointer(harness, staging_position);
+    move_pointer(harness, position);
+    wait_for_html_browser_idle(harness, recording.as_deref_mut(), timeout_seconds)?;
+    let hover_generation = current_html_browser_frame_generation(harness)?;
+    send_pointer_button_state(harness, position, button, true);
+    send_pointer_button_state(harness, position, button, false);
+    wait_for_html_browser_frame_advance_and_idle(
+        harness,
+        recording,
+        hover_generation,
+        timeout_seconds,
+    )
+}
+
+fn current_html_browser_frame_generation(harness: &mut Harness<'_, KatanaApp>) -> Result<u64> {
+    harness
+        .state_mut()
+        .html_browser_frame_generation_for_test()
+        .context("wait_for_html_frame requires an active HTML browser frame")
+}
+
+fn click_staging_position(display_rect: egui::Rect, target: egui::Pos2) -> egui::Pos2 {
+    let center = display_rect.center();
+    let x = if target.x <= center.x {
+        display_rect.right() - 1.0
+    } else {
+        display_rect.left() + 1.0
+    };
+    let y = if target.y <= center.y {
+        display_rect.bottom() - 1.0
+    } else {
+        display_rect.top() + 1.0
+    };
+    egui::pos2(x, y)
+}
+
+fn html_viewport_fraction_position(
+    harness: &mut Harness<'_, KatanaApp>,
+    x_fraction: f32,
+    y_fraction: f32,
+) -> Result<egui::Pos2> {
+    ensure!(
+        (0.0..=1.0).contains(&x_fraction) && (0.0..=1.0).contains(&y_fraction),
+        "HTML viewport click fractions must be between 0 and 1"
+    );
+    let display_rect = harness
+        .state_mut()
+        .html_browser_display_rect_for_test()
+        .context("HTML viewport click requires an active display rect")?;
+    Ok(egui::pos2(
+        display_rect.left() + display_rect.width() * x_fraction,
+        display_rect.top() + display_rect.height() * y_fraction,
+    ))
+}
+
+fn wait_for_html_browser_frame(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    previous_frame: Option<HtmlBrowserFrameIdentity>,
+    timeout_seconds: f64,
+) -> Result<Duration> {
+    let started_at = Instant::now();
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    loop {
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        let current_frame = html_browser_frame_identity(harness);
+        if html_browser_frame_advanced(previous_frame.as_ref(), current_frame.as_ref()) {
+            let elapsed = started_at.elapsed();
+            println!(
+                "  HTML browser first frame ready in {:.3}s",
+                elapsed.as_secs_f64()
+            );
+            return Ok(elapsed);
+        }
+        if Instant::now() >= deadline {
+            bail!("HTML browser did not produce an initial frame within {timeout_seconds:.2}s");
+        }
+        sleep_frame(60.0);
+    }
+}
+
+fn assert_first_frame_latency(elapsed: Duration, maximum_seconds: Option<f64>) -> Result<()> {
+    let Some(maximum_seconds) = maximum_seconds else {
+        return Ok(());
+    };
+    ensure!(
+        maximum_seconds.is_finite() && maximum_seconds > 0.0,
+        "max_first_frame_seconds must be a positive finite number"
+    );
+    ensure!(
+        elapsed.as_secs_f64() <= maximum_seconds,
+        "HTML browser first frame took {:.3}s, exceeding the {:.3}s regression limit",
+        elapsed.as_secs_f64(),
+        maximum_seconds
+    );
+    Ok(())
+}
+
+fn opened_url_frame_ready(
+    previous_frame: Option<&HtmlBrowserFrameIdentity>,
+    current_frame: Option<&HtmlBrowserFrameIdentity>,
+    is_loading: bool,
+    active_source_url: &str,
+) -> bool {
+    !is_loading
+        && current_frame.is_some_and(|current| current.origin == active_source_url)
+        && html_browser_frame_advanced(previous_frame, current_frame)
+}
+
+fn open_url_and_wait_for_html_frame(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    url: &str,
+    timeout_seconds: f64,
+    expected_error_contains: Option<&str>,
+) -> Result<()> {
+    let previous_frame = html_browser_frame_identity(harness);
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenUrl(url.to_string()));
+    harness.ctx.request_repaint();
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    loop {
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        let (error, is_loading, active_source_url) = {
+            let app = harness.state_mut();
+            (
+                app.app_state_for_test().url_tab.last_error.clone(),
+                app.app_state_for_test().url_tab.is_loading,
+                app.app_state_for_test().url_tab.input.clone(),
+            )
+        };
+        if let Some(error) = error {
+            if let Some(expected) = expected_error_contains {
+                let error = error.to_string();
+                ensure!(
+                    error.contains(expected),
+                    "opening URL {url:?} failed with {error:?}, expected diagnostic containing {expected:?}"
+                );
+                println!("  URL produced expected diagnostic: {error}");
+                return Ok(());
+            }
+            bail!("opening URL {url:?} failed: {error}");
+        }
+        let current_frame = html_browser_frame_identity(harness);
+        if opened_url_frame_ready(
+            previous_frame.as_ref(),
+            current_frame.as_ref(),
+            is_loading,
+            &active_source_url,
+        ) {
+            ensure!(
+                expected_error_contains.is_none(),
+                "URL {url:?} produced an HTML frame, expected an error containing {:?}",
+                expected_error_contains.unwrap_or_default()
+            );
+            let current_frame = current_frame.expect("ready frame was present");
+            println!(
+                "  URL produced HTML frame: origin={:?}, generation={}",
+                current_frame.origin, current_frame.generation
+            );
+            return Ok(());
+        }
+        if Instant::now() >= deadline {
+            bail!(
+                "URL {url:?} did not produce its HTML frame within {timeout_seconds:.2}s; \
+                 active source was {active_source_url:?}, last frame was {current_frame:?}, \
+                 loading was {is_loading}"
+            );
+        }
+        sleep_frame(60.0);
+    }
 }
 
 fn sleep_frame(fps: f64) {
@@ -1928,11 +2372,18 @@ fn normalize_relative_path(path: &Path) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-    use super::{find_workspace_file, normalize_relative_path, physical_png_bounds, scroll_delta};
+    use super::{
+        assert_first_frame_latency, click_staging_position, find_workspace_file,
+        html_browser_frame_advanced, normalize_relative_path, opened_url_frame_ready,
+        physical_png_bounds, scroll_delta, HtmlBrowserFrameIdentity,
+    };
     use crate::capture::PngBounds;
     use crate::request::ScrollDirection;
     use katana_core::workspace::TreeEntry;
-    use std::path::{Path, PathBuf};
+    use std::{
+        path::{Path, PathBuf},
+        time::Duration,
+    };
 
     #[test]
     fn open_file_prefers_workspace_relative_path_over_basename_match() {
@@ -1967,6 +2418,76 @@ mod tests {
         let resolved = find_workspace_file(&tree, Some(root), "openspec/README.md");
 
         assert_eq!(resolved, Some(root.join("openspec/README.md")));
+    }
+
+    #[test]
+    fn browser_frame_wait_requires_a_new_document_or_generation() {
+        let previous = HtmlBrowserFrameIdentity {
+            document_path: PathBuf::from("/tmp/first.html"),
+            origin: "file:///tmp/first.html".to_string(),
+            generation: 1,
+        };
+        let advanced = HtmlBrowserFrameIdentity {
+            generation: 2,
+            ..previous.clone()
+        };
+        let different_document = HtmlBrowserFrameIdentity {
+            document_path: PathBuf::from("/tmp/second.html"),
+            origin: "file:///tmp/second.html".to_string(),
+            generation: 1,
+        };
+
+        assert!(html_browser_frame_advanced(None, Some(&previous)));
+        assert!(!html_browser_frame_advanced(
+            Some(&previous),
+            Some(&previous)
+        ));
+        assert!(html_browser_frame_advanced(
+            Some(&previous),
+            Some(&advanced)
+        ));
+        assert!(html_browser_frame_advanced(
+            Some(&previous),
+            Some(&different_document)
+        ));
+        assert!(!html_browser_frame_advanced(Some(&previous), None));
+    }
+
+    #[test]
+    fn opened_url_frame_accepts_a_final_redirect_origin_only_after_loading() {
+        let previous = HtmlBrowserFrameIdentity {
+            document_path: PathBuf::from("Katana://URL/start.html"),
+            origin: "https://example.test/start".to_string(),
+            generation: 3,
+        };
+        let redirected = HtmlBrowserFrameIdentity {
+            document_path: PathBuf::from("Katana://URL/final.html"),
+            origin: "https://example.test/final".to_string(),
+            generation: 1,
+        };
+        let animated_previous = HtmlBrowserFrameIdentity {
+            generation: 4,
+            ..previous.clone()
+        };
+
+        assert!(!opened_url_frame_ready(
+            Some(&previous),
+            Some(&animated_previous),
+            true,
+            "https://example.test/start"
+        ));
+        assert!(!opened_url_frame_ready(
+            Some(&previous),
+            Some(&redirected),
+            false,
+            "https://example.test/start"
+        ));
+        assert!(opened_url_frame_ready(
+            Some(&previous),
+            Some(&redirected),
+            false,
+            "https://example.test/final"
+        ));
     }
 
     #[test]
@@ -2019,5 +2540,28 @@ mod tests {
             scroll_delta(ScrollDirection::Right, 8.0),
             egui::vec2(-8.0, 0.0)
         );
+    }
+
+    #[test]
+    fn click_staging_position_uses_the_opposite_display_quadrant() {
+        let rect = egui::Rect::from_min_max(egui::pos2(10.0, 20.0), egui::pos2(110.0, 220.0));
+
+        assert_eq!(
+            click_staging_position(rect, egui::pos2(20.0, 30.0)),
+            egui::pos2(109.0, 219.0)
+        );
+        assert_eq!(
+            click_staging_position(rect, egui::pos2(100.0, 200.0)),
+            egui::pos2(11.0, 21.0)
+        );
+    }
+
+    #[test]
+    fn first_frame_latency_limit_rejects_slow_or_invalid_measurements() {
+        assert!(assert_first_frame_latency(Duration::from_secs(1), None).is_ok());
+        assert!(assert_first_frame_latency(Duration::from_secs(1), Some(2.0)).is_ok());
+        assert!(assert_first_frame_latency(Duration::from_secs(3), Some(2.0)).is_err());
+        assert!(assert_first_frame_latency(Duration::ZERO, Some(f64::NAN)).is_err());
+        assert!(assert_first_frame_latency(Duration::ZERO, Some(0.0)).is_err());
     }
 }

@@ -52,7 +52,7 @@ impl crate::shell::KatanaApp {
     }
 
     pub(crate) fn observe_html_preview_path(&mut self, path: &Path) {
-        if !katana_core::workspace::TreeEntry::path_is_html(path) {
+        if !katana_core::workspace::TreeEntry::path_is_html(path) || !path.is_file() {
             self.html_preview_observer = None;
             return;
         }
@@ -218,6 +218,16 @@ mod tests {
         app.observe_html_preview_path(&html);
         app.observe_html_preview_path(&root.path().join("notes.md"));
 
+        assert!(app.html_preview_observer.is_none());
+    }
+
+    #[test]
+    fn app_does_not_observe_virtual_or_missing_html_targets() {
+        let mut app = test_app();
+
+        app.observe_html_preview_path(Path::new("Katana://URL/example.html"));
+        assert!(app.html_preview_observer.is_none());
+        app.observe_html_preview_path(Path::new("/missing/workspace/index.html"));
         assert!(app.html_preview_observer.is_none());
     }
 

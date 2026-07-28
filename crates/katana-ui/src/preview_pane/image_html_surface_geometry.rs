@@ -4,14 +4,17 @@ use katana_document_viewer::browser_session::HtmlBrowserViewport;
 
 impl HtmlBrowserSurface {
     pub(super) fn resize_to_ui(&mut self, ui: &egui::Ui) {
-        let Some(adapter) = &self.adapter else {
-            return;
-        };
         let size = ui.available_size().max(Vec2::splat(1.0));
         let max_texture_side = ui.ctx().input(|input| input.max_texture_side);
         let Some(viewport) =
             browser_viewport_for_ui(size, ui.ctx().pixels_per_point(), max_texture_side)
         else {
+            return;
+        };
+        if self.start_pending_session(viewport) {
+            return;
+        }
+        let Some(adapter) = &self.adapter else {
             return;
         };
         if self.viewport == Some(viewport) {
@@ -21,7 +24,6 @@ impl HtmlBrowserSurface {
             self.record_adapter_error("resize", None, error);
             return;
         }
-        self.discard_bootstrap_frame(viewport);
         self.viewport = Some(viewport);
         self.await_frame();
     }

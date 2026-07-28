@@ -5,7 +5,6 @@ use katana_document_viewer::browser_session::{
 };
 use std::collections::VecDeque;
 
-const INITIAL_VIEWPORT_DIMENSION: u32 = 1;
 const FRAME_UPDATE_POLL_INTERVAL: std::time::Duration = std::time::Duration::from_millis(16);
 const FRAME_UPDATE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
 const HTML_BROWSER_ERROR_TEXT_PADDING: f32 = 12.0;
@@ -18,6 +17,8 @@ mod frame;
 mod geometry;
 #[path = "image_html_surface_input.rs"]
 mod input;
+#[path = "image_html_surface_input_test_hooks.rs"]
+mod input_test_hooks;
 #[path = "image_html_surface_keyboard.rs"]
 mod keyboard;
 #[path = "image_html_surface_navigation.rs"]
@@ -32,6 +33,7 @@ use geometry::{frame_display_size, frame_position, frame_scroll_delta};
 
 pub(crate) struct HtmlBrowserSurface {
     adapter: Option<BrowserSessionAdapter>,
+    pending_source: Option<HtmlBrowserSource>,
     frame: Option<BrowserFrame>,
     document_origin: Option<String>,
     texture: Option<egui::TextureHandle>,
@@ -51,13 +53,9 @@ impl HtmlBrowserSurface {
     pub(crate) fn start(source: HtmlBrowserSource) -> Self {
         let initial_origin = source.origin.as_str().to_owned();
         let document_origin = Some(initial_origin.clone());
-        let viewport =
-            HtmlBrowserViewport::new(INITIAL_VIEWPORT_DIMENSION, INITIAL_VIEWPORT_DIMENSION, 1.0)
-                .expect("constant initial browser viewport is valid");
         Self {
-            adapter: Some(BrowserSessionAdapter::start(BrowserSessionRequest::new(
-                source, viewport,
-            ))),
+            adapter: None,
+            pending_source: Some(source),
             frame: None,
             document_origin,
             texture: None,
@@ -68,7 +66,7 @@ impl HtmlBrowserSurface {
             pointer_over: false,
             last_display_rect: None,
             error: None,
-            frame_update_deadline: Some(std::time::Instant::now() + FRAME_UPDATE_TIMEOUT),
+            frame_update_deadline: None,
             pending_navigation_urls: VecDeque::new(),
             navigation_history: VecDeque::from([initial_origin]),
         }
@@ -77,6 +75,7 @@ impl HtmlBrowserSurface {
     pub(crate) fn failed(error: String) -> Self {
         Self {
             adapter: None,
+            pending_source: None,
             frame: None,
             document_origin: None,
             texture: None,
@@ -102,33 +101,7 @@ impl HtmlBrowserSurface {
             let Some(update) = update else {
                 break;
             };
-            match update {
-                BrowserSessionUpdate::Frame(frame) => {
-                    if !self.accepts_frame_viewport(frame.viewport) {
-                        continue;
-                    }
-                    let origin = frame.origin.as_str().to_owned();
-                    self.record_navigation(origin.clone());
-                    self.document_origin = Some(origin);
-                    self.frame = Some(BrowserFrame::new(
-                        frame.generation,
-                        frame.viewport,
-                        frame.scroll_y,
-                        frame.content_height,
-                        frame.pixels,
-                    ));
-                    self.update_texture(ctx);
-                    self.error = None;
-                    self.frame_update_deadline = None;
-                }
-                BrowserSessionUpdate::Navigation(navigation) => {
-                    self.pending_navigation_urls
-                        .push_back(navigation.url.as_str().to_string());
-                }
-                BrowserSessionUpdate::Error(error) => {
-                    self.record_adapter_error("receive worker update", None, error);
-                }
-            }
+            self.apply_update(ctx, update);
         }
 
         if self
@@ -138,6 +111,36 @@ impl HtmlBrowserSurface {
             ctx.request_repaint_after(FRAME_UPDATE_POLL_INTERVAL);
         } else {
             self.frame_update_deadline = None;
+        }
+    }
+
+    fn apply_update(&mut self, ctx: &egui::Context, update: BrowserSessionUpdate) {
+        match update {
+            BrowserSessionUpdate::Frame(frame) => {
+                if !self.accepts_frame_viewport(frame.viewport) {
+                    return;
+                }
+                let origin = frame.origin.as_str().to_owned();
+                self.record_navigation(origin.clone());
+                self.document_origin = Some(origin);
+                self.frame = Some(BrowserFrame::new(
+                    frame.generation,
+                    frame.viewport,
+                    frame.scroll_y,
+                    frame.content_height,
+                    frame.pixels,
+                ));
+                self.update_texture(ctx);
+                self.error = None;
+                self.frame_update_deadline = None;
+            }
+            BrowserSessionUpdate::Navigation(navigation) => {
+                self.pending_navigation_urls
+                    .push_back(navigation.url.as_str().to_string());
+            }
+            BrowserSessionUpdate::Error(error) => {
+                self.record_adapter_error("receive worker update", None, error);
+            }
         }
     }
 
@@ -165,16 +168,22 @@ impl HtmlBrowserSurface {
             .is_none_or(|requested_viewport| requested_viewport == frame_viewport)
     }
 
-    fn discard_bootstrap_frame(&mut self, requested_viewport: HtmlBrowserViewport) {
-        let is_bootstrap = self.frame.as_ref().is_some_and(|frame| {
-            frame.viewport.width == INITIAL_VIEWPORT_DIMENSION
-                && frame.viewport.height == INITIAL_VIEWPORT_DIMENSION
-                && frame.viewport != requested_viewport
-        });
-        if is_bootstrap {
-            self.frame = None;
-            self.texture = None;
-        }
+    fn take_start_request(
+        &mut self,
+        viewport: HtmlBrowserViewport,
+    ) -> Option<BrowserSessionRequest> {
+        let source = self.pending_source.take()?;
+        self.viewport = Some(viewport);
+        Some(BrowserSessionRequest::new(source, viewport))
+    }
+
+    fn start_pending_session(&mut self, viewport: HtmlBrowserViewport) -> bool {
+        let Some(request) = self.take_start_request(viewport) else {
+            return false;
+        };
+        self.adapter = Some(BrowserSessionAdapter::start(request));
+        self.await_frame();
+        true
     }
 }
 
@@ -311,56 +320,54 @@ mod tests {
     }
 
     #[test]
-    fn lifecycle_script_error_reaches_the_surface_with_runtime_stack() {
+    fn lifecycle_script_error_does_not_replace_the_rendered_surface() {
         let source = HtmlBrowserSource::new(
             "<script>document.addEventListener('DOMContentLoaded', () => { throw new Error('lifecycle failed'); });</script>",
             "https://example.test/index.html",
         )
         .expect("valid browser source");
         let mut surface = HtmlBrowserSurface::start(source);
+        assert!(
+            surface
+                .start_pending_session(HtmlBrowserViewport::new(320, 240, 1.0).expect("viewport"))
+        );
         let context = egui::Context::default();
-        let deadline = std::time::Instant::now() + FRAME_UPDATE_TIMEOUT;
+        let update = surface
+            .adapter
+            .as_ref()
+            .expect("browser adapter")
+            .wait_for_update(std::time::Duration::from_secs(10))
+            .expect("worker update");
+        surface.apply_update(&context, update);
 
-        while surface.error.is_none() && std::time::Instant::now() < deadline {
-            surface.poll(&context);
-            std::thread::sleep(std::time::Duration::from_millis(5));
-        }
-
-        let error = surface.error.as_deref().unwrap_or_default();
-        for expected in [
-            "Layer: KDV worker",
-            "Operation: receive worker update",
-            "Layer: KRR runtime",
-            "Operation: start",
-            "Document: https://example.test/index.html",
-            "Cause: in-process HTML runtime failed",
-            "JavaScript exception: Error: lifecycle failed",
-            "inline-script:1:",
-            "krr-html-dom-bootstrap",
-        ] {
-            assert!(error.contains(expected), "missing {expected:?} in {error}");
-        }
+        assert!(surface.error.is_none());
+        let frame = surface.frame.as_ref().expect("rendered browser frame");
+        assert_eq!(frame.viewport.width, 320);
+        assert_eq!(frame.viewport.height, 240);
+        assert!(!frame.pixels.is_empty());
+        assert!(surface.texture.is_some());
     }
 
     #[test]
-    fn requested_viewport_rejects_stale_bootstrap_frames() {
-        let bootstrap = HtmlBrowserViewport::new(1, 1, 1.0).unwrap();
+    fn browser_session_start_waits_for_the_real_ui_viewport() {
+        let source =
+            HtmlBrowserSource::new("<p>Initial</p>", "https://example.com/initial").unwrap();
         let requested = HtmlBrowserViewport::new(320, 240, 1.0).unwrap();
-        let mut surface = HtmlBrowserSurface::failed("test".to_string());
-        surface.frame = Some(BrowserFrame::new(
-            1,
-            bootstrap,
-            0.0,
-            1.0,
-            vec![255, 255, 255, 255],
-        ));
+        let mut surface = HtmlBrowserSurface::start(source);
 
-        assert!(surface.accepts_frame_viewport(bootstrap));
-        surface.discard_bootstrap_frame(requested);
-        surface.viewport = Some(requested);
+        assert!(surface.adapter.is_none());
+        assert!(surface.viewport.is_none());
+        assert!(surface.frame_update_deadline.is_none());
+        let request = surface
+            .take_start_request(requested)
+            .expect("pending source must create one request");
 
-        assert!(surface.frame.is_none());
-        assert!(!surface.accepts_frame_viewport(bootstrap));
+        assert_eq!(request.viewport, requested);
+        assert_eq!(
+            request.source.origin.as_str(),
+            "https://example.com/initial"
+        );
+        assert!(surface.take_start_request(requested).is_none());
         assert!(surface.accepts_frame_viewport(requested));
     }
 
@@ -393,25 +400,22 @@ mod tests {
     }
 
     #[test]
-    fn navigation_reuses_the_adapter_and_records_tab_history() {
+    fn navigation_before_first_layout_replaces_the_pending_source_and_records_history() {
         let initial = HtmlBrowserSource::new("<p>Initial</p>", "https://example.com/initial")
             .expect("initial source");
         let next =
             HtmlBrowserSource::new("<p>Next</p>", "https://example.com/next").expect("next source");
         let mut surface = HtmlBrowserSurface::start(initial);
-        let adapter_address = surface
-            .adapter
-            .as_ref()
-            .map(|adapter| std::ptr::from_ref(adapter).addr());
 
         surface.navigate(next);
 
+        assert!(surface.adapter.is_none());
         assert_eq!(
             surface
-                .adapter
+                .pending_source
                 .as_ref()
-                .map(|adapter| std::ptr::from_ref(adapter).addr()),
-            adapter_address
+                .map(|source| source.origin.as_str()),
+            Some("https://example.com/next")
         );
         assert_eq!(
             surface.navigation_history(),

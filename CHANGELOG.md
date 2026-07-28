@@ -2,6 +2,24 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.37] - 2026-07-28 20:30:18 (UTC)
+
+### 🚀 Features
+
+- **Interactive HTML viewer**: Local files and HTTP/HTTPS documents now open inside KatanA with CSS, JavaScript, same-origin resources and iframes, links, text input, and pointer or keyboard interaction.
+
+### ✨ Improvements
+
+- **Browser-compatible layouts**: HTML slide decks preserve viewport-based sizing, multi-column and flex layouts, gradients, fixed controls, explicit line breaks, multilingual text, centered number badges, and paging controls.
+- **Responsive HTML interaction**: High-rate pointer and scroll input no longer blocks discrete clicks, keyboard input, navigation, or later frame updates, and the avoidable delay before the first HTML frame has been removed.
+- **Actionable HTML errors**: On-screen diagnostics now identify the failed operation and document with the root cause, including HTTP status, server verification challenges, and JavaScript runtime failures.
+
+### 🐛 Bug Fixes
+
+- **Document switching**: A completed request for an older remote URL can no longer replace a local HTML document opened afterward, and interactions no longer reuse a stale frame from the previous document.
+- **Local HTML URLs and slideshows**: Opening a `file://` URL now preserves its query and fragment, loads same-folder iframe content, advances interactive slides, and shows a specific in-page error when an iframe file is missing instead of leaving a blank preview.
+- **Image viewing controls**: Fullscreen zoom remains active while panning in every direction, and image controls keep a fixed high-contrast background and border on light themes and white images.
+
 ## [0.22.36] - 2026-07-22 15:29:23 (UTC)
 
 ### ✨ Improvements

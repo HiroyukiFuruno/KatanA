@@ -89,6 +89,24 @@ impl KatanaApp {
     }
 
     #[doc(hidden)]
+    pub fn html_browser_frame_generation_for_test(&self) -> Option<u64> {
+        let active_path = self.state.active_path()?;
+        self.tab_previews
+            .iter()
+            .find(|preview| preview.path == active_path)
+            .and_then(|preview| preview.pane.html_browser_frame_generation())
+    }
+
+    #[doc(hidden)]
+    pub fn html_browser_is_idle_for_test(&self) -> Option<bool> {
+        let active_path = self.state.active_path()?;
+        self.tab_previews
+            .iter()
+            .find(|preview| preview.path == active_path)
+            .and_then(|preview| preview.pane.html_browser_is_idle())
+    }
+
+    #[doc(hidden)]
     pub fn html_browser_frame_scroll_metrics_for_test(&self) -> Option<(f32, f32)> {
         let active_path = self.state.active_path()?;
         self.tab_previews
@@ -104,6 +122,20 @@ impl KatanaApp {
             .iter()
             .find(|preview| preview.path == active_path)
             .and_then(|preview| preview.pane.html_browser_display_rect())
+    }
+
+    #[doc(hidden)]
+    pub fn dispatch_html_browser_input_burst_for_test(&mut self, count: u32) -> Result<(), String> {
+        let active_path = self
+            .state
+            .active_path()
+            .ok_or_else(|| "active document is missing".to_string())?;
+        self.tab_previews
+            .iter_mut()
+            .find(|preview| preview.path == active_path)
+            .ok_or_else(|| "active preview is missing".to_string())?
+            .pane
+            .dispatch_html_browser_input_burst_for_test(count)
     }
 
     #[doc(hidden)]

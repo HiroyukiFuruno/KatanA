@@ -18,6 +18,8 @@ update-safe:
 update:
     {{CARGO}} upgrade -i
     {{CARGO}} update
+    {{CARGO}} upgrade --manifest-path scripts/screenshot/Cargo.toml -i
+    {{CARGO}} update --manifest-path scripts/screenshot/Cargo.toml
 
 # List outdated dependencies (requires cargo-outdated)
 outdated:

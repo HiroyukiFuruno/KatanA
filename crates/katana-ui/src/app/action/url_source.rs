@@ -1,4 +1,5 @@
-use crate::app::url_source::ValidatedHttpUrl;
+use super::file_open::FileOpenOps;
+use crate::app::url_source::{ValidatedHttpUrl, ValidatedLocalHtmlUrl};
 use crate::app_state::StatusType;
 use crate::shell::KatanaApp;
 use crate::state::{HtmlSource, HtmlSourceError};
@@ -7,6 +8,10 @@ const URL_DOCUMENT_PREFIX: &str = "Katana://URL";
 
 impl KatanaApp {
     pub(super) fn handle_open_url(&mut self, ctx: &egui::Context, input: String) {
+        if url::Url::parse(input.trim()).is_ok_and(|url| url.scheme() == "file") {
+            self.open_local_html_url(&input);
+            return;
+        }
         let url = match ValidatedHttpUrl::parse(&input) {
             Ok(url) => url,
             Err(error) => {
@@ -16,6 +21,62 @@ impl KatanaApp {
         };
 
         self.fetch_html_url(ctx, url, None);
+    }
+
+    fn open_local_html_url(&mut self, input: &str) {
+        let source = match ValidatedLocalHtmlUrl::parse(input) {
+            Ok(source) => source,
+            Err(error) => {
+                self.fail_html_source(HtmlSourceError::InvalidUrl(error));
+                return;
+            }
+        };
+        let path = match source.path().canonicalize() {
+            Ok(path) => path,
+            Err(error) => {
+                self.fail_html_source(HtmlSourceError::LocalFile {
+                    url: source.as_str().to_string(),
+                    reason: error.to_string(),
+                });
+                return;
+            }
+        };
+        if !FileOpenOps::is_openable_file(self, &path) {
+            self.fail_html_source(HtmlSourceError::LocalFile {
+                url: source.as_str().to_string(),
+                reason: "path is not an openable HTML file".to_string(),
+            });
+            return;
+        }
+
+        let canonical_url = match source.canonical_url_for(&path) {
+            Ok(url) => url,
+            Err(error) => {
+                self.fail_html_source(HtmlSourceError::InvalidUrl(error));
+                return;
+            }
+        };
+        let raw_html = match std::fs::read_to_string(&path) {
+            Ok(raw_html) => raw_html,
+            Err(error) => {
+                self.fail_html_source(HtmlSourceError::LocalFile {
+                    url: canonical_url,
+                    reason: error.to_string(),
+                });
+                return;
+            }
+        };
+        self.state.url_tab.cancel_pending_url_requests();
+        self.state.url_tab.open_source(
+            HtmlSource {
+                raw_html,
+                source_url: canonical_url.clone(),
+                origin: canonical_url,
+            },
+            path.clone(),
+        );
+        FileOpenOps::open_in_current_workspace(self, path);
+        self.state.layout.status_message = None;
     }
 
     pub(super) fn fetch_html_url(
@@ -200,11 +261,75 @@ mod tests {
     }
 
     #[test]
+    fn user_entered_file_url_opens_the_local_html_browser_session() -> TestResult {
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("local document.html");
+        std::fs::write(
+            &path,
+            "<html><body style=\"background:#123456\"><p>Local document</p></body></html>",
+        )?;
+        let mut url = url::Url::from_file_path(&path).map_err(|_| "file URL")?;
+        url.set_query(Some("slide=2"));
+        url.set_fragment(Some("deck"));
+        let canonical_path = path.canonicalize()?;
+        let mut canonical_url =
+            url::Url::from_file_path(&canonical_path).map_err(|_| "canonical file URL")?;
+        canonical_url.set_query(url.query());
+        canonical_url.set_fragment(url.fragment());
+        let ctx = egui::Context::default();
+        let mut app = app();
+        app.state.workspace.data = Some(katana_core::workspace::Workspace::new(
+            directory.path(),
+            Vec::new(),
+        ));
+        let (sender, receiver) = std::sync::mpsc::channel();
+        sender.send(Ok(crate::state::HtmlSource {
+            raw_html: "<p>stale remote response</p>".to_string(),
+            source_url: "https://example.test/stale.html".to_string(),
+            origin: "https://example.test/stale.html".to_string(),
+        }))?;
+        app.state
+            .url_tab
+            .pending_url_requests
+            .push_back((receiver, None));
+        app.state.url_tab.is_loading = true;
+
+        app.handle_open_url(&ctx, "ftp://example.test/index.html".to_string());
+        app.handle_open_url(&ctx, url.to_string());
+        app.poll_url_source(&ctx);
+        let viewport = wait_for_browser_frame(&mut app, &ctx)?;
+
+        assert_eq!(
+            app.state.active_path().as_deref(),
+            Some(canonical_path.as_path())
+        );
+        assert_eq!(app.state.url_tab.input, canonical_url.as_str());
+        assert_eq!(app.state.url_tab.last_error, None);
+        assert_eq!(
+            app.html_browser_origin_for_test().as_deref(),
+            Some(canonical_url.as_str())
+        );
+        assert_eq!(
+            app.state
+                .url_tab
+                .source_for_document(&canonical_path)
+                .map(|source| source.origin.as_str()),
+            Some(canonical_url.as_str())
+        );
+        assert!(viewport.0 > 0.0 && viewport.1 > 0.0);
+        assert!(app.state.url_tab.pending_url_requests.is_empty());
+        assert_eq!(app.state.url_tab.tabs.len(), 1);
+        assert!(!app.state.url_tab.is_loading);
+        assert_eq!(app.state.layout.status_message, None);
+        Ok(())
+    }
+
+    #[test]
     fn invalid_url_and_disconnected_request_are_visible_as_status_errors() {
         let ctx = egui::Context::default();
         let mut app = app();
 
-        app.handle_open_url(&ctx, "file:///tmp/index.html".to_string());
+        app.handle_open_url(&ctx, "ftp://example.com/index.html".to_string());
         assert!(matches!(
             app.state.url_tab.last_error,
             Some(crate::state::HtmlSourceError::InvalidUrl(_))
@@ -559,6 +684,7 @@ mod tests {
             thread::sleep(Duration::from_millis(5));
         }
         app.poll_url_source(ctx);
+        start_pending_browser_sessions(app)?;
         for preview in app.tab_previews.iter_mut() {
             preview.pane.poll_html_browser(ctx);
         }
@@ -569,12 +695,14 @@ mod tests {
     }
 
     fn wait_for_browser_frame(app: &mut KatanaApp, ctx: &egui::Context) -> TestResult<(f32, f32)> {
+        start_pending_browser_sessions(app)?;
         let deadline = Instant::now() + URL_LOAD_TIMEOUT;
         loop {
             for preview in app.tab_previews.iter_mut() {
                 preview.pane.poll_html_browser(ctx);
             }
             if let Some(viewport) = app.html_browser_frame_viewport_for_test() {
+                assert!(app.html_browser_frame_generation_for_test().is_some());
                 return Ok(viewport);
             }
             if Instant::now() >= deadline {
@@ -582,6 +710,15 @@ mod tests {
             }
             thread::sleep(Duration::from_millis(5));
         }
+    }
+
+    fn start_pending_browser_sessions(app: &mut KatanaApp) -> TestResult {
+        let viewport =
+            katana_document_viewer::browser_session::HtmlBrowserViewport::new(1024, 768, 1.0)?;
+        for preview in app.tab_previews.iter_mut() {
+            preview.pane.start_html_browser_for_test(viewport);
+        }
+        Ok(())
     }
 
     fn wait_for_logged_requests(

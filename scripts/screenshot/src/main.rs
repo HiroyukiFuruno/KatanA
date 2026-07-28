@@ -27,6 +27,14 @@ struct Cli {
 }
 
 fn main() -> Result<()> {
+    let default_filter = tracing_subscriber::EnvFilter::new(
+        "katana_ui=info,katana_core=info,katana_document_viewer=info",
+    );
+    let _ = tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or(default_filter),
+        )
+        .try_init();
     let cli = Cli::parse();
 
     let request_path = cli
