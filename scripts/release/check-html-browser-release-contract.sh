@@ -11,8 +11,8 @@ if [[ -z "$TARGET_VERSION" ]]; then
 fi
 TARGET_VERSION="${TARGET_VERSION#v}"
 
-if [[ "$TARGET_VERSION" != "0.22.36" ]]; then
-    error "The browser-equivalent HTML release contract applies only to v0.22.36; received v${TARGET_VERSION}."
+if [[ "$TARGET_VERSION" != "0.22.37" ]]; then
+    error "The browser-equivalent HTML release contract applies only to v0.22.37; received v${TARGET_VERSION}."
     exit 1
 fi
 
@@ -51,7 +51,7 @@ if [[ -z "${KATANA_RELEASE_ROOT:-}" ]] &&
 fi
 
 if grep -Eq 'executor_native|native_window|--native-window' "$ACCEPTANCE_RUNNER"; then
-    error "v0.22.36 acceptance runner must remain headless-only."
+    error "v0.22.37 acceptance runner must remain headless-only."
     exit 1
 fi
 
@@ -465,12 +465,12 @@ with acceptance_lock_path.open("rb") as handle:
 
 dependencies = cargo.get("workspace", {}).get("dependencies", {})
 manifest_release_lines = {
-    "katana-document-viewer": (0, 3, 3),
-    "katana-render-runtime": (0, 4, 6),
+    "katana-document-viewer": (0, 3, 5),
+    "katana-render-runtime": (0, 4, 14),
 }
 minimum_lock_versions = {
-    "katana-document-viewer": (0, 3, 3),
-    "katana-render-runtime": (0, 4, 6),
+    "katana-document-viewer": (0, 3, 5),
+    "katana-render-runtime": (0, 4, 14),
 }
 
 
@@ -566,8 +566,8 @@ fi
 required_markers=(
     "Browser-equivalent HTML session is the only interactive preview path"
     "The system MUST NOT fall back to static HTML rendering"
-    "v0.22.36 release must prove the published browser chain"
-    'minimum resolved version of KDV `0.3.3` and KRR `0.4.6`'
+    "v0.22.37 release must prove the published browser chain"
+    'minimum resolved version of KDV `0.3.5` and KRR `0.4.14`'
     "raw KRR frame pixels"
 )
 for marker in "${required_markers[@]}"; do

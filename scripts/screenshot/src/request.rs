@@ -186,6 +186,10 @@ pub struct OpenFileStep {
     pub file_name: String,
     #[serde(default = "default_open_file_wait")]
     pub wait_seconds: f64,
+    #[serde(default)]
+    pub wait_for_html_frame: bool,
+    #[serde(default)]
+    pub max_first_frame_seconds: Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -269,6 +273,13 @@ pub enum UiAction {
     OpenFixtureUrl {
         path: String,
         wait_seconds: f64,
+    },
+    /// Open an exact URL through KatanA and wait for its HTML frame.
+    OpenUrl {
+        url: String,
+        timeout_seconds: f64,
+        #[serde(default)]
+        expected_error_contains: Option<String>,
     },
     ToggleToc,
     ToggleSplitView,
@@ -387,6 +398,29 @@ pub enum UiAction {
         y: f32,
         button: ClickButton,
         wait_seconds: f64,
+        #[serde(default)]
+        wait_for_html_frame: bool,
+    },
+    /// Click a position relative to the active HTML frame bounds.
+    ClickHtmlViewportFraction {
+        x_fraction: f32,
+        y_fraction: f32,
+        button: ClickButton,
+        wait_seconds: f64,
+        #[serde(default)]
+        wait_for_html_frame: bool,
+    },
+    /// Press and release a keyboard key in the currently focused surface.
+    PressKey {
+        key: String,
+        wait_seconds: f64,
+        #[serde(default)]
+        wait_for_html_frame: bool,
+    },
+    /// Dispatch high-rate HTML input without stepping the UI between commands.
+    BurstHtmlInput {
+        count: u32,
+        timeout_seconds: f64,
     },
     /// Detect a rendered RGB region and click its center.
     ClickRgbRegion {
@@ -477,7 +511,7 @@ pub fn load(path: &std::path::Path) -> anyhow::Result<Request> {
 
 #[cfg(test)]
 mod tests {
-    use super::{Request, ScrollDirection, Step};
+    use super::{Request, ScrollDirection, Step, UiAction};
 
     #[test]
     fn browser_evidence_actions_are_valid_request_steps() {
@@ -493,6 +527,13 @@ mod tests {
                 },
                 "steps": [
                     {
+                        "type": "open_file",
+                        "file_name": "slides.html",
+                        "wait_seconds": 30.0,
+                        "wait_for_html_frame": true,
+                        "max_first_frame_seconds": 5.0
+                    },
+                    {
                         "type": "action",
                         "action": {
                             "open_fixture_url": {
@@ -504,11 +545,43 @@ mod tests {
                     {
                         "type": "action",
                         "action": {
+                            "open_url": {
+                                "url": "file:///tmp/index.html",
+                                "timeout_seconds": 30.0
+                            }
+                        }
+                    },
+                    {
+                        "type": "action",
+                        "action": {
                             "click_at": {
                                 "x": 120.0,
                                 "y": 240.0,
                                 "button": "primary",
-                                "wait_seconds": 0.5
+                                "wait_seconds": 0.5,
+                                "wait_for_html_frame": true
+                            }
+                        }
+                    },
+                    {
+                        "type": "action",
+                        "action": {
+                            "click_html_viewport_fraction": {
+                                "x_fraction": 0.07,
+                                "y_fraction": 0.96,
+                                "button": "primary",
+                                "wait_seconds": 0.5,
+                                "wait_for_html_frame": true
+                            }
+                        }
+                    },
+                    {
+                        "type": "action",
+                        "action": {
+                            "press_key": {
+                                "key": "ArrowRight",
+                                "wait_seconds": 0.5,
+                                "wait_for_html_frame": true
                             }
                         }
                     },
@@ -585,7 +658,76 @@ mod tests {
             }"#,
         );
 
-        assert!(request.is_ok(), "{request:?}");
+        let request = request.expect("browser evidence request");
+        assert!(matches!(
+            request.steps.first(),
+            Some(Step::OpenFile(step))
+                if step.wait_for_html_frame && step.max_first_frame_seconds == Some(5.0)
+        ));
+        assert!(request.steps.iter().any(|step| matches!(
+            step,
+            Step::Action(action) if matches!(
+                &action.action,
+                UiAction::OpenUrl {
+                    url,
+                    timeout_seconds,
+                    expected_error_contains: None,
+                }
+                    if url == "file:///tmp/index.html" && *timeout_seconds == 30.0
+            )
+        )));
+        assert!(request.steps.iter().any(|step| matches!(
+            step,
+            Step::Action(action) if matches!(
+                action.action,
+                UiAction::ClickHtmlViewportFraction {
+                    x_fraction: 0.07,
+                    y_fraction: 0.96,
+                    wait_for_html_frame: true,
+                    ..
+                }
+            )
+        )));
+        assert!(request.steps.iter().any(|step| matches!(
+            step,
+            Step::Action(action) if matches!(
+                action.action,
+                UiAction::PressKey {
+                    wait_for_html_frame: true,
+                    ..
+                }
+            )
+        )));
+    }
+
+    #[test]
+    fn browser_input_burst_action_requires_explicit_count_and_timeout(
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let request = serde_json::from_str::<Request>(
+            r#"{
+                "schema_version": "1",
+                "name": "browser-input-burst",
+                "steps": [{
+                    "type": "action",
+                    "action": {
+                        "burst_html_input": {
+                            "count": 4097,
+                            "timeout_seconds": 10.0
+                        }
+                    }
+                }]
+            }"#,
+        )?;
+
+        assert!(matches!(
+            &request.steps[0],
+            Step::Action(action)
+                if action.action == UiAction::BurstHtmlInput {
+                    count: 4_097,
+                    timeout_seconds: 10.0
+                }
+        ));
+        Ok(())
     }
 
     #[test]

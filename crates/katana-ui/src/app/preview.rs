@@ -1,5 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
+mod source;
+
 use crate::app::*;
 use crate::shell::*;
 
@@ -12,6 +14,8 @@ use std::ffi::OsStr;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::Receiver;
+
+use source::{is_html_preview_path, markdown_preview_source_for_path};
 
 pub(crate) trait PreviewOps {
     fn get_preview_pane(
@@ -31,25 +35,6 @@ pub(crate) trait PreviewOps {
         path: &std::path::Path,
         source: katana_document_viewer::browser_session::HtmlBrowserSource,
     );
-}
-
-fn is_drawio_preview_path(path: &std::path::Path) -> bool {
-    path.extension()
-        .and_then(|e| e.to_str())
-        .map(|e| e.eq_ignore_ascii_case("drawio") || e.eq_ignore_ascii_case("drowio"))
-        .unwrap_or(false)
-}
-
-fn is_html_preview_path(path: &std::path::Path) -> bool {
-    katana_core::workspace::TreeEntry::path_is_html(path)
-}
-
-fn markdown_preview_source_for_path(path: &std::path::Path, source: &str) -> String {
-    if is_drawio_preview_path(path) {
-        format!("```drawio\n{}\n```", source)
-    } else {
-        source.to_string()
-    }
 }
 
 impl PreviewOps for KatanaApp {
@@ -107,6 +92,31 @@ impl PreviewOps for KatanaApp {
             current_hash,
             h
         );
+
+        if is_html
+            && let Some(origin) = self
+                .state
+                .url_tab
+                .source_for_document(path)
+                .map(|source| source.origin.clone())
+        {
+            let browser_source =
+                match katana_document_viewer::browser_session::HtmlBrowserSource::new(
+                    actual_source.clone(),
+                    origin,
+                ) {
+                    Ok(source) => source,
+                    Err(error) => {
+                        self.state.layout.status_message =
+                            Some((error.to_string(), StatusType::Error));
+                        return;
+                    }
+                };
+            let pane = Self::get_preview_pane(&mut self.tab_previews, path_buf.clone());
+            pane.full_render_html_source(browser_source, force);
+            update_preview_hash(&mut self.tab_previews, &path_buf, h);
+            return;
+        }
 
         let pane = Self::get_preview_pane(&mut self.tab_previews, path_buf.clone());
         full_render_preview_pane(

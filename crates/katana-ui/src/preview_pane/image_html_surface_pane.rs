@@ -1,4 +1,4 @@
-use super::HtmlBrowserSurface;
+use super::{BrowserSessionAdapter, HtmlBrowserSurface};
 use crate::preview_pane::types::PreviewPane;
 use eframe::egui;
 
@@ -41,6 +41,39 @@ impl HtmlBrowserSurface {
                 frame.viewport.logical_height(),
             )
         })
+    }
+
+    pub(super) fn frame_generation(&self) -> Option<u64> {
+        self.frame.as_ref().map(|frame| frame.generation)
+    }
+
+    pub(super) fn is_idle(&self) -> bool {
+        self.adapter
+            .as_ref()
+            .is_some_and(BrowserSessionAdapter::is_idle)
+    }
+
+    #[cfg(test)]
+    fn wait_for_frame_for_test(
+        &mut self,
+        ctx: &egui::Context,
+        timeout: std::time::Duration,
+    ) -> Result<(), String> {
+        let deadline = std::time::Instant::now() + timeout;
+        while self.frame.is_none() {
+            if let Some(error) = &self.error {
+                return Err(error.clone());
+            }
+            let remaining = deadline.saturating_duration_since(std::time::Instant::now());
+            let update = self
+                .adapter
+                .as_ref()
+                .ok_or_else(|| "HTML browser adapter is not running".to_string())?
+                .wait_for_update(remaining)
+                .ok_or_else(|| "timed out waiting for the HTML browser frame".to_string())?;
+            self.apply_update(ctx, update);
+        }
+        Ok(())
     }
 
     pub(super) fn frame_scroll_metrics(&self) -> Option<(f32, f32)> {
@@ -89,6 +122,28 @@ impl PreviewPane {
             .and_then(HtmlBrowserSurface::frame_viewport)
     }
 
+    pub(crate) fn html_browser_frame_generation(&self) -> Option<u64> {
+        self.html_browser
+            .as_ref()
+            .and_then(HtmlBrowserSurface::frame_generation)
+    }
+
+    pub(crate) fn html_browser_is_idle(&self) -> Option<bool> {
+        self.html_browser.as_ref().map(HtmlBrowserSurface::is_idle)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn wait_for_html_browser_frame_for_test(
+        &mut self,
+        ctx: &egui::Context,
+        timeout: std::time::Duration,
+    ) -> Result<(), String> {
+        self.html_browser
+            .as_mut()
+            .ok_or_else(|| "active preview is not an HTML browser".to_string())?
+            .wait_for_frame_for_test(ctx, timeout)
+    }
+
     pub(crate) fn html_browser_frame_scroll_metrics(&self) -> Option<(f32, f32)> {
         self.html_browser
             .as_ref()
@@ -99,6 +154,26 @@ impl PreviewPane {
         self.html_browser
             .as_ref()
             .and_then(HtmlBrowserSurface::display_rect)
+    }
+
+    pub(crate) fn dispatch_html_browser_input_burst_for_test(
+        &mut self,
+        count: u32,
+    ) -> Result<(), String> {
+        self.html_browser
+            .as_mut()
+            .ok_or_else(|| "active preview is not an HTML browser".to_string())?
+            .dispatch_input_burst_for_test(count)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn start_html_browser_for_test(
+        &mut self,
+        viewport: katana_document_viewer::browser_session::HtmlBrowserViewport,
+    ) -> bool {
+        self.html_browser
+            .as_mut()
+            .is_some_and(|browser| browser.start_pending_session(viewport))
     }
 
     pub(crate) fn poll_html_browser(&mut self, ctx: &egui::Context) {
@@ -124,7 +199,7 @@ impl PreviewPane {
 #[cfg(test)]
 mod tests {
     use super::PreviewPane;
-    use crate::preview_pane::image_html_surface::HtmlBrowserSurface;
+    use crate::preview_pane::image_html_surface::{BrowserFrame, HtmlBrowserSurface};
 
     #[test]
     fn queued_html_navigation_urls_are_taken_in_request_order() {
@@ -150,5 +225,29 @@ mod tests {
         assert_eq!(first.as_deref(), Some("https://example.com/first"));
         assert_eq!(second.as_deref(), Some("https://example.com/second"));
         assert_eq!(pane.take_html_browser_navigation(), None);
+    }
+
+    #[test]
+    fn browser_frame_generation_is_exposed_for_state_aware_harness_waits() {
+        let mut pane = PreviewPane::default();
+        assert_eq!(pane.html_browser_frame_generation(), None);
+
+        let mut surface = HtmlBrowserSurface::failed("pending".to_string());
+        let viewport = katana_document_viewer::browser_session::HtmlBrowserViewport::new(2, 1, 1.0)
+            .expect("viewport");
+        surface.frame = Some(BrowserFrame::new(7, viewport, 0.0, 1.0, vec![0; 8]));
+        pane.html_browser = Some(surface);
+
+        assert_eq!(pane.html_browser_frame_generation(), Some(7));
+    }
+
+    #[test]
+    fn browser_idle_state_requires_an_active_adapter() {
+        let mut pane = PreviewPane::default();
+        assert_eq!(pane.html_browser_is_idle(), None);
+
+        pane.html_browser = Some(HtmlBrowserSurface::failed("pending".to_string()));
+
+        assert_eq!(pane.html_browser_is_idle(), Some(false));
     }
 }
