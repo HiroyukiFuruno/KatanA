@@ -177,6 +177,7 @@ mod tests {
         "<html><body><details><summary>More</summary><p>Body</p></details></body></html>";
     const RESPONSE_COUNT: usize = 2;
     const URL_LOAD_TIMEOUT: Duration = Duration::from_secs(2);
+    const BROWSER_UPDATE_TIMEOUT: Duration = Duration::from_secs(10);
 
     #[test]
     fn user_entered_http_document_keeps_origin_through_refresh_and_browser_session() -> TestResult {
@@ -696,20 +697,10 @@ mod tests {
 
     fn wait_for_browser_frame(app: &mut KatanaApp, ctx: &egui::Context) -> TestResult<(f32, f32)> {
         start_pending_browser_sessions(app)?;
-        let deadline = Instant::now() + URL_LOAD_TIMEOUT;
-        loop {
-            for preview in app.tab_previews.iter_mut() {
-                preview.pane.poll_html_browser(ctx);
-            }
-            if let Some(viewport) = app.html_browser_frame_viewport_for_test() {
-                assert!(app.html_browser_frame_generation_for_test().is_some());
-                return Ok(viewport);
-            }
-            if Instant::now() >= deadline {
-                return Err("timed out waiting for the HTML browser frame".into());
-            }
-            thread::sleep(Duration::from_millis(5));
-        }
+        app.wait_for_html_browser_frame_for_test(ctx, BROWSER_UPDATE_TIMEOUT)?;
+        assert!(app.html_browser_frame_generation_for_test().is_some());
+        app.html_browser_frame_viewport_for_test()
+            .ok_or_else(|| "HTML browser update did not contain a frame".into())
     }
 
     fn start_pending_browser_sessions(app: &mut KatanaApp) -> TestResult {

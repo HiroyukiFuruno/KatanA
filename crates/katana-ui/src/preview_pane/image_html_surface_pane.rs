@@ -53,6 +53,29 @@ impl HtmlBrowserSurface {
             .is_some_and(BrowserSessionAdapter::is_idle)
     }
 
+    #[cfg(test)]
+    fn wait_for_frame_for_test(
+        &mut self,
+        ctx: &egui::Context,
+        timeout: std::time::Duration,
+    ) -> Result<(), String> {
+        let deadline = std::time::Instant::now() + timeout;
+        while self.frame.is_none() {
+            if let Some(error) = &self.error {
+                return Err(error.clone());
+            }
+            let remaining = deadline.saturating_duration_since(std::time::Instant::now());
+            let update = self
+                .adapter
+                .as_ref()
+                .ok_or_else(|| "HTML browser adapter is not running".to_string())?
+                .wait_for_update(remaining)
+                .ok_or_else(|| "timed out waiting for the HTML browser frame".to_string())?;
+            self.apply_update(ctx, update);
+        }
+        Ok(())
+    }
+
     pub(super) fn frame_scroll_metrics(&self) -> Option<(f32, f32)> {
         self.frame
             .as_ref()
@@ -107,6 +130,18 @@ impl PreviewPane {
 
     pub(crate) fn html_browser_is_idle(&self) -> Option<bool> {
         self.html_browser.as_ref().map(HtmlBrowserSurface::is_idle)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn wait_for_html_browser_frame_for_test(
+        &mut self,
+        ctx: &egui::Context,
+        timeout: std::time::Duration,
+    ) -> Result<(), String> {
+        self.html_browser
+            .as_mut()
+            .ok_or_else(|| "active preview is not an HTML browser".to_string())?
+            .wait_for_frame_for_test(ctx, timeout)
     }
 
     pub(crate) fn html_browser_frame_scroll_metrics(&self) -> Option<(f32, f32)> {

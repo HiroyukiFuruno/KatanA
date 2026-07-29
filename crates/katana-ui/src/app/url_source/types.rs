@@ -242,13 +242,21 @@ mod tests {
 
     #[test]
     fn local_file_url_canonicalization_preserves_query_and_fragment() {
-        let local =
-            ValidatedLocalHtmlUrl::parse("file:///tmp/index.html?slide=2#deck").expect("local URL");
+        let directory = tempfile::tempdir().expect("temporary directory");
+        let source_path = directory.path().join("source document.html");
+        let canonical_path = directory.path().join("canonical document.html");
+        let mut source_url = url::Url::from_file_path(source_path).expect("source file URL");
+        source_url.set_query(Some("slide=2"));
+        source_url.set_fragment(Some("deck"));
+        let local = ValidatedLocalHtmlUrl::parse(source_url.as_str()).expect("local URL");
         let canonical = local
-            .canonical_url_for(std::path::Path::new("/private/tmp/index.html"))
+            .canonical_url_for(&canonical_path)
             .expect("canonical URL");
+        let mut expected = url::Url::from_file_path(canonical_path).expect("canonical file URL");
+        expected.set_query(source_url.query());
+        expected.set_fragment(source_url.fragment());
 
-        assert_eq!(canonical, "file:///private/tmp/index.html?slide=2#deck");
+        assert_eq!(canonical, expected.as_str());
     }
 
     #[test]

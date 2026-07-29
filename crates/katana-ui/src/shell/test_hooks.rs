@@ -106,6 +106,24 @@ impl KatanaApp {
             .and_then(|preview| preview.pane.html_browser_is_idle())
     }
 
+    #[cfg(test)]
+    pub(crate) fn wait_for_html_browser_frame_for_test(
+        &mut self,
+        ctx: &egui::Context,
+        timeout: std::time::Duration,
+    ) -> Result<(), String> {
+        let active_path = self
+            .state
+            .active_path()
+            .ok_or_else(|| "active document is missing".to_string())?;
+        self.tab_previews
+            .iter_mut()
+            .find(|preview| preview.path == active_path)
+            .ok_or_else(|| "active preview is missing".to_string())?
+            .pane
+            .wait_for_html_browser_frame_for_test(ctx, timeout)
+    }
+
     #[doc(hidden)]
     pub fn html_browser_frame_scroll_metrics_for_test(&self) -> Option<(f32, f32)> {
         let active_path = self.state.active_path()?;

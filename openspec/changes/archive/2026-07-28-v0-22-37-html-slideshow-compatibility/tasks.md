@@ -30,6 +30,7 @@
 
 - [x] 4.1 Update the canonical contract and SemVer guard so only published `v0.22.36` -> `v0.22.37` is accepted and withdrawn `v0.29.0` remains rejected
 - [x] 4.2 Pass KatanA `v0.22.37` preflight after the CSS-equivalence correction and regenerated local file evidence
+- [x] 4.3 Keep Windows CI portable by generating file URLs from native temporary paths and waiting on KDV browser updates instead of polling with a short wall-clock deadline
 
 KatanA commit, push, PR, and release remain prohibited until the fresh screenshots are presented and the user explicitly approves them.
 The dirty-tree pre-PR gate is intentionally deferred until that approval permits the release commit.
