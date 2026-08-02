@@ -11,7 +11,7 @@
 
 ## 2. Source intake and routing
 
-- [ ] 2.1 PDF / DOCX / XLSX / PPTXのextension、MIME、magic-byte routing contractを追加する
+- [x] 2.1 PDF / DOCX / XLSX / PPTXのextension、MIME、magic-byte routing contractを追加する。証跡: test: `document_source::tests` / file: `crates/katana-core/src/document_source.rs`
 - [ ] 2.2 local fileをcanonical file URL、bytes、MIME hint、revisionへ正規化する
 - [ ] 2.3 direct `https` document URLへredirect、size、timeout、MIME policyを実装する
 - [ ] 2.4 HTML application、authentication page、unsupported scheme、MIME mismatchをtyped fetch diagnosticsへ落とす
