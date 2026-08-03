@@ -360,12 +360,24 @@ def verify(root: Path, target_version: str) -> None:
         ),
     )
     require_markers(
+        root / "scripts/screenshot/src/executor_harness.rs",
+        (
+            "DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS",
+            "wait_for_document_surface_idle(",
+            "document surface did not settle before screenshot",
+        ),
+    )
+    require_markers(
         root / ".github/workflows/test-and-build.yml",
         (
             "Run multi-format headless acceptance",
             "v0-22-38-multi-format-documents.json",
             "Upload multi-format headless evidence",
             "multi-format-headless-${{ runner.os }}",
+            "mesa-vulkan-drivers",
+            "Verify software Vulkan adapter (Linux)",
+            'VK_DRIVER_FILES="${lvp_icd}" vulkaninfo --summary',
+            "WGPU_BACKEND=vulkan",
         ),
     )
     require_markers(

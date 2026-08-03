@@ -24,6 +24,7 @@ use std::time::{Duration, Instant};
 use tempfile::TempDir;
 
 const HARNESS_PIXELS_PER_POINT: f32 = 2.0;
+const DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS: f64 = 30.0;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct HtmlBrowserFrameIdentity {
@@ -275,6 +276,11 @@ pub fn run(
             }
             Step::Screenshot(s) => {
                 harness.run_steps(120);
+                wait_for_document_surface_idle(
+                    &mut harness,
+                    recording.as_mut(),
+                    DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS,
+                )?;
                 let image = harness
                     .render()
                     .map_err(|e| anyhow::anyhow!("render failed: {e}"))?;
@@ -2235,6 +2241,36 @@ fn assert_document_frame(
         );
     }
     Ok(())
+}
+
+fn wait_for_document_surface_idle(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    timeout_seconds: f64,
+) -> Result<()> {
+    if document_frame_identity(harness).is_none() {
+        return Ok(());
+    }
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    loop {
+        if harness.state_mut().document_failure_for_test().is_some()
+            || harness.state_mut().document_is_idle_for_test() == Some(true)
+        {
+            return Ok(());
+        }
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        if Instant::now() >= deadline {
+            let frame = document_frame_identity(harness);
+            let idle = harness.state_mut().document_is_idle_for_test();
+            let failure = harness.state_mut().document_failure_for_test();
+            bail!(
+                "document surface did not settle before screenshot within \
+                 {timeout_seconds:.2}s: frame={frame:?}, idle={idle:?}, failure={failure:?}"
+            );
+        }
+        sleep_frame(60.0);
+    }
 }
 
 fn advance_document_and_wait(

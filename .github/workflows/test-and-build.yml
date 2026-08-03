@@ -79,7 +79,14 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev
+          sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev mesa-vulkan-drivers vulkan-tools
+
+      - name: Verify software Vulkan adapter (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          lvp_icd="$(find /usr/share/vulkan/icd.d -name '*lvp*.json' -print -quit)"
+          test -n "${lvp_icd}"
+          LIBGL_ALWAYS_SOFTWARE=1 VK_DRIVER_FILES="${lvp_icd}" vulkaninfo --summary
 
       - name: Check types
         run: cargo check --workspace
@@ -91,6 +98,11 @@ jobs:
         if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
         shell: bash
         run: |
+          if [[ "${RUNNER_OS}" == "Linux" ]]; then
+            export LIBGL_ALWAYS_SOFTWARE=1
+            export VK_DRIVER_FILES="$(find /usr/share/vulkan/icd.d -name '*lvp*.json' -print -quit)"
+            export WGPU_BACKEND=vulkan
+          fi
           scripts/screenshot/run.sh \
             --request scripts/screenshot/examples/v0-22-38-multi-format-documents.json \
             --output "target/multi-format-headless-${{ runner.os }}"
