@@ -35,7 +35,7 @@ test-integration:
 
 # Verify test execution in isolated Linux environment
 check-linux:
-    {{DOCKER}} compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="{{RUSTFLAGS}} -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "cargo sweep --time 7 && cargo test -q --workspace"
+    {{DOCKER}} compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="{{RUSTFLAGS}} -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "ulimit -c 0 && cargo sweep --time 7 && cargo test -q --workspace"
 
 # Verify Windows cross-compilation without running tests
 check-windows:

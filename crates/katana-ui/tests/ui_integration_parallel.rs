@@ -19,6 +19,8 @@ mod foreground_surface_isolation;
 mod i18n;
 #[path = "integration/native_clipboard_paste.rs"]
 mod native_clipboard_paste;
+#[path = "integration/office_worker.rs"]
+mod office_worker;
 
 pub static SERIAL_TEST_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
 

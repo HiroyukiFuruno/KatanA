@@ -1,5 +1,6 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
+mod render;
 mod source;
 
 use crate::app::*;
@@ -15,6 +16,10 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::Receiver;
 
+use render::{
+    FullPreviewRenderOptions, full_render_preview_pane, preview_hash_for_path, update_preview_hash,
+    update_preview_pane,
+};
 use source::{is_html_preview_path, markdown_preview_source_for_path};
 
 pub(crate) trait PreviewOps {
@@ -34,6 +39,17 @@ pub(crate) trait PreviewOps {
         &mut self,
         path: &std::path::Path,
         source: katana_document_viewer::browser_session::HtmlBrowserSource,
+    );
+    fn full_refresh_document_source(
+        &mut self,
+        path: &std::path::Path,
+        source: crate::preview_pane::DocumentSurfaceSource,
+        force: bool,
+    );
+    fn full_refresh_document_failure(
+        &mut self,
+        path: &std::path::Path,
+        failure: crate::preview_pane::DocumentFailure,
     );
 }
 
@@ -75,6 +91,16 @@ impl PreviewOps for KatanaApp {
         force: bool,
         concurrency: usize,
     ) {
+        if katana_core::workspace::TreeEntry::path_is_document(path) {
+            match crate::preview_pane::DocumentSurfaceSource::local(path) {
+                Ok(source) => self.full_refresh_document_source(path, source, force),
+                Err(error) => {
+                    self.full_refresh_document_failure(path, error.clone());
+                    self.state.layout.status_message = Some((error.to_string(), StatusType::Error));
+                }
+            }
+            return;
+        }
         let is_html = is_html_preview_path(path);
         let actual_source = markdown_preview_source_for_path(path, source);
         let h = ShellLogicOps::hash_str(&actual_source);
@@ -143,56 +169,27 @@ impl PreviewOps for KatanaApp {
         pane.full_render_html_source(source, true);
         update_preview_hash(&mut self.tab_previews, &path, 0);
     }
-}
 
-fn preview_hash_for_path(previews: &[TabPreviewCache], path: &std::path::Path) -> Option<u64> {
-    previews
-        .iter()
-        .find(|tab| tab.path == path)
-        .map(|tab| tab.hash)
-}
-
-fn update_preview_hash(previews: &mut [TabPreviewCache], path: &std::path::Path, hash: u64) {
-    if let Some(tab) = previews.iter_mut().find(|tab| tab.path == path) {
-        tab.hash = hash;
+    fn full_refresh_document_source(
+        &mut self,
+        path: &std::path::Path,
+        source: crate::preview_pane::DocumentSurfaceSource,
+        force: bool,
+    ) {
+        let path = path.to_path_buf();
+        let pane = Self::get_preview_pane(&mut self.tab_previews, path.clone());
+        pane.full_render_document_source(source, force);
+        update_preview_hash(&mut self.tab_previews, &path, 0);
     }
-}
 
-fn update_preview_pane(
-    pane: &mut PreviewPane,
-    path: &std::path::Path,
-    source: &str,
-    is_html: bool,
-) {
-    if is_html {
-        pane.update_html_document_sections(source, path);
-    } else {
-        pane.update_markdown_sections(source, path);
-    }
-}
-
-struct FullPreviewRenderOptions {
-    is_html: bool,
-    force: bool,
-    concurrency: usize,
-    cache: std::sync::Arc<dyn katana_platform::CacheFacade>,
-}
-
-fn full_render_preview_pane(
-    pane: &mut PreviewPane,
-    path: &std::path::Path,
-    source: &str,
-    options: FullPreviewRenderOptions,
-) {
-    if options.is_html {
-        pane.full_render_html_document(source, path, options.force);
-    } else {
-        pane.full_render(
-            source,
-            path,
-            options.cache,
-            options.force,
-            options.concurrency,
-        );
+    fn full_refresh_document_failure(
+        &mut self,
+        path: &std::path::Path,
+        failure: crate::preview_pane::DocumentFailure,
+    ) {
+        let path = path.to_path_buf();
+        let pane = Self::get_preview_pane(&mut self.tab_previews, path.clone());
+        pane.full_render_document_failure(failure);
+        update_preview_hash(&mut self.tab_previews, &path, 0);
     }
 }

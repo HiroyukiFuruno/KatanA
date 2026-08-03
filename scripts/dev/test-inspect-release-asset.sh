@@ -9,6 +9,7 @@ FIXTURE_DIR="$TMP_ROOT/fixture"
 BUNDLE_DIR="$TMP_ROOT/bundle/KatanA Desktop.app/Contents/MacOS"
 mkdir -p "$FIXTURE_DIR" "$BUNDLE_DIR"
 printf '%s\n' 'fixture' >"$BUNDLE_DIR/KatanA"
+printf '%s\n' 'fixture' >"$BUNDLE_DIR/kdv-office-worker"
 (
     cd "$TMP_ROOT/bundle"
     zip -qr "$FIXTURE_DIR/KatanA-macOS.zip" "KatanA Desktop.app"
@@ -20,6 +21,7 @@ OUTPUT=$(
 )
 
 grep -qF "Asset contract OK: 'KatanA Desktop.app/' present" <<<"$OUTPUT"
+grep -qF "Asset contract OK: 'KatanA Desktop.app/Contents/MacOS/kdv-office-worker' present" <<<"$OUTPUT"
 if grep -qF "Asset contract VIOLATION" <<<"$OUTPUT"; then
     printf '%s\n' "$OUTPUT" >&2
     exit 1

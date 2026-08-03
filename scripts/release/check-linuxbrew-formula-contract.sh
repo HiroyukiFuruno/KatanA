@@ -14,6 +14,7 @@ set -euo pipefail
 
 UPDATER_PATH="scripts/release/update-linuxbrew.sh"
 EXPECTED_INSTALL='bin.install \"KatanA\" => \"katana-desktop\"'
+EXPECTED_OFFICE_WORKER_INSTALL='bin.install \"kdv-office-worker\"'
 EXPECTED_LINK_OVERWRITE='link_overwrite \"bin/katana-desktop\"'
 
 fail() {
@@ -28,6 +29,10 @@ ok() { echo "OK: $*"; }
 
 if ! grep -qF "$EXPECTED_INSTALL" "$UPDATER_PATH"; then
     fail "Linuxbrew formula must install 'KatanA' as the public 'katana-desktop' command"
+fi
+
+if ! grep -qF "$EXPECTED_OFFICE_WORKER_INSTALL" "$UPDATER_PATH"; then
+    fail "Linuxbrew formula must install 'kdv-office-worker' next to 'katana-desktop'"
 fi
 
 if ! grep -qF "$EXPECTED_LINK_OVERWRITE" "$UPDATER_PATH"; then

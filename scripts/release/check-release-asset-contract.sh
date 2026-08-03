@@ -11,8 +11,8 @@
 #   実行することを必須とする。
 #
 # Asset Contract:
-#   - Linux  tar.gz: top-level file 'KatanA'
-#   - Win    zip   : top-level file 'KatanA.exe'
+#   - Linux  tar.gz: top-level files 'KatanA', 'kdv-office-worker'
+#   - Win    zip   : top-level files 'KatanA.exe', 'kdv-office-worker.exe'
 #   - Win    msi   : msi 自体は契約検証対象外 (中身は wix で固定)
 #   - macOS  zip   : top-level dir  'KatanA Desktop.app/'
 #   - macOS  dmg   : dmg 自体は検証対象外 (中身は create-dmg で固定)
@@ -56,11 +56,14 @@ check_linux() {
         echo "$entries" | awk -F/ '{print $1}' | sort -u >&2
         fail "Linux tar.gz must contain top-level file 'KatanA'"
     fi
+    if ! echo "$entries" | grep -qxF "kdv-office-worker"; then
+        fail "Linux tar.gz must contain top-level file 'kdv-office-worker'"
+    fi
     top=$(echo "$entries" | awk -F/ '{print $1}' | sort -u | grep -cv '^$')
-    if [[ "$top" -ne 1 ]]; then
+    if [[ "$top" -ne 2 ]]; then
         echo "Top-level entries:" >&2
         echo "$entries" | awk -F/ '{print $1}' | sort -u >&2
-        fail "Linux tar.gz must contain exactly one top-level entry (got $top)"
+        fail "Linux tar.gz must contain exactly two top-level entries (got $top)"
     fi
     ok "Linux tar.gz contract satisfied ($path)"
 }
@@ -77,6 +80,9 @@ check_windows() {
         echo "Actual entries:" >&2
         echo "$names" >&2
         fail "Windows zip must contain top-level file 'KatanA.exe'"
+    fi
+    if ! echo "$names" | grep -qxF "kdv-office-worker.exe"; then
+        fail "Windows zip must contain top-level file 'kdv-office-worker.exe'"
     fi
     ok "Windows zip contract satisfied ($path)"
 }
@@ -96,6 +102,9 @@ check_macos() {
     fi
     if ! echo "$names" | grep -qxF "KatanA Desktop.app/Contents/MacOS/KatanA"; then
         fail "macOS bundle must contain Contents/MacOS/KatanA executable"
+    fi
+    if ! echo "$names" | grep -qxF "KatanA Desktop.app/Contents/MacOS/kdv-office-worker"; then
+        fail "macOS bundle must contain Contents/MacOS/kdv-office-worker"
     fi
     ok "macOS zip contract satisfied ($path)"
 }

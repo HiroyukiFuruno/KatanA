@@ -51,6 +51,14 @@ impl PreviewPane {
     ) -> Vec<(usize, char)> {
         self.repaint_ctx = Some(ui.ctx().clone());
         self.poll_renders(ui.ctx());
+        if self.has_document_surface() {
+            self.heading_anchors.clear();
+            self.block_anchors.clear();
+            self.visible_rect = Some(ui.clip_rect());
+            self.content_top_y = ui.next_widget_position().y;
+            self.show_document_surface(ui);
+            return Vec::new();
+        }
         if self.has_html_browser() {
             self.heading_anchors.clear();
             self.block_anchors.clear();

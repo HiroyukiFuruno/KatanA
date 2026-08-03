@@ -10,12 +10,19 @@ impl ImageDocumentOps {
         path.exists() && katana_core::workspace::TreeEntry::path_is_image(path)
     }
 
+    pub(crate) fn is_binary_document_path(path: &Path) -> bool {
+        path.exists() && katana_core::workspace::TreeEntry::path_is_document(path)
+    }
+
     pub(crate) fn load_or_create(
         fs: &FilesystemService,
         path: &Path,
     ) -> Result<Document, DocumentError> {
         if Self::is_image_path(path) {
             return Ok(Self::new_document(path));
+        }
+        if Self::is_binary_document_path(path) {
+            return Ok(Self::new_binary_document(path));
         }
         fs.load_document(path)
     }
@@ -79,6 +86,12 @@ impl ImageDocumentOps {
 
     fn new_document(path: &Path) -> Document {
         let mut doc = Document::new(path.to_path_buf(), Self::buffer_for_path(path));
+        doc.is_reference = true;
+        doc
+    }
+
+    fn new_binary_document(path: &Path) -> Document {
+        let mut doc = Document::new(path.to_path_buf(), String::new());
         doc.is_reference = true;
         doc
     }

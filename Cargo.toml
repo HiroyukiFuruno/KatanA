@@ -8,7 +8,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.22.37"
+version = "0.22.38"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/HiroyukiFuruno/KatanA"
@@ -26,7 +26,7 @@ egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonm
 
 # Markdown
 comrak = { version = "0.54", default-features = false, features = ["shortcodes"] }
-katana-document-viewer = "0.3.5"
+katana-document-viewer = { version = "0.4.1", features = ["egui"] }
 katana-render-runtime = "0.4.14"
 katana-markdown-model = "0.2.1"
 katana-ast-lint = "0.5.1"
@@ -57,8 +57,8 @@ syn = { version = "3", features = ["full", "visit"] }
 ignore = "0.4"
 
 # Diagram rendering
-resvg = "0.47"
-usvg = "0.47"
+resvg = "0.48"
+usvg = "0.48"
 tiny-skia = "0.12"
 epaint_default_fonts = "0.35"
 mathjax_svg = "3.2.0"

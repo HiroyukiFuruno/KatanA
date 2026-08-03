@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "target": "v0.22.38",
+  "engine_score_source": "katana-document-viewer v0.4.1 openspec/changes/v0-4-0-multi-format-viewer/evidence/benchmark-summary.json",
+  "minimum_engine_score": 80,
+  "engine_profiles": {
+    "pdf": {
+      "candidate": "hayro_pdf",
+      "score": 85
+    },
+    "docx": {
+      "candidate": "office2pdf_docx_pdf_hayro",
+      "score": 90
+    },
+    "xlsx": {
+      "candidate": "ironcalc_xlsx_model",
+      "score": 90
+    },
+    "pptx": {
+      "candidate": "office2pdf_pptx_pdf_hayro",
+      "score": 85
+    }
+  },
+  "integration_score": {
+    "maximum": 100,
+    "release_required": 100,
+    "achieved": 95,
+    "categories": {
+      "engine_feasibility": {
+        "score": 20,
+        "maximum": 20,
+        "status": "pass"
+      },
+      "four_format_rendering": {
+        "score": 30,
+        "maximum": 30,
+        "status": "pass"
+      },
+      "navigation_and_url_intake": {
+        "score": 15,
+        "maximum": 15,
+        "status": "pass"
+      },
+      "diagnostics_and_recovery": {
+        "score": 15,
+        "maximum": 15,
+        "status": "pass"
+      },
+      "ownership_and_supply_chain": {
+        "score": 10,
+        "maximum": 10,
+        "status": "pass"
+      },
+      "quality_and_platforms": {
+        "score": 5,
+        "maximum": 10,
+        "status": "pending_cross_platform_headless_ci"
+      }
+    }
+  },
+  "local_evidence": {
+    "headless_steps": 37,
+    "screenshots": 13,
+    "pdf_first_frame_seconds": 0.058,
+    "docx_first_frame_seconds": 5.088,
+    "xlsx_first_frame_seconds": 0.054,
+    "pptx_first_frame_seconds": 1.747,
+    "pdf_navigation_changed_pixels": 207767,
+    "docx_navigation_changed_pixels": 242856,
+    "xlsx_navigation_changed_pixels": 299159,
+    "pptx_navigation_changed_pixels": 1980885,
+    "password_protected_recovery": "pass",
+    "strict_coverage": "100 percent functions and lines; zero uncovered lines",
+    "linux_workspace_tests": "pass",
+    "windows_workspace_check": "pass",
+    "cargo_deny": "pass"
+  }
+}

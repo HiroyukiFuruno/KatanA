@@ -112,6 +112,15 @@
     "highlight_hover": "ホバーハイライト",
     "show_diagram_controls": "ダイアグラム操作",
     "toggle_slideshow": "スライドショーを開始",
+    "document_controller": {
+      "previous": "前のページ、シート、またはスライド",
+      "next": "次のページ、シート、またはスライド",
+      "fit_page": "ページ全体に合わせる",
+      "fit_width": "幅に合わせる",
+      "copy_active_cell": "選択中のセルをコピー",
+      "error_details": "エラーの詳細",
+      "rendering_notes": "表示に関する注記（{count}件）"
+    },
     "diagram_controller": {
       "pan_up": "上へ移動",
       "pan_down": "下へ移動",

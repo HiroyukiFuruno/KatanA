@@ -88,6 +88,10 @@ impl ActionOps for KatanaApp {
             .map(|d| &d.path)
             .collect();
         self.tab_previews.retain(|t| open_paths.contains(&t.path));
+        self.state
+            .url_tab
+            .document_tabs
+            .retain(|tab| open_paths.contains(&tab.document_path));
     }
 
     fn process_action(&mut self, ctx: &egui::Context, action: AppAction) {

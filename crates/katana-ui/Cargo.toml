@@ -7,8 +7,8 @@ authors.workspace = true
 description = "KatanA UI: egui application shell, panes, menu wiring, and presentation state"
 
 [dependencies]
-katana-core = { path = "../katana-core" }
-katana-platform = { path = "../katana-platform" }
+katana-core = { version = "0.22.38", path = "../katana-core" }
+katana-platform = { version = "0.22.38", path = "../katana-platform" }
 katana-document-viewer.workspace = true
 katana-markdown-linter.workspace = true
 eframe.workspace = true
@@ -24,8 +24,8 @@ rfd = "0.17"
 image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "webp"] }
 serde_json.workspace = true
 open = "5.4.0"
-resvg = { version = "0.47.0", default-features = true }
-ehttp = "0.7.1"
+resvg = { version = "0.48.1", default-features = true }
+ehttp = { version = "0.7.1", features = ["streaming"] }
 dirs = "6.0.0"
 sha2 = "0.11"
 regex = "1.13.1"
@@ -52,7 +52,11 @@ winres = "0.1"
 name = "KatanA"
 path = "src/main.rs"
 
-[package.metadata.bundle]
+[[bin]]
+name = "kdv-office-worker"
+path = "src/bin/kdv-office-worker.rs"
+
+[package.metadata.bundle.bin.KatanA]
 name = "KatanA Desktop"
 identifier = "com.github.hiroyukifuruno.katana"
 icon = ["../../assets/icon.icns"]

@@ -44,10 +44,11 @@ fn test_generate_relauncher_script() {
         assert!(content.contains(&format!("TARGET_BAK=\"{}.bak\"", target_path.display())));
         assert!(content.contains(&format!("mv \"{}\" \"$TARGET_BAK\"", target_path.display())));
         assert!(content.contains(&format!(
-            "if mv \"{}\" \"{}\"",
+            "mv \"{}\" \"{}\"",
             extracted_path.display(),
             target_path.display()
         )));
+        assert!(content.contains("kdv-office-worker"));
         assert!(content.contains(&format!("chmod +x \"{}\"", target_path.display())));
         assert!(content.contains(&format!("\"{}\" &", target_path.display())));
         assert!(content.contains(&format!("rm -rf \"{}\"", temp_dir.path().display())));
@@ -55,6 +56,21 @@ fn test_generate_relauncher_script() {
 
     let perms = std::fs::metadata(&script_path).unwrap().permissions();
     assert_eq!(perms.mode() & 0o111, 0o111, "Script must be executable");
+}
+
+#[test]
+fn required_update_sidecar_must_be_a_regular_file() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let sidecar = temp_dir.path().join("kdv-office-worker");
+    std::fs::write(&sidecar, "worker").unwrap();
+    assert!(require_extracted_sidecar(temp_dir.path(), "kdv-office-worker").is_ok());
+
+    std::fs::remove_file(sidecar).unwrap();
+    let error = require_extracted_sidecar(temp_dir.path(), "kdv-office-worker")
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("required sidecar"));
+    assert!(error.contains("kdv-office-worker"));
 }
 
 #[test]

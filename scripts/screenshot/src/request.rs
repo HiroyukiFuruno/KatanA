@@ -27,6 +27,8 @@ pub struct HttpServerFixture {
     pub mount_prefix: String,
     #[serde(default)]
     pub redirects: HashMap<String, String>,
+    #[serde(default)]
+    pub declared_lengths: HashMap<String, usize>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -189,7 +191,15 @@ pub struct OpenFileStep {
     #[serde(default)]
     pub wait_for_html_frame: bool,
     #[serde(default)]
+    pub wait_for_document_frame: bool,
+    #[serde(default)]
     pub max_first_frame_seconds: Option<f64>,
+    #[serde(default)]
+    pub expected_document_format: Option<String>,
+    #[serde(default)]
+    pub expected_document_item_count: Option<usize>,
+    #[serde(default)]
+    pub expected_document_node_kind: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -273,6 +283,22 @@ pub enum UiAction {
     OpenFixtureUrl {
         path: String,
         wait_seconds: f64,
+        #[serde(default)]
+        expected_error_contains: Option<String>,
+    },
+    /// loopback fixtureの文書URLを開き、KDV/KUC frameの完了を待つ。
+    OpenFixtureDocumentUrl {
+        path: String,
+        timeout_seconds: f64,
+        expected_document_format: String,
+        expected_document_item_count: usize,
+        expected_document_node_kind: String,
+    },
+    /// 文書URLを開き、KDV/KUC/KatanAの構造化エラーを検証する。
+    OpenFixtureDocumentErrorUrl {
+        path: String,
+        timeout_seconds: f64,
+        expected_error_contains: String,
     },
     /// Open an exact URL through KatanA and wait for its HTML frame.
     OpenUrl {
@@ -305,6 +331,10 @@ pub enum UiAction {
     RefreshDiagnostics,
     /// Reload the active document through the same action exposed by KatanA.
     RefreshDocument,
+    /// PDF page、Office page、sheet、slideを進め、次のframeの完了を待つ。
+    DocumentNext {
+        timeout_seconds: f64,
+    },
     /// Resize the active window or harness viewport.
     ResizeWindow {
         width: u32,
@@ -726,6 +756,126 @@ mod tests {
                     count: 4_097,
                     timeout_seconds: 10.0
                 }
+        ));
+        Ok(())
+    }
+
+    #[test]
+    fn document_evidence_steps_deserialize_frame_contract_and_navigation(
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let request = serde_json::from_str::<Request>(
+            r#"{
+                "schema_version": "1",
+                "name": "document-evidence",
+                "steps": [
+                    {
+                        "type": "open_file",
+                        "file_name": "representative.xlsx",
+                        "wait_seconds": 30.0,
+                        "wait_for_document_frame": true,
+                        "max_first_frame_seconds": 10.0,
+                        "expected_document_format": "xlsx",
+                        "expected_document_item_count": 2,
+                        "expected_document_node_kind": "Grid"
+                    },
+                    {
+                        "type": "action",
+                        "action": {
+                            "document_next": { "timeout_seconds": 10.0 }
+                        }
+                    },
+                    {
+                        "type": "action",
+                        "action": {
+                            "open_fixture_document_url": {
+                                "path": "/documents/representative.pdf",
+                                "timeout_seconds": 20.0,
+                                "expected_document_format": "pdf",
+                                "expected_document_item_count": 13,
+                                "expected_document_node_kind": "Page"
+                            }
+                        }
+                    },
+                    {
+                        "type": "action",
+                        "action": {
+                            "open_fixture_document_error_url": {
+                                "path": "/documents/engine-failure.pdf",
+                                "timeout_seconds": 10.0,
+                                "expected_error_contains": "Layer: KDV worker"
+                            }
+                        }
+                    },
+                    {
+                        "type": "action",
+                        "action": {
+                            "open_fixture_url": {
+                                "path": "/oversized.pdf",
+                                "wait_seconds": 10.0,
+                                "expected_error_contains": "limit is 268435456 bytes"
+                            }
+                        }
+                    }
+                ]
+            }"#,
+        )?;
+
+        assert!(matches!(
+            &request.steps[0],
+            Step::OpenFile(step)
+                if step.wait_for_document_frame
+                    && step.expected_document_format.as_deref() == Some("xlsx")
+                    && step.expected_document_item_count == Some(2)
+                    && step.expected_document_node_kind.as_deref() == Some("Grid")
+        ));
+        assert!(matches!(
+            &request.steps[1],
+            Step::Action(action)
+                if action.action == UiAction::DocumentNext {
+                    timeout_seconds: 10.0
+                }
+        ));
+        assert!(matches!(
+            &request.steps[2],
+            Step::Action(action)
+                if matches!(
+                    &action.action,
+                    UiAction::OpenFixtureDocumentUrl {
+                        path,
+                        expected_document_format,
+                        expected_document_item_count: 13,
+                        expected_document_node_kind,
+                        ..
+                    } if path == "/documents/representative.pdf"
+                        && expected_document_format == "pdf"
+                        && expected_document_node_kind == "Page"
+                )
+        ));
+        assert!(matches!(
+            &request.steps[3],
+            Step::Action(action)
+                if matches!(
+                    &action.action,
+                    UiAction::OpenFixtureDocumentErrorUrl {
+                        path,
+                        expected_error_contains,
+                        ..
+                    } if path == "/documents/engine-failure.pdf"
+                        && expected_error_contains == "Layer: KDV worker"
+                )
+        ));
+        assert!(matches!(
+            &request.steps[4],
+            Step::Action(action)
+                if matches!(
+                    &action.action,
+                    UiAction::OpenFixtureUrl {
+                        path,
+                        expected_error_contains: Some(expected),
+                        ..
+                    } if path == "/oversized.pdf"
+                        && expected == "limit is 268435456 bytes"
+                )
         ));
         Ok(())
     }

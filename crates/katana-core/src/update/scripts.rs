@@ -1,5 +1,8 @@
 use std::path::Path;
 
+#[cfg(target_os = "linux")]
+mod linux;
+
 pub(crate) struct UpdateScriptOps;
 
 impl UpdateScriptOps {
@@ -52,6 +55,18 @@ rm -rf "{temp_dir}"
             let target_esc = escape_powershell_single_quoted_path(target_app);
             let extracted_esc = escape_powershell_single_quoted_path(extracted_app);
             let temp_dir_esc = escape_powershell_single_quoted_path(temp_dir_path);
+            let target_sidecar_esc = escape_powershell_single_quoted_path(
+                &target_app
+                    .parent()
+                    .unwrap_or_else(|| Path::new(""))
+                    .join("kdv-office-worker.exe"),
+            );
+            let extracted_sidecar_esc = escape_powershell_single_quoted_path(
+                &extracted_app
+                    .parent()
+                    .unwrap_or_else(|| Path::new(""))
+                    .join("kdv-office-worker.exe"),
+            );
 
             format!(
                 r#"param($parentPid);
@@ -60,6 +75,9 @@ $ProgressPreference = 'SilentlyContinue';
 $target = '{target}';
 $bak = '{target}.bak';
 $extracted = '{extracted}';
+$targetSidecar = '{target_sidecar}';
+$sidecarBak = '{target_sidecar}.bak';
+$extractedSidecar = '{extracted_sidecar}';
 $logDir = Join-Path $env:LOCALAPPDATA 'KatanA';
 $logPath = Join-Path $logDir 'update.log';
 
@@ -73,6 +91,7 @@ if ($parentPid -as [int]) {{
 }}
 
 if (Test-Path $bak) {{ Remove-Item -Force $bak -ErrorAction SilentlyContinue }};
+if (Test-Path $sidecarBak) {{ Remove-Item -Force $sidecarBak -ErrorAction SilentlyContinue }};
 
 $success = $false;
 for ($retryCount = 0; $retryCount -lt 30; $retryCount++) {{
@@ -80,6 +99,10 @@ for ($retryCount = 0; $retryCount -lt 30; $retryCount++) {{
         if ((Test-Path $target) -and (-not (Test-Path $bak))) {{
             Move-Item -Force $target $bak -ErrorAction Stop;
         }}
+        if ((Test-Path $targetSidecar) -and (-not (Test-Path $sidecarBak))) {{
+            Move-Item -Force $targetSidecar $sidecarBak -ErrorAction Stop;
+        }}
+        Copy-Item -Force $extractedSidecar $targetSidecar -ErrorAction Stop;
         Move-Item -Force $extracted $target -ErrorAction Stop;
         $success = $true;
         Write-UpdateLog 'update' 'ok' "retry=$retryCount";
@@ -91,11 +114,17 @@ for ($retryCount = 0; $retryCount -lt 30; $retryCount++) {{
 }}
 
 if ($success) {{
+    Remove-Item -Force $bak -ErrorAction SilentlyContinue;
+    Remove-Item -Force $sidecarBak -ErrorAction SilentlyContinue;
     Start-Process $target -WorkingDirectory (Split-Path $target);
     Write-UpdateLog 'launch' 'ok' '';
 }} else {{
     if (Test-Path $bak) {{
         Move-Item -Force $bak $target -ErrorAction SilentlyContinue;
+    }}
+    Remove-Item -Force $targetSidecar -ErrorAction SilentlyContinue;
+    if (Test-Path $sidecarBak) {{
+        Move-Item -Force $sidecarBak $targetSidecar -ErrorAction SilentlyContinue;
     }}
     Write-UpdateLog 'rollback' 'done' '';
     Add-Type -AssemblyName PresentationFramework;
@@ -109,41 +138,15 @@ Remove-Item -Recurse -Force '{temp_dir}' -ErrorAction SilentlyContinue;
 "#,
                 target = target_esc,
                 extracted = extracted_esc,
-                temp_dir = temp_dir_esc
+                temp_dir = temp_dir_esc,
+                target_sidecar = target_sidecar_esc,
+                extracted_sidecar = extracted_sidecar_esc
             )
         }
 
         #[cfg(target_os = "linux")]
         {
-            format!(
-                /* WHY: Bug 2 fix — chmod +x ensures the extracted binary has execute permission
-                 * before being launched (extracted files may not inherit the original permissions).
-                 * set -e removed to allow explicit if/else error handling.
-                 * Sleep extended to 2 s to ensure the parent process exits before the rename. */
-                r#"#!/bin/bash
-sleep 2
-TARGET_BAK="{target}.bak"
-rm -f "$TARGET_BAK"
-if [ -f "{target}" ]; then
-    mv "{target}" "$TARGET_BAK"
-fi
-if mv "{extracted}" "{target}"; then
-    chmod +x "{target}"
-    "{target}" &
-    rm -f "$TARGET_BAK"
-    rm -rf "{temp_dir}"
-else
-    if [ -f "$TARGET_BAK" ]; then
-        mv "$TARGET_BAK" "{target}"
-    fi
-    rm -rf "{temp_dir}"
-    exit 1
-fi
-"#,
-                target = target_app.display(),
-                extracted = extracted_app.display(),
-                temp_dir = temp_dir_path.display()
-            )
+            linux::generate_script_content(target_app, extracted_app, temp_dir_path)
         }
     }
 }
@@ -177,11 +180,17 @@ mod tests {
             assert!(content.contains("Move-Item -Force $target $bak -ErrorAction Stop;"));
             assert!(content.contains("update.log"));
             assert!(content.contains("Add-Type -AssemblyName PresentationFramework"));
+            assert!(content.contains("kdv-office-worker.exe"));
+            assert!(content.contains("Copy-Item -Force $extractedSidecar $targetSidecar"));
         }
 
         #[cfg(target_os = "linux")]
         {
             assert!(content.contains("mv \"extracted_app\" \"target_app\""));
+            assert!(content.contains("EXTRACTED_SIDECAR=\"kdv-office-worker\""));
+            assert!(content.contains("TARGET_SIDECAR=\"kdv-office-worker\""));
+            assert!(content.contains("cp \"$EXTRACTED_SIDECAR\" \"$TARGET_SIDECAR\""));
+            assert!(content.contains("rollback()"));
         }
     }
 
@@ -195,9 +204,18 @@ mod tests {
         );
 
         assert!(content.contains(
-            "if mv \"/tmp/katana-update/extracted/KatanA\" \"/home/linuxbrew/.linuxbrew/bin/katana-desktop\""
+            "mv \"/tmp/katana-update/extracted/KatanA\" \"/home/linuxbrew/.linuxbrew/bin/katana-desktop\""
         ));
         assert!(content.contains("chmod +x \"/home/linuxbrew/.linuxbrew/bin/katana-desktop\""));
+        assert!(
+            content
+                .contains("EXTRACTED_SIDECAR=\"/tmp/katana-update/extracted/kdv-office-worker\"")
+        );
+        assert!(
+            content.contains("TARGET_SIDECAR=\"/home/linuxbrew/.linuxbrew/bin/kdv-office-worker\"")
+        );
+        assert!(content.contains("cp \"$EXTRACTED_SIDECAR\" \"$TARGET_SIDECAR\""));
+        assert!(content.contains("chmod +x \"$TARGET_SIDECAR\""));
         assert!(content.contains("\"/home/linuxbrew/.linuxbrew/bin/katana-desktop\" &"));
     }
 

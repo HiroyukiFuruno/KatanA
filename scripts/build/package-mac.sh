@@ -30,7 +30,8 @@ fi
 # ── Execution ─────────────────────────────────────────────────────────────────
 info "Packaging macOS .app bundle (release)..."
 
-cargo bundle --release --format osx --package katana-ui
+cargo bundle --release --format osx --package katana-ui --bin KatanA
+cargo build --release --package katana-ui --bin kdv-office-worker
 
 info "Overlaying project-specific Info.plist..."
 cp crates/katana-ui/Info.plist "${CONTENTS}/Info.plist"
@@ -41,6 +42,10 @@ perl -i -0pe 's/(<key>CFBundleShortVersionString<\/key>\s*<string>).*?(<\/string
 info "Adding Resources (icon.icns)..."
 mkdir -p "${CONTENTS}/Resources"
 cp assets/icon.icns "${CONTENTS}/Resources/icon.icns"
+
+info "Adding the isolated Office worker..."
+cp target/release/kdv-office-worker "${CONTENTS}/MacOS/kdv-office-worker"
+chmod 755 "${CONTENTS}/MacOS/kdv-office-worker"
 
 info "Applying Ad-hoc Code Signature (Required after modifying Info.plist to prevent 'damaged' Gatekeeper error)..."
 codesign --force --deep --sign - "${APP_BUNDLE}"

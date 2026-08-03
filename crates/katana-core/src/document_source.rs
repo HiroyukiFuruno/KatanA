@@ -6,6 +6,8 @@ const ZIP_LOCAL_MAGIC: &[u8] = &[0x50, 0x4b, 0x03, 0x04];
 const ZIP_EMPTY_MAGIC: &[u8] = &[0x50, 0x4b, 0x05, 0x06];
 const ZIP_SPANNED_MAGIC: &[u8] = &[0x50, 0x4b, 0x07, 0x08];
 
+pub const MAX_BINARY_DOCUMENT_BYTES: usize = 256 * 1024 * 1024;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BinaryDocumentFormat {
     Pdf,

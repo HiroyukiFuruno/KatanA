@@ -1,33 +1,13 @@
+mod constructor;
+
 use super::types::*;
 use super::{content_html_browser::show_html_browser_content, types::PreviewLogicOps};
 use crate::app_state::AppAction;
-use crate::preview_pane::PreviewPane;
 use eframe::egui;
 
 const BACK_TO_TOP_THRESHOLD: f32 = 400.0;
 
 impl<'a> PreviewContent<'a> {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        preview: &'a mut PreviewPane,
-        document: Option<&'a katana_core::document::Document>,
-        scroll: &'a mut crate::app_state::ScrollState,
-        action: &'a mut AppAction,
-        scroll_sync: bool,
-        search_query: Option<String>,
-        doc_search_active_index: Option<usize>,
-    ) -> Self {
-        Self {
-            preview,
-            document,
-            scroll,
-            action,
-            scroll_sync,
-            search_query,
-            doc_search_active_index,
-        }
-    }
-
     pub fn show(self, ui: &mut egui::Ui) {
         let PreviewContent {
             preview,
@@ -44,6 +24,17 @@ impl<'a> PreviewContent<'a> {
         let panel_width = ui.available_width();
         ui.set_min_width(panel_width);
         ui.set_max_width(panel_width);
+
+        if preview.has_document_surface() {
+            preview.show_content(
+                ui,
+                scroll.active_editor_line,
+                None,
+                search_query,
+                doc_search_active_index,
+            );
+            return;
+        }
 
         if preview.has_html_browser() {
             show_html_browser_content(

@@ -9,6 +9,7 @@ mod diff_review_source_tests;
 pub mod doc_close;
 pub mod doc_search;
 pub mod document;
+mod document_contract;
 pub mod document_edit;
 #[cfg(test)]
 mod document_edit_tests;
@@ -29,7 +30,7 @@ pub mod workspace;
 pub(crate) use action::ActionOps;
 pub(crate) use diff_review::DiffReviewActionOps;
 pub(crate) use diff_review::LintFixReviewPath;
-pub(crate) use document::DocumentOps;
+pub(crate) use document_contract::DocumentOps;
 pub(crate) use document_edit::DocumentEditOps;
 pub(crate) use export::ExportOps;
 pub(crate) use preview::PreviewOps;

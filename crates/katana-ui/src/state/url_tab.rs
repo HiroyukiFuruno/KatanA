@@ -1,4 +1,8 @@
+mod error;
+
 use std::collections::VecDeque;
+
+pub use error::{HtmlSourceError, UrlValidationError};
 
 pub const MAX_URL_HISTORY: usize = 20;
 
@@ -10,104 +14,43 @@ pub struct HtmlSource {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BinaryUrlSource {
+    pub bytes: Vec<u8>,
+    pub source_url: String,
+    pub mime: String,
+    pub format: katana_core::document_source::BinaryDocumentFormat,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FetchedUrlSource {
+    Html(HtmlSource),
+    Document(BinaryUrlSource),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UrlTab {
     pub source: HtmlSource,
     pub document_path: std::path::PathBuf,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum UrlValidationError {
-    Empty,
-    UnsupportedScheme,
-    UnsupportedFileHost,
-    MissingHost,
-    Malformed,
+pub struct BinaryUrlTab {
+    pub source_url: String,
+    pub document_path: std::path::PathBuf,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HtmlSourceError {
-    InvalidUrl(UrlValidationError),
-    InvalidRedirectUrl(UrlValidationError),
-    LocalFile {
-        url: String,
-        reason: String,
-    },
-    Network(String),
-    HttpStatus {
-        status: u16,
-        status_text: String,
-        url: String,
-        server: Option<String>,
-        cloudflare_challenge: bool,
-    },
-    NonHtmlContentType {
-        content_type: Option<String>,
-    },
-    BodyTooLarge {
-        limit: usize,
-        actual: usize,
-    },
-    InvalidUtf8,
-}
-
-pub(crate) type PendingUrlRequest = (
-    std::sync::mpsc::Receiver<Result<HtmlSource, HtmlSourceError>>,
-    Option<std::path::PathBuf>,
-);
-
-impl std::fmt::Display for HtmlSourceError {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::InvalidUrl(error) => write!(formatter, "Invalid URL: {error:?}"),
-            Self::InvalidRedirectUrl(error) => {
-                write!(formatter, "Invalid final redirect URL: {error:?}")
-            }
-            Self::LocalFile { url, reason } => {
-                write!(formatter, "Local HTML file error: {url}: {reason}")
-            }
-            Self::Network(error) => write!(formatter, "Network error: {error}"),
-            Self::HttpStatus {
-                status,
-                status_text,
-                url,
-                server,
-                cloudflare_challenge,
-            } => {
-                let server = server
-                    .as_deref()
-                    .map_or("server not disclosed", |server| server);
-                if *cloudflare_challenge {
-                    return write!(
-                        formatter,
-                        "Main document request failed: HTTP {status}: {status_text}. URL: {url}. \
-                         Server: {server}. Cause: browser verification challenge \
-                         (cf-mitigated=challenge); CSS and JavaScript were not started."
-                    );
-                }
-                write!(
-                    formatter,
-                    "Main document request failed: HTTP {status}: {status_text}. \
-                     URL: {url}. Server: {server}."
-                )
-            }
-            Self::NonHtmlContentType { content_type } => {
-                write!(formatter, "Expected HTML content, got {content_type:?}")
-            }
-            Self::BodyTooLarge { limit, actual } => {
-                write!(
-                    formatter,
-                    "Response body is {actual} bytes; limit is {limit} bytes"
-                )
-            }
-            Self::InvalidUtf8 => write!(formatter, "Response body is not valid UTF-8"),
-        }
-    }
+pub(crate) struct PendingUrlRequest {
+    pub(crate) response_rx: std::sync::mpsc::Receiver<Result<FetchedUrlSource, HtmlSourceError>>,
+    pub(crate) target_document: Option<std::path::PathBuf>,
+    pub(crate) source_url: String,
+    pub(crate) deadline: std::time::Instant,
 }
 
 pub struct UrlTabState {
     pub input: String,
     pub history: VecDeque<String>,
     pub tabs: Vec<UrlTab>,
+    pub document_tabs: Vec<BinaryUrlTab>,
     pub active_tab: Option<usize>,
     pub is_loading: bool,
     pub last_error: Option<HtmlSourceError>,
@@ -126,6 +69,7 @@ impl UrlTabState {
             input: String::new(),
             history: VecDeque::with_capacity(MAX_URL_HISTORY),
             tabs: Vec::new(),
+            document_tabs: Vec::new(),
             active_tab: None,
             is_loading: false,
             last_error: None,
@@ -165,6 +109,38 @@ impl UrlTabState {
             .map(|tab| &tab.source)
     }
 
+    pub fn document_source_url_for_document(
+        &self,
+        document_path: &std::path::Path,
+    ) -> Option<&str> {
+        self.document_tabs
+            .iter()
+            .find(|tab| tab.document_path == document_path)
+            .map(|tab| tab.source_url.as_str())
+    }
+
+    pub fn open_document_source(&mut self, source_url: String, document_path: std::path::PathBuf) {
+        self.input = source_url.clone();
+        self.last_error = None;
+        self.is_loading = false;
+        self.record_history(&source_url);
+        if let Some(index) = self
+            .document_tabs
+            .iter()
+            .position(|tab| tab.document_path == document_path)
+        {
+            self.document_tabs[index] = BinaryUrlTab {
+                source_url,
+                document_path,
+            };
+        } else {
+            self.document_tabs.push(BinaryUrlTab {
+                source_url,
+                document_path,
+            });
+        }
+    }
+
     pub(crate) fn cancel_pending_url_requests(&mut self) {
         self.pending_url_requests.clear();
         self.is_loading = false;
@@ -185,6 +161,28 @@ impl UrlTabState {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn binary_url_tabs_keep_refresh_identity_without_retaining_payloads() {
+        let mut state = UrlTabState::new();
+        let path = std::path::PathBuf::from("Katana://URL/report.pdf");
+        state.open_document_source("https://example.test/first.pdf".to_owned(), path.clone());
+        assert_eq!(
+            Some("https://example.test/first.pdf"),
+            state.document_source_url_for_document(&path)
+        );
+
+        state.open_document_source("https://example.test/final.pdf".to_owned(), path.clone());
+        assert_eq!(1, state.document_tabs.len());
+        assert_eq!(
+            Some("https://example.test/final.pdf"),
+            state.document_source_url_for_document(&path)
+        );
+        assert_eq!(
+            Some("https://example.test/final.pdf"),
+            state.history.front().map(String::as_str)
+        );
+    }
 
     fn source(url: &str) -> HtmlSource {
         HtmlSource {

@@ -148,11 +148,17 @@ inspect_tar_gz() {
         echo "Actual top-level entries:"
         tar -tzf "$name" | awk -F/ '{print $1}' | sort -u
     fi
+    if tar -tzf "$name" | grep -qxF "kdv-office-worker"; then
+        ok "Asset contract OK: top-level 'kdv-office-worker' present"
+    else
+        fail "Asset contract VIOLATION: top-level 'kdv-office-worker' NOT found"
+    fi
 }
 
 inspect_zip() {
     local name="$1"
     local expected="$2"
+    local expected_sidecar="$3"
     local entries
     section "$name (zip)"
     download "$name" || return
@@ -167,6 +173,11 @@ inspect_zip() {
         fail "Asset contract VIOLATION: '$expected' NOT found"
         echo "Actual top-level entries:"
         awk -F/ '{print $1}' <<<"$entries" | sort -u | grep -v '^$' | sed -n '1,20p'
+    fi
+    if grep -qxF "$expected_sidecar" <<<"$entries"; then
+        ok "Asset contract OK: '$expected_sidecar' present"
+    else
+        fail "Asset contract VIOLATION: '$expected_sidecar' NOT found"
     fi
 }
 
@@ -210,9 +221,9 @@ verify_checksums() {
 for asset in $(assets_for_filter); do
     case "$asset" in
         *.tar.gz) inspect_tar_gz "$asset" ;;
-        KatanA-linux*.zip)   inspect_zip "$asset" "KatanA" ;;
-        KatanA-windows*.zip) inspect_zip "$asset" "KatanA.exe" ;;
-        KatanA-macOS*.zip)   inspect_zip "$asset" "KatanA Desktop.app/" ;;
+        KatanA-linux*.zip)   inspect_zip "$asset" "KatanA" "kdv-office-worker" ;;
+        KatanA-windows*.zip) inspect_zip "$asset" "KatanA.exe" "kdv-office-worker.exe" ;;
+        KatanA-macOS*.zip)   inspect_zip "$asset" "KatanA Desktop.app/" "KatanA Desktop.app/Contents/MacOS/kdv-office-worker" ;;
         *.msi)               inspect_msi "$asset" ;;
         *) warn "Unknown asset type: $asset" ;;
     esac
@@ -224,9 +235,9 @@ section "Summary"
 ok "Inspection complete. Use this output as the verification baseline."
 echo
 echo "Expected asset contract:"
-echo "  Linux  tar.gz: top-level file 'KatanA'"
-echo "  Win    zip   : top-level file 'KatanA.exe'"
-echo "  macOS  zip   : top-level dir  'KatanA Desktop.app/'"
+echo "  Linux  tar.gz: top-level files 'KatanA', 'kdv-office-worker'"
+echo "  Win    zip   : top-level files 'KatanA.exe', 'kdv-office-worker.exe'"
+echo "  macOS  zip   : app bundle with 'KatanA' and 'kdv-office-worker'"
 echo
 echo "If actual entries diverge from the contract, file it under"
 echo "  scripts/release/check-release-asset-contract.sh"

@@ -87,6 +87,22 @@ jobs:
       - name: Run tests
         run: cargo test --workspace
 
+      - name: Run multi-format headless acceptance
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        shell: bash
+        run: |
+          scripts/screenshot/run.sh \
+            --request scripts/screenshot/examples/v0-22-38-multi-format-documents.json \
+            --output "target/multi-format-headless-${{ runner.os }}"
+
+      - name: Upload multi-format headless evidence
+        if: always() && github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: multi-format-headless-${{ runner.os }}
+          path: target/multi-format-headless-${{ runner.os }}
+          if-no-files-found: error
+
       - name: Run coverage
         if: runner.os == 'macOS' && github.event_name == 'pull_request'
         run: |
@@ -147,6 +163,22 @@ jobs:
 
       - name: Run linter
         run: just lint
+
+  supply-chain:
+    name: Dependency Supply Chain
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@56545b37b57562edd73171cb6c62cc509db4c34e # v2.81.7
+        with:
+          tool: cargo-deny@0.20.2
+          fallback: none
+
+      - name: Check advisories, licenses, and sources
+        run: cargo deny check
 
   # CodeQL security scanning (Task 7.2 / 7.3).
   codeql:
