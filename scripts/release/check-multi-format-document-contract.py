@@ -384,7 +384,10 @@ def verify(root: Path, target_version: str) -> None:
     )
     require_markers(
         root / ".github/workflows/release-readiness.yml",
-        ('check-pr-ready.sh "$version" --pr-bootstrap',),
+        (
+            "tool: cargo-deny@0.20.2",
+            'check-pr-ready.sh "$version" --pr-bootstrap',
+        ),
     )
     print("OK: KatanA multi-format document ownership and release contract is satisfied.")
 

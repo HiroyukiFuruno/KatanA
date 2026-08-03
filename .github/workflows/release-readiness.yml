@@ -25,6 +25,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
         with:
           toolchain: stable
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@56545b37b57562edd73171cb6c62cc509db4c34e # v2.81.7
+        with:
+          tool: cargo-deny@0.20.2
+          fallback: none
       - name: Run PR readiness check
         shell: bash
         env:
