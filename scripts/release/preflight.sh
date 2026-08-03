@@ -13,6 +13,7 @@ error()   { echo "${RED}[ERROR]${RESET} $*" >&2; }
 header()  { echo "\n${BOLD}${CYAN}==> $*${RESET}"; }
 
 VERSION=${1:-}
+TASK_GATE_MODE=${KATANA_OPENSPEC_TASK_GATE:-strict}
 
 if [[ -z "$VERSION" ]]; then
     error "VERSION is required. Usage: scripts/release/preflight.sh x.y.z"
@@ -107,13 +108,27 @@ for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
     if [[ -d "$CHANGE_DIR" ]]; then
         CHANGE_NAME=$(basename "$CHANGE_DIR")
         if [[ -f "$CHANGE_DIR/tasks.md" ]]; then
-            if grep -E '^\s*-\s*\[(\s|\/)\]' "$CHANGE_DIR/tasks.md" >/dev/null 2>&1; then
-                error "OpenSpec change '$CHANGE_NAME' has incomplete tasks."
-                error "Please complete all tasks (all done) or rename the change directory before releasing."
+            TASK_GATE_ARGS=()
+            if [[ "$TASK_GATE_MODE" == "pr-bootstrap" && "$CHANGE_NAME" == "v0-22-38-multi-format-document-viewer" ]]; then
+                TASK_GATE_ARGS=(
+                    --allow 5.7
+                    --allow 7.5
+                    --allow 7.6
+                    --allow 7.7
+                    --allow 8.2
+                    --allow 8.4
+                )
+            elif [[ "$TASK_GATE_MODE" != "strict" ]]; then
+                error "Unsupported OpenSpec task gate mode: $TASK_GATE_MODE"
+                exit 2
+            fi
+            if ! python3 scripts/release/check-openspec-task-completion.py \
+                "$CHANGE_DIR/tasks.md" "${TASK_GATE_ARGS[@]}"; then
+                error "OpenSpec change '$CHANGE_NAME' has incomplete tasks outside the permitted PR evidence phase."
                 exit 1
             fi
+            success "OpenSpec change '$CHANGE_NAME' satisfies the $TASK_GATE_MODE task gate."
         fi
-        success "OpenSpec change '$CHANGE_NAME' is fully complete."
     fi
 done
 

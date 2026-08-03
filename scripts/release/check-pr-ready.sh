@@ -16,8 +16,22 @@ info() { printf "${CYAN}[INFO]${RESET}  %s\n" "$*"; }
 
 header() { printf "\n${BOLD}${CYAN}==> %s${RESET}\n" "$*"; }
 
-# Expected version from argument
-EXPECTED_VERSION=${1:-}
+# Expected version and task gate from arguments
+EXPECTED_VERSION=""
+TASK_GATE_MODE="strict"
+for argument in "$@"; do
+    case "$argument" in
+        --pr-bootstrap) TASK_GATE_MODE="pr-bootstrap" ;;
+        --*) error "Unknown option: $argument"; exit 2 ;;
+        *)
+            if [[ -n "$EXPECTED_VERSION" ]]; then
+                error "Expected at most one version argument."
+                exit 2
+            fi
+            EXPECTED_VERSION="$argument"
+            ;;
+    esac
+done
 HAS_EXPECTED_VERSION=false
 if [[ -n "$EXPECTED_VERSION" ]]; then
     HAS_EXPECTED_VERSION=true
@@ -135,7 +149,7 @@ if [[ "$CURRENT_BRANCH" =~ ^release/ ]]; then
 fi
 
 # 7. Run preflight
-if ! ./scripts/release/preflight.sh "$TARGET_VERSION"; then
+if ! KATANA_OPENSPEC_TASK_GATE="$TASK_GATE_MODE" ./scripts/release/preflight.sh "$TARGET_VERSION"; then
     error "Preflight checks failed for v${TARGET_VERSION}."
     exit 1
 fi

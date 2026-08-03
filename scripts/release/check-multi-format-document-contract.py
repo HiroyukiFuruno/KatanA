@@ -368,6 +368,24 @@ def verify(root: Path, target_version: str) -> None:
             "multi-format-headless-${{ runner.os }}",
         ),
     )
+    require_markers(
+        root / "scripts/release/preflight.sh",
+        (
+            'TASK_GATE_MODE=${KATANA_OPENSPEC_TASK_GATE:-strict}',
+            '--allow 5.7',
+            '--allow 7.5',
+            '--allow 8.4',
+            'check-openspec-task-completion.py',
+        ),
+    )
+    require_markers(
+        root / "lefthook.yml",
+        ("check-pr-ready.sh --pr-bootstrap",),
+    )
+    require_markers(
+        root / ".github/workflows/release-readiness.yml",
+        ('check-pr-ready.sh "$version" --pr-bootstrap',),
+    )
     print("OK: KatanA multi-format document ownership and release contract is satisfied.")
 
 
