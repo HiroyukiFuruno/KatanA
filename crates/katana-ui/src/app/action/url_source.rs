@@ -189,6 +189,7 @@ mod tests {
 
     #[test]
     fn user_entered_http_document_keeps_origin_through_refresh_and_browser_session() -> TestResult {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
         let (url, server) = html_server()?;
         let ctx = egui::Context::default();
         let mut app = app();
@@ -303,6 +304,7 @@ mod tests {
 
     #[test]
     fn user_entered_file_url_opens_the_local_html_browser_session() -> TestResult {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
         let directory = tempfile::tempdir()?;
         let path = directory.path().join("local document.html");
         std::fs::write(
@@ -496,12 +498,14 @@ mod tests {
 
     #[test]
     fn loopback_html_resources_are_requested_for_html_page() -> TestResult {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
         let (url, request_log, server) = html_server_with_resource_requests()?;
         let ctx = egui::Context::default();
         let mut app = app();
 
         app.handle_open_url(&ctx, format!("{url}/page"));
         wait_for_all_url_loads(&mut app, &ctx)?;
+        start_pending_browser_sessions(&mut app)?;
 
         let active = app.state.active_path().unwrap();
         let source = app
@@ -797,7 +801,6 @@ mod tests {
             thread::sleep(Duration::from_millis(5));
         }
         app.poll_url_source(ctx);
-        start_pending_browser_sessions(app)?;
         for preview in app.tab_previews.iter_mut() {
             preview.pane.poll_html_browser(ctx);
         }
