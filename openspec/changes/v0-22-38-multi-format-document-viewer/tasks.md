@@ -70,6 +70,6 @@
 ## 8. Final verification
 
 - [x] 8.1 `rtk ./scripts/openspec validate v0-22-38-multi-format-document-viewer --strict --no-interactive`を実行する
-- [ ] 8.2 `rtk just check`と `rtk ./scripts/release/check-pr-ready.sh 0.22.38`を実行する
+- [x] 8.2 `rtk just check`と `rtk ./scripts/release/check-pr-ready.sh 0.22.38 --pr-bootstrap`を実行する
 - [x] 8.3 KDV/KatanA call chain、registry dependency、ownership、four-format evidenceをself-reviewする（証跡: `evidence/self-review.md`）
 - [ ] 8.4 2026-08-02の明示承認を記録し、未検証項目を残さずcommit / push / PR / release workflowへ進む
