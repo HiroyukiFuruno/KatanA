@@ -364,9 +364,10 @@ def verify(root: Path, target_version: str) -> None:
         ("applying document command", "produced document frame"),
     )
     require_markers(
-        root / "crates/katana-ui/src/preview_pane/document_surface/tests.rs",
+        root / "crates/katana-ui/src/preview_pane/document_surface/worker_tests.rs",
         (
-            "document_surface_worker_preserves_commands_until_each_frame_arrives",
+            "document_surface_preserves_commands_until_each_frame_arrives",
+            "document_worker_applies_queued_commands_in_order",
             "document_surface_preserves_a_command_when_the_worker_channel_is_full",
         ),
     )
