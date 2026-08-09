@@ -372,8 +372,14 @@ def verify(root: Path, target_version: str) -> None:
         ),
     )
     require_markers(
+        root / "crates/katana-ui/src/app/action/refresh_content.rs",
+        ('self.full_refresh_preview(&path, "", is_manual, 1);',),
+    )
+    require_markers(
         root / "scripts/screenshot/examples/v0-22-38-multi-format-documents.json",
         (
+            '"auto_refresh": true',
+            '"auto_refresh_interval_secs": 0.25',
             '"expected_document_format": "pdf"',
             '"expected_document_format": "docx"',
             '"expected_document_format": "xlsx"',

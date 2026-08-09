@@ -6,7 +6,9 @@
       "theme": "light",
       "locale": "en",
       "explorer_visible": true,
-      "linter_enabled": false
+      "linter_enabled": false,
+      "auto_refresh": true,
+      "auto_refresh_interval_secs": 0.25
     },
     "http_server": {
       "mount_prefix": "/documents/",

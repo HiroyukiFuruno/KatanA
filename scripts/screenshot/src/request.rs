@@ -54,6 +54,8 @@ pub struct FixtureSettings {
     pub explorer_visible: Option<bool>,
     pub no_extension: Option<bool>,
     pub linter_enabled: Option<bool>,
+    pub auto_refresh: Option<bool>,
+    pub auto_refresh_interval_secs: Option<f64>,
     pub slideshow_show_diagram_controls: Option<bool>,
     pub preview_show_diagram_controls: Option<bool>,
 }

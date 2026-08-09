@@ -157,7 +157,9 @@ impl KatanaApp {
             return;
         }
         if katana_core::workspace::TreeEntry::path_is_document(&path) {
-            self.full_refresh_preview(&path, "", true, 1);
+            /* WHY: Automatic refreshes must preserve navigation when the binary revision is
+             * unchanged; manual refresh still forces a new KDV session. */
+            self.full_refresh_preview(&path, "", is_manual, 1);
             return;
         }
         match std::fs::read_to_string(&path) {
