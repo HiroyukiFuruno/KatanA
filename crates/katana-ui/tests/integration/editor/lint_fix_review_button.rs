@@ -260,6 +260,10 @@ fn open_three_documents_with_fixable_diagnostics(
             .state_mut()
             .trigger_action(AppAction::SelectDocument(path.clone()));
         harness.run_steps(3);
+    }
+    harness.run_steps(5);
+
+    for path in &paths {
         harness
             .state_mut()
             .app_state_mut()
@@ -270,7 +274,7 @@ fn open_three_documents_with_fixable_diagnostics(
                 vec![fixable_diagnostic(path.clone())],
             );
     }
-    harness.run_steps(5);
+    harness.step();
     paths
 }
 
