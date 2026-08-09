@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "target": "v0.22.38",
+  "gate": "strict-100-percent-lines-zero-uncovered",
+  "files": {
+    "painter.rs": { "covered": 16, "count": 16, "percent": 100.0 },
+    "painter_grid.rs": { "covered": 99, "count": 99, "percent": 100.0 },
+    "painter_grid_conditional.rs": {
+      "covered": 113,
+      "count": 113,
+      "percent": 100.0
+    },
+    "painter_grid_style.rs": {
+      "covered": 73,
+      "count": 73,
+      "percent": 100.0
+    },
+    "painter_grid_text.rs": {
+      "covered": 108,
+      "count": 108,
+      "percent": 100.0
+    },
+    "painter_page.rs": { "covered": 70, "count": 70, "percent": 100.0 },
+    "source_io.rs": { "covered": 133, "count": 133, "percent": 100.0 }
+  },
+  "totals": { "covered": 612, "count": 612, "percent": 100.0 }
+}

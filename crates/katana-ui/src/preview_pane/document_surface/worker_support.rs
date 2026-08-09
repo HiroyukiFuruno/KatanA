@@ -1,5 +1,3 @@
-use katana_core::document_source::BinaryDocumentFormat;
-use katana_document_viewer::OfficeDocumentFormat;
 use std::path::PathBuf;
 
 use super::source::DocumentSurfaceSource;
@@ -10,12 +8,14 @@ pub(super) const INITIAL_VIEWPORT_HEIGHT: u32 = 640;
 pub(super) const MIN_DOCUMENT_RENDER_SCALE: f32 = 0.25;
 pub(super) const MAX_DOCUMENT_RENDER_SCALE: f32 = 4.0;
 
-pub(super) fn office_format(source: &DocumentSurfaceSource) -> Option<OfficeDocumentFormat> {
-    match source.format {
-        BinaryDocumentFormat::Docx => Some(OfficeDocumentFormat::Docx),
-        BinaryDocumentFormat::Xlsx => Some(OfficeDocumentFormat::Xlsx),
-        BinaryDocumentFormat::Pptx => Some(OfficeDocumentFormat::Pptx),
-        BinaryDocumentFormat::Pdf => None,
+pub(super) const fn format_extension(
+    format: katana_document_viewer::ViewerDocumentFormat,
+) -> &'static str {
+    match format {
+        katana_document_viewer::ViewerDocumentFormat::Pdf => "pdf",
+        katana_document_viewer::ViewerDocumentFormat::Docx => "docx",
+        katana_document_viewer::ViewerDocumentFormat::Xlsx => "xlsx",
+        katana_document_viewer::ViewerDocumentFormat::Pptx => "pptx",
     }
 }
 

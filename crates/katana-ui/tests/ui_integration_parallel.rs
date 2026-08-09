@@ -34,6 +34,20 @@ pub fn lock_serial_test_mutex() -> MutexGuard<'static, ()> {
         .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
+pub struct IntegrationUiOps;
+
+impl IntegrationUiOps {
+    pub fn run(
+        context: &eframe::egui::Context,
+        input: eframe::egui::RawInput,
+        render: impl FnMut(&mut eframe::egui::Ui),
+    ) -> eframe::egui::FullOutput {
+        let mut output = context.run_ui(input, render);
+        output.textures_delta.clear();
+        output
+    }
+}
+
 pub mod integration {
     pub use super::get_serial_test_mutex;
     pub use super::lock_serial_test_mutex;

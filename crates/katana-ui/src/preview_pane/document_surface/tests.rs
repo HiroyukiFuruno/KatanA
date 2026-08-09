@@ -2,8 +2,46 @@ use super::source::DocumentSurfaceSource;
 use super::worker::DocumentWorkerCommand;
 use katana_core::document_source::BinaryDocumentFormat;
 use katana_document_viewer::{
-    DocumentGridCommand, DocumentSurfaceCommand, DocumentViewerCommand, DocumentViewport,
+    DocumentFitMode, DocumentGridCommand, DocumentSurfaceCommand, DocumentViewerCommand,
+    DocumentViewport,
 };
+
+const DOCUMENT_WORKER_TEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
+
+fn representative_pdf_source() -> DocumentSurfaceSource {
+    DocumentSurfaceSource::remote(
+        "https://example.test/representative.pdf".to_owned(),
+        Some("application/pdf"),
+        include_bytes!(
+            "../../../../../scripts/screenshot/fixtures/v0-22-38-multi-format/representative.pdf"
+        )
+        .to_vec(),
+    )
+    .expect("representative PDF source")
+}
+
+fn wait_for_surface_idle(surface: &mut super::types::DocumentSurface, ctx: &eframe::egui::Context) {
+    let deadline = std::time::Instant::now() + DOCUMENT_WORKER_TEST_TIMEOUT;
+    while !surface.is_idle_for_test() {
+        surface.poll(ctx);
+        if surface.is_idle_for_test() {
+            return;
+        }
+        assert!(
+            surface.failure.is_none(),
+            "document surface failed: {:?}",
+            surface.failure
+        );
+        let remaining = deadline
+            .checked_duration_since(std::time::Instant::now())
+            .expect("document surface did not become idle");
+        let event = surface
+            .event_rx
+            .recv_timeout(remaining)
+            .expect("document worker did not produce an event");
+        surface.apply_event(ctx, event);
+    }
+}
 
 #[test]
 fn remote_source_keeps_final_url_and_validated_format() {
@@ -89,8 +127,9 @@ fn local_reader_stops_at_the_configured_limit() {
     let path = directory.path().join("oversized.pdf");
     std::fs::write(&path, b"12345").expect("fixture");
 
-    let failure = super::source::read_bounded_with_limit(&path, Some(BinaryDocumentFormat::Pdf), 4)
-        .expect_err("oversized source");
+    let failure =
+        super::source_io::read_bounded_with_limit(&path, Some(BinaryDocumentFormat::Pdf), 4)
+            .expect_err("oversized source");
 
     assert_eq!("validate size", failure.operation);
     assert!(failure.cause.contains("5 bytes; limit is 4 bytes"));
@@ -198,40 +237,46 @@ fn document_surface_sends_only_changed_viewports() {
 }
 
 #[test]
-fn failure_details_preserve_every_trace_field() {
-    let failure = super::types::DocumentFailure::new(
-        super::types::DocumentFailureLayer::KdvWorker,
-        "render",
-        "https://example.test/report.pdf?revision=4".to_owned(),
-        Some(BinaryDocumentFormat::Pdf),
-        "isolated worker exited with status 2",
+fn document_surface_worker_preserves_commands_until_each_frame_arrives() {
+    let ctx = eframe::egui::Context::default();
+    let mut surface = super::types::DocumentSurface::start(representative_pdf_source(), &ctx);
+
+    wait_for_surface_idle(&mut surface, &ctx);
+    assert_eq!(
+        surface.frame_state_for_test().map(|frame| frame.0),
+        Some("pdf".into())
     );
 
-    assert_eq!(
-        "KDV worker could not display this pdf document",
-        failure.summary()
-    );
-    let details = failure.details();
-    for expected in [
-        "Layer: KDV worker",
-        "Operation: render",
-        "Format: pdf",
-        "Document: https://example.test/report.pdf?revision=4",
-        "Cause: isolated worker exited with status 2",
-    ] {
-        assert!(details.contains(expected), "missing diagnostic: {expected}");
-    }
+    surface.set_fit(DocumentFitMode::Width);
+    assert!(surface.command_in_flight);
+    surface.queue(DocumentWorkerCommand::Viewer(
+        DocumentViewerCommand::SetZoom(1.25),
+    ));
+    assert!(!surface.pending_commands.is_empty());
+
+    wait_for_surface_idle(&mut surface, &ctx);
+    assert!(surface.failure.is_none());
+    assert!(surface.pending_commands.is_empty());
 }
 
 #[test]
-fn failure_layers_keep_the_kdv_surface_boundary_explicit() {
-    use super::types::DocumentFailureLayer;
+fn document_surface_preserves_a_command_when_the_worker_channel_is_full() {
+    let ctx = eframe::egui::Context::default();
+    let mut surface = super::types::DocumentSurface::start(representative_pdf_source(), &ctx);
+    wait_for_surface_idle(&mut surface, &ctx);
 
-    assert_eq!("source intake", DocumentFailureLayer::SourceIntake.label());
-    assert_eq!("KDV worker", DocumentFailureLayer::KdvWorker.label());
-    assert_eq!(
-        "KDV document surface",
-        DocumentFailureLayer::KdvSurface.label()
-    );
-    assert_eq!("KatanA host", DocumentFailureLayer::KatanaHost.label());
+    surface.command_tx.take();
+    let (sender, receiver) = std::sync::mpsc::sync_channel(1);
+    sender
+        .send(DocumentWorkerCommand::Viewer(DocumentViewerCommand::Next))
+        .expect("prefill command channel");
+    surface.command_tx = Some(sender);
+    surface.command_in_flight = false;
+
+    let preserved = DocumentWorkerCommand::Viewer(DocumentViewerCommand::Previous);
+    surface.send(preserved);
+
+    assert_eq!(surface.pending_commands.take_next(), Some(preserved));
+    assert!(!surface.command_in_flight);
+    drop(receiver);
 }

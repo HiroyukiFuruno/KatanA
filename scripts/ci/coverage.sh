@@ -78,6 +78,16 @@ info "Using $JOBS parallel jobs/threads"
 info "Cleaning up old coverage data..."
 cargo llvm-cov clean --workspace
 
+info "Building the real Office worker beside the coverage test binaries..."
+COVERAGE_TARGET_DIR=${CARGO_LLVM_COV_TARGET_DIR:-target/llvm-cov-target}
+CARGO_TARGET_DIR="$COVERAGE_TARGET_DIR" cargo build -p katana-ui --bin kdv-office-worker -q
+if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ]]; then
+    OFFICE_WORKER_NAME=kdv-office-worker.exe
+else
+    OFFICE_WORKER_NAME=kdv-office-worker
+fi
+export KATANA_KDV_OFFICE_WORKER="${COVERAGE_TARGET_DIR:A}/debug/${OFFICE_WORKER_NAME}"
+
 info "Running workspace lib/bin tests with llvm-cov (-j $JOBS)..."
 llvm_cov --no-report --jobs "$JOBS" --workspace --lib --bins -q \
     -- --test-threads="$JOBS"
@@ -112,4 +122,7 @@ if [[ "$UNCOV" -ne 0 ]]; then
     false
 fi
 
-success "Coverage gate passed (all meaningful lines executed viasubs-region calculation logic fallback)."
+info "Verifying strict coverage for the v0.22.38 document adapter..."
+cargo llvm-cov report --json | python3 scripts/ci/check-document-surface-coverage.py
+
+success "Coverage gate passed (all meaningful lines executed via subs-region calculation logic fallback)."

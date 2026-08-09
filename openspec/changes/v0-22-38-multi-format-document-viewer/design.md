@@ -5,8 +5,8 @@ PDF / DOCX / XLSX / PPTX viewerは持たない。旧 `v0.22.12` changeはKatanA 
 renderer、PDFium、WebViewを前提にしており、現在のKatanA -> KDV/KRR責務境界と
 Rust-first方針に反するため再利用しない。
 
-KDV `v0.4.1` がPDF / DOCX / XLSX / PPTXのengine evaluation、format adapter、
-neutral artifact、viewer state、diagnosticsを所有する。KatanAはengine選定へ介入せず、
+KDV `v0.5.0` がPDF / DOCX / XLSX / PPTXのengine evaluation、format routing、
+worker lifecycle、materialization、neutral artifact、viewer state、diagnosticsを所有する。KatanAはengine選定へ介入せず、
 承認済みかつ公開済みKDV contractだけをhost shellへ接続する。
 
 ## Goals / Non-Goals
@@ -33,10 +33,15 @@ neutral artifact、viewer state、diagnosticsを所有する。KatanAはengine�
 ### D1. KatanAはthin hostに限定する
 
 KatanAが所有するのはsource intake、tab identity、lifecycle、host command、
-platform I/Oだけとする。KDVがformat detection後のartifact、viewer state、
+platform I/O、現行egui backendへの中立frame投影だけとする。KDVがformat detection後の
+engine session、worker、render scale、XLSX materialization、artifact、viewer state、
 capability、diagnostics、document surfaceを所有し、KUC implementationをprivateに利用する。
 KatanAはKUCまたはKDV/KUC混成crateへ直接依存せず、KDV document surfaceのcommandと
 frameだけをhost shellへ接続する。
+
+KatanAは`PdfViewerSession`、`OfficeStaticViewerSession`、`SpreadsheetViewerSession`、
+`SpreadsheetGridSurface`を直接構築せず、format別runtime enumも持たない。pointer座標を
+KDV commandとして渡し、document hit-test、layout、selection algorithmを実装しない。
 
 KatanA内にformat managerやprivate rendererを置く案は、責務重複とquality driftを
 生むため採用しない。KRRは文書内diagram/mathでKDVが既存public APIを使う場合だけ
@@ -69,9 +74,9 @@ worker停止だけを表示する案は原因追跡を妨げるため採用し�
 
 ### D5. KDV publicationをrelease integrationのgateにする
 
-production `Cargo.toml` とrelease harnessはcrates.ioのKDV `0.4.1`以上の`0.4.x`だけを利用し、
+production `Cargo.toml` とrelease harnessはcrates.ioのKDV `0.5.0`を利用し、
 path / git dependencyを許可しない。KDV側のengine feasibilityとuser approval、
-KDV v0.4.1 publication、KatanA dependency update、headless acceptanceの順で進める。
+KDV v0.5.0 publication、KatanA dependency update、headless acceptanceの順で進める。
 
 ### D6. release targetはv0.22.38とし、将来minor計画を繰り上げない
 
@@ -97,8 +102,8 @@ version-undecidedのまま保持する。
 
 1. KDV feasibility gateとユーザー承認を完了する。
 2. 必要な場合だけKUC generic 2D gridを先行releaseする。
-3. KDV `v0.4.1`をreleaseし、crates.io artifactを検証する。
-4. KatanAを公開済みKDV `0.4.1`へ更新し、source routingとviewer bridgeを実装する。
+3. KDV `v0.5.0`をreleaseし、crates.io artifactを検証する。
+4. KatanAを公開済みKDV `0.5.0`へ更新し、source routingとthin backend projectionを実装する。
 5. format corpus、failure corpus、URL corpusをheadless acceptanceで検証する。
 6. `v0.22.38` adjacent SemVer、ownership、registry dependency、release artifactを検証する。
 
@@ -110,5 +115,5 @@ behaviorを維持する。unsupported formatを別rendererへfallbackしない�
 - PDFはKDV `hayro` profileのstatic page artifactを表示する
 - DOCX / PPTXはKDV `office2pdf` profileでcanonical PDFへ変換し、KDV `hayro` page / slide artifactを表示する
 - XLSXはKDV `IronCalc` profileのsemantic sheet artifactをKDV private document surface経由のgeneric 2D gridとして表示する
-- KatanAはKDV `DocumentSurfaceFrame` / `DocumentSurfaceHost`だけを利用し、KUC node、format別変換、layout、rendererを所有しない
+- KatanAはKDV統一document session / `DocumentSurfaceFrame`だけを利用し、KUC node、format別session、materialization、layout、hit-test、rendererを所有しない
 - direct document URLは最終 `http` / `https` URL、MIME、signature、256 MiB上限、30秒のtransport / host deadlineを検証する

@@ -531,6 +531,8 @@ mod tests {
     }
 
     type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+    type RequestLog = std::sync::Arc<std::sync::Mutex<Vec<String>>>;
+    type LoggedTestServer = (String, RequestLog, thread::JoinHandle<std::io::Result<()>>);
 
     fn app() -> KatanaApp {
         let state = crate::app_state::AppState::new(
@@ -557,11 +559,7 @@ mod tests {
         Ok((url, server))
     }
 
-    fn html_server_with_resource_requests() -> TestResult<(
-        String,
-        std::sync::Arc<std::sync::Mutex<Vec<String>>>,
-        thread::JoinHandle<std::io::Result<()>>,
-    )> {
+    fn html_server_with_resource_requests() -> TestResult<LoggedTestServer> {
         let listener = TcpListener::bind("127.0.0.1:0")?;
         let url = format!("http://{}", listener.local_addr()?);
         let request_log = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
@@ -570,11 +568,7 @@ mod tests {
         Ok((url, request_log, server))
     }
 
-    fn html_server_with_redirect() -> TestResult<(
-        String,
-        std::sync::Arc<std::sync::Mutex<Vec<String>>>,
-        thread::JoinHandle<std::io::Result<()>>,
-    )> {
+    fn html_server_with_redirect() -> TestResult<LoggedTestServer> {
         let listener = TcpListener::bind("127.0.0.1:0")?;
         let url = format!("http://{}", listener.local_addr()?);
         let request_log = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
@@ -750,7 +744,7 @@ mod tests {
         for _ in 0..RESPONSE_COUNT {
             let (mut stream, _) = listener.accept()?;
             let mut request = [0; 1024];
-            stream.read(&mut request)?;
+            let _request_bytes = stream.read(&mut request)?;
             write_html_response(
                 &mut stream,
                 200,

@@ -24,7 +24,7 @@ fn assert_font_jitter(context_name: &str, font_size: f32) {
     let mut eng_glyph = None;
     let mut jpn_glyph = None;
 
-    let _ = ctx.run_ui(Default::default(), |ctx| {
+    crate::test_ui::TestUiOps::run(&ctx, Default::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let galley = ui.painter().layout_no_wrap(
                 text.clone(),
@@ -100,7 +100,7 @@ fn test_font_jitter_6_monospace() {
     let mut jpn_glyph = None;
 
     let mut primitives = vec![];
-    let _ = ctx.run_ui(Default::default(), |ctx| {
+    crate::test_ui::TestUiOps::run(&ctx, Default::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let galley = ui.painter().layout_no_wrap(
                 text.clone(),
@@ -173,7 +173,7 @@ fn test_font_jitter_7_codeblock_layoutjob() {
     let mut jp_glyph = None;
     let mut primitives = vec![];
 
-    let _ = ctx.run_ui(Default::default(), |ctx| {
+    crate::test_ui::TestUiOps::run(&ctx, Default::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut job = egui::text::LayoutJob::default();
             job.append(
@@ -259,7 +259,7 @@ fn test_font_jitter_8_inline_code_cross_family() {
     let mut mono_min_y = f32::INFINITY;
 
     let mut primitives = vec![];
-    let _ = ctx.run_ui(Default::default(), |ctx| {
+    crate::test_ui::TestUiOps::run(&ctx, Default::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut job = LayoutJob::default();
 

@@ -2,7 +2,7 @@ use eframe::egui;
 use katana_document_viewer::{DocumentGridCommand, DocumentSurfaceCommand, DocumentViewerCommand};
 use std::collections::VecDeque;
 
-use super::types::{DocumentFailure, DocumentFrame};
+use super::types::DocumentFailure;
 use super::worker::DocumentWorkerCommand;
 
 const MAX_PENDING_USER_COMMANDS: usize = 16;
@@ -80,7 +80,7 @@ pub(super) fn show_failure(ui: &mut egui::Ui, failure: &DocumentFailure) {
     });
 }
 
-pub(super) fn show_diagnostics(ui: &mut egui::Ui, frame: &DocumentFrame) {
+pub(super) fn show_diagnostics(ui: &mut egui::Ui, frame: &katana_document_viewer::DocumentFrame) {
     if frame.diagnostics.is_empty() {
         return;
     }

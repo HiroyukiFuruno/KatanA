@@ -8,6 +8,7 @@
 - [x] 1.6 KDV feasibility corpus、quality profile、engine、dependency modelについてユーザーの明示承認を確認する（2026-08-02: 実装・検証・release継続を明示承認済み）
 - [x] 1.7 XLSX profileが2次元virtualized gridを必要とする場合はKUC OpenSpecと公開releaseの完了を確認する（KUC v0.3.0 GitHub Release / crates.io / tag commit `1256fdd08ecc01bcc09066180e1a05d0503ba382`を確認済み）
 - [x] 1.8 KDV `v0.4.1`のstrict gate、GitHub Release、crates.io publicationを確認する（GitHub Release `v0.4.1` / crates.io `0.4.1` / tag commit `3520e7e573fe702a8fcabfd46c1e5ed71b7a8348`）
+- [x] 1.9 KUC / KDV / KatanAの境界を再監査し、KUC interaction、KDV統一session、KatanA thin host設計についてユーザーの明示合意を得る。証跡: 2026-08-09 user approval / file: `design.md`
 
 ## 2. Source intake and routing
 
@@ -21,12 +22,12 @@
 
 ## 3. KDV viewer integration
 
-- [x] 3.1 crates.ioの公開済み `katana-document-viewer 0.4.1`へdependencyを更新する
-- [x] 3.2 KDV PDF / Office source descriptorをKatanA document lifecycleへ接続する
-- [x] 3.3 KDV page / document / sheet / slide artifactをdocument tabへ表示する
+- [x] 3.1 crates.ioの公開済み `katana-document-viewer 0.5.0`へdependencyを更新する
+- [x] 3.2 KDV統一document sessionをKatanA document lifecycleへ接続する
+- [x] 3.3 KDV中立frameだけをdocument tabの現行egui backendへ投影する
 - [x] 3.4 KDV capabilityに基づいてnavigation、index jump、zoom、fit、copy、open controlsを有効化する
-- [x] 3.5 document switch、tab close、workspace closeでKDV worker、cancel、artifact cacheを確実に終了する
-- [x] 3.6 stale generation resultを破棄し、bounded queueがUI threadを停止させない契約テストを追加する（証跡: `crates/katana-ui/src/preview_pane/document_surface/`、`crates/katana-ui/tests/integration/office_worker.rs`）
+- [x] 3.5 document switch、tab close、workspace closeでKDV session、worker、artifact cacheを確実に終了する
+- [x] 3.6 stale generation resultを破棄し、bounded queueがUI threadを停止させない契約テストを追加する
 
 ## 4. Diagnostics and security
 
@@ -49,7 +50,7 @@
 
 ## 6. Ownership and quality gates
 
-- [x] 6.1 KatanA sourceにPDF / OOXML parser、Office layout engine、format renderer、KUC直接参照がないことをAST/source guardで検証する
+- [x] 6.1 KatanA sourceにPDF / OOXML parser、Office layout engine、format renderer、format別document runtime、KUC直接参照、document hit-testがないことをAST/source guardで検証する
 - [x] 6.2 Cargo metadataとsource usageにChromium、WebView、PDFium、browser helperがないことを検証する
 - [x] 6.3 KRRへPDF / Office sourceまたはviewer commandを渡していないことを契約テストする
 - [x] 6.4 productionとacceptance harnessにpath / git KDV dependencyがないことを検証する
@@ -61,9 +62,9 @@
 - [x] 7.1 workspace version、bundle metadata、CHANGELOG EN/JAを `0.22.38`へ同期する
 - [x] 7.2 SemVer guardがpublished `v0.22.37` -> `v0.22.38`だけを許可するようtest fixtureを更新する
 - [x] 7.3 guardが `v0.22.37`、`v0.22.39`、撤回済み `v0.29.0`、minor/major jumpを拒否することを検証する
-- [x] 7.4 published KDV `0.4.1`のminimum resolved versionとregistry sourceをrelease gateへ固定する
-- [ ] 7.5 package、release preflight、headless acceptance、platform buildを通す
-- [ ] 7.6 PDF / DOCX / XLSX / PPTXのscreenshot、操作結果、failure diagnosticsをユーザーへ提示する
+- [x] 7.4 published KDV `0.5.0`のexact resolved versionとregistry sourceをrelease gateへ固定する
+- [x] 7.5 package、release preflight、headless acceptance、platform buildを通す（証跡: macOS app bundle署名検証、37/37 headless steps、`rtk just check`のmacOS tests・Linux workspace tests・Windows cross-check）
+- [x] 7.6 PDF / DOCX / XLSX / PPTXのscreenshot、操作結果、failure diagnosticsをユーザーへ提示する（証跡: `target/multi-format-headless-macos/` の13画像、37/37 headless steps、2026-08-10 user-facing image review）
 - [ ] 7.7 headless証跡とrelease gateが成功した場合、2026-08-02の明示承認に基づいてcommit、push、PR、releaseを継続する
 
 ## 8. Final verification

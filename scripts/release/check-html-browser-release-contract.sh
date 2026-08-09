@@ -465,16 +465,19 @@ with acceptance_lock_path.open("rb") as handle:
 
 dependencies = cargo.get("workspace", {}).get("dependencies", {})
 manifest_release_lines = {
-    "katana-document-viewer": (0, 4),
+    "katana-document-viewer": (0, 5),
     "katana-render-runtime": (0, 4),
 }
 minimum_manifest_versions = {
-    "katana-document-viewer": (0, 4, 0),
+    "katana-document-viewer": (0, 5, 0),
     "katana-render-runtime": (0, 4, 14),
 }
 minimum_lock_versions = {
-    "katana-document-viewer": (0, 4, 0),
+    "katana-document-viewer": (0, 5, 0),
     "katana-render-runtime": (0, 4, 14),
+}
+exact_versions = {
+    "katana-document-viewer": (0, 5, 0),
 }
 
 
@@ -497,6 +500,12 @@ def dependency_version(
     if match is None:
         raise SystemExit(f"{name} must use a single caret-compatible x.y.z requirement: {version}")
     actual = tuple(int(part) for part in match.groups())
+    if name in exact_versions and actual != exact_versions[name]:
+        required = exact_versions[name]
+        raise SystemExit(
+            f"{name} must declare exactly {required[0]}.{required[1]}.{required[2]}; "
+            f"found {version}"
+        )
     if actual[:2] != expected_line or actual < minimum:
         raise SystemExit(
             f"{name} must declare at least {minimum[0]}.{minimum[1]}.{minimum[2]} "
@@ -551,6 +560,12 @@ def validate_lock(label: str, lock_document: dict) -> None:
             raise SystemExit(f"{label} has invalid {dependency} version: {version}")
         actual = tuple(int(part) for part in version_match.groups())
         minimum = minimum_lock_versions[dependency]
+        if dependency in exact_versions and actual != exact_versions[dependency]:
+            required = exact_versions[dependency]
+            raise SystemExit(
+                f"{label} must resolve {dependency} exactly "
+                f"{required[0]}.{required[1]}.{required[2]}; found {version}"
+            )
         if actual[:2] != expected_line or actual < minimum:
             raise SystemExit(
                 f"{label} must resolve {dependency} at least "
@@ -576,7 +591,7 @@ required_markers=(
     "Browser-equivalent HTML session is the only interactive preview path"
     "The system MUST NOT fall back to static HTML rendering"
     "v0.22.38 release must prove the published browser chain"
-    'minimum resolved version of KDV `0.4.0` and KRR `0.4.14`'
+    'resolved version of KDV `0.5.0` and minimum KRR `0.4.14`'
     "raw KRR frame pixels"
 )
 for marker in "${required_markers[@]}"; do

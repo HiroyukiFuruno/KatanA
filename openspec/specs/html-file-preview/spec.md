@@ -125,7 +125,7 @@ The system MUST keep Markdown diagnostics, Markdown formatting, Markdown export,
 
 ### Requirement: v0.22.38 release must prove the published browser chain
 
-KatanA v0.22.38 MUST consume published KDV `0.4.x` and KRR `0.4.x` crates from crates.io, with a minimum resolved version of KDV `0.4.0` and KRR `0.4.14`. KatanA MUST NOT use a local path or git dependency for KDV/KRR, or package a Chromium/browser runtime archive. The withdrawn `v0.29.0` MUST NOT be accepted as a release target, and the SemVer guard MUST accept only the adjacent update from published v0.22.37 to v0.22.38.
+KatanA v0.22.38 MUST consume published KDV `0.5.0` and KRR `0.4.x` crates from crates.io, with a resolved version of KDV `0.5.0` and minimum KRR `0.4.14`. KatanA MUST NOT use a local path or git dependency for KDV/KRR, or package a Chromium/browser runtime archive. The withdrawn `v0.29.0` MUST NOT be accepted as a release target, and the SemVer guard MUST accept only the adjacent update from published v0.22.37 to v0.22.38.
 
 #### Scenario: Release evidence exercises browser behavior and recovery
 

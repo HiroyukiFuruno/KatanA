@@ -64,6 +64,7 @@ success "Release asset inspector preserves bundle paths."
 info "6/11 Verifying macOS coverage linker concurrency..."
 bash scripts/release/test-macos-coverage-contract.sh
 bash scripts/release/check-macos-coverage-contract.sh
+python3 scripts/ci/check-document-surface-coverage.py --self-test
 success "macOS coverage linker concurrency is constrained."
 
 # 6-7. Artifact Naming Validation

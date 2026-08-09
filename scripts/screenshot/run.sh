@@ -19,6 +19,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+BUILD_TARGET_DIR="${REPO_ROOT}/target"
 
 if ! command -v cargo &>/dev/null; then
   echo "ERROR: cargo not found — install Rust via https://rustup.rs" >&2
@@ -26,8 +27,8 @@ if ! command -v cargo &>/dev/null; then
 fi
 
 echo "[katana-screenshot] building runner..."
-cargo build --release --manifest-path "${REPO_ROOT}/Cargo.toml" --package katana-ui --bin kdv-office-worker --quiet
-OFFICE_WORKER="${REPO_ROOT}/target/release/kdv-office-worker"
+CARGO_TARGET_DIR="${BUILD_TARGET_DIR}" cargo build --release --manifest-path "${REPO_ROOT}/Cargo.toml" --package katana-ui --bin kdv-office-worker --quiet
+OFFICE_WORKER="${BUILD_TARGET_DIR}/release/kdv-office-worker"
 if [[ -f "${OFFICE_WORKER}.exe" ]]; then
   OFFICE_WORKER="${OFFICE_WORKER}.exe"
 fi
@@ -36,9 +37,9 @@ if [[ ! -x "${OFFICE_WORKER}" && ! -f "${OFFICE_WORKER}" ]]; then
   exit 1
 fi
 export KATANA_KDV_OFFICE_WORKER="${OFFICE_WORKER}"
-cargo build --release --manifest-path "${SCRIPT_DIR}/Cargo.toml" --quiet
+CARGO_TARGET_DIR="${BUILD_TARGET_DIR}" cargo build --release --manifest-path "${SCRIPT_DIR}/Cargo.toml" --quiet
 
-RUNNER="${SCRIPT_DIR}/target/release/katana-screenshot"
+RUNNER="${BUILD_TARGET_DIR}/release/katana-screenshot"
 if [[ -f "${RUNNER}.exe" ]]; then
   RUNNER="${RUNNER}.exe"
 fi

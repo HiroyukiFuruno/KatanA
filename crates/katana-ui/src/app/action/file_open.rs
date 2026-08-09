@@ -93,7 +93,7 @@ impl FileOpenOps {
                 .raw
                 .dropped_files
                 .iter()
-                .filter_map(|file| file.path.clone())
+                .map(|file| file.path().to_path_buf())
                 .collect()
         })
     }

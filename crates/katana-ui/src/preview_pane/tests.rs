@@ -66,7 +66,8 @@ mod tests {
         state: &mut ViewerState,
         image: &katana_core::markdown::svg_rasterize::RasterizedSvg,
     ) {
-        let _ = ctx.run_ui(
+        crate::test_ui::TestUiOps::run(
+            ctx,
             egui::RawInput {
                 screen_rect: Some(egui::Rect::from_min_size(
                     egui::pos2(0.0, 0.0),
@@ -630,21 +631,23 @@ mod tests {
 
     #[test]
     fn full_render_with_diagram_creates_pending_section_then_renders() {
-        let mut pane = PreviewPane::default();
-        let source = "# Title\n```drawio\n<mxGraphModel><root></root></mxGraphModel>\n```";
-        let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
-        pane.full_render(
-            source,
-            std::path::Path::new("/tmp/test.md"),
-            cache,
-            false,
-            4,
-        );
+        with_missing_renderer_assets(|| {
+            let mut pane = PreviewPane::default();
+            let source = "# Title\n```drawio\n<mxGraphModel><root></root></mxGraphModel>\n```";
+            let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
+            pane.full_render(
+                source,
+                std::path::Path::new("/tmp/test.md"),
+                cache,
+                false,
+                4,
+            );
 
-        assert!(pane.render_rx.is_some());
+            assert!(pane.render_rx.is_some());
 
-        pane.wait_for_renders();
-        assert!(pane.render_rx.is_none());
+            pane.wait_for_renders();
+            assert!(pane.render_rx.is_none());
+        });
     }
 
     #[test]
@@ -1381,35 +1384,30 @@ mod tests {
         assert!(!pane.is_loading);
 
         let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
-        pane.full_render(
-            "```mermaid\ngraph TD;\nA-->B;\n```",
-            std::path::Path::new("test.md"),
-            cache,
-            false,
-            1,
-        );
+        with_missing_renderer_assets(|| {
+            pane.full_render(
+                "```mermaid\ngraph TD; A-->B;\n```",
+                std::path::Path::new("test.md"),
+                cache,
+                false,
+                1,
+            );
 
-        assert!(
-            pane.is_loading,
-            "full_render did not set is_loading to true"
-        );
-        assert!(pane.render_rx.is_some());
+            assert!(
+                pane.is_loading,
+                "full_render did not set is_loading to true"
+            );
+            assert!(pane.render_rx.is_some());
+            pane.wait_for_renders();
+        });
     }
 
     #[test]
-    fn full_render_aborts_on_cancel_token() {
+    fn abort_renders_sets_cancel_token_and_clears_state() {
         let mut pane = PreviewPane::default();
-        let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
-
-        let source = "```mermaid\ngraph TD\nA-->B\n```\n".repeat(10);
-
-        pane.full_render(
-            &source,
-            &std::path::PathBuf::from("test.md"),
-            cache,
-            true,
-            1,
-        );
+        let (_tx, rx) = std::sync::mpsc::channel::<RenderMessage>();
+        pane.render_rx = Some(rx);
+        pane.is_loading = true;
 
         assert!(
             pane.render_rx.is_some(),

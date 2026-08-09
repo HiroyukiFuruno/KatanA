@@ -47,6 +47,5 @@ pub(crate) use document_surface::{DocumentFailure, DocumentSurfaceSource};
 
 #[cfg(test)]
 pub(crate) fn html_browser_runtime_test_guard() -> std::sync::MutexGuard<'static, ()> {
-    static TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
-    TEST_LOCK.lock().expect("HTML browser test lock poisoned")
+    crate::test_render_env::RenderEnvLock::lock()
 }

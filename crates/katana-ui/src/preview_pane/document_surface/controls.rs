@@ -3,7 +3,7 @@ use katana_document_viewer::{
     DocumentFitMode, DocumentSurfaceKind, DocumentViewerCommand, ViewerCapabilities, ViewerFeature,
 };
 
-use super::types::{DocumentFrame, DocumentSurface};
+use super::types::DocumentSurface;
 use super::worker::DocumentWorkerCommand;
 use super::worker_support::{MAX_DOCUMENT_RENDER_SCALE, MIN_DOCUMENT_RENDER_SCALE};
 
@@ -24,7 +24,7 @@ struct DocumentControlColors {
 pub(super) fn show_controls(
     surface: &mut DocumentSurface,
     ui: &mut egui::Ui,
-    frame: &DocumentFrame,
+    frame: &katana_document_viewer::DocumentFrame,
 ) {
     let messages = crate::i18n::I18nOps::get();
     let colors = document_control_colors(ui);
@@ -118,9 +118,10 @@ pub(super) fn show_controls(
                     &messages.preview.document_controller.copy_active_cell,
                     true,
                     colors,
-                ) && let Some(text) = active_cell_text(frame)
-                {
-                    ui.ctx().copy_text(text);
+                ) {
+                    surface.queue(DocumentWorkerCommand::Viewer(
+                        DocumentViewerCommand::CopySelection,
+                    ));
                 }
             }
         });
@@ -131,6 +132,7 @@ fn supports_navigation(capabilities: &ViewerCapabilities) -> bool {
     [
         ViewerFeature::PageNavigation,
         ViewerFeature::GridNavigation,
+        ViewerFeature::SheetNavigation,
         ViewerFeature::SlideNavigation,
     ]
     .into_iter()
@@ -139,10 +141,6 @@ fn supports_navigation(capabilities: &ViewerCapabilities) -> bool {
 
 fn supports(capabilities: &ViewerCapabilities, feature: ViewerFeature) -> bool {
     capabilities.status(feature) == katana_document_viewer::ViewerFeatureStatus::Supported
-}
-
-fn active_cell_text(frame: &DocumentFrame) -> Option<String> {
-    frame.surface.active_text().map(str::to_owned)
 }
 
 fn icon_button(

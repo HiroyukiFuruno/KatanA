@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "target": "v0.22.38",
-  "engine_score_source": "katana-document-viewer v0.4.1 openspec/changes/v0-4-0-multi-format-viewer/evidence/benchmark-summary.json",
+  "engine_score_source": "katana-document-viewer v0.5.0 openspec/changes/v0-5-0-multi-format-viewer/evidence/benchmark-summary.json",
   "minimum_engine_score": 80,
   "engine_profiles": {
     "pdf": {
@@ -61,16 +61,20 @@
   "local_evidence": {
     "headless_steps": 37,
     "screenshots": 13,
-    "pdf_first_frame_seconds": 0.058,
-    "docx_first_frame_seconds": 5.088,
-    "xlsx_first_frame_seconds": 0.054,
-    "pptx_first_frame_seconds": 1.747,
-    "pdf_navigation_changed_pixels": 207767,
-    "docx_navigation_changed_pixels": 242856,
-    "xlsx_navigation_changed_pixels": 299159,
-    "pptx_navigation_changed_pixels": 1980885,
+    "artifact_directory": "target/multi-format-headless-macos",
+    "visual_review": "pass",
+    "pdf_first_frame_seconds": 0.059,
+    "docx_first_frame_seconds": 7.077,
+    "xlsx_first_frame_seconds": 0.055,
+    "pptx_first_frame_seconds": 1.584,
+    "pdf_navigation_changed_pixels": 206542,
+    "docx_navigation_changed_pixels": 241130,
+    "xlsx_navigation_changed_pixels": 299143,
+    "pptx_navigation_changed_pixels": 1980886,
     "password_protected_recovery": "pass",
     "strict_coverage": "100 percent functions and lines; zero uncovered lines",
+    "just_check": "pass on macOS with Linux workspace tests and Windows cross-check",
+    "macos_package": "pass; signed app contains KatanA and kdv-office-worker without Chromium",
     "linux_workspace_tests": "pass",
     "windows_workspace_check": "pass",
     "cargo_deny": "pass"

@@ -2,7 +2,7 @@
 
 ### Requirement: PDFとOffice文書をKDV経由でpreviewしなければならない
 
-システムは、PDF / DOCX / XLSX / PPTX sourceを公開済みKDV `0.4.1`以上の`0.4.x`へ渡し、KDVのneutral artifact、viewer state、capability、diagnosticsを使ってpreviewしなければならない（MUST）。
+システムは、PDF / DOCX / XLSX / PPTX sourceを公開済みKDV `0.5.0`へ渡し、KDVの統一document session、neutral frame、viewer state、capability、diagnosticsを使ってpreviewしなければならない（MUST）。
 
 #### Scenario: local documentを開く
 
@@ -36,6 +36,7 @@
 - **THEN** KatanAは対応controlを有効にする
 - **THEN** KatanAはcontrol inputをneutral KDV commandとして送る
 - **THEN** KatanAはformat固有engine APIを直接呼ばない
+- **THEN** pointer座標を含むdocument inputはKDV commandとして送り、KatanAでhit-testしない
 
 #### Scenario: unsupported commandを表示する
 
@@ -68,6 +69,7 @@
 
 - **WHEN** KatanA `v0.22.38` release readinessを検証する
 - **THEN** KatanA sourceにPDF / OOXML parser、Office layout engine、format固有rendererが存在しない
+- **THEN** KatanA sourceにformat別document runtime、KDV engine session、KUC grid materialization、document hit-testが存在しない
 - **THEN** KatanAはKUCまたはKDV/KUC混成crateへ直接依存せず、KUC型をsourceで参照しない
 - **THEN** KatanA dependencyにChromium、WebView、PDFium、browser helperが存在しない
 - **THEN** KRRにPDF / Office viewer APIを要求していない
@@ -92,13 +94,13 @@
 
 ### Requirement: v0.22.38 releaseは隣接版と公開済みKDVだけを許可しなければならない
 
-KatanA `v0.22.38` は公開済みKDV `0.4.1`以上の`0.4.x`をcrates.ioから解決し、SemVer guardは公開済み `v0.22.37` から `v0.22.38` への隣接更新だけを許可しなければならない（MUST）。撤回済み `v0.29.0` をrelease targetとして受理してはならない（MUST NOT）。
+KatanA `v0.22.38` は公開済みKDV `0.5.0`をcrates.ioから解決し、SemVer guardは公開済み `v0.22.37` から `v0.22.38` への隣接更新だけを許可しなければならない（MUST）。撤回済み `v0.29.0` をrelease targetとして受理してはならない（MUST NOT）。
 
 #### Scenario: v0.22.38 release readinessを検証する
 
 - **WHEN** release gateがtarget `v0.22.38` とlatest published `v0.22.37` を検証する
 - **THEN** release gateは隣接patchを受理する
-- **THEN** KDV dependencyはcrates.ioの `0.4.1`以上の`0.4.x`である
+- **THEN** KDV dependencyはcrates.ioの `0.5.0`である
 - **THEN** package metadataとlockfileにpath / git KDV overrideがない
 
 #### Scenario: invalid release targetを拒否する

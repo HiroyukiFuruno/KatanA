@@ -18,15 +18,15 @@ description = "A context-aware AI desktop application."
 
 [workspace.dependencies]
 # UI
-eframe = { version = "0.35", features = ["default"] }
-egui = "0.35"
-egui_extras = { version = "0.35", features = ["image", "file", "http", "svg", "svg_text"] }
-egui_commonmark = { version = "0.24", default-features = false, features = ["better_syntax_highlighting", "load-images", "pulldown_cmark"] }
+eframe = { version = "0.36", features = ["default"] }
+egui = "0.36"
+egui_extras = { version = "0.36", features = ["image", "file", "http", "svg", "svg_text"] }
+egui_commonmark = { version = "0.25", default-features = false, features = ["better_syntax_highlighting", "load-images", "pulldown_cmark"] }
 egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonmark_backend" }
 
 # Markdown
 comrak = { version = "0.54", default-features = false, features = ["shortcodes"] }
-katana-document-viewer = { version = "0.4.1", features = ["egui"] }
+katana-document-viewer = "0.5.0"
 katana-render-runtime = "0.4.14"
 katana-markdown-model = "0.2.1"
 katana-ast-lint = "0.5.1"
@@ -45,7 +45,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Networking / Auto Update
-ureq = { version = "3.3", features = ["json"] }
+ureq = { version = "3.4", features = ["json"] }
 semver = "1.0"
 zip = "8.6"
 tar = "0.4.46"
@@ -60,7 +60,7 @@ ignore = "0.4"
 resvg = "0.48"
 usvg = "0.48"
 tiny-skia = "0.12"
-epaint_default_fonts = "0.35"
+epaint_default_fonts = "0.36"
 mathjax_svg = "3.2.0"
 xmltree = "0.12"
 include_dir = "0.7.4"

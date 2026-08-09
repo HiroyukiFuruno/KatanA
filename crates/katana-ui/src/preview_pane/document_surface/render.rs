@@ -1,10 +1,9 @@
 use eframe::egui;
-use katana_document_viewer::{
-    DocumentFitMode, DocumentSurfaceCommand, DocumentSurfaceHost, DocumentViewerCommand,
-};
+use katana_document_viewer::{DocumentFitMode, DocumentSurfaceCommand, DocumentViewerCommand};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use super::controls::show_controls;
+use super::painter::paint_document_frame;
 use super::render_support::{PendingDocumentCommands, show_diagnostics, show_failure};
 use super::source::DocumentSurfaceSource;
 use super::types::{DocumentFailure, DocumentFailureLayer, DocumentSurface};
@@ -45,7 +44,7 @@ impl DocumentSurface {
             event_rx,
             frame: None,
             failure,
-            host: DocumentSurfaceHost::default(),
+            painter: Default::default(),
             loading: started,
             command_in_flight: started,
             pending_commands: PendingDocumentCommands::default(),
@@ -60,7 +59,7 @@ impl DocumentSurface {
     pub(crate) fn frame_state_for_test(&self) -> Option<(String, usize, usize, String)> {
         let frame = self.frame.as_ref()?;
         Some((
-            frame.format.extension().to_owned(),
+            super::worker_support::format_extension(frame.format).to_owned(),
             frame.state.active_index,
             frame.state.item_count,
             format!("{:?}", frame.surface.kind()),
@@ -105,8 +104,8 @@ impl DocumentSurface {
 
         show_controls(self, ui, &frame);
         ui.add_space(4.0);
-        let output = self.host.show(ui, &frame.surface, self.generation);
-        for command in output.into_commands() {
+        let commands = paint_document_frame(&mut self.painter, ui, &frame.surface, self.generation);
+        for command in commands {
             self.queue_surface(command);
         }
         show_diagnostics(ui, &frame);
@@ -115,6 +114,11 @@ impl DocumentSurface {
 
     pub(super) fn queue(&mut self, command: DocumentWorkerCommand) {
         if self.command_in_flight {
+            tracing::debug!(
+                generation = self.generation,
+                ?command,
+                "queued document command behind in-flight work"
+            );
             self.pending_commands.push(command);
             return;
         }

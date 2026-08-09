@@ -280,6 +280,17 @@ pub fn run(
                     &mut harness,
                     recording.as_mut(),
                     DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS,
+                    "screenshot frame",
+                )?;
+                // 初回renderで確定する実viewportを非同期gridへ反映してから撮影する。
+                harness
+                    .render()
+                    .map_err(|e| anyhow::anyhow!("preflight render failed: {e}"))?;
+                wait_for_document_surface_idle(
+                    &mut harness,
+                    recording.as_mut(),
+                    DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS,
+                    "screenshot viewport materialization",
                 )?;
                 let image = harness
                     .render()
@@ -2247,6 +2258,7 @@ fn wait_for_document_surface_idle(
     harness: &mut Harness<'_, KatanaApp>,
     mut recording: Option<&mut ActiveRecording>,
     timeout_seconds: f64,
+    operation: &str,
 ) -> Result<()> {
     if document_frame_identity(harness).is_none() {
         return Ok(());
@@ -2265,7 +2277,7 @@ fn wait_for_document_surface_idle(
             let idle = harness.state_mut().document_is_idle_for_test();
             let failure = harness.state_mut().document_failure_for_test();
             bail!(
-                "document surface did not settle before screenshot within \
+                "document surface did not settle before {operation} within \
                  {timeout_seconds:.2}s: frame={frame:?}, idle={idle:?}, failure={failure:?}"
             );
         }
@@ -2278,6 +2290,12 @@ fn advance_document_and_wait(
     mut recording: Option<&mut ActiveRecording>,
     timeout_seconds: f64,
 ) -> Result<()> {
+    wait_for_document_surface_idle(
+        harness,
+        recording.as_deref_mut(),
+        DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS,
+        "document navigation",
+    )?;
     let previous = document_frame_identity(harness)
         .context("document_next requires an active document frame")?;
     harness
@@ -2307,9 +2325,13 @@ fn advance_document_and_wait(
             }
         }
         if Instant::now() >= deadline {
+            let current = document_frame_identity(harness);
+            let idle = harness.state_mut().document_is_idle_for_test();
+            let failure = harness.state_mut().document_failure_for_test();
             bail!(
-                "document viewer did not advance from item {} within {timeout_seconds:.2}s",
-                previous.active_index.saturating_add(1)
+                "document viewer did not advance from item {} within {timeout_seconds:.2}s: \
+                 current={current:?}, idle={idle:?}, failure={failure:?}",
+                previous.active_index.saturating_add(1),
             );
         }
         sleep_frame(60.0);

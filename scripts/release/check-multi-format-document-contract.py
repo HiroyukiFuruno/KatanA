@@ -13,7 +13,7 @@ from pathlib import Path
 
 TARGET_VERSION = "0.22.38"
 REQUIRED_DEPENDENCIES = {
-    "katana-document-viewer": (0, 4, 1),
+    "katana-document-viewer": (0, 5, 0),
 }
 FORBIDDEN_DOCUMENT_MARKERS = (
     "chromium",
@@ -33,6 +33,13 @@ FORBIDDEN_DOCUMENT_MARKERS = (
     "katana_document_viewer_kuc",
     "katana_ui_core",
     "browsersessionadapter",
+    "pdfviewersession",
+    "officestaticviewersession",
+    "spreadsheetviewersession",
+    "spreadsheetgridsurface",
+    "documentruntime",
+    "pagedruntime",
+    "spreadsheetruntime",
 )
 FORBIDDEN_DIRECT_DEPENDENCIES = {
     "calamine",
@@ -48,12 +55,19 @@ FORBIDDEN_DIRECT_DEPENDENCIES = {
     "pdfium-render",
     "quick-xml",
 }
+FORBIDDEN_KUC_SOURCE_MARKERS = (
+    "katana_document_viewer_kuc",
+    "katana_ui_core",
+)
 FORBIDDEN_DOCUMENT_SURFACE_FILES = (
     "grid.rs",
     "grid_cell_text.rs",
     "grid_conditional.rs",
     "grid_paint.rs",
     "page_render.rs",
+    "document_runtime.rs",
+    "paged_runtime.rs",
+    "spreadsheet_runtime.rs",
 )
 REQUIRED_FORMATS = ("pdf", "docx", "xlsx", "pptx")
 
@@ -99,11 +113,8 @@ def verify_registry_package(
 
 
 def verify_kdv_features(value: object) -> None:
-    if not isinstance(value, dict):
-        fail("katana-document-viewer must enable the KDV-owned egui document surface")
-    features = value.get("features")
-    if not isinstance(features, list) or features != ["egui"]:
-        fail("katana-document-viewer must enable only the egui feature")
+    if isinstance(value, dict) and value.get("features"):
+        fail("katana-document-viewer must not enable an application UI backend feature")
 
 
 def verify_macos_bundle_metadata(value: object) -> None:
@@ -161,8 +172,25 @@ def dependency_names(value: object) -> set[str]:
     names: set[str] = set()
     for key, child in value.items():
         if key.endswith("dependencies") and isinstance(child, dict):
-            names.update(name.replace("_", "-").lower() for name in child)
+            names.update(declared_dependency_names(child))
         names.update(dependency_names(child))
+    return names
+
+
+def declared_dependency_names(dependencies: dict[str, object]) -> set[str]:
+    names: set[str] = set()
+    for alias, declaration in dependencies.items():
+        names.add(alias.replace("_", "-").lower())
+        if isinstance(declaration, dict) and isinstance(declaration.get("package"), str):
+            names.add(declaration["package"].replace("_", "-").lower())
+    return names
+
+
+def manifest_dependency_names(paths: list[Path]) -> set[str]:
+    names: set[str] = set()
+    for path in paths:
+        with path.open("rb") as handle:
+            names.update(dependency_names(tomllib.load(handle)))
     return names
 
 
@@ -235,9 +263,10 @@ def verify(root: Path, target_version: str) -> None:
         verify_registry_package(lock, name, expected)
     verify_kdv_features(dependencies.get("katana-document-viewer"))
     verify_macos_bundle_metadata(katana_ui_cargo)
+    manifest_paths = [cargo_path, *sorted((root / "crates").rglob("Cargo.toml"))]
     forbidden_direct = (
-        dependency_names(cargo) | dependency_names(katana_ui_cargo)
-    ) & FORBIDDEN_DIRECT_DEPENDENCIES
+        manifest_dependency_names(manifest_paths) & FORBIDDEN_DIRECT_DEPENDENCIES
+    )
     if forbidden_direct:
         fail(
             "KatanA must not declare document engines directly: "
@@ -245,35 +274,15 @@ def verify(root: Path, target_version: str) -> None:
         )
 
     worker = root / "crates/katana-ui/src/preview_pane/document_surface/worker.rs"
-    require_markers(worker, ("DocumentRuntime::open", "runtime.apply", "runtime.frame"))
-    runtime = (
-        root
-        / "crates/katana-ui/src/preview_pane/document_surface/document_runtime.rs"
-    )
-    require_markers(
-        runtime,
-        (
-            "PdfViewerSession",
-            "OfficeStaticViewerSession",
-            "SpreadsheetViewerSession",
-            "OfficeWorkerConfig",
-        ),
-    )
-    require_markers(
-        root / "crates/katana-ui/src/preview_pane/document_surface/paged_runtime.rs",
-        ("DocumentSurfaceFrame::from_rendered_page",),
-    )
-    require_markers(
-        root / "crates/katana-ui/src/preview_pane/document_surface/spreadsheet_runtime.rs",
-        ("SpreadsheetGridSurface",),
-    )
+    require_markers(worker, ("DocumentSession::open", "session.apply", "session.frame"))
     require_markers(
         root / "crates/katana-ui/src/preview_pane/document_surface/render.rs",
-        ("DocumentSurfaceHost", "output.into_commands()"),
+        ("paint_document_frame",),
     )
     ownership_sources = source_files(
         root, "crates/katana-ui/src/preview_pane/document_surface"
     )
+    reject_markers(source_files(root, "crates"), FORBIDDEN_KUC_SOURCE_MARKERS)
     surface_root = root / "crates/katana-ui/src/preview_pane/document_surface"
     for name in FORBIDDEN_DOCUMENT_SURFACE_FILES:
         if (surface_root / name).exists():
@@ -339,6 +348,29 @@ def verify(root: Path, target_version: str) -> None:
         ("horizontal_wrapped", ".stroke("),
     )
     require_markers(
+        root / "crates/katana-ui/src/preview_pane/document_surface/render.rs",
+        ("queued document command behind in-flight work",),
+    )
+    require_markers(
+        root / "crates/katana-ui/src/preview_pane/document_surface/render_events.rs",
+        (
+            "received document frame",
+            "sending document command",
+            "document worker channel was full; preserving command",
+        ),
+    )
+    require_markers(
+        root / "crates/katana-ui/src/preview_pane/document_surface/worker.rs",
+        ("applying document command", "produced document frame"),
+    )
+    require_markers(
+        root / "crates/katana-ui/src/preview_pane/document_surface/tests.rs",
+        (
+            "document_surface_worker_preserves_commands_until_each_frame_arrives",
+            "document_surface_preserves_a_command_when_the_worker_channel_is_full",
+        ),
+    )
+    require_markers(
         root / "scripts/screenshot/examples/v0-22-38-multi-format-documents.json",
         (
             '"expected_document_format": "pdf"',
@@ -364,7 +396,9 @@ def verify(root: Path, target_version: str) -> None:
         (
             "DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS",
             "wait_for_document_surface_idle(",
-            "document surface did not settle before screenshot",
+            '"screenshot viewport materialization"',
+            '"document navigation"',
+            "current={current:?}, idle={idle:?}, failure={failure:?}",
         ),
     )
     require_markers(
@@ -388,6 +422,24 @@ def verify(root: Path, target_version: str) -> None:
             '--allow 7.5',
             '--allow 8.4',
             'check-openspec-task-completion.py',
+            'check-document-surface-coverage.py --self-test',
+        ),
+    )
+    require_markers(
+        root / "scripts/ci/coverage.sh",
+        (
+            'CARGO_TARGET_DIR="$COVERAGE_TARGET_DIR" cargo build -p katana-ui --bin kdv-office-worker',
+            'export KATANA_KDV_OFFICE_WORKER=',
+            "cargo llvm-cov report --json | python3 scripts/ci/check-document-surface-coverage.py",
+        ),
+    )
+    require_markers(
+        root / "scripts/screenshot/run.sh",
+        (
+            'BUILD_TARGET_DIR="${REPO_ROOT}/target"',
+            'CARGO_TARGET_DIR="${BUILD_TARGET_DIR}" cargo build --release',
+            'OFFICE_WORKER="${BUILD_TARGET_DIR}/release/kdv-office-worker"',
+            'RUNNER="${BUILD_TARGET_DIR}/release/katana-screenshot"',
         ),
     )
     require_markers(
@@ -413,9 +465,14 @@ def verify(root: Path, target_version: str) -> None:
 
 
 def self_test() -> None:
-    assert parse_requirement("0.4.1", "kdv") == (0, 4, 1)
-    assert parse_requirement({"version": "^0.4.1"}, "kdv") == (0, 4, 1)
-    verify_kdv_features({"version": "0.4.1", "features": ["egui"]})
+    assert parse_requirement("0.5.0", "kdv") == (0, 5, 0)
+    assert parse_requirement({"version": "^0.5.0"}, "kdv") == (0, 5, 0)
+    try:
+        verify_kdv_features({"version": "0.5.0", "features": ["egui"]})
+    except SystemExit:
+        pass
+    else:
+        raise AssertionError("KDV application UI backend feature was accepted")
     verify_macos_bundle_metadata(
         {
             "package": {
@@ -426,9 +483,9 @@ def self_test() -> None:
         }
     )
     for invalid in (
-        {"path": "../kdv", "version": "0.4.1"},
-        {"git": "https://example.test/kdv", "version": "0.4.1"},
-        "0.4",
+        {"path": "../kdv", "version": "0.5.0"},
+        {"git": "https://example.test/kdv", "version": "0.5.0"},
+        "0.5",
     ):
         try:
             parse_requirement(invalid, "kdv")
@@ -437,10 +494,32 @@ def self_test() -> None:
         raise AssertionError(f"forbidden dependency requirement was accepted: {invalid!r}")
     assert dependency_names(
         {
-            "workspace": {"dependencies": {"katana-document-viewer": "0.4.1"}},
-            "target": {"cfg(unix)": {"build-dependencies": {"office2pdf": "0.6"}}},
+            "workspace": {"dependencies": {"katana-document-viewer": "0.5.0"}},
+            "target": {
+                "cfg(unix)": {
+                    "build-dependencies": {
+                        "office-adapter": {"package": "office2pdf", "version": "0.6"}
+                    }
+                }
+            },
         }
-    ) == {"katana-document-viewer", "office2pdf"}
+    ) == {"katana-document-viewer", "office-adapter", "office2pdf"}
+    with tempfile.TemporaryDirectory() as directory:
+        first_manifest = Path(directory) / "Cargo.toml"
+        second_manifest = Path(directory) / "member.toml"
+        first_manifest.write_text(
+            '[workspace.dependencies]\nkatana-document-viewer = "0.5.0"\n',
+            encoding="utf-8",
+        )
+        second_manifest.write_text(
+            '[dependencies]\nhidden-kuc = { package = "katana-ui-core", version = "0.3.0" }\n',
+            encoding="utf-8",
+        )
+        assert manifest_dependency_names([first_manifest, second_manifest]) == {
+            "katana-document-viewer",
+            "hidden-kuc",
+            "katana-ui-core",
+        }
     verify_release_evaluation(
         {
             "schema_version": 1,

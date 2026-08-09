@@ -98,7 +98,7 @@ fn test_fetch_changelog_uses_embedded_current_release_notes() {
 #[test]
 fn test_render_release_notes_tab_ui() {
     let ctx = egui::Context::default();
-    let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
+    crate::test_ui::TestUiOps::run(&ctx, egui::RawInput::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let sections = vec![ChangelogSection {
                 version: "0.8.0".to_string(),

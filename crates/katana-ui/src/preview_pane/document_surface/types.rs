@@ -1,10 +1,8 @@
 use katana_core::document_source::BinaryDocumentFormat;
-use katana_document_viewer::{
-    DocumentSurfaceFrame, DocumentSurfaceHost, DocumentViewerState, DocumentViewport,
-    ViewerCapabilities, ViewerDiagnostic,
-};
+use katana_document_viewer::{DocumentFrame, DocumentViewport};
 use std::sync::mpsc::{Receiver, SyncSender};
 
+use super::painter::DocumentFramePainter;
 use super::render_support::PendingDocumentCommands;
 use super::source::DocumentSurfaceSource;
 use super::worker::{DocumentWorkerCommand, DocumentWorkerEvent};
@@ -125,15 +123,6 @@ impl std::fmt::Display for DocumentFailure {
     }
 }
 
-#[derive(Debug)]
-pub(super) struct DocumentFrame {
-    pub surface: DocumentSurfaceFrame,
-    pub state: DocumentViewerState,
-    pub capabilities: ViewerCapabilities,
-    pub diagnostics: Vec<ViewerDiagnostic>,
-    pub format: BinaryDocumentFormat,
-}
-
 pub(crate) struct DocumentSurface {
     pub(super) generation: u64,
     pub(super) source: DocumentSurfaceSource,
@@ -141,7 +130,7 @@ pub(crate) struct DocumentSurface {
     pub(super) event_rx: Receiver<DocumentWorkerEvent>,
     pub(super) frame: Option<DocumentFrame>,
     pub(super) failure: Option<DocumentFailure>,
-    pub(super) host: DocumentSurfaceHost,
+    pub(super) painter: DocumentFramePainter,
     pub(super) loading: bool,
     pub(super) command_in_flight: bool,
     pub(super) pending_commands: PendingDocumentCommands,

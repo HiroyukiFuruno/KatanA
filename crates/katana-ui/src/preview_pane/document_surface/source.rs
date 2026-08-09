@@ -1,12 +1,12 @@
 use katana_core::document_source::BinaryDocumentFormat;
-use sha2::{Digest, Sha256};
-use std::io::Read;
+use katana_document_viewer::{
+    BinaryDocumentSource, OfficeDocumentFormat, OfficeDocumentSource, ViewerSource,
+    ViewerSourceIdentity,
+};
 use std::path::{Path, PathBuf};
 
+use super::source_io::{enforce_remote_size, file_url, read_bounded, revision};
 use super::types::{DocumentFailure, DocumentFailureLayer};
-
-const HEX_NIBBLE_BITS: u8 = 4;
-const HEX_NIBBLE_MASK: u8 = 0x0f;
 
 #[derive(Debug, Clone)]
 pub(crate) struct DocumentSurfaceSource {
@@ -95,6 +95,41 @@ impl DocumentSurfaceSource {
         }
         Ok(std::mem::take(&mut self.bytes))
     }
+
+    pub(super) fn take_viewer_source(&mut self) -> Result<ViewerSource, DocumentFailure> {
+        let identity = ViewerSourceIdentity::new(self.uri.clone(), self.revision.clone());
+        let bytes = self.take_bytes()?;
+        Ok(match self.format {
+            BinaryDocumentFormat::Pdf => ViewerSource::Pdf(BinaryDocumentSource::new(
+                identity,
+                self.mime.clone(),
+                bytes,
+            )),
+            BinaryDocumentFormat::Docx => {
+                self.office_source(identity, bytes, OfficeDocumentFormat::Docx)
+            }
+            BinaryDocumentFormat::Xlsx => {
+                self.office_source(identity, bytes, OfficeDocumentFormat::Xlsx)
+            }
+            BinaryDocumentFormat::Pptx => {
+                self.office_source(identity, bytes, OfficeDocumentFormat::Pptx)
+            }
+        })
+    }
+
+    fn office_source(
+        &self,
+        identity: ViewerSourceIdentity,
+        bytes: Vec<u8>,
+        format: OfficeDocumentFormat,
+    ) -> ViewerSource {
+        ViewerSource::Office(OfficeDocumentSource::new(
+            identity,
+            format,
+            self.mime.clone(),
+            bytes,
+        ))
+    }
 }
 
 impl PartialEq for DocumentSurfaceSource {
@@ -107,106 +142,3 @@ impl PartialEq for DocumentSurfaceSource {
 }
 
 impl Eq for DocumentSurfaceSource {}
-
-fn revision(bytes: &[u8]) -> String {
-    const HEX: &[u8; 16] = b"0123456789abcdef";
-
-    let digest = Sha256::digest(bytes);
-    let mut revision = String::with_capacity("sha256:".len() + digest.len() * 2);
-    revision.push_str("sha256:");
-    for byte in digest {
-        revision.push(char::from(HEX[usize::from(byte >> HEX_NIBBLE_BITS)]));
-        revision.push(char::from(HEX[usize::from(byte & HEX_NIBBLE_MASK)]));
-    }
-    revision
-}
-
-fn file_url(path: &Path, format: BinaryDocumentFormat) -> Result<String, DocumentFailure> {
-    url::Url::from_file_path(path)
-        .map(|url| url.to_string())
-        .map_err(|()| {
-            DocumentFailure::intake(
-                "canonicalize",
-                path,
-                Some(format),
-                "file path cannot be represented as a URL",
-            )
-        })
-}
-
-fn read_bounded(
-    path: &Path,
-    format: Option<BinaryDocumentFormat>,
-) -> Result<Vec<u8>, DocumentFailure> {
-    read_bounded_with_limit(
-        path,
-        format,
-        katana_core::document_source::MAX_BINARY_DOCUMENT_BYTES,
-    )
-}
-
-pub(super) fn read_bounded_with_limit(
-    path: &Path,
-    format: Option<BinaryDocumentFormat>,
-    limit: usize,
-) -> Result<Vec<u8>, DocumentFailure> {
-    let file = std::fs::File::open(path)
-        .map_err(|error| DocumentFailure::intake("read", path, format, error.to_string()))?;
-    let mut bytes = Vec::new();
-    file.take(limit as u64 + 1)
-        .read_to_end(&mut bytes)
-        .map_err(|error| DocumentFailure::intake("read", path, format, error.to_string()))?;
-    enforce_size_limit(path, format, bytes.len(), limit)?;
-    Ok(bytes)
-}
-
-fn enforce_remote_size(
-    uri: &str,
-    format: Option<BinaryDocumentFormat>,
-    actual: usize,
-) -> Result<(), DocumentFailure> {
-    let limit = katana_core::document_source::MAX_BINARY_DOCUMENT_BYTES;
-    if actual <= limit {
-        return Ok(());
-    }
-    Err(DocumentFailure::source_intake(
-        "validate size",
-        uri,
-        format,
-        format!("document is {actual} bytes; limit is {limit} bytes"),
-    ))
-}
-
-fn enforce_size_limit(
-    path: &Path,
-    format: Option<BinaryDocumentFormat>,
-    actual: usize,
-    limit: usize,
-) -> Result<(), DocumentFailure> {
-    if actual <= limit {
-        return Ok(());
-    }
-    Err(DocumentFailure::intake(
-        "validate size",
-        path,
-        format,
-        format!("document is {actual} bytes; limit is {limit} bytes"),
-    ))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{BinaryDocumentFormat, file_url};
-
-    #[test]
-    fn file_url_rejects_a_relative_path() {
-        let failure = file_url(
-            std::path::Path::new("report.pdf"),
-            BinaryDocumentFormat::Pdf,
-        )
-        .expect_err("relative file URL");
-
-        assert_eq!(failure.operation, "canonicalize");
-        assert!(failure.cause.contains("cannot be represented"));
-    }
-}

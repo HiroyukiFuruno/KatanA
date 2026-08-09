@@ -10,7 +10,7 @@ impl DocumentSurface {
     pub(super) fn poll(&mut self, ctx: &egui::Context) {
         loop {
             match self.event_rx.try_recv() {
-                Ok(event) => self.apply_event(event),
+                Ok(event) => self.apply_event(ctx, event),
                 Err(TryRecvError::Empty) => break,
                 Err(TryRecvError::Disconnected) => {
                     if self.loading || self.command_in_flight {
@@ -30,7 +30,7 @@ impl DocumentSurface {
         }
     }
 
-    fn apply_event(&mut self, event: DocumentWorkerEvent) {
+    pub(super) fn apply_event(&mut self, ctx: &egui::Context, event: DocumentWorkerEvent) {
         let event_generation = match &event {
             DocumentWorkerEvent::Frame { generation, .. }
             | DocumentWorkerEvent::Failure { generation, .. } => *generation,
@@ -41,7 +41,20 @@ impl DocumentSurface {
         self.loading = false;
         self.command_in_flight = false;
         match event {
-            DocumentWorkerEvent::Frame { frame, .. } => {
+            DocumentWorkerEvent::Frame {
+                frame,
+                session_event,
+                ..
+            } => {
+                tracing::debug!(
+                    generation = self.generation,
+                    format = super::worker_support::format_extension(frame.format),
+                    active_index = frame.state.active_index,
+                    item_count = frame.state.item_count,
+                    surface = ?frame.surface.kind(),
+                    "received document frame"
+                );
+                apply_platform_event(ctx, &frame, session_event);
                 self.frame = Some(*frame);
                 self.failure = None;
             }
@@ -59,12 +72,22 @@ impl DocumentSurface {
             self.fail_disconnected();
             return;
         };
+        tracing::debug!(
+            generation = self.generation,
+            ?command,
+            "sending document command"
+        );
         match sender.try_send(command) {
             Ok(()) => {
                 self.command_in_flight = true;
                 self.loading = self.frame.is_none();
             }
             Err(TrySendError::Full(command)) => {
+                tracing::debug!(
+                    generation = self.generation,
+                    ?command,
+                    "document worker channel was full; preserving command"
+                );
                 self.pending_commands.push(command);
             }
             Err(TrySendError::Disconnected(_)) => self.fail_disconnected(),
@@ -85,5 +108,20 @@ impl DocumentSurface {
         self.failure = Some(failure);
         self.command_tx.take();
         self.pending_commands.clear();
+    }
+}
+
+fn apply_platform_event(
+    ctx: &egui::Context,
+    frame: &katana_document_viewer::DocumentFrame,
+    event: katana_document_viewer::DocumentSessionEvent,
+) {
+    if event
+        == katana_document_viewer::DocumentSessionEvent::Viewer(
+            katana_document_viewer::DocumentViewerEvent::CopyRequested,
+        )
+        && let Some(text) = frame.surface.active_text()
+    {
+        ctx.copy_text(text.to_owned());
     }
 }

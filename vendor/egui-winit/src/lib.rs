@@ -21,8 +21,11 @@ use egui::{Pos2, Rect, Theme, Vec2, ViewportBuilder, ViewportCommand, ViewportId
 pub use winit;
 
 pub mod clipboard;
+mod dropped_file;
 mod safe_area;
 mod window_settings;
+
+use dropped_file::NativeFile;
 
 pub use window_settings::WindowSettings;
 
@@ -84,6 +87,7 @@ pub struct State {
     viewport_id: ViewportId,
     start_time: web_time::Instant,
     egui_input: egui::RawInput,
+    modifiers: egui::Modifiers,
     pointer_pos_in_points: Option<egui::Pos2>,
     any_pointer_button_down: bool,
     current_cursor_icon: Option<egui::CursorIcon>,
@@ -136,6 +140,7 @@ impl State {
             viewport_id,
             start_time: web_time::Instant::now(),
             egui_input,
+            modifiers: egui::Modifiers::default(),
             pointer_pos_in_points: None,
             any_pointer_button_down: false,
             current_cursor_icon: None,
@@ -445,10 +450,9 @@ impl State {
             }
             WindowEvent::DroppedFile(path) => {
                 self.egui_input.hovered_files.clear();
-                self.egui_input.dropped_files.push(egui::DroppedFile {
-                    path: Some(path.clone()),
-                    ..Default::default()
-                });
+                self.egui_input
+                    .dropped_files
+                    .push(std::sync::Arc::new(NativeFile::from(path.clone())));
                 EventResponse {
                     repaint: true,
                     consumed: false,
@@ -462,15 +466,18 @@ impl State {
                 let shift = state.shift_key();
                 let super_ = state.super_key();
 
-                self.egui_input.modifiers.alt = alt;
-                self.egui_input.modifiers.ctrl = ctrl;
-                self.egui_input.modifiers.shift = shift;
-                self.egui_input.modifiers.mac_cmd = cfg!(target_os = "macos") && super_;
-                self.egui_input.modifiers.command = if cfg!(target_os = "macos") {
+                self.modifiers.alt = alt;
+                self.modifiers.ctrl = ctrl;
+                self.modifiers.shift = shift;
+                self.modifiers.mac_cmd = cfg!(target_os = "macos") && super_;
+                self.modifiers.command = if cfg!(target_os = "macos") {
                     super_
                 } else {
                     ctrl
                 };
+                self.egui_input
+                    .events
+                    .push(egui::Event::ModifiersChanged(self.modifiers));
 
                 EventResponse {
                     repaint: true,
@@ -530,7 +537,7 @@ impl State {
                     unit: egui::MouseWheelUnit::Point,
                     delta: Vec2::new(delta.x, delta.y) / pixels_per_point,
                     phase: to_egui_touch_phase(*phase),
-                    modifiers: self.egui_input.modifiers,
+                    modifiers: self.modifiers,
                 });
                 EventResponse {
                     repaint: true,
@@ -786,7 +793,7 @@ impl State {
                 pos,
                 button,
                 pressed,
-                modifiers: self.egui_input.modifiers,
+                modifiers: self.modifiers,
             });
 
             if self.simulate_touch_screen {
@@ -933,7 +940,7 @@ impl State {
                 ),
             };
             let phase = to_egui_touch_phase(phase);
-            let modifiers = self.egui_input.modifiers;
+            let modifiers = self.modifiers;
             self.egui_input.events.push(egui::Event::MouseWheel {
                 unit,
                 delta,
@@ -1008,13 +1015,13 @@ impl State {
         // See also: https://github.com/emilk/egui/issues/3653
         if let Some(active_key) = logical_key.or(physical_key) {
             if pressed {
-                if is_cut_command(self.egui_input.modifiers, active_key) {
+                if is_cut_command(self.modifiers, active_key) {
                     self.egui_input.events.push(egui::Event::Cut);
                     return;
-                } else if is_copy_command(self.egui_input.modifiers, active_key) {
+                } else if is_copy_command(self.modifiers, active_key) {
                     self.egui_input.events.push(egui::Event::Copy);
                     return;
-                } else if is_paste_command(self.egui_input.modifiers, active_key) {
+                } else if is_paste_command(self.modifiers, active_key) {
                     if let Some(contents) = self.clipboard.get() {
                         let contents = contents.replace("\r\n", "\n");
                         if !contents.is_empty() {
@@ -1030,7 +1037,7 @@ impl State {
                 physical_key,
                 pressed,
                 repeat: false, // egui will fill this in for us!
-                modifiers: self.egui_input.modifiers,
+                modifiers: self.modifiers,
             });
         }
 
@@ -1046,9 +1053,9 @@ impl State {
                 // We need to ignore these characters that are side-effects of commands.
                 // Also make sure the key is pressed (not released). On Linux, text might
                 // contain some data even when the key is released.
-                let is_cmd = self.egui_input.modifiers.ctrl
-                    || self.egui_input.modifiers.command
-                    || self.egui_input.modifiers.mac_cmd;
+                let is_cmd = self.modifiers.ctrl
+                    || self.modifiers.command
+                    || self.modifiers.mac_cmd;
                 if pressed && !is_cmd {
                     self.egui_input
                         .events
