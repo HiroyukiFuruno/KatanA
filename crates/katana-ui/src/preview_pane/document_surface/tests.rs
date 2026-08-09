@@ -2,46 +2,8 @@ use super::source::DocumentSurfaceSource;
 use super::worker::DocumentWorkerCommand;
 use katana_core::document_source::BinaryDocumentFormat;
 use katana_document_viewer::{
-    DocumentFitMode, DocumentGridCommand, DocumentSurfaceCommand, DocumentViewerCommand,
-    DocumentViewport,
+    DocumentGridCommand, DocumentSurfaceCommand, DocumentViewerCommand, DocumentViewport,
 };
-
-const DOCUMENT_WORKER_TEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
-
-fn representative_pdf_source() -> DocumentSurfaceSource {
-    DocumentSurfaceSource::remote(
-        "https://example.test/representative.pdf".to_owned(),
-        Some("application/pdf"),
-        include_bytes!(
-            "../../../../../scripts/screenshot/fixtures/v0-22-38-multi-format/representative.pdf"
-        )
-        .to_vec(),
-    )
-    .expect("representative PDF source")
-}
-
-fn wait_for_surface_idle(surface: &mut super::types::DocumentSurface, ctx: &eframe::egui::Context) {
-    let deadline = std::time::Instant::now() + DOCUMENT_WORKER_TEST_TIMEOUT;
-    while !surface.is_idle_for_test() {
-        surface.poll(ctx);
-        if surface.is_idle_for_test() {
-            return;
-        }
-        assert!(
-            surface.failure.is_none(),
-            "document surface failed: {:?}",
-            surface.failure
-        );
-        let remaining = deadline
-            .checked_duration_since(std::time::Instant::now())
-            .expect("document surface did not become idle");
-        let event = surface
-            .event_rx
-            .recv_timeout(remaining)
-            .expect("document worker did not produce an event");
-        surface.apply_event(ctx, event);
-    }
-}
 
 #[test]
 fn remote_source_keeps_final_url_and_validated_format() {
@@ -234,49 +196,4 @@ fn document_surface_sends_only_changed_viewports() {
         resized
     ));
     assert_eq!(Some(resized), current);
-}
-
-#[test]
-fn document_surface_worker_preserves_commands_until_each_frame_arrives() {
-    let ctx = eframe::egui::Context::default();
-    let mut surface = super::types::DocumentSurface::start(representative_pdf_source(), &ctx);
-
-    wait_for_surface_idle(&mut surface, &ctx);
-    assert_eq!(
-        surface.frame_state_for_test().map(|frame| frame.0),
-        Some("pdf".into())
-    );
-
-    surface.set_fit(DocumentFitMode::Width);
-    assert!(surface.command_in_flight);
-    surface.queue(DocumentWorkerCommand::Viewer(
-        DocumentViewerCommand::SetZoom(1.25),
-    ));
-    assert!(!surface.pending_commands.is_empty());
-
-    wait_for_surface_idle(&mut surface, &ctx);
-    assert!(surface.failure.is_none());
-    assert!(surface.pending_commands.is_empty());
-}
-
-#[test]
-fn document_surface_preserves_a_command_when_the_worker_channel_is_full() {
-    let ctx = eframe::egui::Context::default();
-    let mut surface = super::types::DocumentSurface::start(representative_pdf_source(), &ctx);
-    wait_for_surface_idle(&mut surface, &ctx);
-
-    surface.command_tx.take();
-    let (sender, receiver) = std::sync::mpsc::sync_channel(1);
-    sender
-        .send(DocumentWorkerCommand::Viewer(DocumentViewerCommand::Next))
-        .expect("prefill command channel");
-    surface.command_tx = Some(sender);
-    surface.command_in_flight = false;
-
-    let preserved = DocumentWorkerCommand::Viewer(DocumentViewerCommand::Previous);
-    surface.send(preserved);
-
-    assert_eq!(surface.pending_commands.take_next(), Some(preserved));
-    assert!(!surface.command_in_flight);
-    drop(receiver);
 }

@@ -24,3 +24,5 @@ mod failure_tests;
 mod painter_tests;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod worker_tests;
