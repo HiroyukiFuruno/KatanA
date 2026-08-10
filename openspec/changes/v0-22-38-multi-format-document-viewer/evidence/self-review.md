@@ -3,7 +3,7 @@
 ## Re-review Required
 
 - The previous review was invalidated on 2026-08-09 because KDV owned an egui host and KatanA owned format-specific document runtimes.
-- The replacement design requires `KatanA -> katana-document-viewer 0.5.0`, a KDV-owned unified document session, KUC-owned layout/hit-test/interaction, and a KatanA-only thin egui projection.
+- The replacement design requires `KatanA -> katana-document-viewer 0.5.1`, a KDV-owned unified document session, KUC-owned layout/hit-test/interaction, and a KatanA-only thin egui projection.
 - This file must not return to `No Issues` until the replacement implementation, boundary guards, strict coverage, headless corpus, and 3-OS CI all pass.
 
 ## Previously Verified Evidence
@@ -15,15 +15,15 @@
 - macOS, Linux, and Windows packages include `kdv-office-worker`; update extraction and relaunch paths require and replace the worker with rollback behavior.
 - Error summaries remain concise, structured details retain stable `Layer`, `Operation`, `Format`, `Document`, and `Cause` keys, and new headings and controls are translated in every bundled locale.
 - No temporary `todo!`, `unimplemented!`, `dbg!`, new ignored test, coverage exclusion, or threshold reduction was introduced.
-- The prior 37-step headless corpus and local gates are historical evidence only and must be rerun against KDV 0.5.0.
+- The prior 37-step headless corpus and local gates are historical evidence only and must be rerun against KDV 0.5.1.
 
 ## Current Local Evidence
 
-- The KDV 0.5.0 37-step headless corpus passed on macOS with 13 screenshots. PDF, DOCX, XLSX, and PPTX first frames, second item navigation, URL redirect/recovery, and typed failure diagnostics were visually reviewed.
+- The KDV 0.5.1 37-step headless corpus passed on macOS with 13 screenshots. PDF, DOCX, XLSX, and PPTX first frames, second item navigation, URL redirect/recovery, and typed failure diagnostics were visually reviewed. The 3-OS CI evidence remains a release condition.
 - Dedicated KatanA document projection coverage is 612/612 lines. The repository-wide strict coverage gate remains 100% functions and lines with zero uncovered lines and no new exclusions.
 - `just check` passed macOS tests, Linux workspace tests, and Windows cross-check after unifying all in-process V8 tests behind one test runtime lock. The previously leaking background diagram tests now wait for completion or test cancellation state without starting V8.
 - `just package-mac` produced a signed `KatanA Desktop.app` containing `KatanA` and `kdv-office-worker`. No Chromium-named file is present.
-- HTML and multi-format release contracts now require the published KDV 0.5.0 registry package. KDV 0.5.1, KDV 0.6.0, stale 0.4.x locks, path/git dependencies, and registry overrides are rejected by contract fixtures.
+- HTML and multi-format release contracts now require the published KDV 0.5.1 registry package. KDV 0.5.2, KDV 0.6.0, stale KDV/KRR locks, path/git dependencies, and registry overrides are rejected by contract fixtures.
 
 ## Tracked Release Conditions
 
