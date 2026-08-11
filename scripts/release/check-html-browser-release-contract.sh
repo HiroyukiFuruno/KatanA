@@ -469,15 +469,15 @@ manifest_release_lines = {
     "katana-render-runtime": (0, 4),
 }
 minimum_manifest_versions = {
-    "katana-document-viewer": (0, 5, 1),
+    "katana-document-viewer": (0, 5, 2),
     "katana-render-runtime": (0, 4, 15),
 }
 minimum_lock_versions = {
-    "katana-document-viewer": (0, 5, 1),
+    "katana-document-viewer": (0, 5, 2),
     "katana-render-runtime": (0, 4, 15),
 }
 exact_versions = {
-    "katana-document-viewer": (0, 5, 1),
+    "katana-document-viewer": (0, 5, 2),
 }
 
 
@@ -591,7 +591,7 @@ required_markers=(
     "Browser-equivalent HTML session is the only interactive preview path"
     "The system MUST NOT fall back to static HTML rendering"
     "v0.22.38 release must prove the published browser chain"
-    'resolved version of KDV `0.5.1` and minimum KRR `0.4.15`'
+    'resolved version of KDV `0.5.2` and minimum KRR `0.4.15`'
     "raw KRR frame pixels"
 )
 for marker in "${required_markers[@]}"; do

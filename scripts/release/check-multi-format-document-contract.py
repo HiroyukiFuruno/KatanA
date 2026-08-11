@@ -13,7 +13,7 @@ from pathlib import Path
 
 TARGET_VERSION = "0.22.38"
 REQUIRED_DEPENDENCIES = {
-    "katana-document-viewer": (0, 5, 1),
+    "katana-document-viewer": (0, 5, 2),
 }
 FORBIDDEN_DOCUMENT_MARKERS = (
     "chromium",
@@ -472,10 +472,10 @@ def verify(root: Path, target_version: str) -> None:
 
 
 def self_test() -> None:
-    assert parse_requirement("0.5.1", "kdv") == (0, 5, 1)
-    assert parse_requirement({"version": "^0.5.1"}, "kdv") == (0, 5, 1)
+    assert parse_requirement("0.5.2", "kdv") == (0, 5, 2)
+    assert parse_requirement({"version": "^0.5.2"}, "kdv") == (0, 5, 2)
     try:
-        verify_kdv_features({"version": "0.5.1", "features": ["egui"]})
+        verify_kdv_features({"version": "0.5.2", "features": ["egui"]})
     except SystemExit:
         pass
     else:
@@ -490,8 +490,8 @@ def self_test() -> None:
         }
     )
     for invalid in (
-        {"path": "../kdv", "version": "0.5.1"},
-        {"git": "https://example.test/kdv", "version": "0.5.1"},
+        {"path": "../kdv", "version": "0.5.2"},
+        {"git": "https://example.test/kdv", "version": "0.5.2"},
         "0.5",
     ):
         try:
@@ -501,7 +501,7 @@ def self_test() -> None:
         raise AssertionError(f"forbidden dependency requirement was accepted: {invalid!r}")
     assert dependency_names(
         {
-            "workspace": {"dependencies": {"katana-document-viewer": "0.5.1"}},
+            "workspace": {"dependencies": {"katana-document-viewer": "0.5.2"}},
             "target": {
                 "cfg(unix)": {
                     "build-dependencies": {
@@ -515,7 +515,7 @@ def self_test() -> None:
         first_manifest = Path(directory) / "Cargo.toml"
         second_manifest = Path(directory) / "member.toml"
         first_manifest.write_text(
-            '[workspace.dependencies]\nkatana-document-viewer = "0.5.1"\n',
+            '[workspace.dependencies]\nkatana-document-viewer = "0.5.2"\n',
             encoding="utf-8",
         )
         second_manifest.write_text(

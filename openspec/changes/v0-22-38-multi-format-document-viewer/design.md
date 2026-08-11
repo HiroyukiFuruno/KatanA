@@ -5,7 +5,7 @@ PDF / DOCX / XLSX / PPTX viewerは持たない。旧 `v0.22.12` changeはKatanA 
 renderer、PDFium、WebViewを前提にしており、現在のKatanA -> KDV/KRR責務境界と
 Rust-first方針に反するため再利用しない。
 
-KDV `v0.5.1` がPDF / DOCX / XLSX / PPTXのengine evaluation、format routing、
+KDV `v0.5.2` がPDF / DOCX / XLSX / PPTXのengine evaluation、format routing、
 worker lifecycle、materialization、neutral artifact、viewer state、diagnosticsを所有する。KatanAはengine選定へ介入せず、
 承認済みかつ公開済みKDV contractだけをhost shellへ接続する。
 
@@ -74,9 +74,9 @@ worker停止だけを表示する案は原因追跡を妨げるため採用し�
 
 ### D5. KDV publicationをrelease integrationのgateにする
 
-production `Cargo.toml` とrelease harnessはcrates.ioのKDV `0.5.1`を利用し、
+production `Cargo.toml` とrelease harnessはcrates.ioのKDV `0.5.2`を利用し、
 path / git dependencyを許可しない。KDV側のengine feasibilityとuser approval、
-KDV v0.5.1 publication、KatanA dependency update、headless acceptanceの順で進める。
+KDV v0.5.2 publication、KatanA dependency update、headless acceptanceの順で進める。
 
 ### D6. release targetはv0.22.38とし、将来minor計画を繰り上げない
 
@@ -102,8 +102,8 @@ version-undecidedのまま保持する。
 
 1. KDV feasibility gateとユーザー承認を完了する。
 2. 必要な場合だけKUC generic 2D gridを先行releaseする。
-3. KDV `v0.5.1`をreleaseし、crates.io artifactを検証する。
-4. KatanAを公開済みKDV `0.5.1`へ更新し、source routingとthin backend projectionを実装する。
+3. KDV `v0.5.2`をreleaseし、crates.io artifactを検証する。
+4. KatanAを公開済みKDV `0.5.2`へ更新し、source routingとthin backend projectionを実装する。
 5. format corpus、failure corpus、URL corpusをheadless acceptanceで検証する。
 6. `v0.22.38` adjacent SemVer、ownership、registry dependency、release artifactを検証する。
 

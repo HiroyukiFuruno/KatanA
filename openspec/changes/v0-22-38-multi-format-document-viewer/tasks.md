@@ -22,7 +22,7 @@
 
 ## 3. KDV viewer integration
 
-- [x] 3.1 crates.ioの公開済み `katana-document-viewer 0.5.1`へdependencyを更新する
+- [x] 3.1 crates.ioの公開済み `katana-document-viewer 0.5.2`へdependencyを更新する（crates.io artifactとregistry checksumを再確認済み）
 - [x] 3.2 KDV統一document sessionをKatanA document lifecycleへ接続する
 - [x] 3.3 KDV中立frameだけをdocument tabの現行egui backendへ投影する
 - [x] 3.4 KDV capabilityに基づいてnavigation、index jump、zoom、fit、copy、open controlsを有効化する
@@ -62,9 +62,9 @@
 - [x] 7.1 workspace version、bundle metadata、CHANGELOG EN/JAを `0.22.38`へ同期する
 - [x] 7.2 SemVer guardがpublished `v0.22.37` -> `v0.22.38`だけを許可するようtest fixtureを更新する
 - [x] 7.3 guardが `v0.22.37`、`v0.22.39`、撤回済み `v0.29.0`、minor/major jumpを拒否することを検証する
-- [x] 7.4 published KDV `0.5.1`のexact resolved versionとregistry sourceをrelease gateへ固定する
-- [x] 7.5 package、release preflight、headless acceptance、platform buildを通す（証跡: macOS app bundle署名検証、37/37 headless steps、`rtk just check`のmacOS tests・Linux workspace tests・Windows cross-check）
-- [x] 7.6 PDF / DOCX / XLSX / PPTXのscreenshot、操作結果、failure diagnosticsをユーザーへ提示する（証跡: `target/multi-format-headless-macos/` の13画像、37/37 headless steps、2026-08-10 user-facing image review）
+- [x] 7.4 published KDV `0.5.2`のexact resolved versionとregistry sourceをrelease gateへ固定する
+- [x] 7.5 package、release preflight、headless acceptance、platform buildを通す（証跡: macOS app bundle署名検証、KDV 0.5.2で37/37 headless steps、`rtk just check`のmacOS tests・Linux workspace tests・Windows cross-check）
+- [x] 7.6 PDF / DOCX / XLSX / PPTXのscreenshot、操作結果、failure diagnosticsをユーザーへ提示する（証跡: `target/multi-format-headless-kdv-0.5.2/` の13画像とcontact sheet、37/37 headless steps、2026-08-12 visual review）
 - [ ] 7.7 headless証跡とrelease gateが成功した場合、2026-08-02の明示承認に基づいてcommit、push、PR、releaseを継続する
 
 ## 8. Final verification

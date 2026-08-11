@@ -2,7 +2,7 @@
 
 ### Requirement: PDFとOffice文書をKDV経由でpreviewしなければならない
 
-システムは、PDF / DOCX / XLSX / PPTX sourceを公開済みKDV `0.5.1`へ渡し、KDVの統一document session、neutral frame、viewer state、capability、diagnosticsを使ってpreviewしなければならない（MUST）。
+システムは、PDF / DOCX / XLSX / PPTX sourceを公開済みKDV `0.5.2`へ渡し、KDVの統一document session、neutral frame、viewer state、capability、diagnosticsを使ってpreviewしなければならない（MUST）。
 
 #### Scenario: local documentを開く
 
@@ -94,13 +94,13 @@
 
 ### Requirement: v0.22.38 releaseは隣接版と公開済みKDVだけを許可しなければならない
 
-KatanA `v0.22.38` は公開済みKDV `0.5.1`をcrates.ioから解決し、SemVer guardは公開済み `v0.22.37` から `v0.22.38` への隣接更新だけを許可しなければならない（MUST）。撤回済み `v0.29.0` をrelease targetとして受理してはならない（MUST NOT）。
+KatanA `v0.22.38` は公開済みKDV `0.5.2`をcrates.ioから解決し、SemVer guardは公開済み `v0.22.37` から `v0.22.38` への隣接更新だけを許可しなければならない（MUST）。撤回済み `v0.29.0` をrelease targetとして受理してはならない（MUST NOT）。
 
 #### Scenario: v0.22.38 release readinessを検証する
 
 - **WHEN** release gateがtarget `v0.22.38` とlatest published `v0.22.37` を検証する
 - **THEN** release gateは隣接patchを受理する
-- **THEN** KDV dependencyはcrates.ioの `0.5.1`である
+- **THEN** KDV dependencyはcrates.ioの `0.5.2`である
 - **THEN** package metadataとlockfileにpath / git KDV overrideがない
 
 #### Scenario: invalid release targetを拒否する
