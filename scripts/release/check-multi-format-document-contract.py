@@ -466,6 +466,7 @@ def verify(root: Path, target_version: str) -> None:
         (
             "taiki-e/install-action@67729d5c413db75907f0ad1e39bb04b9c868ff60",
             "tool: cargo-deny@0.20.2",
+            "cargo install cargo-bundle --version 0.11.0 --locked",
         ),
     )
     print("OK: KatanA multi-format document ownership and release contract is satisfied.")
