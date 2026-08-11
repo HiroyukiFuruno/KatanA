@@ -193,10 +193,8 @@ jobs:
             ${{ runner.os }}-cargo-release-
 
       - name: Install cargo-bundle
-        uses: taiki-e/install-action@67729d5c413db75907f0ad1e39bb04b9c868ff60 # v2.85.7
-        with:
-          tool: cargo-bundle@0.11.0
-          fallback: none
+        # WHY: install-action v2.85.7 does not support cargo-bundle 0.11.0.
+        run: cargo install cargo-bundle --version 0.11.0 --locked
       - name: Install DMG tooling
         run: brew install create-dmg
       - name: Clean stale DMG files
