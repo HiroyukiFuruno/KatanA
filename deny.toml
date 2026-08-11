@@ -10,7 +10,7 @@ all-features = true
 [advisories]
 unmaintained = "workspace"
 ignore = [
-  { id = "RUSTSEC-2026-0194", reason = "quick-xml is confined to the bounded KDV Office worker; office2pdf 0.6.5 cannot resolve quick-xml 0.41 yet, and the worker timeout forcibly terminates quadratic parsing" },
+  { id = "RUSTSEC-2026-0194", reason = "quick-xml is confined to the bounded KDV Office worker; office2pdf-katana 0.6.6 cannot resolve quick-xml 0.41 yet, and the worker timeout forcibly terminates quadratic parsing" },
   { id = "RUSTSEC-2026-0195", reason = "quick-xml is confined to the bounded KDV Office worker; OOXML expansion and worker memory are capped before untrusted XML reaches the parser" },
 ]
 

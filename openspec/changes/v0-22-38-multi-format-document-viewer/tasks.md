@@ -46,7 +46,7 @@
 - [x] 5.4 page / document / sheet / slide navigation後のstateとframeを検証する
 - [x] 5.5 supported corpusのscreenshotとmachine-readable resultをformat別に生成する
 - [x] 5.6 corrupt、unsupported、oversized、invalid URL corpusのlayer/causeをmachine-readable resultで検証する（証跡: `scripts/screenshot/examples/v0-22-38-multi-format-documents.json`、`openspec/changes/v0-22-38-multi-format-document-viewer/evidence/release-evaluation.json`）
-- [ ] 5.7 macOS、Linux、Windowsでheadless acceptanceとartifact packagingを検証する
+- [x] 5.7 macOS、Linux、Windowsでheadless acceptanceとartifact packagingを検証する（CI run `31512311934`、各OS 13 screenshots、全10 checks green）
 
 ## 6. Ownership and quality gates
 

@@ -24,7 +24,7 @@
   "integration_score": {
     "maximum": 100,
     "release_required": 100,
-    "achieved": 95,
+    "achieved": 100,
     "categories": {
       "engine_feasibility": {
         "score": 20,
@@ -52,9 +52,9 @@
         "status": "pass"
       },
       "quality_and_platforms": {
-        "score": 5,
+        "score": 10,
         "maximum": 10,
-        "status": "pending_cross_platform_headless_ci"
+        "status": "pass"
       }
     }
   },
@@ -77,6 +77,13 @@
     "macos_package": "pass; signed app contains KatanA and kdv-office-worker without Chromium",
     "linux_workspace_tests": "pass",
     "windows_workspace_check": "pass",
-    "cargo_deny": "pass"
+    "cargo_deny": "pass",
+    "cross_platform_ci": {
+      "run": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/31512311934",
+      "status": "pass",
+      "macos_screenshots": 13,
+      "linux_screenshots": 13,
+      "windows_screenshots": 13
+    }
   }
 }
