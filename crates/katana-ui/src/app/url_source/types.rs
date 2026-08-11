@@ -1,11 +1,16 @@
 //! URL validation and HTML response boundary types.
 
-use crate::state::url_tab::{HtmlSource, HtmlSourceError, UrlValidationError};
+mod response;
+
+use crate::state::url_tab::UrlValidationError;
+
+pub(super) use response::response_body_limit;
 
 pub const MAX_HTML_SOURCE_BYTES: usize = 8 * 1024 * 1024;
+pub const MAX_DOCUMENT_SOURCE_BYTES: usize =
+    katana_core::document_source::MAX_BINARY_DOCUMENT_BYTES;
 const HTTP_SUCCESS_MIN: u16 = 200;
 const HTTP_SUCCESS_MAX_EXCLUSIVE: u16 = 300;
-const CHALLENGE_TOKEN: &str = "cf-mitigated=challenge";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ValidatedHttpUrl {
@@ -90,98 +95,12 @@ impl ValidatedHttpUrl {
     pub fn as_str(&self) -> &str {
         &self.url
     }
-
-    pub fn process_response(
-        &self,
-        response: ehttp::Result<ehttp::Response>,
-    ) -> Result<HtmlSource, HtmlSourceError> {
-        let response = response.map_err(HtmlSourceError::Network)?;
-        let response_url = if response.url.is_empty() {
-            self.as_str().to_string()
-        } else {
-            response.url.clone()
-        };
-        if !response.ok
-            || !(HTTP_SUCCESS_MIN..HTTP_SUCCESS_MAX_EXCLUSIVE).contains(&response.status)
-        {
-            return Err(HtmlSourceError::HttpStatus {
-                status: response.status,
-                status_text: response.status_text,
-                url: response_url,
-                server: response
-                    .headers
-                    .get("server")
-                    .map(std::string::ToString::to_string),
-                cloudflare_challenge: has_cloudflare_challenge(&response.headers),
-            });
-        }
-
-        let content_type = response.content_type().map(ToOwned::to_owned);
-        let is_html = content_type.as_deref().is_some_and(|value| {
-            matches!(
-                value
-                    .split(';')
-                    .next()
-                    .unwrap_or_default()
-                    .trim()
-                    .to_ascii_lowercase()
-                    .as_str(),
-                "text/html" | "application/xhtml+xml"
-            )
-        });
-        if !is_html {
-            return Err(HtmlSourceError::NonHtmlContentType { content_type });
-        }
-
-        let actual = response.bytes.len();
-        if actual > MAX_HTML_SOURCE_BYTES {
-            return Err(HtmlSourceError::BodyTooLarge {
-                limit: MAX_HTML_SOURCE_BYTES,
-                actual,
-            });
-        }
-
-        let source_url = self.final_document_url(&response_url)?;
-        let raw_html =
-            String::from_utf8(response.bytes).map_err(|_| HtmlSourceError::InvalidUtf8)?;
-
-        Ok(HtmlSource {
-            raw_html,
-            origin: source_url.clone(),
-            source_url,
-        })
-    }
-
-    fn final_document_url(&self, response_url: &str) -> Result<String, HtmlSourceError> {
-        let response_url =
-            ValidatedHttpUrl::parse(response_url).map_err(HtmlSourceError::InvalidRedirectUrl)?;
-        let mut final_url = url::Url::parse(response_url.as_str())
-            .map_err(|_| HtmlSourceError::InvalidRedirectUrl(UrlValidationError::Malformed))?;
-        let requested_url = url::Url::parse(self.as_str())
-            .map_err(|_| HtmlSourceError::InvalidRedirectUrl(UrlValidationError::Malformed))?;
-        if final_url.fragment().is_none() {
-            final_url.set_fragment(requested_url.fragment());
-        }
-        Ok(final_url.to_string())
-    }
-}
-
-fn has_cloudflare_challenge(headers: &ehttp::Headers) -> bool {
-    if headers
-        .get("cf-mitigated")
-        .is_some_and(|value| value.eq_ignore_ascii_case("challenge"))
-    {
-        return true;
-    }
-
-    headers
-        .get_all("set-cookie")
-        .any(|value| value.to_ascii_lowercase().contains(CHALLENGE_TOKEN))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::url_tab::{FetchedUrlSource, HtmlSourceError};
 
     fn request() -> ValidatedHttpUrl {
         ValidatedHttpUrl::parse("https://example.com/page").expect("valid request")
@@ -268,6 +187,9 @@ mod tests {
                 b"<html></html>".to_vec(),
             )))
             .expect("HTML response");
+        let FetchedUrlSource::Html(source) = source else {
+            panic!("expected HTML source");
+        };
 
         assert_eq!(source.raw_html, "<html></html>");
         assert_eq!(source.origin, "https://example.com/page");
@@ -281,6 +203,9 @@ mod tests {
         redirected.url = "https://example.com/final".to_string();
 
         let source = request.process_response(Ok(redirected)).expect("source");
+        let FetchedUrlSource::Html(source) = source else {
+            panic!("expected HTML source");
+        };
 
         assert_eq!(source.origin, "https://example.com/final#linked-target");
         assert_eq!(source.source_url, source.origin);
@@ -293,8 +218,69 @@ mod tests {
         redirected.url = "https://example.com/final#new".to_string();
 
         let source = request.process_response(Ok(redirected)).expect("source");
+        let FetchedUrlSource::Html(source) = source else {
+            panic!("expected HTML source");
+        };
 
         assert_eq!(source.origin, "https://example.com/final#new");
+    }
+
+    #[test]
+    fn document_url_rejects_html_authentication_pages() {
+        let request =
+            ValidatedHttpUrl::parse("https://example.com/report.pdf").expect("document URL");
+        let mut response = response(200, "text/html", b"<html>Sign in</html>".to_vec());
+        response.url = "https://example.com/sign-in".to_owned();
+
+        let failure = request
+            .process_response(Ok(response))
+            .expect_err("HTML must not replace a PDF document");
+
+        assert!(matches!(failure, HtmlSourceError::DocumentSource { .. }));
+        assert!(failure.to_string().contains("authentication or error page"));
+        assert!(failure.to_string().contains("https://example.com/sign-in"));
+    }
+
+    #[test]
+    fn response_routes_pdf_to_a_binary_source() {
+        let pdf_request =
+            ValidatedHttpUrl::parse("https://example.com/report.pdf").expect("PDF URL");
+        let mut pdf_response = response(200, "application/pdf", b"%PDF-1.7".to_vec());
+        pdf_response.url = pdf_request.as_str().to_owned();
+        let pdf = pdf_request
+            .process_response(Ok(pdf_response))
+            .expect("PDF response");
+        let FetchedUrlSource::Document(pdf) = pdf else {
+            panic!("expected PDF document source");
+        };
+        assert_eq!(
+            pdf.format,
+            katana_core::document_source::BinaryDocumentFormat::Pdf
+        );
+        assert_eq!(pdf.mime, "application/pdf");
+        assert_eq!(pdf.source_url, pdf_request.as_str());
+        assert_eq!(pdf.bytes, b"%PDF-1.7");
+    }
+
+    #[test]
+    fn response_routes_mime_only_ooxml_to_a_binary_source() {
+        let docx_request =
+            ValidatedHttpUrl::parse("https://example.com/download").expect("DOCX URL");
+        let docx = docx_request
+            .process_response(Ok(response(
+                200,
+                katana_core::document_source::BinaryDocumentFormat::Docx.mime(),
+                vec![0x50, 0x4b, 0x03, 0x04],
+            )))
+            .expect("DOCX response");
+        let FetchedUrlSource::Document(docx) = docx else {
+            panic!("expected DOCX document source");
+        };
+        assert_eq!(
+            docx.format,
+            katana_core::document_source::BinaryDocumentFormat::Docx
+        );
+        assert_eq!(docx.mime, docx.format.mime());
     }
 
     #[test]

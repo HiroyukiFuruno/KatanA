@@ -35,12 +35,14 @@ impl FixtureHttpServer {
         let worker_stop = Arc::clone(&stop);
         let mount_prefix = config.mount_prefix.clone();
         let redirects = config.redirects.clone();
+        let declared_lengths = config.declared_lengths.clone();
         let worker = std::thread::spawn(move || {
             serve(
                 listener,
                 &root,
                 &mount_prefix,
                 &redirects,
+                &declared_lengths,
                 &recorded,
                 &worker_stop,
             )
@@ -104,6 +106,7 @@ fn serve(
     root: &Path,
     mount_prefix: &str,
     redirects: &std::collections::HashMap<String, String>,
+    declared_lengths: &std::collections::HashMap<String, usize>,
     requests: &Mutex<Vec<String>>,
     stop: &AtomicBool,
 ) -> std::io::Result<()> {
@@ -114,9 +117,14 @@ fn serve(
                     break;
                 }
                 stream.set_nonblocking(false)?;
-                if let Err(error) =
-                    serve_request(&mut stream, root, mount_prefix, redirects, requests)
-                {
+                if let Err(error) = serve_request(
+                    &mut stream,
+                    root,
+                    mount_prefix,
+                    redirects,
+                    declared_lengths,
+                    requests,
+                ) {
                     match error.kind() {
                         std::io::ErrorKind::UnexpectedEof
                         | std::io::ErrorKind::InvalidData
@@ -142,6 +150,7 @@ fn serve_request(
     root: &Path,
     mount_prefix: &str,
     redirects: &std::collections::HashMap<String, String>,
+    declared_lengths: &std::collections::HashMap<String, usize>,
     requests: &Mutex<Vec<String>>,
 ) -> std::io::Result<()> {
     stream.set_read_timeout(Some(Duration::from_secs(2)))?;
@@ -153,6 +162,9 @@ fn serve_request(
     if let Some(location) = redirects.get(&path) {
         return write_response(stream, "302 Found", &[('L', location)], b"");
     }
+    if let Some(length) = declared_lengths.get(&path) {
+        return write_declared_length_response(stream, &path, *length);
+    }
     match resolve_file(root, mount_prefix, &path) {
         Ok(path) => {
             let body = std::fs::read(&path)?;
@@ -161,6 +173,20 @@ fn serve_request(
         }
         Err(_) => write_response(stream, "404 Not Found", &[], b"not found"),
     }
+}
+
+fn write_declared_length_response(
+    stream: &mut TcpStream,
+    path: &str,
+    length: usize,
+) -> std::io::Result<()> {
+    let response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Type: {}\r\nContent-Length: {length}\r\nConnection: close\r\n\r\n",
+        content_type(Path::new(path))
+    );
+    stream.write_all(response.as_bytes())?;
+    stream.flush()?;
+    stream.shutdown(Shutdown::Write)
 }
 
 fn request_path(stream: &mut TcpStream) -> std::io::Result<String> {
@@ -214,6 +240,10 @@ fn content_type(path: &Path) -> &'static str {
         Some("js") => "text/javascript; charset=utf-8",
         Some("svg") => "image/svg+xml",
         Some("png") => "image/png",
+        Some("pdf") => "application/pdf",
+        Some("docx") => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        Some("xlsx") => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        Some("pptx") => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         _ => "application/octet-stream",
     }
 }
@@ -272,6 +302,23 @@ mod tests {
     }
 
     #[test]
+    fn fixture_server_reports_supported_document_mime_types() {
+        assert_eq!(content_type(Path::new("sample.pdf")), "application/pdf");
+        assert_eq!(
+            content_type(Path::new("sample.docx")),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        );
+        assert_eq!(
+            content_type(Path::new("sample.xlsx")),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        assert_eq!(
+            content_type(Path::new("sample.pptx")),
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        );
+    }
+
+    #[test]
     fn disconnected_client_does_not_stop_following_fixture_requests(
     ) -> Result<(), Box<dyn std::error::Error>> {
         let root = tempfile::tempdir()?;
@@ -281,6 +328,7 @@ mod tests {
             &HttpServerFixture {
                 mount_prefix: "/app/".to_string(),
                 redirects: HashMap::new(),
+                declared_lengths: HashMap::new(),
             },
         )?;
 
@@ -292,6 +340,29 @@ mod tests {
 
         assert!(response.starts_with("HTTP/1.1 200 OK"));
         server.assert_requested(&["/app/index.html".to_string()])?;
+        Ok(())
+    }
+
+    #[test]
+    fn fixture_server_can_declare_an_oversized_body_without_allocating_it(
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let root = tempfile::tempdir()?;
+        let server = FixtureHttpServer::start(
+            root.path(),
+            &HttpServerFixture {
+                mount_prefix: "/app/".to_owned(),
+                redirects: HashMap::new(),
+                declared_lengths: HashMap::from([("/oversized.pdf".to_owned(), 268_435_457)]),
+            },
+        )?;
+        let mut client = TcpStream::connect(server.address)?;
+        client.write_all(b"GET /oversized.pdf HTTP/1.1\r\nHost: localhost\r\n\r\n")?;
+        let mut response = String::new();
+        client.read_to_string(&mut response)?;
+
+        assert!(response.contains("Content-Type: application/pdf"));
+        assert!(response.contains("Content-Length: 268435457"));
+        assert!(response.ends_with("\r\n\r\n"));
         Ok(())
     }
 }

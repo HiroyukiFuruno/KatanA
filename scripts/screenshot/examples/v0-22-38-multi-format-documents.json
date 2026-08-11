@@ -1,0 +1,266 @@
+{
+  "schema_version": "1",
+  "name": "v0-22-38-multi-format-documents",
+  "fixture": {
+    "settings": {
+      "theme": "light",
+      "locale": "en",
+      "explorer_visible": true,
+      "linter_enabled": false,
+      "auto_refresh": true,
+      "auto_refresh_interval_secs": 0.25
+    },
+    "http_server": {
+      "mount_prefix": "/documents/",
+      "redirects": {
+        "/download": "/documents/representative.pdf",
+        "/documents/auth.pdf": "/documents/sign-in.html"
+      },
+      "declared_lengths": {
+        "/oversized.pdf": 268435457
+      }
+    },
+    "workspace_files": [
+      {
+        "name": "representative.pdf",
+        "source": "scripts/screenshot/fixtures/v0-22-38-multi-format/representative.pdf"
+      },
+      {
+        "name": "representative.docx",
+        "source": "scripts/screenshot/fixtures/v0-22-38-multi-format/representative.docx"
+      },
+      {
+        "name": "representative.xlsx",
+        "source": "scripts/screenshot/fixtures/v0-22-38-multi-format/representative.xlsx"
+      },
+      {
+        "name": "representative.pptx",
+        "source": "scripts/screenshot/fixtures/v0-22-38-multi-format/representative.pptx"
+      },
+      {
+        "name": "password-protected.pdf",
+        "source": "scripts/screenshot/fixtures/v0-22-38-multi-format/password-protected.pdf"
+      },
+      {
+        "name": "corrupt.pdf",
+        "content": "not a PDF document"
+      },
+      {
+        "name": "engine-failure.pdf",
+        "content": "%PDF-not-a-valid-file"
+      },
+      {
+        "name": "unsupported.bin",
+        "content": "unsupported document"
+      },
+      {
+        "name": "sign-in.html",
+        "content": "<!doctype html><title>Sign in</title><h1>Authentication required</h1>"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1280, "height": 900 },
+      "wait_seconds": 1.0
+    },
+    {
+      "type": "open_file",
+      "file_name": "representative.pdf",
+      "wait_seconds": 30.0,
+      "wait_for_document_frame": true,
+      "max_first_frame_seconds": 10.0,
+      "expected_document_format": "pdf",
+      "expected_document_item_count": 13,
+      "expected_document_node_kind": "Page"
+    },
+    { "type": "screenshot", "output_name": "01-pdf-page-1" },
+    {
+      "type": "action",
+      "action": { "document_next": { "timeout_seconds": 10.0 } }
+    },
+    { "type": "screenshot", "output_name": "02-pdf-page-2" },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "01-pdf-page-1",
+      "current": "02-pdf-page-2",
+      "min_changed_pixels": 5000
+    },
+    {
+      "type": "open_file",
+      "file_name": "representative.docx",
+      "wait_seconds": 30.0,
+      "wait_for_document_frame": true,
+      "max_first_frame_seconds": 15.0,
+      "expected_document_format": "docx",
+      "expected_document_item_count": 2,
+      "expected_document_node_kind": "Page"
+    },
+    { "type": "screenshot", "output_name": "03-docx-page-1" },
+    {
+      "type": "action",
+      "action": { "document_next": { "timeout_seconds": 10.0 } }
+    },
+    { "type": "screenshot", "output_name": "04-docx-page-2" },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "03-docx-page-1",
+      "current": "04-docx-page-2",
+      "min_changed_pixels": 5000
+    },
+    {
+      "type": "open_file",
+      "file_name": "representative.xlsx",
+      "wait_seconds": 30.0,
+      "wait_for_document_frame": true,
+      "max_first_frame_seconds": 15.0,
+      "expected_document_format": "xlsx",
+      "expected_document_item_count": 2,
+      "expected_document_node_kind": "Grid"
+    },
+    { "type": "screenshot", "output_name": "05-xlsx-sheet-1" },
+    {
+      "type": "action",
+      "action": { "document_next": { "timeout_seconds": 10.0 } }
+    },
+    { "type": "screenshot", "output_name": "06-xlsx-sheet-2" },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "05-xlsx-sheet-1",
+      "current": "06-xlsx-sheet-2",
+      "min_changed_pixels": 1000
+    },
+    {
+      "type": "open_file",
+      "file_name": "representative.pptx",
+      "wait_seconds": 30.0,
+      "wait_for_document_frame": true,
+      "max_first_frame_seconds": 15.0,
+      "expected_document_format": "pptx",
+      "expected_document_item_count": 2,
+      "expected_document_node_kind": "Page"
+    },
+    { "type": "screenshot", "output_name": "07-pptx-slide-1" },
+    {
+      "type": "action",
+      "action": { "document_next": { "timeout_seconds": 10.0 } }
+    },
+    { "type": "screenshot", "output_name": "08-pptx-slide-2" },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "07-pptx-slide-1",
+      "current": "08-pptx-slide-2",
+      "min_changed_pixels": 5000
+    },
+    {
+      "type": "action",
+      "action": {
+        "open_fixture_url": {
+          "path": "/documents/corrupt.pdf",
+          "wait_seconds": 10.0,
+          "expected_error_contains": "Document source intake failed"
+        }
+      }
+    },
+    { "type": "screenshot", "output_name": "09-corrupt-pdf-diagnostic" },
+    {
+      "type": "action",
+      "action": {
+        "open_fixture_document_error_url": {
+          "path": "/documents/engine-failure.pdf",
+          "timeout_seconds": 10.0,
+          "expected_error_contains": "Layer: KDV worker"
+        }
+      }
+    },
+    { "type": "screenshot", "output_name": "10-kdv-worker-diagnostic" },
+    {
+      "type": "action",
+      "action": {
+        "open_fixture_document_error_url": {
+          "path": "/documents/password-protected.pdf",
+          "timeout_seconds": 10.0,
+          "expected_error_contains": "encrypted or password protected"
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "11-password-protected-pdf-diagnostic"
+    },
+    {
+      "type": "action",
+      "action": {
+        "open_fixture_url": {
+          "path": "/oversized.pdf",
+          "wait_seconds": 10.0,
+          "expected_error_contains": "limit is 268435456 bytes"
+        }
+      }
+    },
+    { "type": "screenshot", "output_name": "12-oversized-pdf-diagnostic" },
+    {
+      "type": "action",
+      "action": {
+        "open_fixture_document_error_url": {
+          "path": "/documents/auth.pdf",
+          "timeout_seconds": 10.0,
+          "expected_error_contains": "authentication or error page"
+        }
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "open_fixture_url": {
+          "path": "/documents/unsupported.bin",
+          "wait_seconds": 10.0,
+          "expected_error_contains": "neither HTML nor a supported document"
+        }
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "open_url": {
+          "url": "ftp://example.invalid/document.pdf",
+          "timeout_seconds": 10.0,
+          "expected_error_contains": "Invalid URL: UnsupportedScheme"
+        }
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "open_fixture_document_url": {
+          "path": "/download",
+          "timeout_seconds": 30.0,
+          "expected_document_format": "pdf",
+          "expected_document_item_count": 13,
+          "expected_document_node_kind": "Page"
+        }
+      }
+    },
+    {
+      "type": "assert_http_requests",
+      "paths": [
+        "/documents/corrupt.pdf",
+        "/documents/engine-failure.pdf",
+        "/documents/password-protected.pdf",
+        "/oversized.pdf",
+        "/documents/auth.pdf",
+        "/documents/sign-in.html",
+        "/documents/unsupported.bin",
+        "/download",
+        "/documents/representative.pdf"
+      ]
+    },
+    {
+      "type": "assert_url_history",
+      "origin_suffixes": ["/documents/representative.pdf"]
+    },
+    { "type": "screenshot", "output_name": "13-pdf-direct-url-recovery" },
+    { "type": "quit" }
+  ]
+}

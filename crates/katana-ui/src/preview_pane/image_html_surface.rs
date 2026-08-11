@@ -321,6 +321,7 @@ mod tests {
 
     #[test]
     fn lifecycle_script_error_does_not_replace_the_rendered_surface() {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
         let source = HtmlBrowserSource::new(
             "<script>document.addEventListener('DOMContentLoaded', () => { throw new Error('lifecycle failed'); });</script>",
             "https://example.test/index.html",

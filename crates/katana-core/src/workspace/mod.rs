@@ -5,8 +5,10 @@ pub use types::*;
 
 const IMAGE_EXTENSIONS: &[&str] = &["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg"];
 const HTML_EXTENSIONS: &[&str] = &["html", "htm"];
+const DOCUMENT_EXTENSIONS: &[&str] = &["pdf", "docx", "xlsx", "pptx"];
 const STANDARD_VISIBLE_EXTENSIONS: &[&str] = &[
-    "png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "drawio", "html", "htm",
+    "png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "drawio", "html", "htm", "pdf", "docx",
+    "xlsx", "pptx",
 ];
 
 impl TreeEntry {
@@ -50,6 +52,13 @@ impl TreeEntry {
         }
     }
 
+    pub fn is_document(&self) -> bool {
+        match self {
+            Self::File { path } => Self::path_is_document(path),
+            _ => false,
+        }
+    }
+
     pub fn path_is_image(path: &Path) -> bool {
         path.extension()
             .and_then(|ext| ext.to_str())
@@ -70,12 +79,26 @@ impl TreeEntry {
             })
     }
 
+    pub fn path_is_document(path: &Path) -> bool {
+        path.extension()
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| {
+                DOCUMENT_EXTENSIONS
+                    .iter()
+                    .any(|document_ext| document_ext.eq_ignore_ascii_case(ext))
+            })
+    }
+
     pub fn image_extensions() -> &'static [&'static str] {
         IMAGE_EXTENSIONS
     }
 
     pub fn html_extensions() -> &'static [&'static str] {
         HTML_EXTENSIONS
+    }
+
+    pub fn document_extensions() -> &'static [&'static str] {
+        DOCUMENT_EXTENSIONS
     }
 
     pub fn standard_visible_extensions() -> &'static [&'static str] {

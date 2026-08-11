@@ -123,7 +123,16 @@
     "slideshow_settings": "슬라이드쇼 설정",
     "highlight_hover": "마우스 오버 하이라이트",
     "show_diagram_controls": "다이어그램 컨트롤",
-    "toggle_slideshow": "슬라이드쇼 전환"
+    "toggle_slideshow": "슬라이드쇼 전환",
+    "document_controller": {
+      "previous": "이전 페이지, 시트 또는 슬라이드",
+      "next": "다음 페이지, 시트 또는 슬라이드",
+      "fit_page": "페이지에 맞춤",
+      "fit_width": "너비에 맞춤",
+      "copy_active_cell": "활성 셀 복사",
+      "error_details": "오류 세부 정보",
+      "rendering_notes": "렌더링 참고 사항({count})"
+    }
   },
   "view_mode": {
     "preview": "미리보기",

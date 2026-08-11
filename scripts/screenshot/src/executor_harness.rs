@@ -24,12 +24,22 @@ use std::time::{Duration, Instant};
 use tempfile::TempDir;
 
 const HARNESS_PIXELS_PER_POINT: f32 = 2.0;
+const DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS: f64 = 30.0;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct HtmlBrowserFrameIdentity {
     document_path: PathBuf,
     origin: String,
     generation: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct DocumentFrameIdentity {
+    document_path: PathBuf,
+    format: String,
+    active_index: usize,
+    item_count: usize,
+    node_kind: String,
 }
 
 struct ActiveRecording {
@@ -266,6 +276,22 @@ pub fn run(
             }
             Step::Screenshot(s) => {
                 harness.run_steps(120);
+                wait_for_document_surface_idle(
+                    &mut harness,
+                    recording.as_mut(),
+                    DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS,
+                    "screenshot frame",
+                )?;
+                // 初回renderで確定する実viewportを非同期gridへ反映してから撮影する。
+                harness
+                    .render()
+                    .map_err(|e| anyhow::anyhow!("preflight render failed: {e}"))?;
+                wait_for_document_surface_idle(
+                    &mut harness,
+                    recording.as_mut(),
+                    DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS,
+                    "screenshot viewport materialization",
+                )?;
                 let image = harness
                     .render()
                     .map_err(|e| anyhow::anyhow!("render failed: {e}"))?;
@@ -446,9 +472,16 @@ pub fn run(
                 match path {
                     Some(p) => {
                         let previous_frame = html_browser_frame_identity(&mut harness);
+                        let previous_document_frame = document_frame_identity(&mut harness);
+                        let previous_document_failure =
+                            harness.state_mut().document_failure_for_test();
                         harness
                             .state_mut()
                             .trigger_action(AppAction::SelectDocument(p));
+                        ensure!(
+                            !(s.wait_for_html_frame && s.wait_for_document_frame),
+                            "open_file cannot wait for both HTML and document frames"
+                        );
                         if s.wait_for_html_frame {
                             let elapsed = wait_for_html_browser_frame(
                                 &mut harness,
@@ -456,7 +489,30 @@ pub fn run(
                                 previous_frame,
                                 s.wait_seconds,
                             )?;
-                            assert_first_frame_latency(elapsed, s.max_first_frame_seconds)?;
+                            assert_first_frame_latency(
+                                "HTML browser",
+                                elapsed,
+                                s.max_first_frame_seconds,
+                            )?;
+                        } else if s.wait_for_document_frame {
+                            let (elapsed, frame) = wait_for_document_frame(
+                                &mut harness,
+                                recording.as_mut(),
+                                previous_document_frame,
+                                previous_document_failure,
+                                s.wait_seconds,
+                            )?;
+                            assert_first_frame_latency(
+                                "document",
+                                elapsed,
+                                s.max_first_frame_seconds,
+                            )?;
+                            assert_document_frame(
+                                s.expected_document_format.as_deref(),
+                                s.expected_document_item_count,
+                                s.expected_document_node_kind.as_deref(),
+                                &frame,
+                            )?;
                         } else {
                             let fps = recording.as_ref().map(|r| r.fps as f64).unwrap_or(60.0);
                             let frames = ((s.wait_seconds * fps) as usize).max(30);
@@ -467,10 +523,7 @@ pub fn run(
                         }
                     }
                     None => {
-                        println!(
-                            "  WARNING: file {:?} not found in workspace tree",
-                            s.file_name
-                        );
+                        bail!("file {:?} not found in workspace tree", s.file_name);
                     }
                 }
             }
@@ -586,11 +639,25 @@ pub fn run(
                             expected_error_contains.as_deref(),
                         )?;
                     }
-                    UiAction::OpenFixtureUrl { path, wait_seconds } => {
+                    UiAction::OpenFixtureUrl {
+                        path,
+                        wait_seconds,
+                        expected_error_contains,
+                    } => {
                         let server = http_server
                             .as_ref()
                             .context("open_fixture_url requires fixture.http_server")?;
                         let url = server.url(path)?;
+                        if let Some(expected) = expected_error_contains {
+                            open_url_and_wait_for_html_frame(
+                                &mut harness,
+                                recording.as_mut(),
+                                &url,
+                                *wait_seconds,
+                                Some(expected),
+                            )?;
+                            continue;
+                        }
                         println!(
                             "  queue fixture URL {url}; pending before queue: {:?}",
                             harness.state_mut().pending_action_for_test()
@@ -606,6 +673,55 @@ pub fn run(
                             app.app_state_for_test().url_tab.input,
                             app.app_state_for_test().url_tab.last_error,
                         );
+                    }
+                    UiAction::OpenFixtureDocumentUrl {
+                        path,
+                        timeout_seconds,
+                        expected_document_format,
+                        expected_document_item_count,
+                        expected_document_node_kind,
+                    } => {
+                        let server = http_server
+                            .as_ref()
+                            .context("open_fixture_document_url requires fixture.http_server")?;
+                        let url = server.url(path)?;
+                        let previous = document_frame_identity(&mut harness);
+                        let previous_failure = harness.state_mut().document_failure_for_test();
+                        harness.state_mut().trigger_action(AppAction::OpenUrl(url));
+                        harness.ctx.request_repaint();
+                        let (_, frame) = wait_for_document_frame(
+                            &mut harness,
+                            recording.as_mut(),
+                            previous,
+                            previous_failure,
+                            *timeout_seconds,
+                        )?;
+                        assert_document_frame(
+                            Some(expected_document_format),
+                            Some(*expected_document_item_count),
+                            Some(expected_document_node_kind),
+                            &frame,
+                        )?;
+                    }
+                    UiAction::OpenFixtureDocumentErrorUrl {
+                        path,
+                        timeout_seconds,
+                        expected_error_contains,
+                    } => {
+                        let server = http_server.as_ref().context(
+                            "open_fixture_document_error_url requires fixture.http_server",
+                        )?;
+                        let url = server.url(path)?;
+                        let previous_failure = harness.state_mut().document_failure_for_test();
+                        harness.state_mut().trigger_action(AppAction::OpenUrl(url));
+                        harness.ctx.request_repaint();
+                        wait_for_document_failure(
+                            &mut harness,
+                            recording.as_mut(),
+                            previous_failure.as_deref(),
+                            expected_error_contains,
+                            *timeout_seconds,
+                        )?;
                     }
                     UiAction::OpenSettingsTab { tab } => {
                         if !harness.state_mut().app_state_mut().layout.show_settings {
@@ -846,6 +962,13 @@ pub fn run(
                             .trigger_action(AppAction::RefreshDiagnostics);
                         step_for_seconds(&mut harness, recording.as_mut(), 1.0)?;
                     }
+                    UiAction::DocumentNext { timeout_seconds } => {
+                        advance_document_and_wait(
+                            &mut harness,
+                            recording.as_mut(),
+                            *timeout_seconds,
+                        )?;
+                    }
                     UiAction::ApplyLintFixesForActiveFile => {
                         apply_lint_fixes_for_active_file(&mut harness, recording.as_mut())?;
                     }
@@ -1068,6 +1191,8 @@ pub fn run(
                             UiAction::OpenSettingsTab { .. }
                             | UiAction::OpenUrl { .. }
                             | UiAction::OpenFixtureUrl { .. }
+                            | UiAction::OpenFixtureDocumentUrl { .. }
+                            | UiAction::OpenFixtureDocumentErrorUrl { .. }
                             | UiAction::ForceOpenAccordion { .. }
                             | UiAction::OpenIconsAdvancedPanel
                             | UiAction::ScrollDown { .. }
@@ -1084,6 +1209,7 @@ pub fn run(
                             | UiAction::CloseSearchModal
                             | UiAction::CloseDocSearch
                             | UiAction::RefreshDiagnostics
+                            | UiAction::DocumentNext { .. }
                             | UiAction::ApplyLintFixesForActiveFile
                             | UiAction::ClickNode { .. }
                             | UiAction::HoverAt { .. }
@@ -1998,7 +2124,10 @@ fn step_opens_document(step: &Step) -> bool {
         Step::OpenFile(_) => true,
         Step::Action(action) => matches!(
             &action.action,
-            UiAction::OpenUrl { .. } | UiAction::OpenFixtureUrl { .. }
+            UiAction::OpenUrl { .. }
+                | UiAction::OpenFixtureUrl { .. }
+                | UiAction::OpenFixtureDocumentUrl { .. }
+                | UiAction::OpenFixtureDocumentErrorUrl { .. }
         ),
         _ => false,
     }
@@ -2015,10 +2144,208 @@ fn html_browser_frame_identity(
     })
 }
 
+fn document_frame_identity(harness: &mut Harness<'_, KatanaApp>) -> Option<DocumentFrameIdentity> {
+    let (document_path, format, active_index, item_count, node_kind) =
+        harness.state_mut().document_frame_for_test()?;
+    Some(DocumentFrameIdentity {
+        document_path,
+        format,
+        active_index,
+        item_count,
+        node_kind,
+    })
+}
+
+fn wait_for_document_frame(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    previous_frame: Option<DocumentFrameIdentity>,
+    previous_failure: Option<String>,
+    timeout_seconds: f64,
+) -> Result<(Duration, DocumentFrameIdentity)> {
+    let started_at = Instant::now();
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    loop {
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        let failure = harness.state_mut().document_failure_for_test();
+        if document_failure_advanced(previous_failure.as_deref(), failure.as_deref()) {
+            let failure = failure.expect("advanced document failure must exist");
+            bail!("document viewer failed before its first frame:\n{failure}");
+        }
+        let current = document_frame_identity(harness);
+        let idle = harness.state_mut().document_is_idle_for_test() == Some(true);
+        if idle && current.as_ref() != previous_frame.as_ref() {
+            if let Some(current) = current {
+                let elapsed = started_at.elapsed();
+                println!(
+                    "  document first frame ready in {:.3}s: format={}, item={}/{}, node={}",
+                    elapsed.as_secs_f64(),
+                    current.format,
+                    current.active_index.saturating_add(1),
+                    current.item_count,
+                    current.node_kind,
+                );
+                return Ok((elapsed, current));
+            }
+        }
+        if Instant::now() >= deadline {
+            bail!("document viewer did not produce an initial frame within {timeout_seconds:.2}s");
+        }
+        sleep_frame(60.0);
+    }
+}
+
+fn wait_for_document_failure(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    previous: Option<&str>,
+    expected: &str,
+    timeout_seconds: f64,
+) -> Result<()> {
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    loop {
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        if let Some(failure) = harness.state_mut().document_failure_for_test() {
+            if previous != Some(failure.as_str()) {
+                ensure!(
+                    failure.contains(expected),
+                    "document failure did not contain {expected:?}: {failure}"
+                );
+                println!("  document produced expected failure: {failure}");
+                return Ok(());
+            }
+        }
+        if Instant::now() >= deadline {
+            bail!("document did not fail within {timeout_seconds:.2}s");
+        }
+        sleep_frame(60.0);
+    }
+}
+
+fn assert_document_frame(
+    expected_format: Option<&str>,
+    expected_item_count: Option<usize>,
+    expected_node_kind: Option<&str>,
+    frame: &DocumentFrameIdentity,
+) -> Result<()> {
+    if let Some(expected) = expected_format {
+        ensure!(
+            frame.format == expected,
+            "document format mismatch: expected {expected:?}, got {:?}",
+            frame.format
+        );
+    }
+    if let Some(expected) = expected_item_count {
+        ensure!(
+            frame.item_count == expected,
+            "document item count mismatch: expected {expected}, got {}",
+            frame.item_count
+        );
+    }
+    if let Some(expected) = expected_node_kind {
+        ensure!(
+            frame.node_kind == expected,
+            "document node kind mismatch: expected {expected:?}, got {:?}",
+            frame.node_kind
+        );
+    }
+    Ok(())
+}
+
+fn wait_for_document_surface_idle(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    timeout_seconds: f64,
+    operation: &str,
+) -> Result<()> {
+    if document_frame_identity(harness).is_none() {
+        return Ok(());
+    }
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    loop {
+        if harness.state_mut().document_failure_for_test().is_some()
+            || harness.state_mut().document_is_idle_for_test() == Some(true)
+        {
+            return Ok(());
+        }
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        if Instant::now() >= deadline {
+            let frame = document_frame_identity(harness);
+            let idle = harness.state_mut().document_is_idle_for_test();
+            let failure = harness.state_mut().document_failure_for_test();
+            bail!(
+                "document surface did not settle before {operation} within \
+                 {timeout_seconds:.2}s: frame={frame:?}, idle={idle:?}, failure={failure:?}"
+            );
+        }
+        sleep_frame(60.0);
+    }
+}
+
+fn advance_document_and_wait(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    timeout_seconds: f64,
+) -> Result<()> {
+    wait_for_document_surface_idle(
+        harness,
+        recording.as_deref_mut(),
+        DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS,
+        "document navigation",
+    )?;
+    let previous = document_frame_identity(harness)
+        .context("document_next requires an active document frame")?;
+    harness
+        .state_mut()
+        .document_next_for_test()
+        .map_err(anyhow::Error::msg)?;
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    loop {
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        if let Some(failure) = harness.state_mut().document_failure_for_test() {
+            bail!("document viewer failed while advancing:\n{failure}");
+        }
+        if let Some(current) = document_frame_identity(harness) {
+            let idle = harness.state_mut().document_is_idle_for_test() == Some(true);
+            if idle
+                && current.document_path == previous.document_path
+                && current.active_index == previous.active_index.saturating_add(1)
+            {
+                println!(
+                    "  document advanced: format={}, item={}/{}",
+                    current.format,
+                    current.active_index.saturating_add(1),
+                    current.item_count
+                );
+                return Ok(());
+            }
+        }
+        if Instant::now() >= deadline {
+            let current = document_frame_identity(harness);
+            let idle = harness.state_mut().document_is_idle_for_test();
+            let failure = harness.state_mut().document_failure_for_test();
+            bail!(
+                "document viewer did not advance from item {} within {timeout_seconds:.2}s: \
+                 current={current:?}, idle={idle:?}, failure={failure:?}",
+                previous.active_index.saturating_add(1),
+            );
+        }
+        sleep_frame(60.0);
+    }
+}
+
 fn html_browser_frame_advanced(
     previous: Option<&HtmlBrowserFrameIdentity>,
     current: Option<&HtmlBrowserFrameIdentity>,
 ) -> bool {
+    current.is_some_and(|current| Some(current) != previous)
+}
+
+fn document_failure_advanced(previous: Option<&str>, current: Option<&str>) -> bool {
     current.is_some_and(|current| Some(current) != previous)
 }
 
@@ -2163,7 +2490,11 @@ fn wait_for_html_browser_frame(
     }
 }
 
-fn assert_first_frame_latency(elapsed: Duration, maximum_seconds: Option<f64>) -> Result<()> {
+fn assert_first_frame_latency(
+    surface: &str,
+    elapsed: Duration,
+    maximum_seconds: Option<f64>,
+) -> Result<()> {
     let Some(maximum_seconds) = maximum_seconds else {
         return Ok(());
     };
@@ -2173,7 +2504,7 @@ fn assert_first_frame_latency(elapsed: Duration, maximum_seconds: Option<f64>) -
     );
     ensure!(
         elapsed.as_secs_f64() <= maximum_seconds,
-        "HTML browser first frame took {:.3}s, exceeding the {:.3}s regression limit",
+        "{surface} first frame took {:.3}s, exceeding the {:.3}s regression limit",
         elapsed.as_secs_f64(),
         maximum_seconds
     );
@@ -2373,9 +2704,9 @@ fn normalize_relative_path(path: &Path) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::{
-        assert_first_frame_latency, click_staging_position, find_workspace_file,
-        html_browser_frame_advanced, normalize_relative_path, opened_url_frame_ready,
-        physical_png_bounds, scroll_delta, HtmlBrowserFrameIdentity,
+        assert_first_frame_latency, click_staging_position, document_failure_advanced,
+        find_workspace_file, html_browser_frame_advanced, normalize_relative_path,
+        opened_url_frame_ready, physical_png_bounds, scroll_delta, HtmlBrowserFrameIdentity,
     };
     use crate::capture::PngBounds;
     use crate::request::ScrollDirection;
@@ -2451,6 +2782,14 @@ mod tests {
             Some(&different_document)
         ));
         assert!(!html_browser_frame_advanced(Some(&previous), None));
+    }
+
+    #[test]
+    fn document_frame_wait_ignores_only_the_previous_failure() {
+        assert!(!document_failure_advanced(None, None));
+        assert!(!document_failure_advanced(Some("old"), Some("old")));
+        assert!(document_failure_advanced(None, Some("new")));
+        assert!(document_failure_advanced(Some("old"), Some("new")));
     }
 
     #[test]
@@ -2558,10 +2897,10 @@ mod tests {
 
     #[test]
     fn first_frame_latency_limit_rejects_slow_or_invalid_measurements() {
-        assert!(assert_first_frame_latency(Duration::from_secs(1), None).is_ok());
-        assert!(assert_first_frame_latency(Duration::from_secs(1), Some(2.0)).is_ok());
-        assert!(assert_first_frame_latency(Duration::from_secs(3), Some(2.0)).is_err());
-        assert!(assert_first_frame_latency(Duration::ZERO, Some(f64::NAN)).is_err());
-        assert!(assert_first_frame_latency(Duration::ZERO, Some(0.0)).is_err());
+        assert!(assert_first_frame_latency("document", Duration::from_secs(1), None).is_ok());
+        assert!(assert_first_frame_latency("document", Duration::from_secs(1), Some(2.0)).is_ok());
+        assert!(assert_first_frame_latency("document", Duration::from_secs(3), Some(2.0)).is_err());
+        assert!(assert_first_frame_latency("document", Duration::ZERO, Some(f64::NAN)).is_err());
+        assert!(assert_first_frame_latency("document", Duration::ZERO, Some(0.0)).is_err());
     }
 }

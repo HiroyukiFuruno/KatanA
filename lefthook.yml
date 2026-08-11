@@ -21,7 +21,7 @@ pre-commit:
 pre-push:
   commands:
     pr-ready-check:
-      run: ./scripts/release/check-pr-ready.sh
+      run: ./scripts/release/check-pr-ready.sh --pr-bootstrap
       only:
         - ref: master
         - ref: release/*
@@ -42,4 +42,4 @@ pre-push:
 pre-pr:
   commands:
     validation:
-      run: ./scripts/release/check-pr-ready.sh
+      run: ./scripts/release/check-pr-ready.sh --pr-bootstrap

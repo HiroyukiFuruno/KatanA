@@ -2,6 +2,23 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.38] - 2026-08-03 09:01:15 (UTC)
+
+### 🚀 Features
+
+- **PDF and Office document viewing**: Local files and direct HTTP/HTTPS documents in PDF, Word, Excel, and PowerPoint formats now open in native KatanA document tabs.
+- **Paged and spreadsheet interaction**: PDF pages, Word pages, PowerPoint slides, and Excel sheets can be navigated from the preview, with spreadsheet cells rendered in a scrollable grid.
+
+### ✨ Improvements
+
+- **Document controls**: Supported documents expose consistent previous/next, zoom, fit-page, fit-width, and active-cell copy controls according to each format's capabilities.
+- **Actionable document errors**: Source, network, format, viewer, and display failures now identify the failed operation, document format, location, and original cause without replacing the active workspace with a blank view.
+- **Safer Office previews**: Office macros and embedded scripts are not executed, and blocked external content is reported instead of being fetched silently.
+
+### 🔧 System
+
+- **Background viewing stability**: Document loading, rendering, navigation, and shutdown now use bounded background work so large files and rapid input do not block the application interface.
+
 ## [0.22.37] - 2026-07-28 20:30:18 (UTC)
 
 ### 🚀 Features

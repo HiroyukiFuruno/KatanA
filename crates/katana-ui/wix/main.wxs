@@ -135,6 +135,14 @@
                             <RemoveFolder Id='CleanUpBinFolder' Directory='Bin' On='uninstall'/>
                             <RegistryValue Root='HKCU' Key='Software\HiroyukiFuruno\KatanA' Name='binary' Type='integer' Value='1' KeyPath='yes'/>
                         </Component>
+                        <Component Id='OfficeWorker' Guid='7B0A96B1-F80A-4A90-9199-0F6A93077D40'>
+                            <File
+                                Id='OfficeWorkerExe'
+                                Name='kdv-office-worker.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\kdv-office-worker.exe'/>
+                            <RegistryValue Root='HKCU' Key='Software\HiroyukiFuruno\KatanA' Name='office-worker' Type='integer' Value='1' KeyPath='yes'/>
+                        </Component>
                     </Directory>
 
                     <Component Id='ApplicationShortcut' Guid='3fcd4fbb-d13c-4e89-a2e9-4e7cb8a99478'>
@@ -177,6 +185,7 @@
             <ComponentRef Id='CleanUp'/>
             
             <ComponentRef Id='binary0'/>
+            <ComponentRef Id='OfficeWorker'/>
             <ComponentRef Id='ApplicationShortcut'/>
 
             <Feature

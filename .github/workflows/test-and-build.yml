@@ -52,7 +52,7 @@ jobs:
           toolchain: stable
 
       - name: Install just
-        uses: taiki-e/install-action@56545b37b57562edd73171cb6c62cc509db4c34e # v2.81.7
+        uses: taiki-e/install-action@67729d5c413db75907f0ad1e39bb04b9c868ff60 # v2.85.7
         with:
           tool: just
           fallback: none
@@ -79,13 +79,41 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev
+          sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev mesa-vulkan-drivers vulkan-tools
+
+      - name: Verify software Vulkan adapter (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          lvp_icd="$(find /usr/share/vulkan/icd.d -name '*lvp*.json' -print -quit)"
+          test -n "${lvp_icd}"
+          LIBGL_ALWAYS_SOFTWARE=1 VK_DRIVER_FILES="${lvp_icd}" vulkaninfo --summary
 
       - name: Check types
         run: cargo check --workspace
 
       - name: Run tests
         run: cargo test --workspace
+
+      - name: Run multi-format headless acceptance
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        shell: bash
+        run: |
+          if [[ "${RUNNER_OS}" == "Linux" ]]; then
+            export LIBGL_ALWAYS_SOFTWARE=1
+            export VK_DRIVER_FILES="$(find /usr/share/vulkan/icd.d -name '*lvp*.json' -print -quit)"
+            export WGPU_BACKEND=vulkan
+          fi
+          scripts/screenshot/run.sh \
+            --request scripts/screenshot/examples/v0-22-38-multi-format-documents.json \
+            --output "target/multi-format-headless-${{ runner.os }}"
+
+      - name: Upload multi-format headless evidence
+        if: always() && github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: multi-format-headless-${{ runner.os }}
+          path: target/multi-format-headless-${{ runner.os }}
+          if-no-files-found: error
 
       - name: Run coverage
         if: runner.os == 'macOS' && github.event_name == 'pull_request'
@@ -118,7 +146,7 @@ jobs:
           components: clippy, rustfmt
 
       - name: Install just
-        uses: taiki-e/install-action@56545b37b57562edd73171cb6c62cc509db4c34e # v2.81.7
+        uses: taiki-e/install-action@67729d5c413db75907f0ad1e39bb04b9c868ff60 # v2.85.7
         with:
           tool: just
           fallback: none
@@ -147,6 +175,22 @@ jobs:
 
       - name: Run linter
         run: just lint
+
+  supply-chain:
+    name: Dependency Supply Chain
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@67729d5c413db75907f0ad1e39bb04b9c868ff60 # v2.85.7
+        with:
+          tool: cargo-deny@0.20.2
+          fallback: none
+
+      - name: Check advisories, licenses, and sources
+        run: cargo deny check
 
   # CodeQL security scanning (Task 7.2 / 7.3).
   codeql:

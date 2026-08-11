@@ -6,6 +6,8 @@ impl PreviewPane {
         source: &str,
         html_file_path: &std::path::Path,
     ) {
+        self.document_surface = None;
+        self.document_failure = None;
         let current_origin = self.html_browser_origin();
         self.md_file_path = html_file_path.to_path_buf();
         self.outline_items.clear();
@@ -20,6 +22,8 @@ impl PreviewPane {
         html_file_path: &std::path::Path,
         force: bool,
     ) {
+        self.document_surface = None;
+        self.document_failure = None;
         let current_origin = self.html_browser_origin();
         if force {
             self.viewer_states.clear();
@@ -68,6 +72,8 @@ impl PreviewPane {
         source: katana_document_viewer::browser_session::HtmlBrowserSource,
         force: bool,
     ) {
+        self.document_surface = None;
+        self.document_failure = None;
         if force {
             self.viewer_states.clear();
             self.fullscreen_viewer_state.reset();

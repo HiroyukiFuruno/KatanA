@@ -42,6 +42,7 @@ mod tests {
 
     #[test]
     fn burst_input_finishes_with_a_discrete_focus_barrier() -> Result<(), String> {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
         let source = katana_document_viewer::browser_session::HtmlBrowserSource::new(
             "<p>html</p>",
             "https://example.test/index.html",

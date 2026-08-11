@@ -45,5 +45,5 @@ lint-impacted:
     {{RTK_CMD}}scripts/runner/impacted.py clippy
 
 # Full verification (fmt + clippy + fixture IT + 100% coverage; ast-lint runs inside coverage)
-check-full: fmt-check lint test-integration coverage check-platforms
+check-full: fmt-check lint test-integration coverage check-platforms supply-chain
     @echo "✅ All checks passed"

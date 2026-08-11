@@ -37,7 +37,7 @@ cd ../..
 
 info "Packaging ZIP archive..."
 cd target/release
-7z a KatanA-windows-x86_64.zip KatanA.exe
+7z a KatanA-windows-x86_64.zip KatanA.exe kdv-office-worker.exe
 cd ../..
 
 info "Copying artifacts to project root..."

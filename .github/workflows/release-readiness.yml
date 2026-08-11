@@ -25,6 +25,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
         with:
           toolchain: stable
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@67729d5c413db75907f0ad1e39bb04b9c868ff60 # v2.85.7
+        with:
+          tool: cargo-deny@0.20.2
+          fallback: none
       - name: Run PR readiness check
         shell: bash
         env:
@@ -37,4 +42,4 @@ jobs:
             version="$(cat Cargo.toml | awk -F'\"' '/^version = / {print $2}')"
           fi
 
-          ./scripts/release/check-pr-ready.sh "$version"
+          ./scripts/release/check-pr-ready.sh "$version" --pr-bootstrap

@@ -92,6 +92,8 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
     });
     let explorer_visible = settings.explorer_visible.unwrap_or(false);
     let linter_enabled = settings.linter_enabled.unwrap_or(true);
+    let auto_refresh = settings.auto_refresh.unwrap_or(true);
+    let auto_refresh_interval_secs = settings.auto_refresh_interval_secs.unwrap_or(2.0);
     let show_diagram_controls = settings.slideshow_show_diagram_controls.unwrap_or(true);
 
     let no_extension = settings.no_extension.unwrap_or(false);
@@ -145,6 +147,8 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
     "explorer_default_visible": {explorer_visible}
   }},
   "behavior": {{
+    "auto_refresh": {auto_refresh},
+    "auto_refresh_interval_secs": {auto_refresh_interval_secs},
     "slideshow_show_diagram_controls": {show_diagram_controls}
   }},
   "updates": {{
@@ -169,6 +173,20 @@ mod tests {
         let json = build_settings_json(&settings, None);
 
         assert!(json.contains(r#""slideshow_show_diagram_controls": false"#));
+    }
+
+    #[test]
+    fn screenshot_settings_can_force_the_minimum_auto_refresh_interval() {
+        let settings = FixtureSettings {
+            auto_refresh: Some(true),
+            auto_refresh_interval_secs: Some(0.25),
+            ..FixtureSettings::default()
+        };
+
+        let json = build_settings_json(&settings, None);
+
+        assert!(json.contains(r#""auto_refresh": true"#));
+        assert!(json.contains(r#""auto_refresh_interval_secs": 0.25"#));
     }
 
     #[test]

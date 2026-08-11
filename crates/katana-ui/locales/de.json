@@ -123,7 +123,16 @@
     "slideshow_settings": "Diashow-Einstellungen",
     "highlight_hover": "Hervorhebung beim Hovern",
     "show_diagram_controls": "Diagrammsteuerungen",
-    "toggle_slideshow": "Diashow umschalten"
+    "toggle_slideshow": "Diashow umschalten",
+    "document_controller": {
+      "previous": "Vorherige Seite, Tabelle oder Folie",
+      "next": "Nächste Seite, Tabelle oder Folie",
+      "fit_page": "Seite anpassen",
+      "fit_width": "An Breite anpassen",
+      "copy_active_cell": "Aktive Zelle kopieren",
+      "error_details": "Fehlerdetails",
+      "rendering_notes": "Darstellungshinweise ({count})"
+    }
   },
   "view_mode": {
     "preview": "Vorschau",

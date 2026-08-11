@@ -125,7 +125,7 @@ v0.27.0  Floem Phase 2 intake = viewer（vello retained 描画）
 v0.28.0  Floem Phase 3 intake = chrome（toolbar / sidebar / split pane / window loop）+ egui / eframe ゼロ
 
 ──── post-Floem ────
-v0.29.0  preview-driven local editing（review-first 編集体験）
+version undecided  preview-driven local editing（review-first 編集体験、v0.29.0 は撤回済みで再利用しない）
 v1.0.0   desktop viewer polish（公式リリース）
 v1.0.1   internal refactoring（katana-ui 整理 + i18n formatter 抽象化）
 ```

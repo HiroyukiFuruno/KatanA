@@ -3,6 +3,7 @@ use katana_core::markdown::DiagramKind;
 use katana_core::markdown::outline::OutlineItem;
 use katana_core::markdown::svg_rasterize::RasterizedSvg;
 
+use super::document_surface::{DocumentFailure, DocumentSurface};
 use super::image_html_surface::HtmlBrowserSurface;
 
 pub(crate) const DIAGRAM_SVG_DISPLAY_SCALE: f32 = 2.0;
@@ -52,6 +53,8 @@ pub struct PreviewPane {
     pub session_generation: u64,
     pub section_lifecycle: Vec<SectionLifecycle>,
     pub(crate) html_browser: Option<HtmlBrowserSurface>,
+    pub(crate) document_surface: Option<DocumentSurface>,
+    pub(crate) document_failure: Option<DocumentFailure>,
 }
 
 pub(crate) struct RenderJob {

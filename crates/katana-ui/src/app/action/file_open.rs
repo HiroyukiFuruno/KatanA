@@ -26,6 +26,10 @@ impl FileOpenOps {
             &mut extensions,
             katana_core::workspace::TreeEntry::html_extensions(),
         );
+        Self::append_extensions(
+            &mut extensions,
+            katana_core::workspace::TreeEntry::document_extensions(),
+        );
         Self::append_extensions(&mut extensions, Self::DRAWIO_EXTENSIONS);
         extensions
     }
@@ -89,7 +93,7 @@ impl FileOpenOps {
                 .raw
                 .dropped_files
                 .iter()
-                .filter_map(|file| file.path.clone())
+                .map(|file| file.path().to_path_buf())
                 .collect()
         })
     }
@@ -203,12 +207,20 @@ mod tests {
     }
 
     #[test]
-    fn supported_extensions_include_html_documents() {
+    fn supported_extensions_include_html_and_binary_documents() {
         let app = make_app();
         let extensions = FileOpenOps::supported_extensions(&app);
 
         assert!(extensions.iter().any(|ext| ext == "html"));
         assert!(extensions.iter().any(|ext| ext == "htm"));
+        for extension in ["pdf", "docx", "xlsx", "pptx"] {
+            assert!(extensions.iter().any(|value| value == extension));
+            assert!(
+                FileOpenOps::dialog_extensions(&app)
+                    .iter()
+                    .any(|value| value == extension)
+            );
+        }
         assert!(
             FileOpenOps::dialog_extensions(&app)
                 .iter()

@@ -1,3 +1,5 @@
+mod document;
+
 use super::KatanaApp;
 use crate::app_state::AppState;
 

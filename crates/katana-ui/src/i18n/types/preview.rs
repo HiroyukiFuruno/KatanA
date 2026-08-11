@@ -10,11 +10,23 @@ pub struct PreviewMessages {
     pub highlight_hover: String,
     pub show_diagram_controls: String,
     pub toggle_slideshow: String,
+    pub document_controller: DocumentControllerMessages,
     #[serde(default = "default_missing_image_text")]
     pub missing_image: String,
     #[serde(default = "default_remote_image_text")]
     pub remote_image: String,
     pub diagram_controller: DiagramControllerMessages,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DocumentControllerMessages {
+    pub previous: String,
+    pub next: String,
+    pub fit_page: String,
+    pub fit_width: String,
+    pub copy_active_cell: String,
+    pub error_details: String,
+    pub rendering_notes: String,
 }
 
 fn default_missing_image_text() -> String {

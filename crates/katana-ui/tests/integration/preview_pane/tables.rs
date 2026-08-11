@@ -47,10 +47,10 @@ fn render_section_shapes(
     };
 
     // Render twice to stabilize one-frame-delayed geometry updates.
-    let _ = ctx.run_ui(raw_input.clone(), |ctx| {
+    let _ = crate::IntegrationUiOps::run(&ctx, raw_input.clone(), |ctx| {
         egui::CentralPanel::default().show_inside(ctx, |ui| pane.show(ui));
     });
-    let output = ctx.run_ui(raw_input, |ctx| {
+    let output = crate::IntegrationUiOps::run(&ctx, raw_input, |ctx| {
         egui::CentralPanel::default().show_inside(ctx, |ui| pane.show(ui));
     });
 
@@ -487,7 +487,7 @@ fn very_long_line_for_resize_regression() { let x = "ABCDEFGHIJKLMNOPQRSTUVWXYZa
     for width in widths {
         for _ in 0..2 {
             let mut root_min_rect = egui::Rect::NOTHING;
-            let _ = ctx.run_ui(raw_input_for_size(width, 500.0), |ctx| {
+            let _ = crate::IntegrationUiOps::run(&ctx, raw_input_for_size(width, 500.0), |ctx| {
                 egui::CentralPanel::default().show_inside(ctx, |ui| {
                     pane.show(ui);
                     root_min_rect = ui.min_rect();
@@ -519,7 +519,7 @@ fn assert_tables_block_preview_width_shrinks_after_resize() {
     for width in widths {
         for _ in 0..2 {
             let mut root_min_rect = egui::Rect::NOTHING;
-            let _ = ctx.run_ui(raw_input_for_size(width, 900.0), |ctx| {
+            let _ = crate::IntegrationUiOps::run(&ctx, raw_input_for_size(width, 900.0), |ctx| {
                 egui::CentralPanel::default().show_inside(ctx, |ui| {
                     pane.show(ui);
                     root_min_rect = ui.min_rect();

@@ -145,7 +145,7 @@ mod tests {
         let ctx = egui::Context::default();
         let mut app = app_with_focused_editor(&ctx);
 
-        let _ = ctx.run_ui(shifted_primary_v_input(), |ctx| {
+        crate::test_ui::TestUiOps::run(&ctx, shifted_primary_v_input(), |ctx| {
             app.handle_shortcuts(ctx);
         });
 

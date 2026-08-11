@@ -11,8 +11,8 @@ if [[ -z "$TARGET_VERSION" ]]; then
 fi
 TARGET_VERSION="${TARGET_VERSION#v}"
 
-if [[ "$TARGET_VERSION" != "0.22.37" ]]; then
-    error "The browser-equivalent HTML release contract applies only to v0.22.37; received v${TARGET_VERSION}."
+if [[ "$TARGET_VERSION" != "0.22.38" ]]; then
+    error "The browser-equivalent HTML release contract applies only to v0.22.38; received v${TARGET_VERSION}."
     exit 1
 fi
 
@@ -51,7 +51,7 @@ if [[ -z "${KATANA_RELEASE_ROOT:-}" ]] &&
 fi
 
 if grep -Eq 'executor_native|native_window|--native-window' "$ACCEPTANCE_RUNNER"; then
-    error "v0.22.37 acceptance runner must remain headless-only."
+    error "v0.22.38 acceptance runner must remain headless-only."
     exit 1
 fi
 
@@ -465,16 +465,25 @@ with acceptance_lock_path.open("rb") as handle:
 
 dependencies = cargo.get("workspace", {}).get("dependencies", {})
 manifest_release_lines = {
-    "katana-document-viewer": (0, 3, 5),
-    "katana-render-runtime": (0, 4, 14),
+    "katana-document-viewer": (0, 5),
+    "katana-render-runtime": (0, 4),
+}
+minimum_manifest_versions = {
+    "katana-document-viewer": (0, 5, 2),
+    "katana-render-runtime": (0, 4, 15),
 }
 minimum_lock_versions = {
-    "katana-document-viewer": (0, 3, 5),
-    "katana-render-runtime": (0, 4, 14),
+    "katana-document-viewer": (0, 5, 2),
+    "katana-render-runtime": (0, 4, 15),
+}
+exact_versions = {
+    "katana-document-viewer": (0, 5, 2),
 }
 
 
-def dependency_version(name: str, expected: tuple[int, int, int]) -> None:
+def dependency_version(
+    name: str, expected_line: tuple[int, int], minimum: tuple[int, int, int]
+) -> None:
     value = dependencies.get(name)
     if value is None:
         raise SystemExit(f"missing workspace dependency: {name}")
@@ -491,14 +500,23 @@ def dependency_version(name: str, expected: tuple[int, int, int]) -> None:
     if match is None:
         raise SystemExit(f"{name} must use a single caret-compatible x.y.z requirement: {version}")
     actual = tuple(int(part) for part in match.groups())
-    if actual != expected:
+    if name in exact_versions and actual != exact_versions[name]:
+        required = exact_versions[name]
         raise SystemExit(
-            f"{name} must declare the {expected[0]}.{expected[1]}.{expected[2]} release line; found {version}"
+            f"{name} must declare exactly {required[0]}.{required[1]}.{required[2]}; "
+            f"found {version}"
+        )
+    if actual[:2] != expected_line or actual < minimum:
+        raise SystemExit(
+            f"{name} must declare at least {minimum[0]}.{minimum[1]}.{minimum[2]} "
+            f"on the {expected_line[0]}.{expected_line[1]}.x release line; found {version}"
         )
 
 
 for dependency, expected_line in manifest_release_lines.items():
-    dependency_version(dependency, expected_line)
+    dependency_version(
+        dependency, expected_line, minimum_manifest_versions[dependency]
+    )
 
 patch_sources = [
     ("Cargo.toml", cargo.get("patch", {})),
@@ -542,7 +560,13 @@ def validate_lock(label: str, lock_document: dict) -> None:
             raise SystemExit(f"{label} has invalid {dependency} version: {version}")
         actual = tuple(int(part) for part in version_match.groups())
         minimum = minimum_lock_versions[dependency]
-        if actual[:2] != expected_line[:2] or actual < minimum:
+        if dependency in exact_versions and actual != exact_versions[dependency]:
+            required = exact_versions[dependency]
+            raise SystemExit(
+                f"{label} must resolve {dependency} exactly "
+                f"{required[0]}.{required[1]}.{required[2]}; found {version}"
+            )
+        if actual[:2] != expected_line or actual < minimum:
             raise SystemExit(
                 f"{label} must resolve {dependency} at least "
                 f"{minimum[0]}.{minimum[1]}.{minimum[2]} on the "
@@ -566,8 +590,8 @@ fi
 required_markers=(
     "Browser-equivalent HTML session is the only interactive preview path"
     "The system MUST NOT fall back to static HTML rendering"
-    "v0.22.37 release must prove the published browser chain"
-    'minimum resolved version of KDV `0.3.5` and KRR `0.4.14`'
+    "v0.22.38 release must prove the published browser chain"
+    'resolved version of KDV `0.5.2` and minimum KRR `0.4.15`'
     "raw KRR frame pixels"
 )
 for marker in "${required_markers[@]}"; do

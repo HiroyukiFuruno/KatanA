@@ -123,7 +123,16 @@
     "slideshow_settings": "投影片設定",
     "highlight_hover": "懸停高亮",
     "show_diagram_controls": "圖表控制項",
-    "toggle_slideshow": "切換投影片"
+    "toggle_slideshow": "切換投影片",
+    "document_controller": {
+      "previous": "上一頁、工作表或投影片",
+      "next": "下一頁、工作表或投影片",
+      "fit_page": "符合頁面",
+      "fit_width": "符合寬度",
+      "copy_active_cell": "複製作用中儲存格",
+      "error_details": "錯誤詳細資訊",
+      "rendering_notes": "算繪說明（{count}）"
+    }
   },
   "view_mode": {
     "preview": "預覽",

@@ -60,6 +60,7 @@ function upload_formula() {
     FORMULA_CONTENT+="  link_overwrite \"bin/katana-desktop\"\n\n"
     FORMULA_CONTENT+="  def install\n"
     FORMULA_CONTENT+="    bin.install \"KatanA\" => \"katana-desktop\"\n"
+    FORMULA_CONTENT+="    bin.install \"kdv-office-worker\"\n"
     FORMULA_CONTENT+="  end\n"
     FORMULA_CONTENT+="end\n"
 

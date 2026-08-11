@@ -124,6 +124,12 @@ jobs:
         with:
           toolchain: stable
 
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@67729d5c413db75907f0ad1e39bb04b9c868ff60 # v2.85.7
+        with:
+          tool: cargo-deny@0.20.2
+          fallback: none
+
       - name: Cache Cargo registry & build
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -186,10 +192,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-release-
 
-      - name: Install dependencies
-        run: |
-          command -v cargo-bundle || cargo install cargo-bundle
-          brew install create-dmg
+      - name: Install cargo-bundle
+        uses: taiki-e/install-action@67729d5c413db75907f0ad1e39bb04b9c868ff60 # v2.85.7
+        with:
+          tool: cargo-bundle@0.11.0
+          fallback: none
+      - name: Install DMG tooling
+        run: brew install create-dmg
       - name: Clean stale DMG files
         run: rm -f target/release/KatanA-Desktop-*.dmg
       - name: Build macOS .app

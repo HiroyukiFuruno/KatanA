@@ -13,12 +13,7 @@ use katana_platform::FilesystemService;
 
 use crate::app_state::*;
 
-pub(crate) trait DocumentOps {
-    fn handle_select_document(&mut self, path: std::path::PathBuf, activate: bool);
-    fn force_close_document(&mut self, idx: usize);
-    fn handle_update_buffer(&mut self, content: String);
-    fn handle_save_document(&mut self);
-}
+pub(crate) use super::document_contract::DocumentOps;
 
 impl DocumentOps for KatanaApp {
     fn handle_select_document(&mut self, path: std::path::PathBuf, activate: bool) {
@@ -65,6 +60,10 @@ impl DocumentOps for KatanaApp {
                     .performance
                     .resolved_diagram_concurrency();
                 self.full_refresh_preview(&path, &src, false, concurrency);
+                if katana_core::workspace::TreeEntry::path_is_document(&path) {
+                    self.state
+                        .set_active_view_mode(crate::state::document::ViewMode::PreviewOnly);
+                }
                 if self.state.search.doc_search_open {
                     self.refresh_doc_search_matches(&src);
                 }
@@ -112,6 +111,10 @@ impl DocumentOps for KatanaApp {
             }
         }
         self.state.initialize_tab_split_state(path.clone());
+        if katana_core::workspace::TreeEntry::path_is_document(&path) {
+            self.state
+                .set_active_view_mode(crate::state::document::ViewMode::PreviewOnly);
+        }
         self.save_workspace_state();
         self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
     }

@@ -191,6 +191,7 @@ mod tests {
 
     #[test]
     fn keyboard_input_requests_polling_for_the_resulting_browser_frame() -> Result<(), String> {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
         let source = katana_document_viewer::browser_session::HtmlBrowserSource::new(
             "<input autofocus>",
             "https://example.test/index.html",

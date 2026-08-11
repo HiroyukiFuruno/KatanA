@@ -123,13 +123,13 @@ The system MUST keep Markdown diagnostics, Markdown formatting, Markdown export,
 - **THEN** Markdown diagnostics and formatting do not process its source
 - **THEN** Markdown export and diagram wrapping are not used to render its interactive surface
 
-### Requirement: v0.22.37 release must prove the published browser chain
+### Requirement: v0.22.38 release must prove the published browser chain
 
-KatanA v0.22.37 MUST consume published KDV `0.3.x` and KRR `0.4.x` crates from crates.io, with a minimum resolved version of KDV `0.3.5` and KRR `0.4.14`. KatanA MUST NOT use a local path or git dependency for KDV/KRR, or package a Chromium/browser runtime archive. The withdrawn `v0.29.0` MUST NOT be accepted as a release target, and the SemVer guard MUST accept only the adjacent update from published v0.22.36 to v0.22.37.
+KatanA v0.22.38 MUST consume published KDV `0.5.2` and KRR `0.4.x` crates from crates.io, with a resolved version of KDV `0.5.2` and minimum KRR `0.4.15`. KatanA MUST NOT use a local path or git dependency for KDV/KRR, or package a Chromium/browser runtime archive. The withdrawn `v0.29.0` MUST NOT be accepted as a release target, and the SemVer guard MUST accept only the adjacent update from published v0.22.37 to v0.22.38.
 
 #### Scenario: Release evidence exercises browser behavior and recovery
 
-- **WHEN** v0.22.37 release readiness is evaluated
+- **WHEN** v0.22.38 release readiness is evaluated
 - **THEN** packaged headless-process evidence covers external CSS/JavaScript/image, embedded Mermaid SVG, accordion, JavaScript action, text input, link navigation, reload, resize, worker error recovery, and complete action frames
 - **THEN** external JavaScript registers its controls through `document.addEventListener("DOMContentLoaded", ...)`, and the initial complete frame proves that lifecycle callback ran
 - **THEN** same-document and external fragment states prove the complete document origin, raw KRR frame pixels, and composed KatanA screenshot pixels independently
@@ -138,15 +138,15 @@ KatanA v0.22.37 MUST consume published KDV `0.3.x` and KRR `0.4.x` crates from c
 
 #### Scenario: Static or unpublished chain is detected
 
-- **WHEN** KatanA resolves KDV below `0.3.5`, KRR below `0.4.14`, a path/git source, or includes a Chromium/browser runtime archive
-- **THEN** the v0.22.37 release gate fails
+- **WHEN** KatanA resolves KDV below `0.5.2`, KRR below `0.4.15`, a path/git source, or includes a Chromium/browser runtime archive
+- **THEN** the v0.22.38 release gate fails
 - **THEN** a static screenshot or parser test cannot satisfy the release gate
 
 #### Scenario: Non-adjacent release target is requested
 
-- **WHEN** the latest published KatanA release is v0.22.36
-- **THEN** the release guard accepts v0.22.37
-- **THEN** the release guard rejects v0.22.36, v0.22.38, withdrawn v0.29.0, minor jumps, and major jumps
+- **WHEN** the latest published KatanA release is v0.22.37
+- **THEN** the release guard accepts v0.22.38
+- **THEN** the release guard rejects v0.22.37, v0.22.39, withdrawn v0.29.0, minor jumps, and major jumps
 
 ### Requirement: Browser resources and embedded SVG remain KRR-owned
 
@@ -219,13 +219,13 @@ The headless acceptance harness MUST observe the active HTML frame generation be
 - **THEN** the acceptance run fails with the previous generation and timeout
 - **THEN** no stale screenshot is accepted as the action result
 
-### Requirement: v0.22.37 proves the published slideshow chain
+### Requirement: v0.22.38 proves the published slideshow chain
 
-KatanA `v0.22.37` MUST resolve published KDV `0.3.5` and KRR `0.4.14` crates from crates.io in the application and headless harness, MUST reject path/git overrides, and MUST keep browser executables and archives out of the product. The SemVer guard MUST allow only published `v0.22.36` to `v0.22.37` and MUST reject withdrawn `v0.29.0`.
+KatanA `v0.22.38` MUST resolve published KDV `0.5.2` and KRR `0.4.15` crates from crates.io in the application and headless harness, MUST reject path/git overrides, and MUST keep browser executables and archives out of the product. The SemVer guard MUST allow only published `v0.22.37` to `v0.22.38` and MUST reject withdrawn `v0.29.0`.
 
 #### Scenario: Real slide-deck release evidence is evaluated
 
-- **WHEN** `v0.22.37` release readiness is evaluated
+- **WHEN** `v0.22.38` release readiness is evaluated
 - **THEN** the actual Google Drive `slides.html` completes 14 slide states and 43 scripted actions through the native KatanA UI
 - **THEN** click and keyboard navigation each produce newer complete frames without a worker stop or JavaScript exception
 - **THEN** fresh screenshots are available for user review before any KatanA commit, push, PR, or release

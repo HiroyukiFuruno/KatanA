@@ -72,6 +72,7 @@ The goal of KatanA is to provide a **simple, fast, and workspace-oriented Markdo
 ## Features
 
 - **Live split-view preview** — Edit on the left, rendered HTML on the right, scroll-synced
+- **Native document viewing** — Open interactive HTML, PDF, DOCX, XLSX, and PPTX files or direct document URLs inside the workspace
 - **Diagram rendering** — First-class support for Mermaid, PlantUML, and Draw.io fenced code blocks
 - **GitHub Flavored Markdown** — Tables, strikethrough, task lists, footnotes, autolinks
 - **Workspace-aware** — Open a folder and navigate files from the integrated file tree

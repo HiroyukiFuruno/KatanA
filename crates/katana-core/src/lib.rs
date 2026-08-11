@@ -20,6 +20,7 @@
 
 pub mod ai;
 pub mod document;
+pub mod document_source;
 pub mod editor;
 pub mod emoji;
 pub mod html;

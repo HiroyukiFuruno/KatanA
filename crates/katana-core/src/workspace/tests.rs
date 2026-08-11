@@ -79,3 +79,27 @@ fn test_html_extension_detection() {
     assert!(TreeEntry::standard_visible_extensions().contains(&"html"));
     assert!(TreeEntry::standard_visible_extensions().contains(&"htm"));
 }
+
+#[test]
+fn document_extension_detection_is_shared_with_visible_files() {
+    for extension in ["pdf", "docx", "xlsx", "pptx"] {
+        let document = TreeEntry::File {
+            path: PathBuf::from(format!("/root/document.{extension}")),
+        };
+        let uppercase = PathBuf::from(format!("/root/document.{}", extension.to_uppercase()));
+
+        assert!(document.is_document());
+        assert!(TreeEntry::path_is_document(&uppercase));
+        assert!(TreeEntry::document_extensions().contains(&extension));
+        assert!(TreeEntry::standard_visible_extensions().contains(&extension));
+    }
+
+    let directory = TreeEntry::Directory {
+        path: PathBuf::from("/root/document.pdf"),
+        children: Vec::new(),
+    };
+    assert!(!directory.is_document());
+    assert!(!TreeEntry::path_is_document(
+        PathBuf::from("/root/readme.md").as_path()
+    ));
+}

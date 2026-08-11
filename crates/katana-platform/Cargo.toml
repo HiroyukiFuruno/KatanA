@@ -6,7 +6,7 @@ license.workspace = true
 description = "KatanA platform: filesystem access, settings persistence, keybindings, clipboard, and OS integrations"
 
 [dependencies]
-katana-core = { path = "../katana-core" }
+katana-core = { version = "0.22.38", path = "../katana-core" }
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

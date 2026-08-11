@@ -18,8 +18,8 @@ mod tests {
 
     pub(crate) const PREVIEW_CONTENT_PADDING: f32 = 12.0;
 
-    fn test_context() -> egui::Context {
-        let ctx = egui::Context::default();
+    fn test_context() -> crate::test_ui::Context {
+        let ctx = crate::test_ui::Context::default();
         let mut fonts = egui::FontDefinitions::default();
         let md_prop = fonts
             .families
@@ -124,11 +124,21 @@ mod tests {
 
     fn raw_input_with_dropped_path(path: PathBuf) -> egui::RawInput {
         egui::RawInput {
-            dropped_files: vec![egui::DroppedFile {
-                path: Some(path),
-                ..Default::default()
-            }],
+            dropped_files: vec![std::sync::Arc::new(TestDroppedFile(path))],
             ..Default::default()
+        }
+    }
+
+    #[derive(Debug)]
+    struct TestDroppedFile(PathBuf);
+
+    impl egui::DroppedFile for TestDroppedFile {
+        fn path(&self) -> &std::path::Path {
+            &self.0
+        }
+
+        fn bytes(&self) -> Result<Vec<u8>, String> {
+            std::fs::read(&self.0).map_err(|error| error.to_string())
         }
     }
 

@@ -38,7 +38,7 @@ fn markdown_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
     );
     katana_ui::theme_bridge::ThemeBridgeOps::apply_font_family(&ctx, "Monospace");
 
-    let output = ctx.run_ui(egui::RawInput::default(), |ctx| {
+    let output = crate::IntegrationUiOps::run(&ctx, egui::RawInput::default(), |ctx| {
         egui::CentralPanel::default().show_inside(ctx, |ui| {
             pane.show_content(ui, None, None, None, None);
         });
@@ -82,7 +82,7 @@ fn preview_markdown_uses_proportional_body_font_even_when_ui_font_family_is_mono
     let ctx = egui::Context::default();
     katana_ui::theme_bridge::ThemeBridgeOps::apply_font_family(&ctx, "Monospace");
 
-    let output = ctx.run_ui(egui::RawInput::default(), |ctx| {
+    let output = crate::IntegrationUiOps::run(&ctx, egui::RawInput::default(), |ctx| {
         egui::CentralPanel::default().show_inside(ctx, |ui| {
             pane.show_content(ui, None, None, None, None);
         });

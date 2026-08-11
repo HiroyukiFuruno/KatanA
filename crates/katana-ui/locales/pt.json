@@ -123,7 +123,16 @@
     "slideshow_settings": "Configurações de apresentação de slides",
     "highlight_hover": "Destacar ao Passar o Mouse",
     "show_diagram_controls": "Controles do Diagrama",
-    "toggle_slideshow": "Alternar Apresentação de Slides"
+    "toggle_slideshow": "Alternar Apresentação de Slides",
+    "document_controller": {
+      "previous": "Página, folha ou slide anterior",
+      "next": "Página, folha ou slide seguinte",
+      "fit_page": "Ajustar à página",
+      "fit_width": "Ajustar à largura",
+      "copy_active_cell": "Copiar célula ativa",
+      "error_details": "Detalhes do erro",
+      "rendering_notes": "Notas de renderização ({count})"
+    }
   },
   "view_mode": {
     "preview": "Visualização",

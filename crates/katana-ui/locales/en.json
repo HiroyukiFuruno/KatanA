@@ -112,6 +112,15 @@
     "highlight_hover": "Hover Highlight",
     "show_diagram_controls": "Diagram Controls",
     "toggle_slideshow": "Toggle Slideshow",
+    "document_controller": {
+      "previous": "Previous page, sheet, or slide",
+      "next": "Next page, sheet, or slide",
+      "fit_page": "Fit page",
+      "fit_width": "Fit width",
+      "copy_active_cell": "Copy active cell",
+      "error_details": "Error details",
+      "rendering_notes": "Rendering notes ({count})"
+    },
     "diagram_controller": {
       "pan_up": "Pan Up",
       "pan_down": "Pan Down",

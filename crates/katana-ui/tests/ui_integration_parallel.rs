@@ -19,6 +19,8 @@ mod foreground_surface_isolation;
 mod i18n;
 #[path = "integration/native_clipboard_paste.rs"]
 mod native_clipboard_paste;
+#[path = "integration/office_worker.rs"]
+mod office_worker;
 
 pub static SERIAL_TEST_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
@@ -30,6 +32,20 @@ pub fn lock_serial_test_mutex() -> MutexGuard<'static, ()> {
     get_serial_test_mutex()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+pub struct IntegrationUiOps;
+
+impl IntegrationUiOps {
+    pub fn run(
+        context: &eframe::egui::Context,
+        input: eframe::egui::RawInput,
+        render: impl FnMut(&mut eframe::egui::Ui),
+    ) -> eframe::egui::FullOutput {
+        let mut output = context.run_ui(input, render);
+        output.textures_delta.clear();
+        output
+    }
 }
 
 pub mod integration {

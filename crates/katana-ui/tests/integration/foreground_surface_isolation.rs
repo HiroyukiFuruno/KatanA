@@ -26,7 +26,7 @@ fn disabled_ui_prevents_background_clicks() {
     let is_blocked = app.is_foreground_surface_active(&ctx);
 
     /* WHY: Frame 1: seed the layout */
-    let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
+    let _ = crate::IntegrationUiOps::run(&ctx, egui::RawInput::default(), |ctx| {
         egui::CentralPanel::default().show_inside(ctx, |ui| {
             ui.add_enabled_ui(!is_blocked, |ui| {
                 let _ = ui.button("Background Button");
@@ -53,7 +53,7 @@ fn disabled_ui_prevents_background_clicks() {
     });
 
     let mut clicked = false;
-    let _ = ctx.run_ui(raw_input, |ctx| {
+    let _ = crate::IntegrationUiOps::run(&ctx, raw_input, |ctx| {
         egui::CentralPanel::default().show_inside(ctx, |ui| {
             ui.add_enabled_ui(!is_blocked, |ui| {
                 let rect =
@@ -82,7 +82,7 @@ fn disabled_ui_prevents_background_hover() {
     let is_blocked = app.is_foreground_surface_active(&ctx);
 
     /* WHY: Frame 1: seed the layout */
-    let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
+    let _ = crate::IntegrationUiOps::run(&ctx, egui::RawInput::default(), |ctx| {
         egui::CentralPanel::default().show_inside(ctx, |ui| {
             ui.add_enabled_ui(!is_blocked, |ui| {
                 let rect =
@@ -99,7 +99,7 @@ fn disabled_ui_prevents_background_hover() {
         .push(egui::Event::PointerMoved(egui::pos2(50.0, 50.0)));
 
     let mut hovered = false;
-    let _ = ctx.run_ui(raw_input, |ctx| {
+    let _ = crate::IntegrationUiOps::run(&ctx, raw_input, |ctx| {
         egui::CentralPanel::default().show_inside(ctx, |ui| {
             ui.add_enabled_ui(!is_blocked, |ui| {
                 let rect =

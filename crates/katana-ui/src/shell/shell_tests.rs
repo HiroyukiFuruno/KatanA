@@ -1560,6 +1560,12 @@ mod tests_extra {
         let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
         let source = "# Diagram\n\n```mermaid\ngraph TD\n  A[Start] --> B[Done]\n```\n";
         let path = crate::test_render_env::RenderEnvLock::with_lock(|| {
+            /* WHY: KRR materializes the embedded runtime assets lazily. Warm the runtime
+             * before asserting export markup so this unit test does not conflate asset
+             * initialization with the export contract. */
+            let _ = katana_core::markdown::MarkdownRenderOps::render_with_katana_renderer(
+                "```mermaid\ngraph TD; Warmup-->Ready\n```",
+            );
             ShellLogicOps::export_named_html_to_tmp(
                 source,
                 "katana_template_export.html",

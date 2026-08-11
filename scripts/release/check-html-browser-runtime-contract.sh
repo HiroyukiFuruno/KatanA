@@ -10,8 +10,8 @@ if [[ -z "$TARGET_VERSION" ]]; then
     exit 1
 fi
 TARGET_VERSION="${TARGET_VERSION#v}"
-if [[ "$TARGET_VERSION" != "0.22.37" ]]; then
-    error "The HTML runtime contract applies only to v0.22.37; received v${TARGET_VERSION}."
+if [[ "$TARGET_VERSION" != "0.22.38" ]]; then
+    error "The HTML runtime contract applies only to v0.22.38; received v${TARGET_VERSION}."
     exit 1
 fi
 
@@ -23,10 +23,15 @@ SURFACE_PANE="${SURFACE%.rs}_pane.rs"
 SURFACE_VIEW="${SURFACE%.rs}_view.rs"
 HTML_RENDER=${KATANA_HTML_RENDER:-${ROOT_DIR}/crates/katana-ui/src/preview_pane/core_render_html_document.rs}
 URL_SOURCE=${KATANA_HTML_URL_SOURCE:-${ROOT_DIR}/crates/katana-ui/src/app/action/url_source.rs}
+URL_SOURCE_DOCUMENT=${KATANA_HTML_URL_SOURCE_DOCUMENT:-${URL_SOURCE%.rs}/document.rs}
 UI_SOURCE_ROOT=${KATANA_HTML_UI_SOURCE_ROOT:-${ROOT_DIR}/crates/katana-ui/src}
 RUNTIME_MANIFESTS_RAW=${KATANA_HTML_RUNTIME_MANIFESTS:-${ROOT_DIR}/Cargo.toml:${ROOT_DIR}/crates/katana-ui/Cargo.toml}
 IFS=: read -r -a RUNTIME_MANIFESTS <<<"$RUNTIME_MANIFESTS_RAW"
 SURFACE_FILES=("$SURFACE" "$SURFACE_INPUT" "$SURFACE_PANE" "$SURFACE_VIEW")
+URL_SOURCE_FILES=("$URL_SOURCE")
+if [[ -r "$URL_SOURCE_DOCUMENT" ]]; then
+    URL_SOURCE_FILES+=("$URL_SOURCE_DOCUMENT")
+fi
 
 for required_file in "${SURFACE_FILES[@]}" "$HTML_RENDER" "$URL_SOURCE" "${RUNTIME_MANIFESTS[@]}"; do
     if [[ ! -r "$required_file" ]]; then
@@ -65,10 +70,15 @@ for required_marker in \
     fi
 done
 
-if ! grep -Fq "apply_fetched_html_source(source" "$URL_SOURCE"; then
-    error "Fetched HTML URLs are not delivered to the KatanA document state."
-    exit 1
-fi
+for required_marker in \
+    "apply_fetched_url_source" \
+    "FetchedUrlSource::Html(source)" \
+    "replace_html_document(source"; do
+    if ! grep -Fq "$required_marker" "${URL_SOURCE_FILES[@]}"; then
+        error "Fetched HTML URLs are not delivered to the KatanA document state: ${required_marker}"
+        exit 1
+    fi
+done
 
 for forbidden_runtime_marker in \
     "Chromium" \
@@ -104,7 +114,8 @@ for forbidden_dependency in \
 done
 
 for forbidden_interactive_marker in "HtmlRenderer" "HtmlParser"; do
-    if grep -Fq "$forbidden_interactive_marker" "${SURFACE_FILES[@]}" "$HTML_RENDER" "$URL_SOURCE"; then
+    if grep -Fq "$forbidden_interactive_marker" \
+        "${SURFACE_FILES[@]}" "$HTML_RENDER" "${URL_SOURCE_FILES[@]}"; then
         error "Interactive HTML integration must not depend on ${forbidden_interactive_marker}."
         exit 1
     fi

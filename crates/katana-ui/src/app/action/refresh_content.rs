@@ -113,6 +113,21 @@ impl KatanaApp {
         if let Some(source) = self
             .state
             .url_tab
+            .document_source_url_for_document(&path)
+            .map(ToOwned::to_owned)
+        {
+            match crate::app::url_source::ValidatedHttpUrl::parse(&source) {
+                Ok(url) => self.fetch_html_url(ctx, url, Some(path)),
+                Err(error) => self
+                    .state
+                    .url_tab
+                    .fail(crate::state::HtmlSourceError::InvalidUrl(error)),
+            }
+            return;
+        }
+        if let Some(source) = self
+            .state
+            .url_tab
             .source_for_document(&path)
             .filter(|source| {
                 source.source_url.starts_with("http://")
@@ -139,6 +154,12 @@ impl KatanaApp {
         if let Some((src, concurrency)) = ImageDocumentOps::refresh_payload(&self.state, idx, &path)
         {
             self.full_refresh_preview(&path, &src, true, concurrency);
+            return;
+        }
+        if katana_core::workspace::TreeEntry::path_is_document(&path) {
+            /* WHY: Automatic refreshes must preserve navigation when the binary revision is
+             * unchanged; manual refresh still forces a new KDV session. */
+            self.full_refresh_preview(&path, "", is_manual, 1);
             return;
         }
         match std::fs::read_to_string(&path) {

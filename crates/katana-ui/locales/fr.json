@@ -123,7 +123,16 @@
     "slideshow_settings": "Paramètres du diaporama",
     "highlight_hover": "Surbrillance au Survol",
     "show_diagram_controls": "Contrôles du Diagramme",
-    "toggle_slideshow": "Basculer le Diaporama"
+    "toggle_slideshow": "Basculer le Diaporama",
+    "document_controller": {
+      "previous": "Page, feuille ou diapositive précédente",
+      "next": "Page, feuille ou diapositive suivante",
+      "fit_page": "Ajuster à la page",
+      "fit_width": "Ajuster à la largeur",
+      "copy_active_cell": "Copier la cellule active",
+      "error_details": "Détails de l’erreur",
+      "rendering_notes": "Notes de rendu ({count})"
+    }
   },
   "view_mode": {
     "preview": "Aperçu",

@@ -35,7 +35,7 @@ mod tests {
         let mut panel_width_frame2 = 0.0;
         let mut panel_width_frame3 = 0.0;
 
-        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        crate::test_ui::TestUiOps::run(&ctx, test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             let resp = egui::Panel::left("explorer_test_panel")
                 .resizable(true)
                 .show(ctx, |ui| {
@@ -44,7 +44,7 @@ mod tests {
             panel_width_frame1 = resp.response.rect.width();
         });
 
-        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        crate::test_ui::TestUiOps::run(&ctx, test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             let resp = egui::Panel::left("explorer_test_panel")
                 .resizable(true)
                 .show(ctx, |ui| {
@@ -53,7 +53,7 @@ mod tests {
             panel_width_frame2 = resp.response.rect.width();
         });
 
-        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        crate::test_ui::TestUiOps::run(&ctx, test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             let resp = egui::Panel::left("explorer_test_panel")
                 .resizable(true)
                 .show(ctx, |ui| {

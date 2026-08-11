@@ -50,6 +50,10 @@ impl UpdateInstallerOps {
             {
                 anyhow::bail!("Extracted update does not contain a valid application bundle");
             }
+            require_extracted_sidecar(
+                &extracted_app_path.join("Contents/MacOS"),
+                "kdv-office-worker",
+            )?;
 
             let script_path = temp_dir.path().join("relauncher.sh");
             Self::generate_relauncher_script(
@@ -73,6 +77,7 @@ impl UpdateInstallerOps {
                 extracted_file::WINDOWS_EXECUTABLE_NAME,
                 extracted_file::ExtractedFileFallback::RegularFile,
             )?;
+            require_extracted_sidecar(&extract_dir, "kdv-office-worker.exe")?;
 
             let script_path = temp_dir.path().join("relauncher.ps1");
             Self::generate_relauncher_script(
@@ -96,6 +101,7 @@ impl UpdateInstallerOps {
                 extracted_file::LINUX_EXECUTABLE_NAME,
                 extracted_file::ExtractedFileFallback::ExecutableRegularFile,
             )?;
+            require_extracted_sidecar(&extract_dir, "kdv-office-worker")?;
 
             let script_path = temp_dir.path().join("relauncher.sh");
             Self::generate_relauncher_script(
@@ -175,4 +181,15 @@ impl UpdateInstallerOps {
 
         Ok(())
     }
+}
+
+fn require_extracted_sidecar(directory: &Path, name: &str) -> anyhow::Result<()> {
+    let path = directory.join(name);
+    if !path.is_file() {
+        anyhow::bail!(
+            "Extracted update does not contain required sidecar `{}`",
+            path.display()
+        );
+    }
+    Ok(())
 }
