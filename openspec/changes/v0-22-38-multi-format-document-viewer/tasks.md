@@ -65,11 +65,11 @@
 - [x] 7.4 published KDV `0.5.2`のexact resolved versionとregistry sourceをrelease gateへ固定する
 - [x] 7.5 package、release preflight、headless acceptance、platform buildを通す（証跡: macOS app bundle署名検証、KDV 0.5.2で37/37 headless steps、`rtk just check`のmacOS tests・Linux workspace tests・Windows cross-check）
 - [x] 7.6 PDF / DOCX / XLSX / PPTXのscreenshot、操作結果、failure diagnosticsをユーザーへ提示する（証跡: `target/multi-format-headless-kdv-0.5.2/` の13画像とcontact sheet、37/37 headless steps、2026-08-12 visual review）
-- [ ] 7.7 headless証跡とrelease gateが成功した場合、2026-08-02の明示承認に基づいてcommit、push、PR、releaseを継続する
+- [x] 7.7 headless証跡とrelease gateが成功した場合、2026-08-02の明示承認に基づいてcommit、push、PR、releaseを継続する
 
 ## 8. Final verification
 
 - [x] 8.1 `rtk ./scripts/openspec validate v0-22-38-multi-format-document-viewer --strict --no-interactive`を実行する
 - [x] 8.2 `rtk just check`と `rtk ./scripts/release/check-pr-ready.sh 0.22.38 --pr-bootstrap`を実行する
 - [x] 8.3 KDV/KatanA call chain、registry dependency、ownership、four-format evidenceをself-reviewする（証跡: `evidence/self-review.md`）
-- [ ] 8.4 2026-08-02の明示承認を記録し、未検証項目を残さずcommit / push / PR / release workflowへ進む
+- [x] 8.4 2026-08-02の明示承認を記録し、未検証項目を残さずcommit / push / PR / release workflowへ進む
