@@ -30,24 +30,29 @@ info "1/11 Verifying version increment contract..."
 bash scripts/release/test-version-increment.sh
 success "Version increment contract is enforced."
 
-# 2. Browser-equivalent HTML release contract
-info "2/11 Verifying browser-equivalent HTML release contract..."
+# 2. Post-merge CI gate contract
+info "2/12 Verifying post-merge CI gate contract..."
+bash scripts/release/test-version-bump-ci-gate-contract.sh
+success "Post-merge CI gate covers the full three-platform release window."
+
+# 3. Browser-equivalent HTML release contract
+info "3/12 Verifying browser-equivalent HTML release contract..."
 bash scripts/release/test-html-browser-release-contract.sh
 if [[ "$VERSION" == "0.22.38" ]]; then
     scripts/release/check-html-browser-release-contract.sh "$VERSION"
 fi
 success "Browser-equivalent HTML release contract is enforced."
 
-# 3. Multi-format document release contract
-info "3/11 Verifying multi-format document release contract..."
+# 4. Multi-format document release contract
+info "4/12 Verifying multi-format document release contract..."
 python3 scripts/release/check-multi-format-document-contract.py --self-test
 if [[ "$VERSION" == "0.22.39" ]]; then
     python3 scripts/release/check-multi-format-document-contract.py "$VERSION"
 fi
 success "Multi-format document ownership and packaging contract is enforced."
 
-# 4. Dependency and source supply chain
-info "4/11 Verifying dependency advisories, licenses, and sources..."
+# 5. Dependency and source supply chain
+info "5/12 Verifying dependency advisories, licenses, and sources..."
 if ! command -v cargo-deny >/dev/null 2>&1; then
     error "cargo-deny is required. Install cargo-deny 0.20.2 before release preflight."
     exit 127
@@ -55,20 +60,20 @@ fi
 cargo deny check --hide-inclusion-graph
 success "Dependency advisories, licenses, and sources satisfy policy."
 
-# 5. Release Asset Inspector Validation
-info "5/11 Verifying release asset inspector..."
+# 6. Release Asset Inspector Validation
+info "6/12 Verifying release asset inspector..."
 bash scripts/dev/test-inspect-release-asset.sh
 success "Release asset inspector preserves bundle paths."
 
-# 6. macOS Coverage Linker Concurrency
-info "6/11 Verifying macOS coverage linker concurrency..."
+# 7. macOS Coverage Linker Concurrency
+info "7/12 Verifying macOS coverage linker concurrency..."
 bash scripts/release/test-macos-coverage-contract.sh
 bash scripts/release/check-macos-coverage-contract.sh
 python3 scripts/ci/check-document-surface-coverage.py --self-test
 success "macOS coverage linker concurrency is constrained."
 
-# 6-7. Artifact Naming Validation
-info "7/11 Verifying Cargo.toml version..."
+# 8. Artifact Naming Validation
+info "8/12 Verifying Cargo.toml version..."
 CARGO_VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
 if [[ "$CARGO_VERSION" != "$VERSION" ]]; then
     error "Cargo.toml version ($CARGO_VERSION) does not match target release version ($VERSION)."
@@ -76,7 +81,7 @@ if [[ "$CARGO_VERSION" != "$VERSION" ]]; then
 fi
 success "Cargo.toml version matches."
 
-info "8/11 Verifying Info.plist version..."
+info "9/12 Verifying Info.plist version..."
 PLIST_VERSION=$(awk '/CFBundleShortVersionString/{getline; gsub(/.*<string>v?|<\/string>.*/, ""); print}' crates/katana-ui/Info.plist | xargs)
 if [[ "$PLIST_VERSION" != "$VERSION" ]]; then
     error "Info.plist CFBundleShortVersionString ($PLIST_VERSION) does not match target release version ($VERSION)."
@@ -84,8 +89,8 @@ if [[ "$PLIST_VERSION" != "$VERSION" ]]; then
 fi
 success "Info.plist version matches."
 
-# 7. CHANGELOG Validation
-info "9/11 Validating CHANGELOG via AST Linter..."
+# 9. CHANGELOG Validation
+info "10/12 Validating CHANGELOG via AST Linter..."
 if ! cargo test -p katana-linter --test ast_linter ast_linter_changelog_contains_current_workspace_version -q >/dev/null 2>&1; then
     error "AST Linter failed: Version v${VERSION} not found in CHANGELOG.md."
     exit 1
@@ -98,12 +103,12 @@ if ! grep -q "^## \[${VERSION}\]" CHANGELOG.ja.md; then
 fi
 success "CHANGELOG.ja.md contains notes for v${VERSION}."
 
-# 8. Linuxbrew Formula Validation
-info "10/11 Verifying Linuxbrew formula contract..."
+# 10. Linuxbrew Formula Validation
+info "11/12 Verifying Linuxbrew formula contract..."
 scripts/release/check-linuxbrew-formula-contract.sh
 
-# 10. OpenSpec Validation
-info "11/11 Validating OpenSpec task completion..."
+# 11. OpenSpec Validation
+info "12/12 Validating OpenSpec task completion..."
 VERSION_DASHED=$(echo "$VERSION" | tr '.' '-')
 for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
     if [[ -d "$CHANGE_DIR" ]]; then

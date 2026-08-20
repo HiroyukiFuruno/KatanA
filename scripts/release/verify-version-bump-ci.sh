@@ -2,7 +2,9 @@
 set -euo pipefail
 
 COMMIT_SHA=${1:-}
-MAX_ATTEMPTS=${CI_GATE_WAIT_ATTEMPTS:-60}
+# The Windows release matrix regularly exceeds one hour. Keep the default
+# longer than the full three-platform gate so a valid release cannot time out.
+MAX_ATTEMPTS=${CI_GATE_WAIT_ATTEMPTS:-360}
 WAIT_SECONDS=${CI_GATE_WAIT_SECONDS:-30}
 VERSION_FILE_PATTERN='^(Cargo\.toml|Cargo\.lock|crates/katana-ui/Info\.plist)$'
 
