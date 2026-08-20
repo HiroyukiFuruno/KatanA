@@ -23,7 +23,9 @@ impl HtmlBrowserSurface {
         self.frame.as_ref().map(|frame| {
             frame
                 .pixels
-                .chunks_exact(RGBA_COMPONENT_COUNT)
+                .as_chunks::<RGBA_COMPONENT_COUNT>()
+                .0
+                .iter()
                 .filter(|pixel| {
                     pixel[0] == expected[0]
                         && pixel[1] == expected[1]

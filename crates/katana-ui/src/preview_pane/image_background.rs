@@ -30,7 +30,8 @@ impl ImageBackgroundOps {
     }
 
     pub(super) fn composite_rgba_over_background(rgba: &mut [u8], background: egui::Color32) {
-        for pixel in rgba.chunks_exact_mut(RGBA_CHANNELS) {
+        let (pixels, _) = rgba.as_chunks_mut::<RGBA_CHANNELS>();
+        for pixel in pixels {
             let alpha = pixel[ALPHA_CHANNEL_INDEX];
             if alpha == u8::MAX {
                 continue;
@@ -92,6 +93,24 @@ mod tests {
                 30,
                 255
             ]
+        );
+    }
+
+    #[test]
+    fn composite_rgba_preserves_incomplete_trailing_components() {
+        let mut rgba = vec![255, 0, 0, 0, 7, 8];
+        let background = crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
+            katana_platform::theme::ThemePreset::SolarizedLight
+                .colors()
+                .preview
+                .background,
+        );
+
+        ImageBackgroundOps::composite_rgba_over_background(&mut rgba, background);
+
+        assert_eq!(
+            rgba,
+            vec![background.r(), background.g(), background.b(), 255, 7, 8]
         );
     }
 }
