@@ -443,6 +443,8 @@ def verify(root: Path, target_version: str) -> None:
             '--allow 5.7',
             '--allow 7.5',
             '--allow 8.4',
+            'release-artifact-pending',
+            'TASK_GATE_ARGS=(--allow 4.1)',
             'check-openspec-task-completion.py',
             'check-document-surface-coverage.py --self-test',
         ),
@@ -482,6 +484,7 @@ def verify(root: Path, target_version: str) -> None:
             "taiki-e/install-action@67729d5c413db75907f0ad1e39bb04b9c868ff60",
             "tool: cargo-deny@0.20.2",
             "cargo install cargo-bundle --version 0.11.0 --locked",
+            'check-pr-ready.sh "${{ steps.version.outputs.version_bare }}" --release-artifact-pending',
         ),
     )
     print("OK: KatanA multi-format document ownership and release contract is satisfied.")

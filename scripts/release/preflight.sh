@@ -131,6 +131,9 @@ for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
                     --allow 3.3
                     --allow 4.1
                 )
+            elif [[ "$TASK_GATE_MODE" == "release-artifact-pending" && "$CHANGE_NAME" == "v0-22-39-office2pdf-official-intake" ]]; then
+                # Public release verification can only run after GitHub publishes assets.
+                TASK_GATE_ARGS=(--allow 4.1)
             elif [[ "$TASK_GATE_MODE" != "strict" ]]; then
                 error "Unsupported OpenSpec task gate mode: $TASK_GATE_MODE"
                 exit 2
