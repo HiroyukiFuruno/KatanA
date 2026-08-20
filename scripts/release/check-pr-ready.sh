@@ -23,6 +23,7 @@ for argument in "$@"; do
     case "$argument" in
         --pr-bootstrap) TASK_GATE_MODE="pr-bootstrap" ;;
         --release-artifact-pending) TASK_GATE_MODE="release-artifact-pending" ;;
+        --post-release-evidence) TASK_GATE_MODE="post-release-evidence" ;;
         --*) error "Unknown option: $argument"; exit 2 ;;
         *)
             if [[ -n "$EXPECTED_VERSION" ]]; then
@@ -129,10 +130,25 @@ fi
 rm -f "$LOCK_CHECK_OUTPUT"
 success "Cargo.lock is synced."
 
-# 5. Version increment guard
-if ! ./scripts/release/check-version-increment.sh "$TARGET_VERSION"; then
-    error "Version increment check failed for v${TARGET_VERSION}."
-    exit 1
+# 5. Version increment or published-release guard
+if [[ "$TASK_GATE_MODE" == "post-release-evidence" ]]; then
+    RELEASE_STATE=$(gh release view "v${TARGET_VERSION}" \
+        --repo "${KATANA_RELEASE_REPO:-HiroyukiFuruno/KatanA}" \
+        --json tagName,isDraft,isPrerelease \
+        --jq '.tagName + " draft=" + (.isDraft | tostring) + " prerelease=" + (.isPrerelease | tostring)' 2>/dev/null) || {
+        error "Published GitHub Release v${TARGET_VERSION} is required for post-release evidence."
+        exit 1
+    }
+    if [[ "$RELEASE_STATE" != "v${TARGET_VERSION} draft=false prerelease=false" ]]; then
+        error "v${TARGET_VERSION} is not a published stable GitHub Release: ${RELEASE_STATE}"
+        exit 1
+    fi
+    success "Published stable GitHub Release v${TARGET_VERSION} is present."
+else
+    if ! ./scripts/release/check-version-increment.sh "$TARGET_VERSION"; then
+        error "Version increment check failed for v${TARGET_VERSION}."
+        exit 1
+    fi
 fi
 
 # 6. Branch naming vs Target Version for Release branches

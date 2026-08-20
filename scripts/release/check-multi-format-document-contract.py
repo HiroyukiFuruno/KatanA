@@ -476,7 +476,12 @@ def verify(root: Path, target_version: str) -> None:
             "taiki-e/install-action@67729d5c413db75907f0ad1e39bb04b9c868ff60",
             "tool: cargo-deny@0.20.2",
             'check-pr-ready.sh "$version" --pr-bootstrap',
+            "docs/v*-public-release-evidence",
         ),
+    )
+    require_markers(
+        root / "scripts/release/check-pr-ready.sh",
+        ("--post-release-evidence", "Published stable GitHub Release"),
     )
     require_markers(
         root / ".github/workflows/build-and-release.yml",

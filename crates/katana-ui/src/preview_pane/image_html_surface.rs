@@ -386,6 +386,14 @@ mod tests {
 
         assert_eq!(surface.frame_matching_rgb_pixels([232, 199, 255]), Some(1));
         assert_eq!(surface.frame_matching_rgb_pixels([1, 2, 3]), Some(0));
+        surface.frame = Some(BrowserFrame::new(
+            2,
+            viewport,
+            0.0,
+            1.0,
+            vec![232, 199, 255, 255, 7, 8],
+        ));
+        assert_eq!(surface.frame_matching_rgb_pixels([232, 199, 255]), Some(1));
         surface.frame = None;
         assert_eq!(surface.frame_matching_rgb_pixels([232, 199, 255]), None);
     }
