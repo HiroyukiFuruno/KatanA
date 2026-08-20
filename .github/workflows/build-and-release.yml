@@ -74,6 +74,11 @@ on:
         required: false
         default: false
         type: boolean
+      reuse_existing_version:
+        description: 'Release an already-merged version without changing version files'
+        required: false
+        default: false
+        type: boolean
 
 env:
   CARGO_INCREMENTAL: 0
@@ -143,10 +148,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-preflight-
 
-      - name: Bump version and push (workflow_dispatch only)
+      - name: Bump version and push
         id: bump
-        # WHY: PR merge flow already has Cargo.toml updated; only bump on manual dispatch or tag push
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+        # WHY: A failed artifact publication must be replayable without mutating its merged source.
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.reuse_existing_version != 'true')
         run: |
           ./scripts/release/bump-version.sh "${{ steps.version.outputs.version_bare }}"
           echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
@@ -154,7 +159,7 @@ jobs:
       - name: Run release preflight logic
         env:
           GH_TOKEN: ${{ github.token }}
-        run: ./scripts/release/check-pr-ready.sh "${{ steps.version.outputs.version_bare }}"
+        run: ./scripts/release/check-pr-ready.sh "${{ steps.version.outputs.version_bare }}" --release-artifact-pending
 
       - name: Extract release notes from CHANGELOG.md
         run: |

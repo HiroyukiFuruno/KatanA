@@ -22,6 +22,7 @@ TASK_GATE_MODE="strict"
 for argument in "$@"; do
     case "$argument" in
         --pr-bootstrap) TASK_GATE_MODE="pr-bootstrap" ;;
+        --release-artifact-pending) TASK_GATE_MODE="release-artifact-pending" ;;
         --*) error "Unknown option: $argument"; exit 2 ;;
         *)
             if [[ -n "$EXPECTED_VERSION" ]]; then
