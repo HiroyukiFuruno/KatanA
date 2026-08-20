@@ -6,7 +6,7 @@ license.workspace = true
 description = "KatanA platform: filesystem access, settings persistence, keybindings, clipboard, and OS integrations"
 
 [dependencies]
-katana-core = { version = "0.22.38", path = "../katana-core" }
+katana-core = { version = "0.22.39", path = "../katana-core" }
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
@@ -19,7 +19,7 @@ parking_lot = "0.12"
 sys-locale = "0.3.2"
 
 [target.'cfg(not(any(target_os = "macos", target_os = "windows")))'.dependencies]
-dark-light = "2.0.0"
+dark-light = "3.0.0"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.56.0"

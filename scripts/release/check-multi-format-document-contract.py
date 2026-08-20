@@ -11,10 +11,12 @@ import tomllib
 from pathlib import Path
 
 
-TARGET_VERSION = "0.22.38"
+TARGET_VERSION = "0.22.39"
 REQUIRED_DEPENDENCIES = {
-    "katana-document-viewer": (0, 5, 2),
+    "katana-document-viewer": (0, 5, 3),
 }
+REQUIRED_OFFICE_ENGINE = (0, 6, 7)
+RETIRED_OFFICE_ENGINE = "office2pdf-katana"
 FORBIDDEN_DOCUMENT_MARKERS = (
     "chromium",
     "webview",
@@ -84,9 +86,9 @@ def parse_requirement(value: object, name: str) -> tuple[int, int, int]:
         value = value.get("version")
     if not isinstance(value, str):
         fail(f"{name} must declare a crates.io version")
-    match = re.fullmatch(r"\^?(\d+)\.(\d+)\.(\d+)", value)
+    match = re.fullmatch(r"=(\d+)\.(\d+)\.(\d+)", value)
     if match is None:
-        fail(f"{name} must use one caret-compatible x.y.z requirement: {value}")
+        fail(f"{name} must use one exact registry x.y.z requirement: {value}")
     return tuple(int(part) for part in match.groups())
 
 
@@ -105,11 +107,22 @@ def verify_registry_package(
     if not isinstance(version, str):
         fail(f"Cargo.lock {name} version is missing")
     parsed = tuple(int(part) for part in version.split("."))
-    if parsed < minimum or parsed[0:2] != minimum[0:2]:
-        fail(f"Cargo.lock {name} must resolve within {minimum[0]}.{minimum[1]}.x; found {version}")
+    if parsed != minimum:
+        fail(
+            f"Cargo.lock {name} must resolve exactly "
+            f"{minimum[0]}.{minimum[1]}.{minimum[2]}; found {version}"
+        )
     source = package.get("source")
     if not isinstance(source, str) or not source.startswith("registry+"):
         fail(f"Cargo.lock {name} must resolve from a registry; found {source!r}")
+
+
+def reject_registry_package(lock: dict[str, object], name: str) -> None:
+    if any(
+        isinstance(package, dict) and package.get("name") == name
+        for package in lock.get("package", [])
+    ):
+        fail(f"Cargo.lock must not resolve retired registry package: {name}")
 
 
 def verify_kdv_features(value: object) -> None:
@@ -249,7 +262,7 @@ def verify(root: Path, target_version: str) -> None:
         katana_ui_cargo = tomllib.load(handle)
     with (
         root
-        / "openspec/changes/v0-22-38-multi-format-document-viewer/evidence/release-evaluation.json"
+        / "openspec/changes/v0-22-39-office2pdf-official-intake/evidence/release-evaluation.json"
     ).open(encoding="utf-8") as handle:
         verify_release_evaluation(json.load(handle))
     workspace_version = cargo.get("workspace", {}).get("package", {}).get("version")
@@ -261,6 +274,8 @@ def verify(root: Path, target_version: str) -> None:
         if actual != expected:
             fail(f"{name} must declare {expected[0]}.{expected[1]}.{expected[2]}; found {actual}")
         verify_registry_package(lock, name, expected)
+    verify_registry_package(lock, "office2pdf", REQUIRED_OFFICE_ENGINE)
+    reject_registry_package(lock, RETIRED_OFFICE_ENGINE)
     verify_kdv_features(dependencies.get("katana-document-viewer"))
     verify_macos_bundle_metadata(katana_ui_cargo)
     manifest_paths = [cargo_path, *sorted((root / "crates").rglob("Cargo.toml"))]
@@ -473,10 +488,10 @@ def verify(root: Path, target_version: str) -> None:
 
 
 def self_test() -> None:
-    assert parse_requirement("0.5.2", "kdv") == (0, 5, 2)
-    assert parse_requirement({"version": "^0.5.2"}, "kdv") == (0, 5, 2)
+    assert parse_requirement("=0.5.3", "kdv") == (0, 5, 3)
+    assert parse_requirement({"version": "=0.5.3"}, "kdv") == (0, 5, 3)
     try:
-        verify_kdv_features({"version": "0.5.2", "features": ["egui"]})
+        verify_kdv_features({"version": "=0.5.3", "features": ["egui"]})
     except SystemExit:
         pass
     else:
@@ -491,8 +506,8 @@ def self_test() -> None:
         }
     )
     for invalid in (
-        {"path": "../kdv", "version": "0.5.2"},
-        {"git": "https://example.test/kdv", "version": "0.5.2"},
+        {"path": "../kdv", "version": "=0.5.3"},
+        {"git": "https://example.test/kdv", "version": "=0.5.3"},
         "0.5",
     ):
         try:
@@ -502,7 +517,7 @@ def self_test() -> None:
         raise AssertionError(f"forbidden dependency requirement was accepted: {invalid!r}")
     assert dependency_names(
         {
-            "workspace": {"dependencies": {"katana-document-viewer": "0.5.2"}},
+            "workspace": {"dependencies": {"katana-document-viewer": "=0.5.3"}},
             "target": {
                 "cfg(unix)": {
                     "build-dependencies": {
@@ -516,7 +531,7 @@ def self_test() -> None:
         first_manifest = Path(directory) / "Cargo.toml"
         second_manifest = Path(directory) / "member.toml"
         first_manifest.write_text(
-            '[workspace.dependencies]\nkatana-document-viewer = "0.5.2"\n',
+            '[workspace.dependencies]\nkatana-document-viewer = "=0.5.3"\n',
             encoding="utf-8",
         )
         second_manifest.write_text(
@@ -531,7 +546,7 @@ def self_test() -> None:
     verify_release_evaluation(
         {
             "schema_version": 1,
-            "target": "v0.22.38",
+            "target": "v0.22.39",
             "minimum_engine_score": 80,
             "engine_profiles": {
                 format_name: {"score": 80} for format_name in REQUIRED_FORMATS

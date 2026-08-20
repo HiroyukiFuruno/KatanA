@@ -23,16 +23,16 @@ expect_reject() {
     fi
 }
 
-expect_accept 0.22.38 0.22.37 $'## [0.22.38]\n## [0.22.37]'
-expect_reject 0.22.37 0.22.37 $'## [0.22.37]\n## [0.22.36]'
-expect_reject 0.22.39 0.22.37 $'## [0.22.39]\n## [0.22.37]'
-expect_reject 0.29.0 0.22.37 $'## [0.29.0]\n## [0.22.37]'
-expect_reject 0.23.0 0.22.37 $'## [0.23.0]\n## [0.22.37]'
-expect_reject 1.0.0 0.22.37 $'## [1.0.0]\n## [0.22.37]'
-expect_reject 0.22.38 0.22.37 $'## [0.22.38]\n## [0.22.36]'
+expect_accept 0.22.39 0.22.38 $'## [0.22.39]\n## [0.22.38]'
+expect_reject 0.22.38 0.22.38 $'## [0.22.38]\n## [0.22.37]'
+expect_reject 0.22.40 0.22.38 $'## [0.22.40]\n## [0.22.38]'
+expect_reject 0.29.0 0.22.38 $'## [0.29.0]\n## [0.22.38]'
+expect_reject 0.23.0 0.22.38 $'## [0.23.0]\n## [0.22.38]'
+expect_reject 1.0.0 0.22.38 $'## [1.0.0]\n## [0.22.38]'
+expect_reject 0.22.39 0.22.38 $'## [0.22.39]\n## [0.22.37]'
 
-[[ "$(bash "$BRANCH_VERSION_GUARD" release/v0.22.38)" == "0.22.38" ]]
-[[ "$(bash "$BRANCH_VERSION_GUARD" release/v0.22.38-multi-format)" == "0.22.38" ]]
+[[ "$(bash "$BRANCH_VERSION_GUARD" release/v0.22.39)" == "0.22.39" ]]
+[[ "$(bash "$BRANCH_VERSION_GUARD" release/v0.22.39-office2pdf-official)" == "0.22.39" ]]
 if bash "$BRANCH_VERSION_GUARD" release/v0.22 >/dev/null 2>&1; then
     printf '[ERROR] Invalid release branch was accepted.\n' >&2
     exit 1

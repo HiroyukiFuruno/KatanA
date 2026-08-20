@@ -41,7 +41,7 @@ success "Browser-equivalent HTML release contract is enforced."
 # 3. Multi-format document release contract
 info "3/11 Verifying multi-format document release contract..."
 python3 scripts/release/check-multi-format-document-contract.py --self-test
-if [[ "$VERSION" == "0.22.38" ]]; then
+if [[ "$VERSION" == "0.22.39" ]]; then
     python3 scripts/release/check-multi-format-document-contract.py "$VERSION"
 fi
 success "Multi-format document ownership and packaging contract is enforced."
@@ -118,6 +118,13 @@ for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
                     --allow 7.7
                     --allow 8.2
                     --allow 8.4
+                )
+            elif [[ "$TASK_GATE_MODE" == "pr-bootstrap" && "$CHANGE_NAME" == "v0-22-39-office2pdf-official-intake" ]]; then
+                TASK_GATE_ARGS=(
+                    --allow 3.1
+                    --allow 3.2
+                    --allow 3.3
+                    --allow 4.1
                 )
             elif [[ "$TASK_GATE_MODE" != "strict" ]]; then
                 error "Unsupported OpenSpec task gate mode: $TASK_GATE_MODE"
