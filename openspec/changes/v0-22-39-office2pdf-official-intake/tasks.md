@@ -13,8 +13,8 @@
 ## 3. Verification
 
 - [x] 3.1 format、clippy、AST lint、workspace tests、strict coverage 100% / uncovered 0 を実行する
-- [ ] 3.2 PDF / DOCX / XLSX / PPTX corpus を macOS / Linux / Windows headless acceptance で実行し、PPTX paragraph / CJK evidence を確認する
-- [ ] 3.3 OpenSpec strict validation、release preflight、package / sidecar asset contract を実行する
+- [x] 3.2 PDF / DOCX / XLSX / PPTX corpus を macOS / Linux / Windows headless acceptance で実行し、PPTX paragraph / CJK evidence を確認する
+- [x] 3.3 OpenSpec strict validation、release preflight、package / sidecar asset contract を実行する
 
 ## 4. Release
 

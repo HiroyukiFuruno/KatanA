@@ -24,7 +24,7 @@
   "integration_score": {
     "maximum": 100,
     "release_required": 100,
-    "achieved": 95,
+    "achieved": 100,
     "categories": {
       "official_engine_provenance": {
         "score": 20,
@@ -47,9 +47,9 @@
         "status": "pass"
       },
       "cross_platform_release_evidence": {
-        "score": 10,
+        "score": 15,
         "maximum": 15,
-        "status": "pending_ci"
+        "status": "pass"
       }
     }
   },
@@ -72,6 +72,13 @@
     "cargo_deny": "pass",
     "official_registry_chain": "office2pdf 0.6.7 -> katana-document-viewer 0.5.3 -> KatanA 0.22.39",
     "retired_office2pdf_katana": "absent from Cargo.lock",
-    "cross_platform_ci": "pending for this KatanA consumer release"
+    "cross_platform_ci": {
+      "run": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/32362461506",
+      "status": "pass",
+      "macos_screenshots": 13,
+      "linux_screenshots": 13,
+      "windows_screenshots": 13,
+      "windows_pptx_visual_review": "pass; Japanese glyphs, shapes, and page navigation are visible"
+    }
   }
 }
