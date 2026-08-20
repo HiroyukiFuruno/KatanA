@@ -485,6 +485,8 @@ def verify(root: Path, target_version: str) -> None:
             "tool: cargo-deny@0.20.2",
             "cargo install cargo-bundle --version 0.11.0 --locked",
             'check-pr-ready.sh "${{ steps.version.outputs.version_bare }}" --release-artifact-pending',
+            "reuse_existing_version:",
+            "github.event.inputs.reuse_existing_version != 'true'",
         ),
     )
     print("OK: KatanA multi-format document ownership and release contract is satisfied.")
