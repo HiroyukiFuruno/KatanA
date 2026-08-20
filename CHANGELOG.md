@@ -2,6 +2,16 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.39] - 2026-08-20 09:49:05 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Office preview compatibility**: Updated the document viewer to the official `office2pdf 0.6.7` release, preserving PowerPoint paragraph line advance and deterministic font fallback without a private maintenance package.
+
+### 🔧 System
+
+- **Document supply chain**: KatanA now consumes the exact published `katana-document-viewer 0.5.3` registry package and rejects the retired `office2pdf-katana` dependency from the release lockfile.
+
 ## [0.22.38] - 2026-08-03 09:01:15 (UTC)
 
 ### 🚀 Features

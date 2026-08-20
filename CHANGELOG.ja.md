@@ -2,6 +2,16 @@
 
 KatanA Desktop における重要な変更点（アップデート）を記録します。
 
+## [0.22.39] - 2026-08-20 18:49:05 (JST)
+
+### 🐛 不具合修正
+
+- **Office文書表示の互換性**: PowerPointの段落行送りと決定的なフォントfallbackを、private maintenance packageではなく公式 `office2pdf 0.6.7` の修正で維持するようにしました。
+
+### 🔧 その他
+
+- **文書依存関係**: 公開済みの `katana-document-viewer 0.5.3` を正確なregistry dependencyとして利用し、release lockfileから廃止済み `office2pdf-katana` を拒否します。
+
 ## [0.22.38] - 2026-08-03 18:01:15 (JST)
 
 ### 🚀 新機能

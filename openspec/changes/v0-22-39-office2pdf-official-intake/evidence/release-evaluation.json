@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "target": "v0.22.39",
+  "engine_score_source": "published katana-document-viewer v0.5.3 using official office2pdf =0.6.7",
+  "minimum_engine_score": 80,
+  "engine_profiles": {
+    "pdf": {
+      "candidate": "hayro_pdf",
+      "score": 85
+    },
+    "docx": {
+      "candidate": "office2pdf_docx_pdf_hayro",
+      "score": 90
+    },
+    "xlsx": {
+      "candidate": "ironcalc_xlsx_model",
+      "score": 90
+    },
+    "pptx": {
+      "candidate": "office2pdf_pptx_pdf_hayro",
+      "score": 85
+    }
+  },
+  "integration_score": {
+    "maximum": 100,
+    "release_required": 100,
+    "achieved": 95,
+    "categories": {
+      "official_engine_provenance": {
+        "score": 20,
+        "maximum": 20,
+        "status": "pass"
+      },
+      "four_format_headless": {
+        "score": 30,
+        "maximum": 30,
+        "status": "pass"
+      },
+      "diagnostics_and_recovery": {
+        "score": 15,
+        "maximum": 15,
+        "status": "pass"
+      },
+      "quality_and_contracts": {
+        "score": 20,
+        "maximum": 20,
+        "status": "pass"
+      },
+      "cross_platform_release_evidence": {
+        "score": 10,
+        "maximum": 15,
+        "status": "pending_ci"
+      }
+    }
+  },
+  "local_evidence": {
+    "headless_steps": 37,
+    "screenshots": 13,
+    "artifact_directory": "target/multi-format-headless-v0.22.39-macos",
+    "visual_review": "pass; PPTX slide 1 and slide 2 inspected with Japanese glyphs",
+    "pdf_first_frame_seconds": 0.058,
+    "docx_first_frame_seconds": 6.402,
+    "xlsx_first_frame_seconds": 0.061,
+    "pptx_first_frame_seconds": 0.921,
+    "pdf_navigation_changed_pixels": 206542,
+    "docx_navigation_changed_pixels": 244518,
+    "xlsx_navigation_changed_pixels": 299143,
+    "pptx_navigation_changed_pixels": 2004683,
+    "password_protected_recovery": "pass",
+    "strict_coverage": "100 percent document surface coverage; zero uncovered lines",
+    "just_check": "pass on macOS with Linux workspace tests and Windows cross-check",
+    "cargo_deny": "pass",
+    "official_registry_chain": "office2pdf 0.6.7 -> katana-document-viewer 0.5.3 -> KatanA 0.22.39",
+    "retired_office2pdf_katana": "absent from Cargo.lock",
+    "cross_platform_ci": "pending for this KatanA consumer release"
+  }
+}
