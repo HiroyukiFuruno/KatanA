@@ -18,4 +18,4 @@
 
 ## 4. Release
 
-- [ ] 4.1 verified evidence を記録し、既存の明示承認に従って commit、push、PR、merge、v0.22.39 release、public artifact verification、automation removal を順に実行する
+- [x] 4.1 verified evidence を記録し、既存の明示承認に従って commit、push、PR、merge、v0.22.39 release、public artifact verification、automation removal を順に実行する

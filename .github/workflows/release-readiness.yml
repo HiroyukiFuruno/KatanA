@@ -42,4 +42,8 @@ jobs:
             version="$(cat Cargo.toml | awk -F'\"' '/^version = / {print $2}')"
           fi
 
-          ./scripts/release/check-pr-ready.sh "$version" --pr-bootstrap
+          if [[ "${GITHUB_HEAD_REF}" == docs/v*-public-release-evidence ]]; then
+            ./scripts/release/check-pr-ready.sh "$version" --post-release-evidence
+          else
+            ./scripts/release/check-pr-ready.sh "$version" --pr-bootstrap
+          fi

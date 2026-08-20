@@ -80,5 +80,22 @@
       "windows_screenshots": 13,
       "windows_pptx_visual_review": "pass; Japanese glyphs, shapes, and page navigation are visible"
     }
+  },
+  "public_release_evidence": {
+    "release": "https://github.com/HiroyukiFuruno/KatanA/releases/tag/v0.22.39",
+    "release_workflow": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/32395530635",
+    "tag_target": "0cb04823ef6beb96c4bb12d9f11108fad62c1b22",
+    "status": "published; not draft; not prerelease",
+    "checksums_asset_sha256": "90a0c89f5ba692523b93f461848ba4c8c6d9102736bfd78d111d6f43753c65c8",
+    "assets": {
+      "KatanA-Desktop-0.22.39.dmg": "5ca431587c709475513e8b63c12ab25954a05a15748ff5f97b8a5b42c84acdbd",
+      "KatanA-linux-x86_64.tar.gz": "59cef6a1a0fbdf83f3afdc9e127a5c29402eedf948642416748812a06bf8b5c5",
+      "KatanA-macOS.zip": "ce93ef07d6903b2d3df0f4a73515f7ec0e5d8b5d83a39bc9b2b5f99cb7479e72",
+      "KatanA-windows-x86_64.msi": "24944c011d569f3485599cacfcaa2e3dbf60db080c24843a0c8065538f10ba24",
+      "KatanA-windows-x86_64.zip": "30145ed68aea57726157a14257b54d9806af8493e85ef9439ca922842918e80b"
+    },
+    "checksum_verification": "downloaded public checksums.txt and matched its digest plus every published asset digest",
+    "attestation": "published by the successful release workflow",
+    "automation": "office2pdf deleted after public artifact verification"
   }
 }
