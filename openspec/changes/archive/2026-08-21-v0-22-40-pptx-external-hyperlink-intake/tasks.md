@@ -24,4 +24,4 @@
 
 ## 5. Release
 
-- [ ] 5.1 Verified evidence is recorded; then commit, push, PR, CI, merge, v0.22.40 release, and public GitHub artifact verification are completed in order. delegation-exception: `直列のクリティカルパス`
+- [x] 5.1 Verified evidence is recorded; then commit, push, PR, CI, merge, v0.22.40 release, and public GitHub artifact verification are completed in order. delegation-exception: `直列のクリティカルパス`

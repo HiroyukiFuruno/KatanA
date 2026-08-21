@@ -13,6 +13,7 @@ from pathlib import Path
 
 
 TARGET_VERSION = "0.22.40"
+CHANGE_NAME = "v0-22-40-pptx-external-hyperlink-intake"
 REQUIRED_DEPENDENCIES = {
     "katana-document-viewer": (0, 5, 4),
 }
@@ -272,6 +273,22 @@ def verify_external_hyperlink_fixture(root: Path) -> None:
         )
 
 
+def release_evaluation_path(root: Path) -> Path:
+    active = root / "openspec/changes" / CHANGE_NAME / "evidence/release-evaluation.json"
+    archived = sorted(
+        (root / "openspec/changes/archive").glob(
+            f"*-{CHANGE_NAME}/evidence/release-evaluation.json"
+        )
+    )
+    candidates = [path for path in [active, *archived] if path.is_file()]
+    if len(candidates) != 1:
+        fail(
+            "release evaluation must exist exactly once in the active change or its archive; "
+            f"found {len(candidates)}"
+        )
+    return candidates[0]
+
+
 def verify(root: Path, target_version: str) -> None:
     if target_version.removeprefix("v") != TARGET_VERSION:
         fail(
@@ -286,10 +303,7 @@ def verify(root: Path, target_version: str) -> None:
         lock = tomllib.load(handle)
     with (root / "crates/katana-ui/Cargo.toml").open("rb") as handle:
         katana_ui_cargo = tomllib.load(handle)
-    with (
-        root
-        / "openspec/changes/v0-22-40-pptx-external-hyperlink-intake/evidence/release-evaluation.json"
-    ).open(encoding="utf-8") as handle:
+    with release_evaluation_path(root).open(encoding="utf-8") as handle:
         verify_release_evaluation(json.load(handle))
     workspace_version = cargo.get("workspace", {}).get("package", {}).get("version")
     if workspace_version != TARGET_VERSION:
@@ -584,6 +598,27 @@ def self_test() -> None:
             "hidden-kuc",
             "katana-ui-core",
         }
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        active = root / "openspec/changes" / CHANGE_NAME / "evidence/release-evaluation.json"
+        active.parent.mkdir(parents=True)
+        active.write_text("{}", encoding="utf-8")
+        assert release_evaluation_path(root) == active
+        archive = (
+            root
+            / "openspec/changes/archive/2026-08-21-v0-22-40-pptx-external-hyperlink-intake"
+            / "evidence/release-evaluation.json"
+        )
+        archive.parent.mkdir(parents=True)
+        archive.write_text("{}", encoding="utf-8")
+        try:
+            release_evaluation_path(root)
+        except SystemExit:
+            pass
+        else:
+            raise AssertionError("duplicate release evaluation paths were accepted")
+        active.unlink()
+        assert release_evaluation_path(root) == archive
     verify_release_evaluation(
         {
             "schema_version": 1,
