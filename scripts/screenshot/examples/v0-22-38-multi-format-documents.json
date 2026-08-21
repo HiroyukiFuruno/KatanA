@@ -35,7 +35,7 @@
       },
       {
         "name": "representative.pptx",
-        "source": "scripts/screenshot/fixtures/v0-22-38-multi-format/representative.pptx"
+        "source": "target/screenshot-fixtures/representative-with-external-hyperlink.pptx"
       },
       {
         "name": "password-protected.pdf",

@@ -20,11 +20,16 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 BUILD_TARGET_DIR="${REPO_ROOT}/target"
+EXTERNAL_HYPERLINK_FIXTURE="${BUILD_TARGET_DIR}/screenshot-fixtures/representative-with-external-hyperlink.pptx"
 
 if ! command -v cargo &>/dev/null; then
   echo "ERROR: cargo not found — install Rust via https://rustup.rs" >&2
   exit 1
 fi
+
+python3 "${SCRIPT_DIR}/generate_external_hyperlink_pptx.py" \
+  --source "${SCRIPT_DIR}/fixtures/v0-22-38-multi-format/representative.pptx" \
+  --output "${EXTERNAL_HYPERLINK_FIXTURE}"
 
 echo "[katana-screenshot] building runner..."
 CARGO_TARGET_DIR="${BUILD_TARGET_DIR}" cargo build --release --manifest-path "${REPO_ROOT}/Cargo.toml" --package katana-ui --bin kdv-office-worker --quiet

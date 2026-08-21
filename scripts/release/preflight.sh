@@ -46,7 +46,7 @@ success "Browser-equivalent HTML release contract is enforced."
 # 4. Multi-format document release contract
 info "4/12 Verifying multi-format document release contract..."
 python3 scripts/release/check-multi-format-document-contract.py --self-test
-if [[ "$VERSION" == "0.22.39" ]]; then
+if [[ "$VERSION" == "0.22.40" ]]; then
     python3 scripts/release/check-multi-format-document-contract.py "$VERSION"
 fi
 success "Multi-format document ownership and packaging contract is enforced."
@@ -135,6 +135,15 @@ for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
                 # Public release verification can only run after GitHub publishes assets.
                 TASK_GATE_ARGS=(--allow 4.1)
             elif [[ "$TASK_GATE_MODE" == "post-release-evidence" && "$CHANGE_NAME" == "v0-22-39-office2pdf-official-intake" ]]; then
+                # The post-release evidence change must have no incomplete OpenSpec tasks.
+                TASK_GATE_ARGS=()
+            elif [[ "$TASK_GATE_MODE" == "pr-bootstrap" && "$CHANGE_NAME" == "v0-22-40-pptx-external-hyperlink-intake" ]]; then
+                # CI screenshots and public release evidence do not exist before the PR runs.
+                TASK_GATE_ARGS=(--allow 3.3 --allow 4.2 --allow 4.3 --allow 5.1)
+            elif [[ "$TASK_GATE_MODE" == "release-artifact-pending" && "$CHANGE_NAME" == "v0-22-40-pptx-external-hyperlink-intake" ]]; then
+                # Public release verification can only run after GitHub publishes assets.
+                TASK_GATE_ARGS=(--allow 5.1)
+            elif [[ "$TASK_GATE_MODE" == "post-release-evidence" && "$CHANGE_NAME" == "v0-22-40-pptx-external-hyperlink-intake" ]]; then
                 # The post-release evidence change must have no incomplete OpenSpec tasks.
                 TASK_GATE_ARGS=()
             elif [[ "$TASK_GATE_MODE" != "strict" ]]; then

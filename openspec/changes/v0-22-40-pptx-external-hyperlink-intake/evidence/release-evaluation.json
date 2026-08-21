@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "target": "v0.22.40",
+  "engine_score_source": "published katana-document-viewer v0.5.4 using official office2pdf =0.6.7",
+  "minimum_engine_score": 80,
+  "engine_profiles": {
+    "pdf": { "candidate": "hayro_pdf", "score": 85 },
+    "docx": { "candidate": "office2pdf_docx_pdf_hayro", "score": 90 },
+    "xlsx": { "candidate": "ironcalc_xlsx_model", "score": 90 },
+    "pptx": { "candidate": "office2pdf_pptx_pdf_hayro", "score": 85 }
+  },
+  "integration_score": {
+    "maximum": 100,
+    "release_required": 100,
+    "achieved": 100,
+    "categories": {
+      "published_kdv_provenance": { "score": 20, "maximum": 20, "status": "required" },
+      "external_hyperlink_host_acceptance": { "score": 25, "maximum": 25, "status": "required" },
+      "four_format_headless": { "score": 25, "maximum": 25, "status": "required" },
+      "quality_and_contracts": { "score": 15, "maximum": 15, "status": "required" },
+      "cross_platform_release_evidence": { "score": 15, "maximum": 15, "status": "required" }
+    }
+  },
+  "local_evidence": {
+    "status": "pass",
+    "fixture_generator": "pass; fixed byte insertion, source archive unchanged",
+    "external_hyperlink_relationship": "pass; standard transitional hyperlink type and TargetMode=External",
+    "headless_macos": {
+      "status": "pass",
+      "command": "scripts/screenshot/run.sh --request scripts/screenshot/examples/v0-22-38-multi-format-documents.json",
+      "pptx_first_frame_seconds": 0.862,
+      "pptx_node": "Page",
+      "pptx_navigation_changed_pixels": 2004683,
+      "visual_review": "pass; rendered slide, shapes, embedded image, Japanese glyphs, and page controls"
+    },
+    "strict_coverage": "pass; document surface 100 percent, uncovered 0",
+    "dependency_update": "pass; just update completed with KDV fixed at 0.5.4"
+  },
+  "ci_evidence": {
+    "status": "pass",
+    "pull_request": "https://github.com/HiroyukiFuruno/KatanA/pull/332",
+    "run": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/32475852947",
+    "release_readiness": "pass; run 32475852948",
+    "platforms": {
+      "macOS": "pass; Test and Build, strict coverage, and multi-format headless artifact",
+      "Linux": "pass; Test and Build and multi-format headless artifact",
+      "Windows": "pass; Test and Build and multi-format headless artifact"
+    },
+    "visual_review": "pass; each 07-pptx-slide-1 artifact shows a rendered 1/2 PPTX page with shapes, embedded image, Japanese glyphs, and no diagnostic surface"
+  },
+  "public_release_evidence": { "status": "pending verification" }
+}
