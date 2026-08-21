@@ -14,13 +14,13 @@
 
 - [x] 3.1 A test-only fixture generator adds one standards-defined OOXML external hyperlink relationship to a representative PPTX without becoming application code or a document parser.
 - [x] 3.2 The KatanA headless document surface opens that local fixture and requires the initial PPTX `Page` frame rather than a KDV preflight error.
-- [ ] 3.3 macOS, Linux, and Windows release CI execute the external-hyperlink PPTX scenario together with the existing PDF / DOCX / XLSX / PPTX corpus.
+- [x] 3.3 macOS, Linux, and Windows release CI execute the external-hyperlink PPTX scenario together with the existing PDF / DOCX / XLSX / PPTX corpus.
 
 ## 4. Verification
 
 - [x] 4.1 Format, clippy, AST lint, workspace tests, strict coverage 100% / uncovered 0, and contract self-tests pass without threshold or exclusion changes.
 - [x] 4.2 OpenSpec strict validation, release preflight, package / sidecar asset contract, and the exact adjacent SemVer guard pass.
-- [ ] 4.3 Review the actual headless evidence for the external-hyperlink PPTX on macOS, Linux, and Windows; verify a rendered page and no diagnostic surface.
+- [x] 4.3 Review the actual headless evidence for the external-hyperlink PPTX on macOS, Linux, and Windows; verify a rendered page and no diagnostic surface.
 
 ## 5. Release
 

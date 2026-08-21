@@ -36,5 +36,17 @@
     "strict_coverage": "pass; document surface 100 percent, uncovered 0",
     "dependency_update": "pass; just update completed with KDV fixed at 0.5.4"
   },
+  "ci_evidence": {
+    "status": "pass",
+    "pull_request": "https://github.com/HiroyukiFuruno/KatanA/pull/332",
+    "run": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/32475852947",
+    "release_readiness": "pass; run 32475852948",
+    "platforms": {
+      "macOS": "pass; Test and Build, strict coverage, and multi-format headless artifact",
+      "Linux": "pass; Test and Build and multi-format headless artifact",
+      "Windows": "pass; Test and Build and multi-format headless artifact"
+    },
+    "visual_review": "pass; each 07-pptx-slide-1 artifact shows a rendered 1/2 PPTX page with shapes, embedded image, Japanese glyphs, and no diagnostic surface"
+  },
   "public_release_evidence": { "status": "pending verification" }
 }
