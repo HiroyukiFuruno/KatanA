@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.40] - 2026-08-21 09:45:51 (UTC)
+
+### 🐛 Bug Fixes
+
+- **PowerPoint external links**: PowerPoint files containing standard external hyperlinks now open normally while previews continue to keep those targets isolated from the network.
+
 ## [0.22.39] - 2026-08-20 09:49:05 (UTC)
 
 ### 🐛 Bug Fixes

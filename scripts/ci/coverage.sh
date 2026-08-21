@@ -122,7 +122,7 @@ if [[ "$UNCOV" -ne 0 ]]; then
     false
 fi
 
-info "Verifying strict coverage for the v0.22.39 document adapter..."
+info "Verifying strict coverage for the document surface..."
 cargo llvm-cov report --json | python3 scripts/ci/check-document-surface-coverage.py
 
 success "Coverage gate passed (all meaningful lines executed via subs-region calculation logic fallback)."

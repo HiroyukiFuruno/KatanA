@@ -5,15 +5,16 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 import tempfile
 import tomllib
 from pathlib import Path
 
 
-TARGET_VERSION = "0.22.39"
+TARGET_VERSION = "0.22.40"
 REQUIRED_DEPENDENCIES = {
-    "katana-document-viewer": (0, 5, 3),
+    "katana-document-viewer": (0, 5, 4),
 }
 REQUIRED_OFFICE_ENGINE = (0, 6, 7)
 RETIRED_OFFICE_ENGINE = "office2pdf-katana"
@@ -246,6 +247,31 @@ def verify_release_evaluation(value: object) -> None:
         fail("release evaluation must retain the 95-point local and 100-point release gates")
 
 
+def verify_external_hyperlink_fixture(root: Path) -> None:
+    generator = root / "scripts/screenshot/generate_external_hyperlink_pptx.py"
+    require_markers(
+        generator,
+        (
+            "HYPERLINK_RELATIONSHIP_TYPE",
+            "EXTERNAL_HYPERLINK_RELATIONSHIP",
+            "TargetMode",
+            "example.invalid/katana-external-hyperlink",
+            "fixture generator modified its source PPTX",
+        ),
+    )
+    completed = subprocess.run(
+        [sys.executable, str(generator), "--self-test"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        fail(
+            "external hyperlink PPTX fixture self-test failed: "
+            + completed.stderr.strip()
+        )
+
+
 def verify(root: Path, target_version: str) -> None:
     if target_version.removeprefix("v") != TARGET_VERSION:
         fail(
@@ -262,7 +288,7 @@ def verify(root: Path, target_version: str) -> None:
         katana_ui_cargo = tomllib.load(handle)
     with (
         root
-        / "openspec/changes/v0-22-39-office2pdf-official-intake/evidence/release-evaluation.json"
+        / "openspec/changes/v0-22-40-pptx-external-hyperlink-intake/evidence/release-evaluation.json"
     ).open(encoding="utf-8") as handle:
         verify_release_evaluation(json.load(handle))
     workspace_version = cargo.get("workspace", {}).get("package", {}).get("version")
@@ -277,6 +303,7 @@ def verify(root: Path, target_version: str) -> None:
     verify_registry_package(lock, "office2pdf", REQUIRED_OFFICE_ENGINE)
     reject_registry_package(lock, RETIRED_OFFICE_ENGINE)
     verify_kdv_features(dependencies.get("katana-document-viewer"))
+    verify_external_hyperlink_fixture(root)
     verify_macos_bundle_metadata(katana_ui_cargo)
     manifest_paths = [cargo_path, *sorted((root / "crates").rglob("Cargo.toml"))]
     forbidden_direct = (
@@ -400,6 +427,7 @@ def verify(root: Path, target_version: str) -> None:
             '"expected_document_format": "xlsx"',
             '"expected_document_format": "pptx"',
             '"expected_document_node_kind": "Page"',
+            '"source": "target/screenshot-fixtures/representative-with-external-hyperlink.pptx"',
             '"expected_document_node_kind": "Grid"',
             '"open_fixture_document_url"',
             '"open_fixture_document_error_url"',
@@ -444,7 +472,8 @@ def verify(root: Path, target_version: str) -> None:
             '--allow 7.5',
             '--allow 8.4',
             'release-artifact-pending',
-            'TASK_GATE_ARGS=(--allow 4.1)',
+            'TASK_GATE_ARGS=(--allow 3.3 --allow 4.2 --allow 4.3 --allow 5.1)',
+            'TASK_GATE_ARGS=(--allow 5.1)',
             'check-openspec-task-completion.py',
             'check-document-surface-coverage.py --self-test',
         ),
@@ -464,6 +493,8 @@ def verify(root: Path, target_version: str) -> None:
             'CARGO_TARGET_DIR="${BUILD_TARGET_DIR}" cargo build --release',
             'OFFICE_WORKER="${BUILD_TARGET_DIR}/release/kdv-office-worker"',
             'RUNNER="${BUILD_TARGET_DIR}/release/katana-screenshot"',
+            'generate_external_hyperlink_pptx.py',
+            'representative-with-external-hyperlink.pptx',
         ),
     )
     require_markers(
@@ -498,10 +529,10 @@ def verify(root: Path, target_version: str) -> None:
 
 
 def self_test() -> None:
-    assert parse_requirement("=0.5.3", "kdv") == (0, 5, 3)
-    assert parse_requirement({"version": "=0.5.3"}, "kdv") == (0, 5, 3)
+    assert parse_requirement("=0.5.4", "kdv") == (0, 5, 4)
+    assert parse_requirement({"version": "=0.5.4"}, "kdv") == (0, 5, 4)
     try:
-        verify_kdv_features({"version": "=0.5.3", "features": ["egui"]})
+        verify_kdv_features({"version": "=0.5.4", "features": ["egui"]})
     except SystemExit:
         pass
     else:
@@ -516,8 +547,8 @@ def self_test() -> None:
         }
     )
     for invalid in (
-        {"path": "../kdv", "version": "=0.5.3"},
-        {"git": "https://example.test/kdv", "version": "=0.5.3"},
+        {"path": "../kdv", "version": "=0.5.4"},
+        {"git": "https://example.test/kdv", "version": "=0.5.4"},
         "0.5",
     ):
         try:
@@ -527,7 +558,7 @@ def self_test() -> None:
         raise AssertionError(f"forbidden dependency requirement was accepted: {invalid!r}")
     assert dependency_names(
         {
-            "workspace": {"dependencies": {"katana-document-viewer": "=0.5.3"}},
+            "workspace": {"dependencies": {"katana-document-viewer": "=0.5.4"}},
             "target": {
                 "cfg(unix)": {
                     "build-dependencies": {
@@ -541,7 +572,7 @@ def self_test() -> None:
         first_manifest = Path(directory) / "Cargo.toml"
         second_manifest = Path(directory) / "member.toml"
         first_manifest.write_text(
-            '[workspace.dependencies]\nkatana-document-viewer = "=0.5.3"\n',
+            '[workspace.dependencies]\nkatana-document-viewer = "=0.5.4"\n',
             encoding="utf-8",
         )
         second_manifest.write_text(
@@ -556,7 +587,7 @@ def self_test() -> None:
     verify_release_evaluation(
         {
             "schema_version": 1,
-            "target": "v0.22.39",
+            "target": "v0.22.40",
             "minimum_engine_score": 80,
             "engine_profiles": {
                 format_name: {"score": 80} for format_name in REQUIRED_FORMATS

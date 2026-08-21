@@ -1040,9 +1040,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.4.3"
+version = "1.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "509591b7bcd67f4ef775afad7662703b4935daaa6ec0e5605cfb1090b32a2b6d"
+checksum = "0ad534f4357a5264cce5019c989cf66a4f0dc4e0d1b1d15f8aacec0ff7360273"
 dependencies = [
  "find-msvc-tools",
  "jobserver",
@@ -1697,9 +1697,9 @@ dependencies = [
 
 [[package]]
 name = "diplomat"
-version = "0.16.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26fdfa02eb9a2e1ff82a375524be1ce9fd50ae63787f5737da6951b25d21e857"
+checksum = "f8b37a6cea72eb6df5143d3e091d4c34cb0cf4046dd1ddcc082988886fe1f809"
 dependencies = [
  "diplomat_core",
  "proc-macro2",
@@ -1715,9 +1715,9 @@ checksum = "ae517853d9f82b2d144393b1c32c34c46c2e361de2b6c44a8fdfce23beb211cd"
 
 [[package]]
 name = "diplomat_core"
-version = "0.16.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4ede23809e2fcc555d8b2e10ffa7a1c31331ebca8e5477f4f2b48ab8a0a9a6b"
+checksum = "73b18e806f9ecb92df828d080efe47984ae1193958295d4a84fb8b32c9a1aa1b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2080,9 +2080,9 @@ dependencies = [
 
 [[package]]
 name = "either"
-version = "1.17.0"
+version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e5e8f6c15a24b9a3ee5efec809ccd006d3b30e8b3bb63c39af737c7f87daa1d"
+checksum = "252afb9ae5eaa683babdc6a068b3f5726eb19e05070c731f9b2a23a7c3e8ed34"
 
 [[package]]
 name = "emath"
@@ -3296,7 +3296,7 @@ dependencies = [
  "icu_calendar_data",
  "icu_locale_core",
  "icu_locale_fallback",
- "icu_provider 2.3.0",
+ "icu_provider 2.3.1",
  "tinystr 0.8.4",
  "zerovec 0.11.8",
 ]
@@ -3356,7 +3356,7 @@ checksum = "251af8e57c9400e3eb58242fe5b8b1152b2a64fdf4cf632f923c38ccee6f2fa9"
 dependencies = [
  "icu_locale_core",
  "icu_locale_fallback_data",
- "icu_provider 2.3.0",
+ "icu_provider 2.3.1",
  "potential_utf",
  "tinystr 0.8.4",
  "zerovec 0.11.8",
@@ -3410,7 +3410,7 @@ dependencies = [
  "icu_collections 2.3.0",
  "icu_normalizer_data",
  "icu_properties 2.3.0",
- "icu_provider 2.3.0",
+ "icu_provider 2.3.1",
  "smallvec",
  "zerovec 0.11.8",
 ]
@@ -3447,7 +3447,7 @@ dependencies = [
  "icu_collections 2.3.0",
  "icu_locale_core",
  "icu_properties_data 2.3.0",
- "icu_provider 2.3.0",
+ "icu_provider 2.3.1",
  "zerotrie 0.2.5",
  "zerovec 0.11.8",
 ]
@@ -3485,9 +3485,9 @@ dependencies = [
 
 [[package]]
 name = "icu_provider"
-version = "2.3.0"
+version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92a7ed671a6aad807a8651a2e1782a6598fda9ce5185dd8158549e95a91c6428"
+checksum = "d27bbb9d3abbefac45d55f647c9de1d44aafcd1186eb91879afef17c396c3e73"
 dependencies = [
  "displaydoc",
  "icu_locale_core",
@@ -3960,7 +3960,7 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.39"
+version = "0.22.40"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -3994,9 +3994,9 @@ dependencies = [
 
 [[package]]
 name = "katana-document-viewer"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "691050b2f5139ee4279b0e9213beff67f0d28320d1daf7e5b20161f0a38ff49b"
+checksum = "f7bfed62785f4274102a86d1cfaf7ec66850693156dd8af2659a6fea7d3b18ca"
 dependencies = [
  "cosmic-text",
  "epaint_default_fonts 0.35.0",
@@ -4058,7 +4058,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.39"
+version = "0.22.40"
 dependencies = [
  "anyhow",
  "cc",
@@ -4128,7 +4128,7 @@ dependencies = [
 
 [[package]]
 name = "katana-ui"
-version = "0.22.39"
+version = "0.22.40"
 dependencies = [
  "anyhow",
  "arboard",
@@ -9937,7 +9937,7 @@ dependencies = [
  "serde",
  "yoke 0.8.3",
  "zerofrom",
- "zerovec-derive 0.11.5",
+ "zerovec-derive 0.11.6",
 ]
 
 [[package]]
@@ -9953,9 +9953,9 @@ dependencies = [
 
 [[package]]
 name = "zerovec-derive"
-version = "0.11.5"
+version = "0.11.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f212a141d820099d57ffafb9569be9617a6f27d3dc881fbee8fb56642f917a9"
+checksum = "34df6fc39dbd26ddc9c10e6a2984476e13acce22e64e4487636ef494369225da"
 dependencies = [
  "proc-macro2",
  "quote",
