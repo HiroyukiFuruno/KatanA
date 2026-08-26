@@ -3,6 +3,7 @@ use katana_document_viewer::{DocumentFitMode, DocumentSurfaceCommand, DocumentVi
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use super::controls::show_controls;
+use super::controls_sheet_tabs::show_sheet_tabs;
 use super::painter::paint_document_frame;
 use super::render_support::{PendingDocumentCommands, show_diagnostics, show_failure};
 use super::source::DocumentSurfaceSource;
@@ -66,6 +67,25 @@ impl DocumentSurface {
         ))
     }
 
+    pub(crate) fn pdf_outline_state(
+        &self,
+    ) -> Option<(Vec<katana_document_viewer::PdfOutlineItem>, usize)> {
+        let frame = self.frame.as_ref()?;
+        let outline_items = frame.surface.outline_items();
+        if frame.format != katana_document_viewer::ViewerDocumentFormat::Pdf
+            || outline_items.is_empty()
+        {
+            return None;
+        }
+        Some((outline_items.to_vec(), frame.state.active_index))
+    }
+
+    pub(crate) fn jump_to_item(&mut self, index: usize) {
+        self.queue(DocumentWorkerCommand::Viewer(
+            DocumentViewerCommand::JumpTo(index),
+        ));
+    }
+
     pub(crate) fn next_for_test(&mut self) -> bool {
         let Some(frame) = &self.frame else {
             return false;
@@ -108,6 +128,8 @@ impl DocumentSurface {
         for command in commands {
             self.queue_surface(command);
         }
+        ui.add_space(4.0);
+        show_sheet_tabs(self, ui, &frame);
         show_diagnostics(ui, &frame);
         self.frame = Some(frame);
     }

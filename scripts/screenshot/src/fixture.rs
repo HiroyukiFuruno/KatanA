@@ -152,6 +152,7 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
     "slideshow_show_diagram_controls": {show_diagram_controls}
   }},
   "updates": {{
+    "interval": "Never",
     "previous_app_version": "{app_version}"
   }}{workspace_block}{linter_block}
 }}"#
@@ -193,6 +194,7 @@ mod tests {
     fn screenshot_settings_use_the_target_katana_version() {
         let json = build_settings_json(&FixtureSettings::default(), None);
 
+        assert!(json.contains(r#""interval": "Never""#));
         assert!(json.contains(&format!(
             r#""version": "{}""#,
             katana_ui::about_info::APP_VERSION

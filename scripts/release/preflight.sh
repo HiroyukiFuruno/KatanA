@@ -46,7 +46,7 @@ success "Browser-equivalent HTML release contract is enforced."
 # 4. Multi-format document release contract
 info "4/12 Verifying multi-format document release contract..."
 python3 scripts/release/check-multi-format-document-contract.py --self-test
-if [[ "$VERSION" == "0.22.40" ]]; then
+if [[ "$VERSION" == "0.22.41" ]]; then
     python3 scripts/release/check-multi-format-document-contract.py "$VERSION"
 fi
 success "Multi-format document ownership and packaging contract is enforced."

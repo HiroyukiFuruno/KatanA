@@ -419,6 +419,23 @@ mod tests {
     }
 
     #[test]
+    fn process_action_toggle_toc_stays_closed_for_office_document() {
+        let mut app = make_app();
+        app.state
+            .document
+            .open_documents
+            .push(katana_core::document::Document::new(
+                "/workspace/report.xlsx",
+                String::new(),
+            ));
+        app.state.document.active_doc_idx = Some(0);
+
+        app.process_action(&egui::Context::default(), AppAction::ToggleToc);
+
+        assert!(!app.state.layout.show_toc);
+    }
+
+    #[test]
     fn process_action_toggle_settings_toggles_flag() {
         let mut app = make_app();
         assert!(!app.state.layout.show_settings);

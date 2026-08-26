@@ -2,6 +2,23 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.41] - 2026-08-26 06:32:56 (UTC)
+
+### 🚀 Features
+
+- **Excel sheet tabs**: Excel worksheets can now be switched from named tabs along the bottom of the preview.
+- **PDF table of contents**: Embedded PDF outlines now appear with their hierarchy and navigate directly to the selected page.
+
+### ✨ Improvements
+
+- **Active file visibility**: Opening a PDF or Office document now selects and reveals the corresponding file in the workspace explorer.
+- **Relevant document tools**: The table-of-contents control is disabled for Word, Excel, and PowerPoint documents where it has no meaningful content.
+
+### 🐛 Bug Fixes
+
+- **Interactive HTML documents**: Restored JavaScript actions, pointer input, and scrolling after HTML content is drawn.
+- **Office document reliability**: Fixed failures involving frozen merged cells, blocked active content, ZIP data descriptors, very large worksheets, PowerPoint table spans, and malformed embedded images.
+
 ## [0.22.40] - 2026-08-21 09:45:51 (UTC)
 
 ### 🐛 Bug Fixes

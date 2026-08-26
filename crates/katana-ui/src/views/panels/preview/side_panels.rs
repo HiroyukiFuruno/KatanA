@@ -6,15 +6,12 @@ pub(super) const PREVIEW_SIDE_BAR_WIDTH: f32 = 32.0;
 pub(super) const PREVIEW_SIDE_BAR_MARGIN: f32 = 2.0;
 pub(super) const PREVIEW_SIDE_BAR_SPACING: f32 = 4.0;
 pub(super) const LIGHT_MODE_ICON_BG: u8 = 245;
-pub(super) const LIGHT_MODE_ICON_ACTIVE_BG: u8 = 230;
 pub const PANEL_WIDTH: f32 = 260.0;
 pub const SELECTABLE_H: f32 = 20.0;
 pub(super) const PANEL_HEAD_SPACE: f32 = 8.0;
 pub(super) const PANEL_ITEM_SPACE: f32 = 4.0;
 pub(super) const PANEL_HOVER_MARGIN: f32 = 12.0;
 pub(super) const PANEL_ANIM_SPEED: f32 = 0.15;
-pub(super) const TOGGLE_BUTTON_SIZE: f32 = 28.0;
-pub(super) const TOGGLE_BUTTON_ROUNDING: u8 = 4;
 pub(super) const POPUP_ROUNDING: f32 = 8.0;
 pub(super) const POPUP_PADDING: i8 = 0;
 pub(super) const POPUP_SHADOW_ALPHA: u8 = 48;
@@ -25,6 +22,14 @@ pub(super) const HOVER_SWITCH_DELAY: f64 = 0.25;
 
 impl<'a> PreviewSidePanels<'a> {
     pub fn show(&mut self, ui: &mut egui::Ui) {
+        if !super::TocAvailability::for_path(
+            self.app
+                .state
+                .active_document()
+                .map(|document| document.path.as_path()),
+        ) {
+            self.app.state.layout.show_toc = false;
+        }
         self.render_sidebar(ui);
         self.render_export(ui);
         self.render_story(ui);
@@ -44,13 +49,23 @@ impl<'a> PreviewSidePanels<'a> {
 
                     let toc_visible = self.app.state.config.settings.settings().layout.toc_visible;
                     if toc_visible {
-                        let resp_toc = self.render_toggle_button(
-                            ui,
-                            crate::Icon::Toc,
-                            self.app.state.layout.show_toc,
-                            &i18n.action.toggle_toc,
-                            None,
+                        let toc_available = super::TocAvailability::for_path(
+                            self.app
+                                .state
+                                .active_document()
+                                .map(|document| document.path.as_path()),
                         );
+                        let resp_toc = ui
+                            .add_enabled_ui(toc_available, |ui| {
+                                self.render_toggle_button(
+                                    ui,
+                                    crate::Icon::Toc,
+                                    self.app.state.layout.show_toc,
+                                    &i18n.action.toggle_toc,
+                                    None,
+                                )
+                            })
+                            .inner;
                         self.toc_btn_rect = Some(resp_toc.rect);
                         if resp_toc.clicked() {
                             self.app.pending_action = AppAction::ToggleToc;
@@ -154,47 +169,5 @@ impl<'a> PreviewSidePanels<'a> {
             ],
             ui.visuals().window_stroke(),
         );
-    }
-
-    pub(super) fn render_toggle_button(
-        &mut self,
-        ui: &mut egui::Ui,
-        icon: crate::Icon,
-        is_active: bool,
-        tooltip: &str,
-        shortcut: Option<&str>,
-    ) -> egui::Response {
-        #[rustfmt::skip]
-        let icon_bg = if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_BG) };
-        #[rustfmt::skip]
-        let active_bg = if ui.visuals().dark_mode { ui.visuals().selection.bg_fill } else { crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_ACTIVE_BG) };
-        let resp = ui.add(
-            egui::Button::image(icon.ui_image(ui, crate::icon::IconSize::Medium))
-                .fill(if is_active { active_bg } else { icon_bg })
-                .min_size(egui::vec2(TOGGLE_BUTTON_SIZE, TOGGLE_BUTTON_SIZE))
-                .corner_radius(egui::CornerRadius::same(TOGGLE_BUTTON_ROUNDING)),
-        );
-
-        let mut txt = tooltip.to_string();
-        let resp = if let Some(sc) = shortcut {
-            txt.push_str(&format!(" ({})", sc));
-            resp.on_hover_ui(|ui| {
-                ui.allocate_ui_with_layout(
-                    egui::vec2(0.0, 0.0),
-                    egui::Layout::left_to_right(egui::Align::Center),
-                    |ui| {
-                        ui.label(tooltip);
-                        crate::widgets::ShortcutWidget::new(sc).ui(ui);
-                    },
-                );
-            })
-        } else {
-            resp.on_hover_text(tooltip)
-        };
-
-        resp.widget_info(|| {
-            egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), txt.clone())
-        });
-        resp
     }
 }

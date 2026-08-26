@@ -1,4 +1,5 @@
 mod controls;
+mod controls_sheet_tabs;
 mod painter;
 mod painter_grid;
 mod painter_grid_conditional;

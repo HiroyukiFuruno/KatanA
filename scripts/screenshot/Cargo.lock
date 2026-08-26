@@ -3960,7 +3960,7 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.40"
+version = "0.22.41"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -3994,9 +3994,7 @@ dependencies = [
 
 [[package]]
 name = "katana-document-viewer"
-version = "0.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7bfed62785f4274102a86d1cfaf7ec66850693156dd8af2659a6fea7d3b18ca"
+version = "0.5.5"
 dependencies = [
  "cosmic-text",
  "epaint_default_fonts 0.35.0",
@@ -4008,7 +4006,7 @@ dependencies = [
  "katana-render-runtime",
  "katana-ui-core",
  "libc",
- "office2pdf",
+ "office2pdf-katana",
  "process_control",
  "quick-xml 0.41.0",
  "rappct",
@@ -4058,7 +4056,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.40"
+version = "0.22.41"
 dependencies = [
  "anyhow",
  "cc",
@@ -4078,9 +4076,9 @@ dependencies = [
 
 [[package]]
 name = "katana-render-runtime"
-version = "0.4.15"
+version = "0.4.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04446db1e84e7b7be42a213db753ed71a682b283320caf4a156cb958d6e8af2b"
+checksum = "c0cf77b37ee8eb9150f23afc84e061b7d26c5661185886b378d6de59b0d9c1af"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -4128,7 +4126,7 @@ dependencies = [
 
 [[package]]
 name = "katana-ui"
-version = "0.22.40"
+version = "0.22.41"
 dependencies = [
  "anyhow",
  "arboard",
@@ -5204,10 +5202,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "office2pdf"
-version = "0.6.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0cd39889efe9f4bc36ea89ffc30ad5ecf7e1cd3a33b5af76604d54ca26f764c3"
+name = "office2pdf-katana"
+version = "0.6.9"
 dependencies = [
  "comemo",
  "docx-rs",
@@ -5242,9 +5238,9 @@ checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 
 [[package]]
 name = "open"
-version = "5.4.1"
+version = "5.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9cfef937e9c486488c7e3d949ae31c0f1d06bdacd75b99c086cb35356e30408"
+checksum = "ade3be4664bc1ef537ce133015f04c176b737815c2ba9fd60edf212d6e90dd55"
 dependencies = [
  "is-wsl",
  "libc",
@@ -7328,7 +7324,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.4.3",
+ "getrandom 0.3.4",
  "once_cell",
  "rustix 1.1.4",
  "windows-sys 0.61.2",
@@ -8461,9 +8457,9 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "uuid"
-version = "1.24.1"
+version = "1.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2cefc03fd367c0c6d4305de1b312cf00248c4114f4a0418ce6a6af769e3b0bd9"
+checksum = "f053576934f05a761a402421fbbe3d425d9366f75f978806a037b3ca481abecc"
 dependencies = [
  "getrandom 0.4.3",
  "js-sys",

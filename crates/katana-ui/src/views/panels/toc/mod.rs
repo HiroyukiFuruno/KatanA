@@ -14,6 +14,7 @@ mod tests;
 
 const TOC_MIN_WIDTH: f32 = 100.0;
 const TOC_MAX_WIDTH: f32 = 500.0;
+const PDF_TOC_INDENT: f32 = 14.0;
 
 impl<'a> TocPanel<'a> {
     pub(crate) fn panel_frame(style: &egui::Style) -> egui::Frame {
@@ -60,6 +61,16 @@ impl<'a> TocPanel<'a> {
     }
 
     fn show_toc_content(&mut self, ui: &mut egui::Ui) -> (Option<usize>, Option<usize>) {
+        if let Some((items, active_page)) = self
+            .preview
+            .document_surface
+            .as_ref()
+            .and_then(|surface| surface.pdf_outline_state())
+        {
+            self.show_pdf_toc_content(ui, &items, active_page);
+            return (None, None);
+        }
+
         let mut clicked_line = None;
         let mut active_index_out = None;
 
@@ -129,6 +140,52 @@ impl<'a> TocPanel<'a> {
         (clicked_line, active_index_out)
     }
 
+    fn show_pdf_toc_content(
+        &mut self,
+        ui: &mut egui::Ui,
+        items: &[katana_document_viewer::PdfOutlineItem],
+        active_page: usize,
+    ) {
+        let mut target_page = None;
+        ui.vertical(|ui| {
+            ui.heading(crate::i18n::I18nOps::get().toc.title.clone());
+            ui.separator();
+            egui::ScrollArea::vertical()
+                .auto_shrink([false; 2])
+                .show(ui, |ui| {
+                    target_page = Self::show_pdf_toc_rows(ui, items, active_page);
+                });
+        });
+        if let Some(page_index) = target_page
+            && let Some(surface) = self.preview.document_surface.as_mut()
+        {
+            surface.jump_to_item(page_index);
+        }
+    }
+
+    fn show_pdf_toc_rows(
+        ui: &mut egui::Ui,
+        items: &[katana_document_viewer::PdfOutlineItem],
+        active_page: usize,
+    ) -> Option<usize> {
+        let mut target_page = None;
+        for (title, level, page_index) in pdf_outline_rows(items) {
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                ui.add_space(level.saturating_sub(1) as f32 * PDF_TOC_INDENT);
+                let selected = page_index == Some(active_page);
+                let button = egui::Button::selectable(selected, title).frame_when_inactive(true);
+                if ui
+                    .add(button)
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                {
+                    target_page = page_index;
+                }
+            });
+        }
+        target_page
+    }
+
     fn render_header(&mut self, ui: &mut egui::Ui) {
         let icon_btn_size =
             crate::icon::IconSize::Small.to_vec2() + ui.spacing().button_padding * 2.0;
@@ -167,5 +224,39 @@ impl<'a> TocPanel<'a> {
 
     fn panel_icon_button(ui: &egui::Ui, icon: crate::Icon) -> egui::Button<'static> {
         icon.button_on_fill(ui, crate::icon::IconSize::Small, ui.visuals().window_fill())
+    }
+}
+
+fn pdf_outline_rows(
+    items: &[katana_document_viewer::PdfOutlineItem],
+) -> impl Iterator<Item = (&str, usize, Option<usize>)> {
+    items
+        .iter()
+        .map(|item| (item.title.as_str(), item.level.max(1), item.page_index))
+}
+
+#[cfg(test)]
+mod pdf_outline_tests {
+    use super::pdf_outline_rows;
+
+    #[test]
+    fn pdf_outline_rows_preserve_hierarchy_and_page_destinations() {
+        let items = vec![
+            katana_document_viewer::PdfOutlineItem {
+                title: "Chapter".to_owned(),
+                level: 1,
+                page_index: Some(0),
+            },
+            katana_document_viewer::PdfOutlineItem {
+                title: "Section".to_owned(),
+                level: 2,
+                page_index: Some(3),
+            },
+        ];
+
+        assert_eq!(
+            pdf_outline_rows(&items).collect::<Vec<_>>(),
+            vec![("Chapter", 1, Some(0)), ("Section", 2, Some(3))]
+        );
     }
 }

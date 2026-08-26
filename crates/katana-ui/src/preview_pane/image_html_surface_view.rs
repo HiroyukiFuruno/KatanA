@@ -64,3 +64,41 @@ impl HtmlBrowserSurface {
         );
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::preview_pane::image_html_surface::frame::BrowserFrame;
+
+    #[test]
+    fn rendered_browser_frame_keeps_the_host_input_surface_hoverable() {
+        let context = egui::Context::default();
+        let viewport =
+            katana_document_viewer::browser_session::HtmlBrowserViewport::new(100, 60, 1.0)
+                .expect("viewport");
+        let mut surface = HtmlBrowserSurface::failed("unused".to_owned());
+        surface.error = None;
+        surface.frame = Some(BrowserFrame::new(
+            1,
+            viewport,
+            0.0,
+            120.0,
+            vec![255; 100 * 60 * 4],
+        ));
+
+        let mut output = context.run_ui(egui::RawInput::default(), |ui| {
+            surface.show(ui);
+        });
+        output.textures_delta.clear();
+        let mut input = egui::RawInput::default();
+        input
+            .events
+            .push(egui::Event::PointerMoved(egui::pos2(20.0, 20.0)));
+        let mut output = context.run_ui(input, |ui| {
+            surface.show(ui);
+        });
+        output.textures_delta.clear();
+
+        assert!(surface.pointer_over);
+    }
+}
