@@ -1,6 +1,7 @@
 use eframe::egui;
 use katana_document_viewer::{
-    DocumentFitMode, DocumentSurfaceKind, DocumentViewerCommand, ViewerCapabilities, ViewerFeature,
+    DocumentFitMode, DocumentSurfaceKind, DocumentViewerCommand, ViewerCapabilities,
+    ViewerDocumentFormat, ViewerFeature,
 };
 
 use super::types::DocumentSurface;
@@ -35,31 +36,34 @@ pub(super) fn show_controls(
     toolbar.show(ui, |ui| {
         ui.horizontal_wrapped(|ui| {
             let navigation = supports_navigation(&frame.capabilities);
-            if icon_button(
-                ui,
-                crate::Icon::ChevronLeft,
-                &messages.preview.document_controller.previous,
-                navigation && frame.state.active_index > 0,
-                colors,
-            ) {
-                surface.queue(DocumentWorkerCommand::Viewer(
-                    DocumentViewerCommand::Previous,
+            if frame.format != ViewerDocumentFormat::Xlsx {
+                if icon_button(
+                    ui,
+                    crate::Icon::ChevronLeft,
+                    &messages.preview.document_controller.previous,
+                    navigation && frame.state.active_index > 0,
+                    colors,
+                ) {
+                    surface.queue(DocumentWorkerCommand::Viewer(
+                        DocumentViewerCommand::Previous,
+                    ));
+                }
+                let current = frame.state.active_index.saturating_add(1).to_string();
+                let total = frame.state.item_count.to_string();
+                ui.label(crate::i18n::I18nOps::tf(
+                    &messages.diff_review.file_counter,
+                    &[("current", &current), ("total", &total)],
                 ));
-            }
-            let current = frame.state.active_index.saturating_add(1).to_string();
-            let total = frame.state.item_count.to_string();
-            ui.label(crate::i18n::I18nOps::tf(
-                &messages.diff_review.file_counter,
-                &[("current", &current), ("total", &total)],
-            ));
-            if icon_button(
-                ui,
-                crate::Icon::ChevronRight,
-                &messages.preview.document_controller.next,
-                navigation && frame.state.active_index.saturating_add(1) < frame.state.item_count,
-                colors,
-            ) {
-                surface.queue(DocumentWorkerCommand::Viewer(DocumentViewerCommand::Next));
+                if icon_button(
+                    ui,
+                    crate::Icon::ChevronRight,
+                    &messages.preview.document_controller.next,
+                    navigation
+                        && frame.state.active_index.saturating_add(1) < frame.state.item_count,
+                    colors,
+                ) {
+                    surface.queue(DocumentWorkerCommand::Viewer(DocumentViewerCommand::Next));
+                }
             }
             if supports(&frame.capabilities, ViewerFeature::Zoom) {
                 ui.separator();

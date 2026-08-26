@@ -62,13 +62,14 @@ impl<'a> ExplorerSidebar<'a> {
                     &ui.ctx().global_style(),
                 ))
                 .show_inside(ui, |ui| {
-                    let active_path = app
-                        .state
-                        .document
-                        .active_doc_idx
-                        .and_then(|idx| app.state.document.open_documents.get(idx))
-                        .filter(|doc| !doc.is_reference)
-                        .map(|doc| doc.path.to_path_buf());
+                    let active_path = super::active_explorer_path(
+                        app.state.document.active_document(),
+                        app.state
+                            .workspace
+                            .data
+                            .as_ref()
+                            .map(|workspace| workspace.root.as_path()),
+                    );
                     let show_vertical_line = app
                         .state
                         .config

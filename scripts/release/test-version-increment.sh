@@ -23,16 +23,16 @@ expect_reject() {
     fi
 }
 
-expect_accept 0.22.40 0.22.39 $'## [0.22.40]\n## [0.22.39]'
-expect_reject 0.22.39 0.22.39 $'## [0.22.39]\n## [0.22.38]'
-expect_reject 0.22.41 0.22.39 $'## [0.22.41]\n## [0.22.39]'
-expect_reject 0.29.0 0.22.39 $'## [0.29.0]\n## [0.22.39]'
-expect_reject 0.23.0 0.22.39 $'## [0.23.0]\n## [0.22.39]'
-expect_reject 1.0.0 0.22.39 $'## [1.0.0]\n## [0.22.39]'
-expect_reject 0.22.40 0.22.39 $'## [0.22.40]\n## [0.22.38]'
+expect_accept 0.22.41 0.22.40 $'## [0.22.41]\n## [0.22.40]'
+expect_reject 0.22.40 0.22.40 $'## [0.22.40]\n## [0.22.39]'
+expect_reject 0.22.42 0.22.40 $'## [0.22.42]\n## [0.22.40]'
+expect_reject 0.29.0 0.22.40 $'## [0.29.0]\n## [0.22.40]'
+expect_reject 0.23.0 0.22.40 $'## [0.23.0]\n## [0.22.40]'
+expect_reject 1.0.0 0.22.40 $'## [1.0.0]\n## [0.22.40]'
+expect_reject 0.22.41 0.22.40 $'## [0.22.41]\n## [0.22.39]'
 
-[[ "$(bash "$BRANCH_VERSION_GUARD" release/v0.22.40)" == "0.22.40" ]]
-[[ "$(bash "$BRANCH_VERSION_GUARD" release/v0.22.40-pptx-external-hyperlink)" == "0.22.40" ]]
+[[ "$(bash "$BRANCH_VERSION_GUARD" release/v0.22.41)" == "0.22.41" ]]
+[[ "$(bash "$BRANCH_VERSION_GUARD" release/v0.22.41-document-viewer-defects)" == "0.22.41" ]]
 if bash "$BRANCH_VERSION_GUARD" release/v0.22 >/dev/null 2>&1; then
     printf '[ERROR] Invalid release branch was accepted.\n' >&2
     exit 1

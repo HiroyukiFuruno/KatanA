@@ -12,13 +12,14 @@ import tomllib
 from pathlib import Path
 
 
-TARGET_VERSION = "0.22.40"
-CHANGE_NAME = "v0-22-40-pptx-external-hyperlink-intake"
+TARGET_VERSION = "0.22.41"
+CHANGE_NAME = "v0-22-41-document-viewer-defects"
 REQUIRED_DEPENDENCIES = {
-    "katana-document-viewer": (0, 5, 4),
+    "katana-document-viewer": (0, 5, 5),
 }
-REQUIRED_OFFICE_ENGINE = (0, 6, 7)
-RETIRED_OFFICE_ENGINE = "office2pdf-katana"
+REQUIRED_OFFICE_ENGINE = (0, 6, 10)
+REQUIRED_OFFICE_ENGINE_PACKAGE = "office2pdf-katana"
+FORBIDDEN_OFFICE_ENGINE_PACKAGE = "office2pdf"
 FORBIDDEN_DOCUMENT_MARKERS = (
     "chromium",
     "webview",
@@ -314,8 +315,8 @@ def verify(root: Path, target_version: str) -> None:
         if actual != expected:
             fail(f"{name} must declare {expected[0]}.{expected[1]}.{expected[2]}; found {actual}")
         verify_registry_package(lock, name, expected)
-    verify_registry_package(lock, "office2pdf", REQUIRED_OFFICE_ENGINE)
-    reject_registry_package(lock, RETIRED_OFFICE_ENGINE)
+    verify_registry_package(lock, REQUIRED_OFFICE_ENGINE_PACKAGE, REQUIRED_OFFICE_ENGINE)
+    reject_registry_package(lock, FORBIDDEN_OFFICE_ENGINE_PACKAGE)
     verify_kdv_features(dependencies.get("katana-document-viewer"))
     verify_external_hyperlink_fixture(root)
     verify_macos_bundle_metadata(katana_ui_cargo)
@@ -488,6 +489,7 @@ def verify(root: Path, target_version: str) -> None:
             'release-artifact-pending',
             'TASK_GATE_ARGS=(--allow 3.3 --allow 4.2 --allow 4.3 --allow 5.1)',
             'TASK_GATE_ARGS=(--allow 5.1)',
+            'v0-22-41-document-viewer-defects',
             'check-openspec-task-completion.py',
             'check-document-surface-coverage.py --self-test',
         ),
@@ -543,10 +545,10 @@ def verify(root: Path, target_version: str) -> None:
 
 
 def self_test() -> None:
-    assert parse_requirement("=0.5.4", "kdv") == (0, 5, 4)
-    assert parse_requirement({"version": "=0.5.4"}, "kdv") == (0, 5, 4)
+    assert parse_requirement("=0.5.5", "kdv") == (0, 5, 5)
+    assert parse_requirement({"version": "=0.5.5"}, "kdv") == (0, 5, 5)
     try:
-        verify_kdv_features({"version": "=0.5.4", "features": ["egui"]})
+        verify_kdv_features({"version": "=0.5.5", "features": ["egui"]})
     except SystemExit:
         pass
     else:
@@ -561,8 +563,8 @@ def self_test() -> None:
         }
     )
     for invalid in (
-        {"path": "../kdv", "version": "=0.5.4"},
-        {"git": "https://example.test/kdv", "version": "=0.5.4"},
+        {"path": "../kdv", "version": "=0.5.5"},
+        {"git": "https://example.test/kdv", "version": "=0.5.5"},
         "0.5",
     ):
         try:
@@ -572,7 +574,7 @@ def self_test() -> None:
         raise AssertionError(f"forbidden dependency requirement was accepted: {invalid!r}")
     assert dependency_names(
         {
-            "workspace": {"dependencies": {"katana-document-viewer": "=0.5.4"}},
+            "workspace": {"dependencies": {"katana-document-viewer": "=0.5.5"}},
             "target": {
                 "cfg(unix)": {
                     "build-dependencies": {
@@ -586,7 +588,7 @@ def self_test() -> None:
         first_manifest = Path(directory) / "Cargo.toml"
         second_manifest = Path(directory) / "member.toml"
         first_manifest.write_text(
-            '[workspace.dependencies]\nkatana-document-viewer = "=0.5.4"\n',
+            '[workspace.dependencies]\nkatana-document-viewer = "=0.5.5"\n',
             encoding="utf-8",
         )
         second_manifest.write_text(
@@ -606,7 +608,7 @@ def self_test() -> None:
         assert release_evaluation_path(root) == active
         archive = (
             root
-            / "openspec/changes/archive/2026-08-21-v0-22-40-pptx-external-hyperlink-intake"
+            / "openspec/changes/archive/2026-08-25-v0-22-41-document-viewer-defects"
             / "evidence/release-evaluation.json"
         )
         archive.parent.mkdir(parents=True)
@@ -622,7 +624,7 @@ def self_test() -> None:
     verify_release_evaluation(
         {
             "schema_version": 1,
-            "target": "v0.22.40",
+            "target": "v0.22.41",
             "minimum_engine_score": 80,
             "engine_profiles": {
                 format_name: {"score": 80} for format_name in REQUIRED_FORMATS

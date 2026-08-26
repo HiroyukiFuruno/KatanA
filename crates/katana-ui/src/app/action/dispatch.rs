@@ -150,6 +150,16 @@ impl KatanaApp {
     }
 
     fn handle_toggle_panel(&mut self, p: &str) {
+        if p == "toc"
+            && !crate::views::panels::preview::TocAvailability::for_path(
+                self.state
+                    .active_document()
+                    .map(|document| document.path.as_path()),
+            )
+        {
+            self.state.layout.show_toc = false;
+            return;
+        }
         /* WHY: Close siblings before opening a new side panel */
         let open = match p {
             "export" => self.state.layout.show_export_panel,

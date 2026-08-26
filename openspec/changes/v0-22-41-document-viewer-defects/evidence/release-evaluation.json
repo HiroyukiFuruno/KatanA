@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "target": "v0.22.41",
+  "engine_score_source": "published katana-document-viewer v0.5.5 using office2pdf-katana =0.6.10 and katana-render-runtime =0.4.17",
+  "minimum_engine_score": 80,
+  "engine_profiles": {
+    "pdf": { "candidate": "hayro_pdf", "score": 85 },
+    "docx": { "candidate": "office2pdf_docx_pdf_hayro", "score": 90 },
+    "xlsx": { "candidate": "ironcalc_xlsx_model", "score": 90 },
+    "pptx": { "candidate": "office2pdf_pptx_pdf_hayro", "score": 85 }
+  },
+  "integration_score": {
+    "maximum": 100,
+    "release_required": 100,
+    "achieved": 100,
+    "categories": {
+      "published_dependency_provenance": { "score": 20, "maximum": 20, "status": "pass" },
+      "html_and_explorer_interaction": { "score": 20, "maximum": 20, "status": "pass" },
+      "office_controls_and_toc": { "score": 25, "maximum": 25, "status": "pass" },
+      "real_host_fixture_acceptance": { "score": 20, "maximum": 20, "status": "pass" },
+      "quality_and_release_contracts": { "score": 15, "maximum": 15, "status": "pass" }
+    }
+  },
+  "local_evidence": {
+    "registry_chain": "office2pdf-katana 0.6.10 -> katana-document-viewer 0.5.5 -> KatanA 0.22.41; katana-render-runtime 0.4.17",
+    "registry_metadata": "pass; all three dependencies resolve from crates.io without path or git overrides",
+    "dependency_update": "pass; cargo update completed and direct/transitive dependency audit retained all gates",
+    "focused_regressions": "pass; HTML input, explorer selection, sheet tabs, Office TOC, and PDF outline navigation",
+    "real_host_fixtures": "pass; supplied HTML and six Office fixtures exercised through host/downstream paths",
+    "clippy": "pass; workspace warnings denied",
+    "fixture_integration": "pass",
+    "strict_coverage": "pass; document surface 100 percent, uncovered 0"
+  },
+  "ci_evidence": {
+    "status": "pending release pull request checks"
+  },
+  "public_release_evidence": {
+    "status": "pending v0.22.41 publication"
+  }
+}
