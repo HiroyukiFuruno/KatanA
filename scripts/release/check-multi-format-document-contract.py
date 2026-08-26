@@ -489,6 +489,7 @@ def verify(root: Path, target_version: str) -> None:
             'release-artifact-pending',
             'TASK_GATE_ARGS=(--allow 3.3 --allow 4.2 --allow 4.3 --allow 5.1)',
             'TASK_GATE_ARGS=(--allow 5.1)',
+            'v0-22-41-document-viewer-defects',
             'check-openspec-task-completion.py',
             'check-document-surface-coverage.py --self-test',
         ),

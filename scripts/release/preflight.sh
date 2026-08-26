@@ -146,6 +146,12 @@ for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
             elif [[ "$TASK_GATE_MODE" == "post-release-evidence" && "$CHANGE_NAME" == "v0-22-40-pptx-external-hyperlink-intake" ]]; then
                 # The post-release evidence change must have no incomplete OpenSpec tasks.
                 TASK_GATE_ARGS=()
+            elif [[ "$CHANGE_NAME" == "v0-22-41-document-viewer-defects" ]] && \
+                [[ "$TASK_GATE_MODE" == "pr-bootstrap" || \
+                    "$TASK_GATE_MODE" == "release-artifact-pending" || \
+                    "$TASK_GATE_MODE" == "post-release-evidence" ]]; then
+                # v0.22.41 has no deferred task: all release modes enforce strict completion.
+                TASK_GATE_ARGS=()
             elif [[ "$TASK_GATE_MODE" != "strict" ]]; then
                 error "Unsupported OpenSpec task gate mode: $TASK_GATE_MODE"
                 exit 2
