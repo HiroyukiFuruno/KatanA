@@ -64,6 +64,7 @@ impl ImageLogicOps {
         alt_text: &str,
         idx: usize,
         mut state: Option<&mut ViewerState>,
+        interaction_enabled: bool,
         fullscreen_request: Option<&mut Option<usize>>,
         draw_background: impl FnOnce(&mut egui::Ui, egui::Rect, bool),
     ) -> egui::Rect {
@@ -85,7 +86,8 @@ impl ImageLogicOps {
             state.prepare_texture(ViewerTextureIdentity::rasterized(img), preview_background);
         }
 
-        if let Some(state) = state.as_mut()
+        if interaction_enabled
+            && let Some(state) = state.as_mut()
             && response.hovered()
         {
             let zoom_delta = ui.input(|i| i.zoom_delta());
@@ -142,7 +144,7 @@ impl ImageLogicOps {
 
         draw_background(ui, container_rect, response.hovered());
 
-        if let Some(state) = state {
+        if interaction_enabled && let Some(state) = state {
             if crate::diagram_controller::DiagramControllerOps::draw_fullscreen_button(
                 ui,
                 container_rect,

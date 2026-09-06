@@ -55,6 +55,7 @@ pub(super) fn show_section(
                 alt,
                 id,
                 None,
+                false,
                 None,
                 |_, _, _| {},
             );

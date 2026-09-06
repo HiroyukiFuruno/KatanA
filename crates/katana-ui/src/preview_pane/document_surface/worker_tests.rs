@@ -42,6 +42,7 @@ fn test_frame() -> DocumentFrame {
         capabilities: ViewerCapabilities::static_page(),
         diagnostics: Vec::new(),
         format: ViewerDocumentFormat::Pdf,
+        spreadsheet: None,
     }
 }
 
