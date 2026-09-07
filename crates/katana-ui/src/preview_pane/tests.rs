@@ -82,9 +82,11 @@ mod tests {
                         image,
                         "Mermaid diagram",
                         0,
-                        Some(state),
-                        true,
-                        None,
+                        crate::preview_pane::image_raster::RasterizedImageOptions {
+                            state: Some(state),
+                            interaction_enabled: true,
+                            fullscreen_request: None,
+                        },
                         |_, _, _| {},
                     );
                 });

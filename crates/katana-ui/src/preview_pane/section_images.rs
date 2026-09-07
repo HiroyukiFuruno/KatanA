@@ -49,12 +49,14 @@ impl SectionImageOps {
             svg_data,
             alt,
             i,
-            state,
-            allow_controls,
-            if !allow_controls {
-                None
-            } else {
-                fullscreen_request
+            crate::preview_pane::image_raster::RasterizedImageOptions {
+                state,
+                interaction_enabled: allow_controls,
+                fullscreen_request: if !allow_controls {
+                    None
+                } else {
+                    fullscreen_request
+                },
             },
             |ui, rect, is_hovered| {
                 if allow_hover && (is_hovered || is_active) {
