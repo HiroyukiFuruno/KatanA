@@ -30,17 +30,14 @@ impl SectionImageOps {
                     .unwrap_or(false)
             });
 
-        /* WHY: In slideshow mode diagrams are read-only; controls and hover highlight are hidden by default */
-        let state = if !allow_controls {
-            None
-        } else {
-            viewer_states.map(|vs| {
-                if vs.len() <= i {
-                    vs.resize_with(i + 1, crate::preview_pane::ViewerState::default);
-                }
-                &mut vs[i]
-            })
-        };
+        /* WHY: controls may be hidden for capture, but the texture handle must survive the
+         * pass so egui can upload and render the diagram on the next frame. */
+        let state = viewer_states.map(|vs| {
+            if vs.len() <= i {
+                vs.resize_with(i + 1, crate::preview_pane::ViewerState::default);
+            }
+            &mut vs[i]
+        });
 
         let is_active = !is_slideshow
             && active_editor_line.is_some_and(|line| {
@@ -52,11 +49,14 @@ impl SectionImageOps {
             svg_data,
             alt,
             i,
-            state,
-            if !allow_controls {
-                None
-            } else {
-                fullscreen_request
+            crate::preview_pane::image_raster::RasterizedImageOptions {
+                state,
+                interaction_enabled: allow_controls,
+                fullscreen_request: if !allow_controls {
+                    None
+                } else {
+                    fullscreen_request
+                },
             },
             |ui, rect, is_hovered| {
                 if allow_hover && (is_hovered || is_active) {

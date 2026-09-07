@@ -82,9 +82,53 @@ mod tests {
                         image,
                         "Mermaid diagram",
                         0,
-                        Some(state),
-                        None,
+                        crate::preview_pane::image_raster::RasterizedImageOptions {
+                            state: Some(state),
+                            interaction_enabled: true,
+                            fullscreen_request: None,
+                        },
                         |_, _, _| {},
+                    );
+                });
+            },
+        );
+    }
+
+    fn render_controls_hidden_rasterized_image(
+        ctx: &egui::Context,
+        states: &mut Vec<ViewerState>,
+        image: &katana_core::markdown::svg_rasterize::RasterizedSvg,
+    ) {
+        crate::test_ui::TestUiOps::run(
+            ctx,
+            egui::RawInput {
+                screen_rect: Some(egui::Rect::from_min_size(
+                    egui::pos2(0.0, 0.0),
+                    egui::vec2(800.0, 600.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| {
+                ctx.data_mut(|data| {
+                    data.insert_temp(egui::Id::new("katana_preview_diagram_controls"), false);
+                });
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    let mut section_lifecycle = None;
+                    let mut block_anchors = None;
+                    SectionImageOps::handle_image_section(
+                        ui,
+                        image,
+                        "Mermaid diagram",
+                        0,
+                        1,
+                        0,
+                        None,
+                        Some(states),
+                        None,
+                        &mut section_lifecycle,
+                        &mut block_anchors,
+                        None,
+                        false,
                     );
                 });
             },
@@ -1172,6 +1216,18 @@ mod tests {
         assert!(state.texture.is_some());
         assert_eq!(state.zoom, 1.0);
         assert_eq!(state.pan, egui::Vec2::ZERO);
+    }
+
+    #[test]
+    fn hidden_diagram_controls_retain_texture_for_rendering() {
+        let ctx = egui::Context::default();
+        let image = rasterized_test_image(vec![0, 0, 0, 255]);
+        let mut states = Vec::new();
+
+        render_controls_hidden_rasterized_image(&ctx, &mut states, &image);
+
+        assert_eq!(states.len(), 1);
+        assert!(states[0].texture.is_some());
     }
 
     #[test]

@@ -54,8 +54,11 @@ pub(super) fn show_section(
                 svg_data,
                 alt,
                 id,
-                None,
-                None,
+                crate::preview_pane::image_raster::RasterizedImageOptions {
+                    state: None,
+                    interaction_enabled: false,
+                    fullscreen_request: None,
+                },
                 |_, _, _| {},
             );
             vec![]

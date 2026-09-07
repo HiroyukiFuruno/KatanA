@@ -8,6 +8,12 @@ use super::types::ImageLogicOps;
 pub(super) const MIN_ZOOM: f32 = 0.1;
 pub(super) const MAX_ZOOM: f32 = 10.0;
 
+pub(crate) struct RasterizedImageOptions<'a> {
+    pub state: Option<&'a mut ViewerState>,
+    pub interaction_enabled: bool,
+    pub fullscreen_request: Option<&'a mut Option<usize>>,
+}
+
 /// WHY: Minimum container height to prevent the 3×3 control grid and fullscreen
 /// button from overlapping on diagrams with a small rendered height.
 const MIN_CONTAINER_HEIGHT: f32 = 145.0;
@@ -63,8 +69,7 @@ impl ImageLogicOps {
         img: &RasterizedSvg,
         alt_text: &str,
         idx: usize,
-        mut state: Option<&mut ViewerState>,
-        fullscreen_request: Option<&mut Option<usize>>,
+        mut options: RasterizedImageOptions<'_>,
         draw_background: impl FnOnce(&mut egui::Ui, egui::Rect, bool),
     ) -> egui::Rect {
         let max_w = ui.available_width();
@@ -81,11 +86,12 @@ impl ImageLogicOps {
             ui.visuals().window_fill(),
         );
 
-        if let Some(state) = state.as_mut() {
+        if let Some(state) = options.state.as_mut() {
             state.prepare_texture(ViewerTextureIdentity::rasterized(img), preview_background);
         }
 
-        if let Some(state) = state.as_mut()
+        if options.interaction_enabled
+            && let Some(state) = options.state.as_mut()
             && response.hovered()
         {
             let zoom_delta = ui.input(|i| i.zoom_delta());
@@ -97,11 +103,11 @@ impl ImageLogicOps {
             }
         }
 
-        let zoom = state.as_ref().map_or(1.0, |s| s.zoom);
-        let pan = state.as_ref().map_or(egui::Vec2::ZERO, |s| s.pan);
+        let zoom = options.state.as_ref().map_or(1.0, |s| s.zoom);
+        let pan = options.state.as_ref().map_or(egui::Vec2::ZERO, |s| s.pan);
         let zoomed_size = base_size * zoom;
 
-        let texture_handle = if let Some(state) = state.as_mut() {
+        let texture_handle = if let Some(state) = options.state.as_mut() {
             if state.texture.is_none() || state.texture_background != Some(preview_background) {
                 let color_img = color_image_for_texture(
                     img,
@@ -142,11 +148,13 @@ impl ImageLogicOps {
 
         draw_background(ui, container_rect, response.hovered());
 
-        if let Some(state) = state {
+        if options.interaction_enabled
+            && let Some(state) = options.state
+        {
             if crate::diagram_controller::DiagramControllerOps::draw_fullscreen_button(
                 ui,
                 container_rect,
-            ) && let Some(req) = fullscreen_request
+            ) && let Some(req) = options.fullscreen_request
             {
                 *req = Some(idx);
             }
