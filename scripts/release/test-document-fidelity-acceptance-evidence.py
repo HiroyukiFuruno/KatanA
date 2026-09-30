@@ -224,6 +224,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
     def test_schema_version_boolean_fails(self) -> None:
         self.assert_rejected(lambda evidence: evidence.update(schema_version=True))
 
+    def test_schema_version_float_and_string_fail(self) -> None:
+        self.assert_rejected(lambda evidence: evidence.update(schema_version=1.0))
+        self.assert_rejected(lambda evidence: evidence.update(schema_version="1"))
+
     def test_supplied_input_format_mapping_is_enforced(self) -> None:
         self.assert_rejected(
             lambda evidence: evidence["office_fixtures"][0].update(format="pptx")

@@ -252,6 +252,7 @@ def verify(root: Path, evidence_path: Path | None = None) -> None:
         fail(f"acceptance evidence is not valid JSON: {error}")
     if (
         not isinstance(evidence, dict)
+        or not isinstance(evidence.get("schema_version"), int)
         or isinstance(evidence.get("schema_version"), bool)
         or evidence.get("schema_version") != 1
         or evidence.get("target") != TARGET
