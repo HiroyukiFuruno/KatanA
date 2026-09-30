@@ -37,6 +37,8 @@ pub struct PreviewPane {
     pub block_anchors: Vec<(std::ops::Range<usize>, egui::Rect)>,
     pub content_top_y: f32,
     pub visible_rect: Option<egui::Rect>,
+    pub markdown_viewport: Option<egui::Rect>,
+    pub markdown_scroll_offset: f32,
     pub scroll_request: Option<usize>,
     pub render_rx: Option<std::sync::mpsc::Receiver<RenderMessage>>,
     pub is_loading: bool,

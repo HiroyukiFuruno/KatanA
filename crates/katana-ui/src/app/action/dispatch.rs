@@ -117,21 +117,6 @@ impl KatanaApp {
         }
     }
 
-    fn handle_toggle_reload_panel(&mut self, p: &str) {
-        /* WHY: These panels need disk reload when opened to reflect latest state */
-        let flag = match p {
-            "workspace" => &mut self.state.layout.show_workspace_panel,
-            "explorer" => &mut self.state.layout.show_explorer,
-            "history" => &mut self.state.layout.show_history_panel,
-            _ => return,
-        };
-        let was_open = *flag;
-        *flag = !was_open;
-        if !was_open {
-            self.state.global_workspace.reload();
-        }
-    }
-
     fn handle_action_close_workspace(&mut self) {
         self.save_workspace_state();
         self.state.workspace.data = None;
@@ -147,40 +132,6 @@ impl KatanaApp {
             crate::i18n::I18nOps::get().status.closed_workspace.clone(),
             crate::app_state::StatusType::Success,
         ));
-    }
-
-    fn handle_toggle_panel(&mut self, p: &str) {
-        if p == "toc"
-            && !crate::views::panels::preview::TocAvailability::for_path(
-                self.state
-                    .active_document()
-                    .map(|document| document.path.as_path()),
-            )
-        {
-            self.state.layout.show_toc = false;
-            return;
-        }
-        /* WHY: Close siblings before opening a new side panel */
-        let open = match p {
-            "export" => self.state.layout.show_export_panel,
-            "story" => self.state.layout.show_story_panel,
-            "tools" => self.state.layout.show_tools_panel,
-            "toc" => self.state.layout.show_toc,
-            _ => false,
-        };
-        if !open {
-            self.state.layout.show_export_panel = false;
-            self.state.layout.show_story_panel = false;
-            self.state.layout.show_tools_panel = false;
-            self.state.layout.show_toc = false;
-        }
-        match p {
-            "export" => self.state.layout.show_export_panel ^= true,
-            "story" => self.state.layout.show_story_panel ^= true,
-            "tools" => self.state.layout.show_tools_panel ^= true,
-            "toc" => self.state.layout.show_toc ^= true,
-            _ => {}
-        }
     }
 
     pub(crate) fn handle_pick_open_workspace_result(

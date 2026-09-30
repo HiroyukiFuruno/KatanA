@@ -1,20 +1,85 @@
-import { mathjax } from "mathjax-full/js/mathjax.js";
-import { TeX } from "mathjax-full/js/input/tex.js";
-import { SVG } from "mathjax-full/js/output/svg.js";
-import { liteAdaptor } from "mathjax-full/js/adaptors/liteAdaptor.js";
-import { RegisterHTMLHandler } from "mathjax-full/js/handlers/html.js";
-import { AllPackages } from "mathjax-full/js/input/tex/AllPackages.js";
-import { OptionList } from "mathjax-full/js/util/Options";
+import { mathjax } from "@mathjax/src/js/mathjax.js";
+import { TeX } from "@mathjax/src/js/input/tex.js";
+import { SVG } from "@mathjax/src/js/output/svg.js";
+import { liteAdaptor } from "@mathjax/src/js/adaptors/liteAdaptor.js";
+import { RegisterHTMLHandler } from "@mathjax/src/js/handlers/html.js";
+import { OptionList } from "@mathjax/src/js/util/Options.js";
+import "@mathjax/src/js/input/tex/action/ActionConfiguration.js";
+import "@mathjax/src/js/input/tex/ams/AmsConfiguration.js";
+import "@mathjax/src/js/input/tex/amscd/AmsCdConfiguration.js";
+import "@mathjax/src/js/input/tex/base/BaseConfiguration.js";
+import "@mathjax/src/js/input/tex/bbox/BboxConfiguration.js";
+import "@mathjax/src/js/input/tex/boldsymbol/BoldsymbolConfiguration.js";
+import "@mathjax/src/js/input/tex/braket/BraketConfiguration.js";
+import "@mathjax/src/js/input/tex/bussproofs/BussproofsConfiguration.js";
+import "@mathjax/src/js/input/tex/cancel/CancelConfiguration.js";
+import "@mathjax/src/js/input/tex/cases/CasesConfiguration.js";
+import "@mathjax/src/js/input/tex/centernot/CenternotConfiguration.js";
+import "@mathjax/src/js/input/tex/color/ColorConfiguration.js";
+import "@mathjax/src/js/input/tex/colorv2/ColorV2Configuration.js";
+import "@mathjax/src/js/input/tex/colortbl/ColortblConfiguration.js";
+import "@mathjax/src/js/input/tex/configmacros/ConfigMacrosConfiguration.js";
+import "@mathjax/src/js/input/tex/empheq/EmpheqConfiguration.js";
+import "@mathjax/src/js/input/tex/enclose/EncloseConfiguration.js";
+import "@mathjax/src/js/input/tex/extpfeil/ExtpfeilConfiguration.js";
+import "@mathjax/src/js/input/tex/gensymb/GensymbConfiguration.js";
+import "@mathjax/src/js/input/tex/html/HtmlConfiguration.js";
+import "@mathjax/src/js/input/tex/mathtools/MathtoolsConfiguration.js";
+import "@mathjax/src/js/input/tex/mhchem/MhchemConfiguration.js";
+import "@mathjax/src/js/input/tex/newcommand/NewcommandConfiguration.js";
+import "@mathjax/src/js/input/tex/noerrors/NoErrorsConfiguration.js";
+import "@mathjax/src/js/input/tex/noundefined/NoUndefinedConfiguration.js";
+import "@mathjax/src/js/input/tex/physics/PhysicsConfiguration.js";
+import "@mathjax/src/js/input/tex/setoptions/SetOptionsConfiguration.js";
+import "@mathjax/src/js/input/tex/tagformat/TagFormatConfiguration.js";
+import "@mathjax/src/js/input/tex/textcomp/TextcompConfiguration.js";
+import "@mathjax/src/js/input/tex/textmacros/TextMacrosConfiguration.js";
+import "@mathjax/src/js/input/tex/unicode/UnicodeConfiguration.js";
+import "@mathjax/src/js/input/tex/upgreek/UpgreekConfiguration.js";
+import "@mathjax/src/js/input/tex/verb/VerbConfiguration.js";
+
+const PACKAGES = [
+	"base",
+	"action",
+	"ams",
+	"amscd",
+	"bbox",
+	"boldsymbol",
+	"braket",
+	"bussproofs",
+	"cancel",
+	"cases",
+	"centernot",
+	"color",
+	"colortbl",
+	"empheq",
+	"enclose",
+	"extpfeil",
+	"gensymb",
+	"html",
+	"mathtools",
+	"mhchem",
+	"newcommand",
+	"noerrors",
+	"noundefined",
+	"upgreek",
+	"unicode",
+	"verb",
+	"configmacros",
+	"tagformat",
+	"textcomp",
+	"textmacros",
+];
 
 const adaptor = liteAdaptor();
 RegisterHTMLHandler(adaptor);
 
-export default function(
+function renderMath(
 	latex: string,
 	options: OptionList | undefined,
 ): string {
 	try {
-		const tex = new TeX({ packages: AllPackages });
+		const tex = new TeX({ packages: PACKAGES });
 		const svg = new SVG();
 		const doc = mathjax.document("", { InputJax: tex, OutputJax: svg });
 		const node = doc.convert(latex, options);
@@ -28,7 +93,12 @@ export default function(
 			throw new Error(errorTitle);
 		}
 		return svgTag;
-	} catch (error: any) {
-		throw new Error(`${error.message}`);
+	} catch (error: unknown) {
+		throw new Error(error instanceof Error ? error.message : String(error));
 	}
 }
+
+const katanaGlobal = globalThis as typeof globalThis & {
+	__katana_mathjax_render?: typeof renderMath;
+};
+katanaGlobal.__katana_mathjax_render = renderMath;

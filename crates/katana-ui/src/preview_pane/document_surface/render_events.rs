@@ -44,8 +44,22 @@ impl DocumentSurface {
             DocumentWorkerEvent::Frame {
                 frame,
                 session_event,
+                spreadsheet_metadata,
+                filter_event,
                 ..
             } => {
+                super::debug_log::DebugLog::write(
+                    "document_frame_received",
+                    format_args!(
+                        "generation={} format={} active_index={} item_count={} surface={:?} elapsed_ms={}",
+                        self.generation,
+                        super::worker_support::format_extension(frame.format),
+                        frame.state.active_index,
+                        frame.state.item_count,
+                        frame.surface.kind(),
+                        self.started_at.elapsed().as_millis()
+                    ),
+                );
                 tracing::debug!(
                     generation = self.generation,
                     format = super::worker_support::format_extension(frame.format),
@@ -55,6 +69,8 @@ impl DocumentSurface {
                     "received document frame"
                 );
                 apply_platform_event(ctx, &frame, session_event);
+                self.filter_ui
+                    .update_metadata(spreadsheet_metadata, filter_event.as_ref());
                 self.frame = Some(*frame);
                 self.failure = None;
             }

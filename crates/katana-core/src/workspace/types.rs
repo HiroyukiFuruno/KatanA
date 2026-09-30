@@ -1,5 +1,8 @@
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
 use thiserror::Error;
+
+static NEXT_WORKSPACE_REVISION: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TreeEntry {
@@ -16,6 +19,13 @@ pub enum TreeEntry {
 pub struct Workspace {
     pub root: PathBuf,
     pub tree: Vec<TreeEntry>,
+    pub(crate) revision: u64,
+}
+
+impl Workspace {
+    pub(crate) fn next_revision() -> u64 {
+        NEXT_WORKSPACE_REVISION.fetch_add(1, Ordering::Relaxed)
+    }
 }
 
 #[derive(Debug, Error)]

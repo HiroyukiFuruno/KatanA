@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use anyhow::{Context as _, anyhow};
+use anyhow::Context as _;
 use rquickjs::{CatchResultExt, Context, Ctx, Function, Object, Runtime};
 use thiserror::Error;
 
@@ -21,7 +21,6 @@ pub enum Error {
 /// local shortcode of Result
 type Result<T> = std::result::Result<T, Error>;
 
-const EXPORT_SUFFIX: &str = "export{Nj as default};";
 const FUNC_ID: &str = "__katana_mathjax_render";
 const QUICKJS_STACK_LIMIT_BYTES: usize = 8 * 1024 * 1024;
 
@@ -67,7 +66,7 @@ fn initialize() -> Result<MathJaxContext> {
     runtime.set_max_stack_size(QUICKJS_STACK_LIMIT_BYTES);
     let context = Context::full(&runtime).context("failed to create QuickJS context")?;
     context.with(|ctx| {
-        catch_js(&ctx, ctx.eval::<(), _>(patched_bundle()?.as_str()))
+        catch_js(&ctx, ctx.eval::<(), _>(include_str!("../js/out/index.mjs")))
     })?;
     Ok(MathJaxContext {
         _runtime: runtime,
@@ -79,17 +78,4 @@ fn catch_js<'js, T>(ctx: &Ctx<'js>, result: rquickjs::Result<T>) -> Result<T> {
     result
         .catch(ctx)
         .map_err(|error| Error::JavaScriptException(error.to_string()))
-}
-
-fn patched_bundle() -> Result<String> {
-    let source = include_str!("../js/out/index.mjs");
-    let export_start = source
-        .rfind(EXPORT_SUFFIX)
-        .context("MathJax bundle export marker was not found")?;
-    let export_end = export_start + EXPORT_SUFFIX.len();
-    if !source[export_end..].trim().is_empty() {
-        return Err(anyhow!("MathJax bundle has unexpected content after export marker").into());
-    }
-    let script = &source[..export_start];
-    Ok(format!("{script}globalThis.{FUNC_ID}=Nj;"))
 }

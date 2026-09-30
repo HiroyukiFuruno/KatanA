@@ -19,6 +19,7 @@ pub(crate) struct DocumentSurfaceSource {
 
 impl DocumentSurfaceSource {
     pub(crate) fn local(path: &Path) -> Result<Self, DocumentFailure> {
+        let started_at = std::time::Instant::now();
         let canonical = path.canonicalize().map_err(|error| {
             DocumentFailure::intake("canonicalize", path, None, error.to_string())
         })?;
@@ -35,13 +36,24 @@ impl DocumentSurfaceSource {
             DocumentFailure::intake("validate", &canonical, Some(format), error.to_string())
         })?;
         let uri = file_url(&canonical, format)?;
-        Ok(Self {
+        let source = Self {
             uri,
             format,
             mime: format.mime().to_owned(),
             revision: revision(&bytes),
             bytes,
-        })
+        };
+        super::debug_log::DebugLog::write(
+            "document_source_intake",
+            format_args!(
+                "kind=local format={} bytes={} elapsed_ms={} uri={}",
+                source.format.extension(),
+                source.bytes.len(),
+                started_at.elapsed().as_millis(),
+                source.uri
+            ),
+        );
+        Ok(source)
     }
 
     pub(crate) fn remote(
@@ -49,6 +61,7 @@ impl DocumentSurfaceSource {
         content_type: Option<&str>,
         bytes: Vec<u8>,
     ) -> Result<Self, DocumentFailure> {
+        let started_at = std::time::Instant::now();
         let path = url::Url::parse(&uri)
             .ok()
             .map(|url| PathBuf::from(url.path()))
@@ -64,13 +77,24 @@ impl DocumentSurfaceSource {
                     error.to_string(),
                 )
             })?;
-        Ok(Self {
+        let source = Self {
             uri,
             format,
             mime: format.mime().to_owned(),
             revision: revision(&bytes),
             bytes,
-        })
+        };
+        super::debug_log::DebugLog::write(
+            "document_source_intake",
+            format_args!(
+                "kind=remote format={} bytes={} elapsed_ms={} uri={}",
+                source.format.extension(),
+                source.bytes.len(),
+                started_at.elapsed().as_millis(),
+                source.uri
+            ),
+        );
+        Ok(source)
     }
 
     pub(super) fn descriptor(&self) -> Self {
@@ -81,6 +105,10 @@ impl DocumentSurfaceSource {
             revision: self.revision.clone(),
             bytes: Vec::new(),
         }
+    }
+
+    pub(super) const fn byte_len(&self) -> usize {
+        self.bytes.len()
     }
 
     pub(super) fn take_bytes(&mut self) -> Result<Vec<u8>, DocumentFailure> {

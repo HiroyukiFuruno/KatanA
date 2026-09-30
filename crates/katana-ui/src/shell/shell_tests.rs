@@ -436,6 +436,62 @@ mod tests {
     }
 
     #[test]
+    fn process_action_preview_panels_stay_closed_for_office_document() {
+        let mut app = make_app();
+        app.state
+            .document
+            .open_documents
+            .push(katana_core::document::Document::new(
+                "/workspace/report.xlsx",
+                String::new(),
+            ));
+        app.state.document.active_doc_idx = Some(0);
+
+        for action in [
+            AppAction::ToggleExportPanel,
+            AppAction::ToggleStoryPanel,
+            AppAction::ToggleToolsPanel,
+            AppAction::ToggleSlideshow,
+        ] {
+            app.process_action(&egui::Context::default(), action);
+        }
+
+        assert!(!app.state.layout.show_export_panel);
+        assert!(!app.state.layout.show_story_panel);
+        assert!(!app.state.layout.show_tools_panel);
+        assert!(!app.state.layout.show_slideshow);
+    }
+
+    #[test]
+    fn process_action_preview_panels_stay_closed_for_html_document() {
+        let mut app = make_app();
+        app.state
+            .document
+            .open_documents
+            .push(katana_core::document::Document::new(
+                "/workspace/report.html",
+                String::new(),
+            ));
+        app.state.document.active_doc_idx = Some(0);
+
+        for action in [
+            AppAction::ToggleToc,
+            AppAction::ToggleExportPanel,
+            AppAction::ToggleStoryPanel,
+            AppAction::ToggleToolsPanel,
+            AppAction::ToggleSlideshow,
+        ] {
+            app.process_action(&egui::Context::default(), action);
+        }
+
+        assert!(!app.state.layout.show_toc);
+        assert!(!app.state.layout.show_export_panel);
+        assert!(!app.state.layout.show_story_panel);
+        assert!(!app.state.layout.show_tools_panel);
+        assert!(!app.state.layout.show_slideshow);
+    }
+
+    #[test]
     fn process_action_toggle_settings_toggles_flag() {
         let mut app = make_app();
         assert!(!app.state.layout.show_settings);

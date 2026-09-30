@@ -135,7 +135,12 @@ impl Workspace {
         Self {
             root: root.into(),
             tree,
+            revision: Self::next_revision(),
         }
+    }
+
+    pub fn revision(&self) -> u64 {
+        self.revision
     }
 
     pub fn name(&self) -> Option<&str> {

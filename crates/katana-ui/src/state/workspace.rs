@@ -14,6 +14,7 @@ pub struct WorkspaceState {
     pub force_tree_open: Option<bool>,
     pub flat_views: Vec<(PathBuf, bool)>,
     pub scroll_to_workspace_tab: Option<PathBuf>,
+    pub(crate) explorer_projection: super::explorer_projection::ExplorerProjectionCache,
 }
 
 impl Default for WorkspaceState {
@@ -34,6 +35,7 @@ impl WorkspaceState {
             force_tree_open: None,
             flat_views: Vec::new(),
             scroll_to_workspace_tab: None,
+            explorer_projection: super::explorer_projection::ExplorerProjectionCache::default(),
         }
     }
 

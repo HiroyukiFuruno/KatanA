@@ -28,6 +28,42 @@ const INLINE_EMOJI_MIN_PIXEL_SIZE: u32 = 16;
 #[allow(dead_code)]
 const INLINE_EMOJI_DISPLAY_SCALE: f32 = 1.125;
 
+fn html_layout_trace_target(html: &str) -> bool {
+    html.contains("KatanA Desktop")
+        || html.contains("A fast, lightweight Markdown workspace for macOS")
+        || html.contains("License-MIT-blue.svg")
+        || html.contains("English |")
+        || html.contains("data:image/svg+xml")
+}
+
+fn html_layout_trace(ui: &Ui, stage: &str, html: &str) {
+    if std::env::var("DEBUG").ok().as_deref() != Some("true") || !html_layout_trace_target(html) {
+        return;
+    }
+
+    let next = ui.next_widget_position();
+    let min = ui.min_rect();
+    eprintln!(
+        "[KATANA_DEBUG] event=html_parser_trace stage={stage} frame={} html={} body_height={:.1} cursor_height={:.1} item_spacing_y={:.1} next=({:.1},{:.1}) min=({:.1},{:.1},{:.1},{:.1})",
+        ui.ctx().cumulative_frame_nr(),
+        html.split_whitespace()
+            .collect::<Vec<_>>()
+            .join("_")
+            .chars()
+            .take(80)
+            .collect::<String>(),
+        ui.text_style_height(&TextStyle::Body),
+        ui.cursor().height(),
+        ui.spacing().item_spacing.y,
+        next.x,
+        next.y,
+        min.min.x,
+        min.min.y,
+        min.max.x,
+        min.max.y,
+    );
+}
+
 /// Newline logic is constructed by the following:
 /// All elements try to insert a newline before them (if they are allowed)
 /// and end their own line.
@@ -1593,8 +1629,6 @@ impl<'a> CommonMarkViewerInternal<'a> {
         }
     }
 
-    
-
     fn table<'e>(
         &mut self,
         events: &mut Peekable<impl Iterator<Item = EventIteratorItem<'e>>>,
@@ -2244,7 +2278,24 @@ impl<'a> CommonMarkViewerInternal<'a> {
             }
             pulldown_cmark::Tag::HtmlBlock => {
                 self.is_in_html_block = true;
+                let start_y = ui.next_widget_position().y;
                 self.line.try_insert_start(ui);
+                if std::env::var("DEBUG").ok().as_deref() == Some("true")
+                    && (1_100.0..=1_500.0).contains(&start_y)
+                {
+                    eprintln!(
+                        "[KATANA_DEBUG] event=html_parser_trace stage=html_block_start_after_newline frame={} start_y={start_y:.1} next_y={:.1} body_height={:.1} cursor_height={:.1} item_spacing_y={:.1} min=({:.1},{:.1},{:.1},{:.1})",
+                        ui.ctx().cumulative_frame_nr(),
+                        ui.next_widget_position().y,
+                        ui.text_style_height(&TextStyle::Body),
+                        ui.cursor().height(),
+                        ui.spacing().item_spacing.y,
+                        ui.min_rect().min.x,
+                        ui.min_rect().min.y,
+                        ui.min_rect().max.x,
+                        ui.min_rect().max.y,
+                    );
+                }
             }
             pulldown_cmark::Tag::MetadataBlock(_) => {}
 
@@ -2441,8 +2492,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         .map(|(y, _)| *y)
                         .unwrap_or(ui.next_widget_position().y);
                     // Regular HTML block — delegate to the callback
+                    html_layout_trace(ui, "before_callback", &block);
                     html_fn(ui, &block);
+                    html_layout_trace(ui, "after_callback", &block);
                     self.line.try_insert_end(ui);
+                    html_layout_trace(ui, "after_end_newline", &block);
                     let end_y = ui.next_widget_position().y;
 
                     if let Some(span) = self.block_states.last().map(|(_, s)| s.clone()) {

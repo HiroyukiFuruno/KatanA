@@ -6,6 +6,9 @@ use katana_document_viewer::{
     ViewerCapabilities, ViewerDocumentFormat, ViewerImageSurface,
 };
 
+#[path = "worker_filter_tests.rs"]
+mod filter_tests;
+
 fn representative_pdf_source() -> DocumentSurfaceSource {
     DocumentSurfaceSource::remote(
         "https://example.test/representative.pdf".to_owned(),
@@ -64,6 +67,8 @@ fn idle_surface() -> (
         command_in_flight: false,
         pending_commands: Default::default(),
         viewport: None,
+        started_at: std::time::Instant::now(),
+        filter_ui: super::spreadsheet_filter_controls::SpreadsheetFilterUiState::default(),
     };
     (surface, command_rx, event_tx)
 }
@@ -90,6 +95,8 @@ fn document_surface_preserves_commands_until_each_frame_arrives() {
             generation: surface.generation,
             frame: Box::new(test_frame()),
             session_event: DocumentSessionEvent::None,
+            spreadsheet_metadata: None,
+            filter_event: None,
         },
     );
     surface.poll(&ctx);
@@ -136,6 +143,7 @@ fn document_worker_applies_queued_commands_in_order() {
                 generation: event_generation,
                 frame,
                 session_event,
+                ..
             } => {
                 assert_eq!(event_generation, generation);
                 assert_eq!(frame.format, ViewerDocumentFormat::Pdf);
@@ -169,7 +177,7 @@ fn document_surface_preserves_a_command_when_the_worker_channel_is_full() {
     surface.command_in_flight = false;
 
     let preserved = DocumentWorkerCommand::Viewer(DocumentViewerCommand::Previous);
-    surface.send(preserved);
+    surface.send(preserved.clone());
 
     assert_eq!(surface.pending_commands.take_next(), Some(preserved));
     assert!(!surface.command_in_flight);

@@ -33,6 +33,12 @@ pub mod fullscreen_local;
 pub mod fullscreen_svg;
 mod image_html_surface;
 mod image_raster;
+#[cfg(feature = "screenshot-test-hooks")]
+mod overlay_inspection;
+#[cfg(feature = "screenshot-test-hooks")]
+pub mod screenshot_test_hooks {
+    pub use super::overlay_inspection::{PreviewOverlayInspection, PreviewOverlayInspectionOps};
+}
 pub mod slideshow;
 pub use fullscreen::*;
 pub mod html;

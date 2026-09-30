@@ -82,8 +82,7 @@ mod tests {
                         image,
                         "Mermaid diagram",
                         0,
-                        Some(state),
-                        None,
+                        super::image_raster::RasterizedInteraction::Hidden { state: Some(state) },
                         |_, _, _| {},
                     );
                 });
@@ -1172,6 +1171,40 @@ mod tests {
         assert!(state.texture.is_some());
         assert_eq!(state.zoom, 1.0);
         assert_eq!(state.pan, egui::Vec2::ZERO);
+    }
+
+    #[test]
+    fn show_rasterized_keeps_texture_when_controls_are_hidden() {
+        let ctx = egui::Context::default();
+        let image = rasterized_test_image(vec![0, 0, 0, 255]);
+        let mut state = ViewerState::default();
+
+        crate::test_ui::TestUiOps::run(
+            &ctx,
+            egui::RawInput {
+                screen_rect: Some(egui::Rect::from_min_size(
+                    egui::pos2(0.0, 0.0),
+                    egui::vec2(800.0, 600.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    ImageLogicOps::show_rasterized(
+                        ui,
+                        &image,
+                        "Mermaid diagram",
+                        0,
+                        super::image_raster::RasterizedInteraction::Hidden {
+                            state: Some(&mut state),
+                        },
+                        |_, _, _| {},
+                    );
+                });
+            },
+        );
+
+        assert!(state.texture.is_some());
     }
 
     #[test]

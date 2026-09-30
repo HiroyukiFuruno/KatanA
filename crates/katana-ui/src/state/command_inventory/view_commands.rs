@@ -161,7 +161,14 @@ impl ViewCommands {
                 group: CommandGroup::Behavior,
                 context: ShortcutContext::Global,
                 label: || I18nOps::get().preview.toggle_slideshow.clone(),
-                is_available: |_| true,
+                is_available: |state| {
+                    crate::views::panels::preview::PreviewMenuAvailability::for_path(
+                        state
+                            .active_document()
+                            .map(|document| document.path.as_path()),
+                        crate::views::panels::preview::PreviewMenu::Slideshow,
+                    )
+                },
                 default_shortcuts: &["primary+alt+Enter", "F5"],
             },
         ]

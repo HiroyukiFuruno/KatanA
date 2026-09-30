@@ -13,6 +13,16 @@ pub(super) const MAX_ZOOM: f32 = 10.0;
 const MIN_CONTAINER_HEIGHT: f32 = 145.0;
 const MAX_TEXTURE_SIDE: usize = 2048;
 
+pub(super) enum RasterizedInteraction<'a> {
+    Hidden {
+        state: Option<&'a mut ViewerState>,
+    },
+    Visible {
+        state: Option<&'a mut ViewerState>,
+        fullscreen_request: Option<&'a mut Option<usize>>,
+    },
+}
+
 pub(super) fn color_image_for_texture(
     img: &RasterizedSvg,
     background: egui::Color32,
@@ -58,15 +68,21 @@ pub(super) fn color_image_for_texture(
 }
 
 impl ImageLogicOps {
-    pub(crate) fn show_rasterized(
+    pub(super) fn show_rasterized(
         ui: &mut egui::Ui,
         img: &RasterizedSvg,
         alt_text: &str,
         idx: usize,
-        mut state: Option<&mut ViewerState>,
-        fullscreen_request: Option<&mut Option<usize>>,
+        interaction: RasterizedInteraction<'_>,
         draw_background: impl FnOnce(&mut egui::Ui, egui::Rect, bool),
     ) -> egui::Rect {
+        let (mut state, fullscreen_request, show_controls) = match interaction {
+            RasterizedInteraction::Hidden { state } => (state, None, false),
+            RasterizedInteraction::Visible {
+                state,
+                fullscreen_request,
+            } => (state, fullscreen_request, true),
+        };
         let max_w = ui.available_width();
         let display_width = img.display_width.max(1.0);
         let display_height = img.display_height.max(1.0);
@@ -142,7 +158,14 @@ impl ImageLogicOps {
 
         draw_background(ui, container_rect, response.hovered());
 
-        if let Some(state) = state {
+        if show_controls && let Some(state) = state {
+            #[cfg(feature = "screenshot-test-hooks")]
+            crate::preview_pane::overlay_inspection::PreviewOverlayInspectionOps::increment(
+                ui.ctx(),
+                |inspection| {
+                    inspection.diagram_control_renders += 1;
+                },
+            );
             if crate::diagram_controller::DiagramControllerOps::draw_fullscreen_button(
                 ui,
                 container_rect,

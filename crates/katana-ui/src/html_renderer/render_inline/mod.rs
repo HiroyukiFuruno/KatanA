@@ -64,10 +64,21 @@ impl<'a> HtmlRenderer<'a> {
             }
             HtmlNode::Image { src, alt: _ } => {
                 let url = super::ensure_svg_extension(src);
-                self.ui.add(
+                let response = self.ui.add(
                     egui::Image::new(url)
                         .fit_to_original_size(1.0)
                         .max_width(self.max_image_width),
+                );
+                self.trace_layout(
+                    "image_response",
+                    format_args!(
+                        "src={} response=({:.1},{:.1},{:.1},{:.1})",
+                        src,
+                        response.rect.min.x,
+                        response.rect.min.y,
+                        response.rect.max.x,
+                        response.rect.max.y,
+                    ),
                 );
                 None
             }

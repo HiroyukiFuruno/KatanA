@@ -1,4 +1,4 @@
-use accesskit::Role;
+use egui::accesskit::Role;
 use egui_kittest::kittest::Queryable;
 use katana_ui::app_state::{AppAction, ViewMode};
 

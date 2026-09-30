@@ -11,6 +11,8 @@ use normalize::{
     PROPORTIONAL_Y_OFFSET_FACTOR,
 };
 
+const MAX_UI_EMOJI_FONT_BYTES: u64 = 32 * 1024 * 1024;
+
 impl SystemFontLoader {
     pub fn setup_fonts(
         ctx: &Context,
@@ -24,6 +26,17 @@ impl SystemFontLoader {
             &preset.emoji_font_candidates,
             custom_font_path,
             custom_font_name,
+        );
+        let font_count = normalized.fonts.font_data.len();
+        let owned_bytes = normalized
+            .fonts
+            .font_data
+            .values()
+            .map(|font| font.font.len())
+            .sum::<usize>();
+        crate::debug_log::DebugLog::write(
+            "ui_fonts_loaded",
+            format_args!("font_count={font_count} owned_bytes={owned_bytes}"),
         );
         let is_loaded = normalized
             .fonts
@@ -109,7 +122,15 @@ impl SystemFontLoader {
             );
         }
 
-        let emoji_name = Self::load_first_valid(&mut fonts, emoji_candidates, None, "");
+        /* WHY: Apple Color Emoji is about 183 MiB and egui duplicates the payload while parsing.
+         * FontDefinitions::default already supplies a compact emoji fallback for the UI. */
+        let emoji_name = Self::load_first_valid_up_to(
+            &mut fonts,
+            emoji_candidates,
+            None,
+            "",
+            MAX_UI_EMOJI_FONT_BYTES,
+        );
         if let Some(name) = &emoji_name {
             Self::append_fallback(&mut fonts, FontFamily::Proportional, name);
             Self::append_fallback(&mut fonts, FontFamily::Monospace, name);

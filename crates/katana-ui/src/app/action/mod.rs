@@ -5,6 +5,7 @@ pub(crate) mod clipboard_image;
 mod clipboard_image_macos;
 mod demo_bundle;
 mod dispatch;
+mod dispatch_panels;
 mod dispatch_secondary;
 mod dispatch_tertiary;
 mod file_open;

@@ -3,7 +3,7 @@ use katana_document_viewer::{DocumentFitMode, DocumentSurfaceCommand, DocumentVi
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use super::controls::show_controls;
-use super::controls_sheet_tabs::show_sheet_tabs;
+use super::controls_sheet_tabs::{sheet_tab_rail_height, show_sheet_tabs};
 use super::painter::paint_document_frame;
 use super::render_support::{PendingDocumentCommands, show_diagnostics, show_failure};
 use super::source::DocumentSurfaceSource;
@@ -14,10 +14,21 @@ static NEXT_GENERATION: AtomicU64 = AtomicU64::new(1);
 
 impl DocumentSurface {
     pub(crate) fn start(source: DocumentSurfaceSource, ctx: &egui::Context) -> Self {
+        let started_at = std::time::Instant::now();
         let generation = NEXT_GENERATION.fetch_add(1, Ordering::Relaxed);
         let (command_tx, command_rx) = std::sync::mpsc::sync_channel(1);
         let (event_tx, event_rx) = std::sync::mpsc::channel();
         let display_source = source.descriptor();
+        super::debug_log::DebugLog::write(
+            "document_worker_handoff",
+            format_args!(
+                "generation={} format={} bytes={} uri={}",
+                generation,
+                source.format.extension(),
+                source.byte_len(),
+                source.uri
+            ),
+        );
         let worker_source = source;
         let repaint = ctx.clone();
         let spawn = std::thread::Builder::new()
@@ -44,12 +55,14 @@ impl DocumentSurface {
             command_tx: Some(command_tx),
             event_rx,
             frame: None,
+            filter_ui: Default::default(),
             failure,
             painter: Default::default(),
             loading: started,
             command_in_flight: started,
             pending_commands: PendingDocumentCommands::default(),
             viewport: None,
+            started_at,
         }
     }
 
@@ -57,56 +70,10 @@ impl DocumentSurface {
         &self.source
     }
 
-    pub(crate) fn frame_state_for_test(&self) -> Option<(String, usize, usize, String)> {
-        let frame = self.frame.as_ref()?;
-        Some((
-            super::worker_support::format_extension(frame.format).to_owned(),
-            frame.state.active_index,
-            frame.state.item_count,
-            format!("{:?}", frame.surface.kind()),
-        ))
-    }
-
-    pub(crate) fn pdf_outline_state(
-        &self,
-    ) -> Option<(Vec<katana_document_viewer::PdfOutlineItem>, usize)> {
-        let frame = self.frame.as_ref()?;
-        let outline_items = frame.surface.outline_items();
-        if frame.format != katana_document_viewer::ViewerDocumentFormat::Pdf
-            || outline_items.is_empty()
-        {
-            return None;
-        }
-        Some((outline_items.to_vec(), frame.state.active_index))
-    }
-
     pub(crate) fn jump_to_item(&mut self, index: usize) {
         self.queue(DocumentWorkerCommand::Viewer(
             DocumentViewerCommand::JumpTo(index),
         ));
-    }
-
-    pub(crate) fn next_for_test(&mut self) -> bool {
-        let Some(frame) = &self.frame else {
-            return false;
-        };
-        if frame.state.active_index.saturating_add(1) >= frame.state.item_count {
-            return false;
-        }
-        self.queue(DocumentWorkerCommand::Viewer(DocumentViewerCommand::Next));
-        true
-    }
-
-    pub(crate) fn failure_details_for_test(&self) -> Option<String> {
-        self.failure.as_ref().map(DocumentFailure::details)
-    }
-
-    pub(crate) fn is_idle_for_test(&self) -> bool {
-        self.frame.is_some()
-            && self.failure.is_none()
-            && !self.loading
-            && !self.command_in_flight
-            && self.pending_commands.is_empty()
     }
 
     pub(crate) fn show(&mut self, ui: &mut egui::Ui) {
@@ -123,14 +90,33 @@ impl DocumentSurface {
         };
 
         show_controls(self, ui, &frame);
+        /* WHY: Place diagnostics before allocating the grid so it cannot overlap the bottom tab input region. */
+        show_diagnostics(ui, &frame);
         ui.add_space(4.0);
-        let commands = paint_document_frame(&mut self.painter, ui, &frame.surface, self.generation);
+        let sheet_tab_height = sheet_tab_rail_height(frame.format);
+        if sheet_tab_height > 0.0 {
+            let rail_frame =
+                egui::Frame::side_top_panel(ui.style()).inner_margin(egui::Margin::symmetric(6, 4));
+            egui::Panel::bottom(egui::Id::new(("document-sheet-tabs-rail", self.generation)))
+                .resizable(false)
+                .exact_size(sheet_tab_height)
+                .frame(rail_frame)
+                .show_inside(ui, |ui| show_sheet_tabs(self, ui, &frame));
+        }
+        let (commands, filter_commands) = if frame.surface.grid().is_some() {
+            super::painter_grid::paint_with_filters(ui, &frame.surface, &mut self.filter_ui)
+        } else {
+            (
+                paint_document_frame(&mut self.painter, ui, &frame.surface, self.generation),
+                Vec::new(),
+            )
+        };
         for command in commands {
             self.queue_surface(command);
         }
-        ui.add_space(4.0);
-        show_sheet_tabs(self, ui, &frame);
-        show_diagnostics(ui, &frame);
+        for command in filter_commands {
+            self.queue(DocumentWorkerCommand::SpreadsheetFilter(command));
+        }
         self.frame = Some(frame);
     }
 

@@ -124,6 +124,18 @@
     "highlight_hover": "悬停高亮",
     "show_diagram_controls": "图表控件",
     "toggle_slideshow": "切换幻灯片",
+    "spreadsheet_filter": {
+      "open": "打开筛选器",
+      "title": "筛选值",
+      "loading": "正在加载值…",
+      "apply": "应用",
+      "clear": "清除",
+      "select_all": "全选",
+      "blank": "空白",
+      "non_blank": "非空白",
+      "no_values": "没有可用的值",
+      "truncated": "仅显示前面的值，无法应用筛选"
+    },
     "document_controller": {
       "previous": "上一页、工作表或幻灯片",
       "next": "下一页、工作表或幻灯片",

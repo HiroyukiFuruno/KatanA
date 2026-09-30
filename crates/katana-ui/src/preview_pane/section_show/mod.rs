@@ -54,8 +54,7 @@ pub(super) fn show_section(
                 svg_data,
                 alt,
                 id,
-                None,
-                None,
+                super::image_raster::RasterizedInteraction::Hidden { state: None },
                 |_, _, _| {},
             );
             vec![]

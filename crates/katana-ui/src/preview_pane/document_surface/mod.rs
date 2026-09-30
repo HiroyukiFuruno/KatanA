@@ -1,5 +1,6 @@
 mod controls;
 mod controls_sheet_tabs;
+mod debug_log;
 mod painter;
 mod painter_grid;
 mod painter_grid_conditional;
@@ -9,9 +10,11 @@ mod painter_page;
 mod pane;
 mod render;
 mod render_events;
+mod render_inspection;
 mod render_support;
 mod source;
 mod source_io;
+mod spreadsheet_filter_controls;
 mod types;
 mod worker;
 mod worker_support;

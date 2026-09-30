@@ -124,6 +124,18 @@
     "highlight_hover": "Hervorhebung beim Hovern",
     "show_diagram_controls": "Diagrammsteuerungen",
     "toggle_slideshow": "Diashow umschalten",
+    "spreadsheet_filter": {
+      "open": "Filter öffnen",
+      "title": "Werte filtern",
+      "loading": "Werte werden geladen…",
+      "apply": "Anwenden",
+      "clear": "Löschen",
+      "select_all": "Alle auswählen",
+      "blank": "Leer",
+      "non_blank": "Nicht leer",
+      "no_values": "Keine Werte verfügbar",
+      "truncated": "Nur die ersten Werte werden angezeigt; Anwenden ist deaktiviert"
+    },
     "document_controller": {
       "previous": "Vorherige Seite, Tabelle oder Folie",
       "next": "Nächste Seite, Tabelle oder Folie",

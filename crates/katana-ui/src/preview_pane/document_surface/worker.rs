@@ -1,7 +1,7 @@
 use eframe::egui;
 use katana_document_viewer::{
-    DocumentFrame, DocumentSession, DocumentSessionCommand, DocumentSessionConfig,
-    DocumentSessionEvent, DocumentViewport, OfficeWorkerConfig,
+    DocumentFrame, DocumentSession, DocumentSessionConfig, DocumentSessionEvent, DocumentViewport,
+    OfficeWorkerConfig, SpreadsheetFilterEvent, SpreadsheetFrameMetadata,
 };
 use std::sync::mpsc::{Receiver, Sender};
 
@@ -12,7 +12,9 @@ use super::worker_support::{
     office_worker_executable,
 };
 
-pub(super) type DocumentWorkerCommand = DocumentSessionCommand;
+#[path = "worker_commands.rs"]
+mod worker_commands;
+pub(super) use worker_commands::DocumentWorkerCommand;
 
 #[derive(Debug)]
 pub(super) enum DocumentWorkerEvent {
@@ -20,6 +22,8 @@ pub(super) enum DocumentWorkerEvent {
         generation: u64,
         frame: Box<DocumentFrame>,
         session_event: DocumentSessionEvent,
+        spreadsheet_metadata: Option<SpreadsheetFrameMetadata>,
+        filter_event: Option<SpreadsheetFilterEvent>,
     },
     Failure {
         generation: u64,
@@ -29,18 +33,29 @@ pub(super) enum DocumentWorkerEvent {
 
 pub(super) fn run(
     generation: u64,
-    source: DocumentSurfaceSource,
+    mut source: DocumentSurfaceSource,
     commands: Receiver<DocumentWorkerCommand>,
     events: Sender<DocumentWorkerEvent>,
     repaint: egui::Context,
 ) {
-    let mut session = match open_session(source.clone()) {
+    let started_at = std::time::Instant::now();
+    let mut session = match open_session(&mut source) {
         Ok(session) => session,
         Err(failure) => {
             send_failure(generation, failure, &events, &repaint);
             return;
         }
     };
+    super::debug_log::DebugLog::write(
+        "document_session_opened",
+        format_args!(
+            "generation={} format={} elapsed_ms={} uri={}",
+            generation,
+            source.format.extension(),
+            started_at.elapsed().as_millis(),
+            source.uri
+        ),
+    );
     process_commands(
         generation,
         &mut session,
@@ -50,14 +65,23 @@ pub(super) fn run(
         &source,
     );
     session.close();
+    super::debug_log::DebugLog::write(
+        "document_session_closed",
+        format_args!(
+            "generation={} elapsed_ms={} uri={}",
+            generation,
+            started_at.elapsed().as_millis(),
+            source.uri
+        ),
+    );
 }
 
-fn open_session(mut source: DocumentSurfaceSource) -> Result<DocumentSession, DocumentFailure> {
+fn open_session(source: &mut DocumentSurfaceSource) -> Result<DocumentSession, DocumentFailure> {
     let viewer_source = source.take_viewer_source()?;
     let viewport = DocumentViewport::new(INITIAL_VIEWPORT_WIDTH, INITIAL_VIEWPORT_HEIGHT);
-    let config = session_config(&source, viewport)?;
+    let config = session_config(source, viewport)?;
     DocumentSession::open(viewer_source, config)
-        .map_err(|error| failure(&source, "open", DocumentFailureLayer::KdvWorker, error))
+        .map_err(|error| failure(source, "open", DocumentFailureLayer::KdvWorker, error))
 }
 
 fn session_config(
@@ -83,6 +107,7 @@ fn process_commands(
         generation,
         session,
         DocumentSessionEvent::None,
+        None,
         events,
         repaint,
         source,
@@ -91,15 +116,23 @@ fn process_commands(
     }
     while let Ok(command) = commands.recv() {
         tracing::debug!(generation, ?command, "applying document command");
-        let event = match session.apply(command) {
-            Ok(event) => event,
+        let (event, filter_event) = match worker_commands::apply(session, command) {
+            Ok(result) => result,
             Err(error) => {
                 let failure = failure(source, "input", DocumentFailureLayer::KdvWorker, error);
                 send_failure(generation, failure, events, repaint);
                 return;
             }
         };
-        if !send_frame(generation, session, event, events, repaint, source) {
+        if !send_frame(
+            generation,
+            session,
+            event,
+            filter_event,
+            events,
+            repaint,
+            source,
+        ) {
             return;
         }
     }
@@ -109,6 +142,7 @@ fn send_frame(
     generation: u64,
     session: &mut DocumentSession,
     session_event: DocumentSessionEvent,
+    filter_event: Option<SpreadsheetFilterEvent>,
     events: &Sender<DocumentWorkerEvent>,
     repaint: &egui::Context,
     source: &DocumentSurfaceSource,
@@ -121,12 +155,15 @@ fn send_frame(
             return false;
         }
     };
+    let spreadsheet_metadata = session.spreadsheet_frame_metadata();
     log_frame(generation, &frame);
     if events
         .send(DocumentWorkerEvent::Frame {
             generation,
             frame: Box::new(frame),
             session_event,
+            spreadsheet_metadata,
+            filter_event,
         })
         .is_err()
     {
@@ -158,4 +195,28 @@ fn send_failure(
         failure,
     });
     repaint.request_repaint_after(std::time::Duration::ZERO);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{DocumentSurfaceSource, open_session};
+
+    #[test]
+    fn opened_session_consumes_worker_source_bytes_but_keeps_identity() {
+        let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../scripts/screenshot/fixtures/v0-22-38-multi-format/representative.pdf");
+        let mut source = DocumentSurfaceSource::local(&fixture).expect("PDF source");
+        let identity = source.descriptor();
+        assert!(source.byte_len() > 0);
+        let mut session = open_session(&mut source).expect("PDF session");
+        assert_eq!(source.byte_len(), 0);
+        assert_eq!(source.uri, identity.uri);
+        assert_eq!(source.revision, identity.revision);
+        let frame = session.frame().expect("PDF frame after ownership transfer");
+        assert_eq!(
+            frame.format,
+            katana_document_viewer::ViewerDocumentFormat::Pdf
+        );
+        session.close();
+    }
 }

@@ -112,6 +112,18 @@
     "highlight_hover": "Hover Highlight",
     "show_diagram_controls": "Diagram Controls",
     "toggle_slideshow": "Toggle Slideshow",
+    "spreadsheet_filter": {
+      "open": "Open filter",
+      "title": "Filter values",
+      "loading": "Loading values…",
+      "apply": "Apply",
+      "clear": "Clear",
+      "select_all": "Select all",
+      "blank": "Blank",
+      "non_blank": "Non-blank",
+      "no_values": "No values available",
+      "truncated": "Only the first values are shown; apply is disabled"
+    },
     "document_controller": {
       "previous": "Previous page, sheet, or slide",
       "next": "Next page, sheet, or slide",
