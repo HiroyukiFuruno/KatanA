@@ -72,7 +72,12 @@ impl OsFontScanner {
         };
 
         for entry in entries.flatten() {
-            Self::process_entry(&entry.path(), fonts);
+            let path = entry.path();
+            if path.is_dir() && !path.is_symlink() {
+                Self::scan_directory(&path, fonts);
+                continue;
+            }
+            Self::process_entry(&path, fonts);
         }
     }
 
@@ -99,5 +104,39 @@ impl OsFontScanner {
             .to_string();
         let path_str = path.to_string_lossy().to_string();
         fonts.push((name, path_str));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::OsFontScanner;
+
+    #[test]
+    fn discovers_fonts_in_nested_directories() {
+        let root = tempfile::tempdir().unwrap();
+        let nested = root.path().join("truetype").join("family");
+        std::fs::create_dir_all(&nested).unwrap();
+        let font = nested.join("InstalledFont.ttf");
+        std::fs::write(&font, []).unwrap();
+        std::fs::write(nested.join("readme.txt"), []).unwrap();
+        let mut fonts = Vec::new();
+        OsFontScanner::scan_directory(root.path(), &mut fonts);
+        assert_eq!(
+            fonts,
+            vec![(
+                "InstalledFont".to_owned(),
+                font.to_string_lossy().into_owned()
+            )]
+        );
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn directory_symlinks_do_not_create_recursive_scan_cycles() {
+        let root = tempfile::tempdir().unwrap();
+        std::os::unix::fs::symlink(root.path(), root.path().join("cycle")).unwrap();
+        let mut fonts = Vec::new();
+        OsFontScanner::scan_directory(root.path(), &mut fonts);
+        assert!(fonts.is_empty());
     }
 }
