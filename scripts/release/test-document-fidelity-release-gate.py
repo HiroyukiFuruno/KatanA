@@ -5,6 +5,9 @@ from __future__ import annotations
 
 import contextlib
 import io
+import importlib.util
+import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -17,13 +20,24 @@ SPEC = importlib.util.spec_from_file_location("document_fidelity_gate", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
+EVIDENCE_SCRIPT = SCRIPT.with_name("check-document-fidelity-acceptance-evidence.py")
+EVIDENCE_SPEC = importlib.util.spec_from_file_location("document_acceptance_evidence", EVIDENCE_SCRIPT)
+assert EVIDENCE_SPEC is not None and EVIDENCE_SPEC.loader is not None
+EVIDENCE = importlib.util.module_from_spec(EVIDENCE_SPEC)
+EVIDENCE_SPEC.loader.exec_module(EVIDENCE)
 
 
 class DocumentFidelityReleaseGateTests(unittest.TestCase):
     def completed_required_tasks(self) -> str:
         return "".join(f"- [x] {task_id} complete\n" for task_id in sorted(MODULE.CRITICAL_REQUIRED))
 
-    def repository(self, tasks: str | None, *, archive_names: tuple[str, ...] = ()) -> tempfile.TemporaryDirectory[str]:
+    def repository(
+        self,
+        tasks: str | None,
+        *,
+        archive_names: tuple[str, ...] = (),
+        with_evidence: bool = False,
+    ) -> tempfile.TemporaryDirectory[str]:
         directory = tempfile.TemporaryDirectory()
         root = Path(directory.name)
         if tasks is not None:
@@ -36,7 +50,98 @@ class DocumentFidelityReleaseGateTests(unittest.TestCase):
             (archived / "tasks.md").write_text(
                 tasks or self.completed_required_tasks(), encoding="utf-8"
             )
+        if with_evidence:
+            evidence_parent = (
+                root / "openspec" / "changes" / MODULE.CHANGE_NAME
+                if tasks is not None
+                else root / "openspec" / "changes" / "archive" / archive_names[0]
+            )
+            self.write_valid_evidence(root, evidence_parent=evidence_parent)
         return directory
+
+    def write_valid_evidence(self, root: Path, *, evidence_parent: Path | None = None) -> None:
+        (root / "Cargo.toml").write_text("[workspace]\nmembers = []\n", encoding="utf-8")
+        (root / "crates").mkdir()
+        (root / "crates" / "source.rs").write_text("pub fn source() {}\n", encoding="utf-8")
+        lock = """[[package]]
+name = "katana-document-viewer"
+version = "0.5.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "katana-render-runtime"
+version = "0.4.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "katana-ui-core"
+version = "0.3.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+"""
+        (root / "Cargo.lock").write_text(lock, encoding="utf-8")
+        subprocess.run(["git", "-C", str(root), "init", "-q"], check=True)
+        digest = "a" * 64
+        evidence = {
+            "schema_version": 1,
+            "target": "v0.22.42",
+            "runner_mode": "packaged_main",
+            "published_registry_graph": True,
+            "cargo_lock_sha256": EVIDENCE.sha256_bytes((root / "Cargo.lock").read_bytes()),
+            "source_tree_sha256": EVIDENCE.source_tree_sha256(root),
+            "published_dependencies": {
+                name: {"version": version, "source": EVIDENCE.CRATES_IO_SOURCE}
+                for name, version in (
+                    ("katana-document-viewer", "0.5.7"),
+                    ("katana-render-runtime", "0.4.21"),
+                    ("katana-ui-core", "0.3.17"),
+                )
+            },
+            "html": {
+                "fixture_sha256": EVIDENCE.ORIGINAL_HTML_SHA256,
+                "runner_mode": "packaged_main",
+                "status": "passed",
+                "first_frame_ms": 1000,
+                "cpu_percent": 50,
+                "rss_bytes": 100000,
+                "normal_close": True,
+            },
+            "packaged_targets": {
+                target: {
+                    "status": "passed",
+                    "runner_mode": "packaged_main",
+                    "clean_machine": True,
+                    "normal_close": True,
+                    "pid": 100,
+                    "heartbeat_frame_before": 1,
+                    "heartbeat_frame_after": 2,
+                    "cpu_percent": 50,
+                    "rss_bytes": 100000,
+                    "main_path": "/release/KatanA",
+                    "sidecar_path": "/release/kdv-office-worker",
+                    "main_sha256": digest,
+                    "sidecar_sha256": "b" * 64,
+                    "observed_main_sha256": digest,
+                    "observed_sidecar_sha256": "b" * 64,
+                }
+                for target in EVIDENCE.SUPPORTED_TARGETS
+            },
+            "office_fixtures": [
+                {
+                    "format": format_name,
+                    "status": "passed",
+                    "input_sha256": input_sha,
+                    "first_frame_ms": 1000,
+                    "item_count": 1,
+                    "release_worker": True,
+                }
+                for input_sha, format_name in EVIDENCE.SUPPLIED_OFFICE_FIXTURES.items()
+            ],
+        }
+        evidence_path = (
+            evidence_parent or root / EVIDENCE.EVIDENCE_RELATIVE
+        ) / "evidence" / "document-acceptance-v0.22.42.json"
+        evidence_path.parent.mkdir(parents=True)
+        evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
 
     def run_gate(self, root: Path, version: str = "0.22.42", mode: str = "strict") -> tuple[int, str]:
         output = io.StringIO()
@@ -77,9 +182,16 @@ class DocumentFidelityReleaseGateTests(unittest.TestCase):
         self.assertIn("9.1", output)
 
     def test_completed_tasks_pass(self) -> None:
+        for mode in ("strict", "release-artifact-pending", "post-release-evidence"):
+            with self.repository(self.completed_required_tasks(), with_evidence=True) as directory:
+                result, output = self.run_gate(Path(directory), mode=mode)
+            self.assertEqual(result, 0, (mode, output))
+
+    def test_completed_tasks_without_evidence_fail_closed(self) -> None:
         with self.repository(self.completed_required_tasks()) as directory:
-            result, _ = self.run_gate(Path(directory))
-        self.assertEqual(result, 0)
+            result, output = self.run_gate(Path(directory))
+        self.assertNotEqual(result, 0)
+        self.assertIn("acceptance evidence", output)
 
     def test_other_versions_are_unchanged(self) -> None:
         with self.repository(None) as directory:
@@ -94,7 +206,7 @@ class DocumentFidelityReleaseGateTests(unittest.TestCase):
 
     def test_unique_archive_fallback_passes_and_ambiguous_fallback_fails(self) -> None:
         archive_name = f"2026-10-01-{MODULE.CHANGE_NAME}"
-        with self.repository(None, archive_names=(archive_name,)) as directory:
+        with self.repository(None, archive_names=(archive_name,), with_evidence=True) as directory:
             result, _ = self.run_gate(Path(directory))
         self.assertEqual(result, 0)
 
@@ -107,7 +219,7 @@ class DocumentFidelityReleaseGateTests(unittest.TestCase):
         self.assertIn("found 2", output)
 
     def test_v_prefixed_bound_version_uses_the_gate(self) -> None:
-        with self.repository(self.completed_required_tasks()) as directory:
+        with self.repository(self.completed_required_tasks(), with_evidence=True) as directory:
             result, _ = self.run_gate(Path(directory), version="v0.22.42")
         self.assertEqual(result, 0)
 

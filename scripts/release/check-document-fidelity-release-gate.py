@@ -90,6 +90,33 @@ def run_task_checker(tasks: Path, mode: str) -> int:
     return result.returncode
 
 
+def run_acceptance_evidence_checker(repository_root: Path) -> int:
+    checker = Path(__file__).with_name("check-document-fidelity-acceptance-evidence.py")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(checker),
+            "--root",
+            str(repository_root),
+            "--evidence",
+            str(tasks_evidence_path(repository_root)),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.stdout:
+        sys.stdout.write(result.stdout)
+    if result.stderr:
+        sys.stderr.write(result.stderr)
+    return result.returncode
+
+
+def tasks_evidence_path(repository_root: Path) -> Path:
+    tasks = task_file(repository_root)
+    return tasks.parent / "evidence" / "document-acceptance-v0.22.42.json"
+
+
 def verify(version: str, mode: str, repository_root: Path) -> int:
     normalized_version = version.removeprefix("v")
     if normalized_version != TARGET_VERSION:
@@ -103,7 +130,11 @@ def verify(version: str, mode: str, repository_root: Path) -> int:
             "critical release task IDs are missing from the bound change: "
             + ", ".join(missing)
         )
-    return run_task_checker(tasks, mode)
+    task_result = run_task_checker(tasks, mode)
+    if task_result != 0 or mode == "pr-bootstrap":
+        return task_result
+    evidence_result = run_acceptance_evidence_checker(repository_root)
+    return evidence_result
 
 
 def main() -> int:
