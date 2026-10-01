@@ -27,6 +27,7 @@
   - 2026-10-01: KDV0.5.7公開frameはセル別の四辺罫線/style/colorを保持するが、KatanAのgrid painterは一律grid lineのみを描き、個別罫線を使用していない。KatanA側の描画・回帰を実装する。公開grid_cell_bordersはVec線形探索のため、UIフレーム毎のO(n²)呼出は禁止し、workerで一度投影して受信frameと同じ世代で保持する。線形時間の公開batch取得は[KDV #56](https://github.com/HiroyukiFuruno/katana-document-viewer/issues/56)へ切り分け、既存担当へ実装・公開を依頼した。初回projectionの計算量と実測も未検証として残す。named font familyを2分類へ縮約している点も未対応であり、libの限界と断定しない。
   - 独立したフォント修正を継続: 登録済みnamed familyも無視するhostバグの実フォントlayout回帰を追加。既存FontDefinitionsを借用し、case-insensitiveで登録済みNameだけを選択する最小修正を検証する。全OS font payload読込、セル毎FSアクセス、font family Vecのcloneは追加しない。これは未導入Aptos/Calibri、font name-table登録、bold face選択、全Office fidelityの完了とは別である。
   - 登録済みfamily修正は`c4678022`に正式統合。追加後の全coverage/strict document surface100%、Linux workspace UI892件/既存ignore2、Windows test-inclusive cross-check、native実fixture8件が成功。源rendererとの全fidelity、未導入family/weight、公開KDV batch APIと配布受入は未完了のまま維持。
+  - 追加readonly監査: gridのboldはRegular galleyを0.55pxずらした二重描画（painter_grid_text.rs）であり、実Bold faceを選択していない。またOS font探索/loaderはfile stemを使い、name-table familyをFontFamily::Nameへ登録していない。既存family-routing回帰はこの登録欠落・weightを検証していない。実在Arial Regular/Boldのmetadata familyは双方Arial、styleは別と確認。未導入Aptos/Calibriと混同せず、全font payload常時読込/セル毎FSアクセスなしのface登録・選択と実font回帰を次の独立KatanA作業として残す。
   - 実egui layoutで修正前に`Proportional != Name("Office Fixture Sans")`を再現し、修正後は登録済みNameと大文字小文字違いを正しく選択。未登録familyの既存mono/proportional fallbackも維持し、font data/family登録件数は増えない。focused64件とstrict Clippyが成功。テストの固定色指定を既存theme参照へ修正してAST23件も成功。最新sourceのcoverage/platform全ゲートを再実行中。
 - [ ] 3.6 Profile cold PPTX stages, remove the dominant avoidable delay, and prevent unchanged-document reconversion.
   - 2026-10-01: 実際のrelease mainで初回source intakeがPPTX 5.8MB/13,083ms、XLSX 27KB/13,073ms、PPTX 40.9MB/13,057ms。XLSXのsession openは32ms。描画前の同期読込がUIを止めるKatanA側の未修正事項として、背景読込・段階別DEBUG計測・変更通知/強制更新/取消の回帰を実施する。KRR待ち扱いにしない。
@@ -108,6 +109,7 @@
 ## 作業保全と整理（2026-10-01）
 
 - [ ] 最新5commitの通常push再実行: HEAD f4139a57、release/v0.22.42はahead5/behind0、stash0、primary明示worktree検査clean。pre-pushでformat/strict Clippy/HTML23＋process7/native worker契約が成功後、全test再compileで`No space left on device`となりpushはexit1。空き約119MiBとなりcache削除可否をユーザーへ確認したが、承認前にKRR担当が自身の生成cacheを整理し、rootも空き4.8GiBをライブ確認した。KatanA cache削除・hook回避は行わず、通常push・現HEADレビュー返信/resolve・再レビュー/CIを継続する。最新2review threadは未resolveのまま保持。
+  - 空き確保後の再pushは容量不足で欠けたkatana-platformのincremental objectを検出してexit1。公式`cargo clean --frozen --profile dev -p katana-platform`で当該package生成物1523files/1.2GiBのみを削除し、空き5.4GiBを確認。source/履歴/証跡と承認待ちのscreenshot-harnessは保持。検証条件は変えず、通常pushを再実行する。
 
 - [ ] ユーザー指摘: 上流待ちだけを理由に独立したKatanA作業を停止しない。未対応は「即実行可能／上流依存／外部環境依存」に分類し、即実行可能な全品質ゲート、依存棚卸し、差分の正式統合を継続する。進捗報告だけを停止条件にしない。2026-10-01: `just check-full`を開始し、依存棚卸しと別Cargo rootのハーネス障害調査を並行実施。
 
