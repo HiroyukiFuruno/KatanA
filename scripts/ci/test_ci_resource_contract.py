@@ -21,6 +21,29 @@ def step_block(job, name):
 
 
 class CiResourceContractTest(unittest.TestCase):
+    def test_cold_font_diagnostic_keeps_full_suite_and_isolates_debug(self):
+        job = current_test_job()
+        diagnostic_name = "Measure cold real-font lookup (Windows)"
+        diagnostic = step_block(job, diagnostic_name)
+        self.assertIn("if: runner.os == 'Windows'", diagnostic)
+        self.assertIn("DEBUG: 'true'", diagnostic)
+        self.assertIn("cargo test --locked -p katana-ui --lib", diagnostic)
+        self.assertIn("-- --exact --nocapture", diagnostic)
+        self.assertIn(
+            "preview_pane::document_surface::font_lookup::tests::"
+            "real_background_worker_returns_result_with_identity_while_ui_paints",
+            diagnostic,
+        )
+        self.assertLess(job.index(diagnostic_name), job.index("- name: Run tests"))
+        self.assertNotIn("DEBUG", step_block(job, "Run tests"))
+        source = Path(__file__).resolve().parents[2] / (
+            "crates/katana-ui/src/preview_pane/document_surface/font_lookup_tests.rs"
+        )
+        self.assertIn(
+            "fn real_background_worker_returns_result_with_identity_while_ui_paints()",
+            source.read_text(encoding="utf-8"),
+        )
+
     def test_space_mitigation_and_cache_namespace(self):
         job = current_test_job()
         self.assertIn("os: [macos-latest, windows-latest, ubuntu-latest]", job)

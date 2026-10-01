@@ -108,6 +108,15 @@ jobs:
       - name: Verify Cargo sweep safety contract
         run: python3 -B -m unittest discover -s scripts/ci -p test_cargo_sweep_guard.py -v
 
+      - name: Measure cold real-font lookup (Windows)
+        if: runner.os == 'Windows'
+        env:
+          DEBUG: 'true'
+        run: >-
+          cargo test --locked -p katana-ui --lib
+          preview_pane::document_surface::font_lookup::tests::real_background_worker_returns_result_with_identity_while_ui_paints
+          -- --exact --nocapture
+
       - name: Run tests
         shell: bash
         run: bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
