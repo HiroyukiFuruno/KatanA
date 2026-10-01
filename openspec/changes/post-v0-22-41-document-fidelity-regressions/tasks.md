@@ -160,6 +160,17 @@
 
 ## 最新レビューと判断待ち
 
+- [x] font候補IO/段階ログ0c9464ad、Windows診断CI/契約9c35982eを通常hook付きcommitで正式統合。次の実ファイル受入はsourceを凍結して現binaryを再buildし、提供82MB XLSXも既存XLSX初回15秒/close後RSS196608KiB基準で測定する。入力はignored tmpのprivate requestから参照し、文書内容を公開履歴へ追加しない。remote反映・Windows実改善・実ファイル測定はまだ未完了。
+
+- [x] font候補探索/段階DEBUG変更後の通常`just coverage` exit0。platform115、UI978/2既存ignored、core215、実export13、UI parallel143/2既存ignored、serial18成功。meaningful未実行0・strict document surface100%/uncovered0を維持。Windows診断stepのCI resource contract3件/Office worker contract4件成功。正式pushとWindowsでの原因確定/改善検証は未完了。
+
+- [x] 提供されたXLSX/PPTX6件のZIP CRC/container整合性はreadonly`unzip -t -qq`で全件成功。最大XLSXの展開総量515026878bytes/20entriesを確認。ファイル破損の検査であり、ビューアZIP互換・表示・解析RSS/遅延の解消とは別。実文書内容はGitへ取り込まない。
+
+- [/] Windows timeout解析に候補取得/resolveのDEBUG段階計測を追加し、scanner通常fileの重複metadata IOを削減。実FS7件・font worker5件・strict locked test-inclusive Clippy・AST23・fmt/diff成功。native実Arial Boldは候補442/候補取得3091us/resolve20849us/total24029us。候補順、symlink契約、実字体判定、10秒期限は不変。Windows主因と改善効果はまだ未確定で、次のcold実CIで判定する。
+- 容量対策: 当該worktreeのactive Cargo/rustc/lefthook0、公式dry-run1853files/4.3GiBを確認後、公式`cargo clean --frozen --profile dev -p katana-ui`でUI開発生成物のみ削除。source/locks/履歴/全coverage/release/screenshot成果物/兄弟repoは保持。再生成可能なcacheのみであり、worktreeを増やさず全gate再検証を継続する。
+
+- [/] Windows font timeoutの測定を分離する。既存10秒実font回帰を新processの単独DEBUG=true stepで先に実行し、candidate取得（cold scan/OnceLock wait/cache借用を含む）とresolveの時間を残す。その後の既存全workspace testは通常DEBUG設定のまま維持する。全test DEBUG化による大量frameログは避ける。native単独baselineは実Arial Boldで20731us成功、Windows原因の証明とは扱わない。
+
 - [x] intake修正263a9c76、filter queue修正d0e8e910を通常hook付きcommitで正式履歴へ統合。全coverage/strict Clippy/ASTの成功後に関心事を分離した。まだremote未反映のため、レビュー返信/resolveやリリース済みとは報告しない。
 
 - [x] intake/filter新修正後の凍結sourceで通常`just coverage` exit0。UI978 passed/2既存ignored、core215、platform113、実export13、UI parallel143/2既存ignored、serial18成功。meaningful未実行0、既存strict document surface100%/uncovered0。閾値・除外は変更していない。正式commit/push・current Windows font timeout・review reply/resolve・配布受入は別途未完了。
