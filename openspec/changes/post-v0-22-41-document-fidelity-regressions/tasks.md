@@ -160,6 +160,7 @@
 
 ## 最新レビューと判断待ち
 
+- [/] 通常pushのLinux実フォント回帰: UI949 passed/3 failed/2既存ignoredで停止しremote未更新。CIのfonts-dejavu-coreにはDejaVuSansMono-Oblique.ttfが実在するが、helper候補から漏れていた。実ファイルを候補へ追加し、italic metadata・usable glyph・実layout/paintの判定は維持した。標準RUSTFLAGSを使ったlocked Linux focused検証は8 passed/0 failed。自己レビューはtest入力の漏れに限定した修正としてPASS、fmt/diff確認済み。変更後の通常push・current HEAD全platform結果は未完了。
 - [/] PR #346 comment4155296989 / P2: XLSX Unsupported criterionを空selectionで上書きする問題。実UI disabled/dispatch拒否のRED→GREENと明示Clear許可を確認。focused14件、通常lib check、AST23件成功。正式commit・thread返信/resolve・全gateは未完了。
 - [/] PR #346 comment4155296996 / P2: 一部隠れたheaderのfilter buttonがviewport端へ移動する問題。full cell edgeをanchorにしてclip/hit-testし、実RawInputの誤Candidates dispatchをRED→GREEN確認。上記focused14件に含む。正式commit・thread返信/resolve・全gateは未完了。
 - [ ] PR #346 comment4155352623 / P2: 手動OS単独release inputと全OS必須publish条件の矛盾。全asset/smoke基準を下げず、単独選択肢を廃止して全OSへ統一する案をユーザーへ確認中。未承認の互換性変更は行わない。

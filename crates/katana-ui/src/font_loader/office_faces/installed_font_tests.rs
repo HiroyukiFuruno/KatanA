@@ -121,6 +121,7 @@ fn italic_candidates() -> Vec<PathBuf> {
     let mut paths = vec![
         PathBuf::from("/System/Library/Fonts/Supplemental/Arial Italic.ttf"),
         PathBuf::from("/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf"),
+        PathBuf::from("/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Oblique.ttf"),
         PathBuf::from("/usr/share/fonts/truetype/liberation2/LiberationSans-Italic.ttf"),
         PathBuf::from("/usr/share/fonts/truetype/liberation/LiberationSans-Italic.ttf"),
     ];
