@@ -112,7 +112,11 @@ fn actual_paint_preserves_four_sides_width_color_gap_and_clip() {
     );
     let expected_clip = egui::Rect::from_min_max(egui::pos2(10.0, 10.0), egui::pos2(130.0, 42.0));
     assert!(lines.iter().all(|(clip, _, _)| *clip == expected_clip));
-    assert!(DOUBLE_INNER_OFFSET > DOUBLE_STROKE_WIDTH);
+    assert!(
+        double_x
+            .iter()
+            .any(|x| { (*x - (expected_clip.left() + DOUBLE_INNER_OFFSET)).abs() < f32::EPSILON })
+    );
 }
 
 #[test]
