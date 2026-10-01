@@ -63,6 +63,16 @@ def fat_macho_with_minimum_version(major: int, minor: int = 0) -> bytes:
 
 
 class ArchitectureContractTests(unittest.TestCase):
+    def test_packager_verifies_each_architecture_separately(self):
+        package_script = Path(__file__).resolve().parents[1] / "build" / "package-mac.sh"
+        source = package_script.read_text()
+        self.assertIn("for architecture in arm64 x86_64; do", source)
+        for binary in ("KatanA", "kdv-office-worker"):
+            self.assertIn(
+                f'lipo "${{CONTENTS}}/MacOS/{binary}" -verify_arch "$architecture"',
+                source,
+            )
+
     def test_detects_declared_architectures(self):
         self.assertEqual(MODULE.detect_architectures(elf_x86_64()), {"x86_64"})
         self.assertEqual(MODULE.detect_architectures(pe_x86_64()), {"x86_64"})

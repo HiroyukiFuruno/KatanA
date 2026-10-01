@@ -160,6 +160,9 @@
 
 ## 最新レビューと判断待ち
 
+- [x] macOSの複数arch一括verify_arch失敗を、各arch個別検査へ修正。旧sourceで回帰RED、修正後8件GREEN。既存package-mac・deep/strict ad-hoc署名検査・workflow同等ZIP実体検査・ARM fresh-profile startup smokeはexit0。本体/sidecar両方arm64+x86_64/minos13.0、起動peak RSS239360KiB。Intel native・Office機能packaged受入・公開再取得は未完了。証跡: evidence/published-macos-architecture-2026-10-02.md。
+- [ ] current f137 Windows実CIのcold font失敗を段階ログで確定: candidate147取得4033us、YuGothB.ttc約14.7MBのread6203080us、YuGothL.ttc約14.0MBのread2193690us。face metadataは20〜88usであり全payload IOが支配的。実Arial Bold要求がCandaraから始まり小文字arialより大文字YuGothが先になるsort経路を確認し、10秒期限/実字体品質を維持して修正する。
+- [x] f13756a8まで通常push exit0（native/Linux全workspace/Windows test-inclusive cross-check/Draft preflight）。取消済みblocking read容量P2へreply4159561678・resolve後、全16thread/commentsを再取得して確認。manual target policyのP2は判断待ち、Draft維持。current HEAD reviewをcomment5938918640で依頼した。実Windows CIは上記FAILを保持し、cross-check成功で代用しない。
 - [/] 公開v0.22.41 macOS ZIPを実取得しchecksum一致、本体arm64のみでuniversal配布契約違反を確認。検査tool全体exit0でも内部architecture FAILを成功扱いしない。Intel起動不能の原因候補であり全報告PCの原因とは断定しない。既存0.22.42 package-macで本体/sidecar双方のuniversal化・ad-hoc署名を実行中、実体とnative起動確認・公開再取得を残す。証跡: evidence/published-macos-architecture-2026-10-02.md。
 - [x] reader後fullcoverageの旧253/256・256/257失敗を保持し、実File型のbound/reservation overflow伝搬UTで解消。関連12件成功の後、最終sourceで通常just coverage exit0（UI995/core215/platform115/export13/parallel143/serial18、既存ignored不変）。strict document surface100%/uncovered0・全target strict Clippy・format・KML成功。除外・閾値・製品コードをcoverage都合で変更していない。複数文書RSS・各OS/配布・公開の完了ではない。
 - [x] 追加sourceを関心事別に通常hook付き正式統合: font DEBUG段階ログe85119b5、論理worker/KDV資源解放検査eccf3923、取消済みOS読込による容量枯渇終端512d14b3、bounded容量予約/実File回帰と日英履歴594e7358。証跡を続いて統合し、通常push・実Windows CI・review thread再取得/対応を実施する。Draft維持。

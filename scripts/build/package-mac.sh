@@ -60,8 +60,10 @@ lipo -create \
     -output "${CONTENTS}/MacOS/kdv-office-worker"
 chmod 755 "${CONTENTS}/MacOS/KatanA"
 chmod 755 "${CONTENTS}/MacOS/kdv-office-worker"
-lipo -verify_arch arm64 x86_64 "${CONTENTS}/MacOS/KatanA"
-lipo -verify_arch arm64 x86_64 "${CONTENTS}/MacOS/kdv-office-worker"
+for architecture in arm64 x86_64; do
+    lipo "${CONTENTS}/MacOS/KatanA" -verify_arch "$architecture"
+    lipo "${CONTENTS}/MacOS/kdv-office-worker" -verify_arch "$architecture"
+done
 
 info "Applying Ad-hoc Code Signature (Required after modifying Info.plist to prevent 'damaged' Gatekeeper error)..."
 codesign --force --deep --sign - "${APP_BUNDLE}"
