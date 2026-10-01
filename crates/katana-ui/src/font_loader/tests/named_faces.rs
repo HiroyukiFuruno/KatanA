@@ -25,6 +25,28 @@ fn bold_and_italic_os2_faces_do_not_register_regular_aliases() {
     }
 }
 
+#[test]
+fn nonzero_post_angle_does_not_register_a_regular_alias() {
+    let mut fonts = ubuntu_face_with_os2(400, 0x0040);
+    let mut bytes = fonts.font_data["Ubuntu-Light"].font.to_vec();
+    let post_offset = font_table_offset(&bytes, Tag::new(b"post"));
+    let angle = -12_i32 << 16;
+    bytes[post_offset + 4..post_offset + 8].copy_from_slice(&angle.to_be_bytes());
+    let font = FontRef::new(&bytes).expect("real font with post angle");
+    assert_eq!(font.attributes().style, Style::Normal);
+    assert_eq!(font.post().unwrap().italic_angle().to_f64(), -12.0);
+    fonts
+        .font_data
+        .insert("Ubuntu-Light".into(), Arc::new(FontData::from_owned(bytes)));
+
+    NamedFontFamiliesOps::register(&mut fonts);
+    assert!(
+        !fonts
+            .families
+            .contains_key(&FontFamily::Name("Ubuntu".into()))
+    );
+}
+
 fn ubuntu_face_with_os2(weight: u16, selection: u16) -> FontDefinitions {
     let mut fonts = FontDefinitions::default();
     let original = fonts
@@ -32,7 +54,7 @@ fn ubuntu_face_with_os2(weight: u16, selection: u16) -> FontDefinitions {
         .get("Ubuntu-Light")
         .expect("default Ubuntu font");
     let mut bytes = original.font.to_vec();
-    let os2_offset = os2_table_offset(&bytes);
+    let os2_offset = font_table_offset(&bytes, Tag::new(b"OS/2"));
     bytes[os2_offset + 4..os2_offset + 6].copy_from_slice(&weight.to_be_bytes());
     bytes[os2_offset + 62..os2_offset + 64].copy_from_slice(&selection.to_be_bytes());
     fonts
@@ -52,12 +74,12 @@ fn assert_os2_metadata(bytes: &[u8], weight: u16, italic: bool, bold: bool) {
     assert_eq!(os2.fs_selection().contains(SelectionFlags::BOLD), bold);
 }
 
-fn os2_table_offset(bytes: &[u8]) -> usize {
+fn font_table_offset(bytes: &[u8], tag: Tag) -> usize {
     let font = FontRef::new(bytes).expect("default real Ubuntu font");
     font.table_directory()
         .table_records()
         .iter()
-        .find(|record| record.tag() == Tag::new(b"OS/2"))
+        .find(|record| record.tag() == tag)
         .map(|record| record.offset() as usize)
-        .expect("Ubuntu OS/2 table")
+        .expect("requested Ubuntu font table")
 }

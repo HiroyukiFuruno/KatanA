@@ -56,8 +56,7 @@ fn candidate_alias(
 ) -> Option<(String, Vec<String>)> {
     let data = fonts.font_data.get(key)?;
     let face = FontRef::from_index(data.font.as_ref(), data.index).ok()?;
-    let attributes = face.attributes();
-    if attributes.style != Style::Normal || attributes.weight.value() > MAX_REGULAR_WEIGHT {
+    if !regular_face(&face) {
         return None;
     }
     let name = family_name(&face)?;
@@ -70,6 +69,15 @@ fn candidate_alias(
     }
     let monospaced = face.post().is_ok_and(|post| post.is_fixed_pitch() != 0);
     Some((name, named_fallback_chain(fonts, key, monospaced)))
+}
+
+fn regular_face(face: &FontRef<'_>) -> bool {
+    let attributes = face.attributes();
+    attributes.style == Style::Normal
+        && attributes.weight.value() <= MAX_REGULAR_WEIGHT
+        && !face
+            .post()
+            .is_ok_and(|post| post.italic_angle().to_f64() != 0.0)
 }
 
 fn named_fallback_chain(fonts: &FontDefinitions, key: &str, monospaced: bool) -> Vec<String> {
