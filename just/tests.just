@@ -38,12 +38,20 @@ test-specific:
     {{CARGO}} test --workspace -- {{T}}
 
 # Run integration tests - fixture tests only (requires: egui_kittest)
-test-integration:
-    {{CARGO}} test -j {{JOBS}} -q --workspace --test ui_integration_fixture -- --test-threads={{JOBS}} fixture
+test-integration: check-native-office-worker-contract
+    {{RTK_CMD}}bash scripts/ci/with-office-test-worker.sh "{{CARGO}} test --locked -j {{JOBS}} -q --workspace --test ui_integration_fixture -- --test-threads={{JOBS}} fixture"
+
+# WHY: Linux workspace test は current_exe の推測ではなく実 Office worker を使う必要がある。
+check-linux-office-worker-contract:
+    {{RTK_CMD}}bash scripts/ci/check-linux-office-worker-contract.sh
+
+# WHY: Native test entrypoint は実 Office worker の絶対パスを明示する必要がある。
+check-native-office-worker-contract:
+    {{RTK_CMD}}bash scripts/ci/check-native-office-worker-contract.sh
 
 # Verify test execution in isolated Linux environment
-check-linux:
-    {{DOCKER}} compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="{{RUSTFLAGS}} -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "ulimit -c 0 && cargo sweep --time 7 && cargo test -q --workspace"
+check-linux: check-linux-office-worker-contract
+    {{DOCKER}} compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="{{RUSTFLAGS}} -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "ulimit -c 0 && cargo sweep --time 7 && cargo build --locked -p katana-ui --bin kdv-office-worker && KATANA_KDV_OFFICE_WORKER=/app/target/debug/kdv-office-worker cargo test --locked -q --workspace"
 
 # Verify Windows cross-compilation without running tests
 check-windows:

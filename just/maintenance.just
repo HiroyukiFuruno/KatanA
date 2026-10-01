@@ -37,8 +37,8 @@ linux-down:
     bash platforms/linux/down.sh
 
 # Run tests for impacted packages only
-test-impacted:
-    {{RTK_CMD}}scripts/runner/impacted.py test -- --skip fixture
+test-impacted: check-native-office-worker-contract
+    {{RTK_CMD}}bash scripts/ci/with-office-test-worker.sh "{{RTK_CMD}}scripts/runner/impacted.py test -- --skip fixture"
 
 # Run Clippy for impacted packages only
 lint-impacted:

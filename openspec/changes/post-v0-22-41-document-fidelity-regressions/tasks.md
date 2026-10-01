@@ -24,6 +24,7 @@
 - [ ] 3.4 Fix the shared DOCX/XLSX/PPTX data-descriptor ZIP path without weakening archive safety limits.
   - 2026-10-01: latest in-process host and published KDV0.5.7 release worker open the legal data-descriptor DOCX in2.026s, Page1/2, then close to idle. Final packaged-main acceptance remains required.
 - [ ] 3.5 Measure and improve DOCX/XLSX fidelity against the agreed source renderer with objective missing-element and geometry checks.
+  - 2026-10-01: KDV0.5.7公開frameはセル別の四辺罫線/style/colorを保持するが、KatanAのgrid painterは一律grid lineのみを描き、個別罫線を使用していない。KatanA側の描画・回帰を実装する。公開grid_cell_bordersはVec線形探索のため、UIフレーム毎のO(n²)呼出は禁止し、workerで一度投影して受信frameと同じ世代で保持する。線形時間の公開batch取得は[KDV #56](https://github.com/HiroyukiFuruno/katana-document-viewer/issues/56)へ切り分け、既存担当へ実装・公開を依頼した。初回projectionの計算量と実測も未検証として残す。named font familyを2分類へ縮約している点も未対応であり、libの限界と断定しない。
 - [ ] 3.6 Profile cold PPTX stages, remove the dominant avoidable delay, and prevent unchanged-document reconversion.
   - 2026-10-01: 実際のrelease mainで初回source intakeがPPTX 5.8MB/13,083ms、XLSX 27KB/13,073ms、PPTX 40.9MB/13,057ms。XLSXのsession openは32ms。描画前の同期読込がUIを止めるKatanA側の未修正事項として、背景読込・段階別DEBUG計測・変更通知/強制更新/取消の回帰を実施する。KRR待ち扱いにしない。
   - 背景intakeと変更通知/強制更新/取消を実装。新規5件を含むLinux UI878件、parallel141件、fixture8件、serial18件が成功（既存の手動ignoreは変更なし）。native strict Clippy、AST23件、formatが成功。読込待ち中に実FIFO/egui frameを実行する回帰を含む。実main再受入と全coverageを残すため3.6は未完了のまま維持。
@@ -31,6 +32,9 @@
 - [x] 3.8 Fix [KatanA #340](https://github.com/HiroyukiFuruno/KatanA/issues/340) so the Markdown HTML image parser treats `>` inside quoted attributes as data instead of a tag terminator, and prove the supplied `sample.md` data-SVG does not leak raw encoded text into preview/export. The parser and host-preview regressions fail before the fix; parser tests (33), core preview tests (42), the focused host test (1), format, Clippy, and diff checks pass after it.
 
 ## 4. Regression harness and full verification
+
+- [ ] 4.22 Declare the real Office-worker build/path prerequisite for normal native and Linux test entries. The post-egui Linux workspace run fails with worker executable absent after clean (877 passed, 1 failed, 2 ignored); coverage succeeded because it already builds and explicitly supplies its instrumented worker. Repair the harness, prove the missing prerequisite regression, and rerun full Linux/Windows/native gates without skip, ignore or mock.
+  - Linuxのlocked全workspaceが878 passed/2既存ignored、Windows test-inclusive cross-checkが成功。nativeの実worker filter Candidates/Apply/Clearが1 passed、fixture integrationが8 passed。helperはmetadataの絶対target_directory、実worker build、実行権を確認する。native全体はcore13件のexportを含め成功後、新規罫線sourceのAST行数違反で停止したため、罫線責務分割後に全体を再実行する。容量対策はdebug symbolsだけ0、strip=none、debug assertions/最適化/検証範囲/coverage閾値を変更しない。
 
 - [x] 4.21 Preserve startup heartbeat/log/isolated configuration and terminate the verified main before its owned launcher. Independent review found a wrapper-only cleanup P1; real bash/sleep descendant regressions now run the shared cleanup helper and require both owned PIDs to disappear while unrelated processes survive. Verified/discovery paths, actual early exit, startup contracts and local native smoke pass. The old interactive PID50338 remains running; this does not complete clean-machine or Office-input acceptance.
 
