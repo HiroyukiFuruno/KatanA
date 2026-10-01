@@ -1,7 +1,11 @@
 use super::*;
 use egui::{FontData, FontFamily};
+use skrifa::{
+    FontRef, MetadataProvider, Tag,
+    attribute::Style,
+    raw::{TableProvider, tables::os2::SelectionFlags},
+};
 use std::sync::Arc;
-use ttf_parser::{Face, Tag};
 
 #[test]
 fn bold_and_italic_os2_faces_do_not_register_regular_aliases() {
@@ -10,10 +14,7 @@ fn bold_and_italic_os2_faces_do_not_register_regular_aliases() {
     {
         let mut fonts = ubuntu_face_with_os2(weight, selection);
         let bytes = fonts.font_data["Ubuntu-Light"].font.as_ref();
-        let face = Face::parse(bytes, 0).expect("modified real Ubuntu font");
-        assert_eq!(face.weight().to_number(), weight);
-        assert_eq!(face.is_italic(), italic);
-        assert_eq!(face.is_bold(), bold);
+        assert_os2_metadata(bytes, weight, italic, bold);
 
         NamedFontFamiliesOps::register(&mut fonts);
         assert!(
@@ -40,12 +41,23 @@ fn ubuntu_face_with_os2(weight: u16, selection: u16) -> FontDefinitions {
     fonts
 }
 
+fn assert_os2_metadata(bytes: &[u8], weight: u16, italic: bool, bold: bool) {
+    let font = FontRef::new(bytes).expect("modified real Ubuntu font");
+    let metadata = font.attributes();
+    let os2 = font.os2().expect("Ubuntu OS/2 table");
+    assert_eq!(metadata.weight.value(), f32::from(weight));
+    assert_eq!(matches!(metadata.style, Style::Italic), italic);
+    assert_eq!(os2.us_weight_class(), weight);
+    assert_eq!(os2.fs_selection().contains(SelectionFlags::ITALIC), italic);
+    assert_eq!(os2.fs_selection().contains(SelectionFlags::BOLD), bold);
+}
+
 fn os2_table_offset(bytes: &[u8]) -> usize {
-    let face = Face::parse(bytes, 0).expect("default real Ubuntu font");
-    face.raw_face()
-        .table_records
-        .into_iter()
-        .find(|record| record.tag == Tag::from_bytes(b"OS/2"))
+    let font = FontRef::new(bytes).expect("default real Ubuntu font");
+    font.table_directory()
+        .table_records()
+        .iter()
+        .find(|record| record.tag() == Tag::new(b"OS/2"))
+        .map(|record| record.offset() as usize)
         .expect("Ubuntu OS/2 table")
-        .offset as usize
 }

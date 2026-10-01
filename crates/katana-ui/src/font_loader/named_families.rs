@@ -1,6 +1,6 @@
 use egui::{FontDefinitions, FontFamily};
+use skrifa::{FontRef, MetadataProvider, attribute::Style, raw::TableProvider, string::StringId};
 use std::collections::HashSet;
-use ttf_parser::{Face, name_id};
 
 #[path = "tests/named_families.rs"]
 #[cfg(test)]
@@ -10,10 +10,7 @@ mod tests;
 #[path = "tests/named_faces.rs"]
 mod named_faces;
 
-const TYPOGRAPHIC_FAMILY: u16 = name_id::TYPOGRAPHIC_FAMILY;
-const FAMILY: u16 = name_id::FAMILY;
-const MAX_REGULAR_WEIGHT: u16 = 500;
-const ENGLISH_US_LANGUAGE_ID: u16 = 0x0409;
+const MAX_REGULAR_WEIGHT: f32 = 500.0;
 
 #[derive(Debug)]
 pub(super) struct NamedFontFamiliesOps;
@@ -58,8 +55,9 @@ fn candidate_alias(
     registered_names: &HashSet<String>,
 ) -> Option<(String, Vec<String>)> {
     let data = fonts.font_data.get(key)?;
-    let face = Face::parse(data.font.as_ref(), data.index).ok()?;
-    if face.is_italic() || face.weight().to_number() > MAX_REGULAR_WEIGHT {
+    let face = FontRef::from_index(data.font.as_ref(), data.index).ok()?;
+    let attributes = face.attributes();
+    if attributes.style != Style::Normal || attributes.weight.value() > MAX_REGULAR_WEIGHT {
         return None;
     }
     let name = family_name(&face)?;
@@ -70,7 +68,8 @@ fn candidate_alias(
     {
         return None;
     }
-    Some((name, named_fallback_chain(fonts, key, face.is_monospaced())))
+    let monospaced = face.post().is_ok_and(|post| post.is_fixed_pitch() != 0);
+    Some((name, named_fallback_chain(fonts, key, monospaced)))
 }
 
 fn named_fallback_chain(fonts: &FontDefinitions, key: &str, monospaced: bool) -> Vec<String> {
@@ -90,30 +89,23 @@ fn named_fallback_chain(fonts: &FontDefinitions, key: &str, monospaced: bool) ->
     chain
 }
 
-fn family_name(face: &Face<'_>) -> Option<String> {
-    [TYPOGRAPHIC_FAMILY, FAMILY]
+fn family_name(face: &FontRef<'_>) -> Option<String> {
+    [StringId::TYPOGRAPHIC_FAMILY_NAME, StringId::FAMILY_NAME]
         .into_iter()
         .find_map(|id| name_for_id(face, id))
 }
 
-fn name_for_id(face: &Face<'_>, id: u16) -> Option<String> {
-    let names: Vec<_> = face
-        .names()
+fn name_for_id(face: &FontRef<'_>, id: StringId) -> Option<String> {
+    let names = face.localized_strings(id);
+    names
+        .clone()
+        .english_or_first()
         .into_iter()
-        .filter(|record| record.name_id == id)
-        .collect();
-    let english = names
-        .iter()
-        .find(|record| record.language_id == ENGLISH_US_LANGUAGE_ID);
-    english
-        .into_iter()
-        .chain(names.iter())
+        .chain(names)
         .find_map(valid_family_name)
 }
 
-fn valid_family_name(record: &ttf_parser::name::Name<'_>) -> Option<String> {
-    record
-        .to_string()
-        .map(|name| name.trim().to_owned())
-        .filter(|name| !name.is_empty() && !name.chars().any(char::is_control))
+fn valid_family_name(record: skrifa::string::LocalizedString<'_>) -> Option<String> {
+    let name = record.to_string().trim().to_owned();
+    (!name.is_empty() && !name.chars().any(char::is_control)).then_some(name)
 }
