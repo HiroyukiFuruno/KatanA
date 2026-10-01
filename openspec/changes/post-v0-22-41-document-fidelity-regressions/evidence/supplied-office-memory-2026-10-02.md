@@ -195,3 +195,24 @@ Retain this failed run and repeat after available space is stable.
 - Separate repeated-input high-water behavior from unique-input retention.
 - Verify actual packaged-process RSS and human fresh-profile startup consent.
 - Do not publish or mark memory regression resolved on these intermediate results.
+
+## Additional font-stage diagnostic
+
+The same bounded-reader runner executed the five supplied Office inputs with
+`DEBUG=true`; no budget or input was changed. The result remained **FAIL, exit 1**:
+cold RSS 105504 to 423488 KiB, delta 317984 above the 196608 KiB budget.
+This diagnostic does not replace the normal-DEBUG acceptance above.
+
+The first two XLSX lookups completed in 82124 and 82248 microseconds, both with
+zero resolved faces. No root font lookup was recorded for the three PPTX opens.
+RSS was 233024 KiB at the third input and 412256 KiB at the fourth.
+These observations narrow the measured stages; completion alone does not exclude
+allocator retention from the earlier temporary font reads.
+
+The existing document-worker count did not include font lookup threads. Current
+PR review comment4159589365 identifies that observation gap; lifecycle accounting
+is being extended, and the former zero-worker results do not prove those threads
+had finished. OS allocator, TLS and GPU release remain separate from owned counts.
+The raw ignored log is `tmp/office-font-phase-rss-diagnostic-run-2026-10-02.log`.
+The KDV owner received the source, request and measurements through Issue #59 and
+the existing task; no sibling implementation or new worktree was created here.

@@ -160,6 +160,13 @@
 
 ## 最新レビューと判断待ち
 
+- [x] 通常pre-commit hookを通してpackaging修正8cdb6aa8、Windows探索順ebec3fb7、font lifecycle a212df99を関心事別に正式履歴へ統合。全coverage後のsource SHAは同一。通常push・current Windows・review reply/resolve・新binaryメモリ再受入・公開は未完了として継続する。
+- [x] font/lifecycle最終凍結sourceの通常just coverage exit0。strict document surface100%/uncovered0、meaningful gate成功、parallel143/既存ignore2・serial18成功。4sourceのSHAが検査前後一致。全target strict Clippy/AST23/formatも成功、基準・除外は不変。これから関心事別に正式統合・通常pushし、実Windows/fresh review/配布/メモリ受入は未完了として維持する。
+- [/] 最終font/lifecycle sourceはstrict全target Clippy・AST23件・format/KML成功後にSHA凍結し、通常just coverageを開始。ログtmp/font-order-lifecycle-complete-coverage-2026-10-02.log。共有disk12GiBをKRR担当へ連絡、Rust編集/重複Cargoは停止する。完了exit/集計とSHA前後一致を得るまでfullcoverage成功と報告しない。
+- [/] Windows順序/FontLookupWorkerの計測欠落を最小修正。旧順序と旧worker countは各RED(exit101)、関連UI lib68/main10/parallel11 GREEN、platform全suite成功。独立レビューで検出した新回帰の無期限待機は期限付きowned child/receiptへ修正し、全target workspace strict Clippy・format成功。最新sourceを凍結しAST/全coverage→関心事別commit→通常push/実Windows/fresh reviewへ進む。source IO期限/quality/全memory基準は不変。証跡: evidence/windows-font-lifecycle-2026-10-02.md。
+- [ ] current review4159589365: FontLookupWorkerの直接spawnがRAII worker数に含まれず、取消後にpayload/OS読込を保持したthreadが残ってもidle判定できる。既存lifecycle leaseへ接続し、取消後も実thread/入力所有の終了まで数が残る回帰を追加する。旧counter0を全thread終了の証拠にしない。
+- [/] Windows case-sensitive filename順序の回帰は旧条件でRED（Candara/YuGothBがarial/arialbdより先）、Windows限定ASCII case-fold＋元name tieキーで関連6UT GREEN。他OS順序/同名directory先着を維持し、font metadata/重み/期限/全候補fallbackは変更しない。独立レビューのdedup/tie検証不足を追加テストで補強中。変更後full lint/coverage・実Windows CIは未完了。
+- [x] KDV #59へ追加DEBUG診断と既存request/raw logをhandoff。5件Officeはcold増分317984>196608でFAIL、XLSX2件のfont lookupは82ms/face0で完了、PPTX3件のroot lookup無し。各段階完了でもallocator保持は除外しない。既存担当へ公開crateのみで可能なfresh-process/段階比較の実測を継続依頼、別repo編集/新worktree無し。証跡: evidence/supplied-office-memory-2026-10-02.md。
 - [x] macOSの複数arch一括verify_arch失敗を、各arch個別検査へ修正。旧sourceで回帰RED、修正後8件GREEN。既存package-mac・deep/strict ad-hoc署名検査・workflow同等ZIP実体検査・ARM fresh-profile startup smokeはexit0。本体/sidecar両方arm64+x86_64/minos13.0、起動peak RSS239360KiB。Intel native・Office機能packaged受入・公開再取得は未完了。証跡: evidence/published-macos-architecture-2026-10-02.md。
 - [ ] current f137 Windows実CIのcold font失敗を段階ログで確定: candidate147取得4033us、YuGothB.ttc約14.7MBのread6203080us、YuGothL.ttc約14.0MBのread2193690us。face metadataは20〜88usであり全payload IOが支配的。実Arial Bold要求がCandaraから始まり小文字arialより大文字YuGothが先になるsort経路を確認し、10秒期限/実字体品質を維持して修正する。
 - [x] f13756a8まで通常push exit0（native/Linux全workspace/Windows test-inclusive cross-check/Draft preflight）。取消済みblocking read容量P2へreply4159561678・resolve後、全16thread/commentsを再取得して確認。manual target policyのP2は判断待ち、Draft維持。current HEAD reviewをcomment5938918640で依頼した。実Windows CIは上記FAILを保持し、cross-check成功で代用しない。
