@@ -7,7 +7,10 @@
 - `bun outdated` and `bun outdated --json`: zero JavaScript updates. Bun 1.4.2, MathJax 4.1.3, TypeScript 7.0.2 and `@types/bun` 1.4.2 remain current.
 - Published siblings adopted in the current graph: KDV 0.5.7, KRR 0.4.21, KUC 0.3.17, KMM 0.2.3, katana-ast-lint 0.5.2 and KML 0.19.5. The graph contains one V8 version, 152.2.0. The historical KUC 0.3.3 and duplicate-V8 holds below no longer describe this graph.
 - `cargo outdated` still fails because its temporary workspace omits the local `vendor/egui-winit` override. Its failed run is not an update result; the two Cargo dry runs use the real graph instead.
-- The egui 0.36.2 vendor migration remains pending a verified checkpoint and synchronized JIS input patches. `generic-array` 0.14.9 remains constrained by transitive upstream requirements.
+- egui 0.36.2 migration is implemented after clean checkpoint `85017694`. The root, UI dev dependency, screenshot and paint-metrics pins/locks are synchronized. The input adapter matches official0.36.2 except the two retained JIS mappings; window settings and dropped-file sources match exactly. No sibling path/git dependency is introduced.
+- Full locked metadata succeeds for the root and screenshot graphs; both resolve egui/egui_kittest0.36.2. Native release all-workspace/all-target strict Clippy and the two paint-metrics tests pass. Post-migration whole coverage, input/capture acceptance and combined gates remain pending.
+- After migration, `cargo update --dry-run` locks zero packages; `cargo upgrade --dry-run --incompatible allow --pinned allow` reports63 latest packages and no proposed direct update. `bun outdated --json` reports no JavaScript update. `generic-array`0.14.9 remains constrained by transitive upstream requirements.
+- The resolver initially unified screenshot swash0.2.10 with an older allowed skrifa. Because capture must use the same font parser as the application, its existing public0.44.0 edge is retained in both locks; swash's upstream range is `>=0.31.1, <=0.44`. Full `cargo metadata --locked` accepts the aligned graph without a source override.
 - `just check-full` now passes formatting and workspace strict Clippy and is running fixture integration tests. Completion of the full gate, vendor migration and packaged acceptance is not yet claimed.
 
 Earlier sections are historical audit evidence, not current blocker status.
@@ -115,9 +118,15 @@ workspace copy omits the repository's `vendor/egui-winit` path override. The
 failure is a tool/workspace-copy limitation, not an outdated-package result;
 the two dry-run Cargo audits above preserve the real workspace graph.
 
+## egui 0.36.2移行の再検証（2026-10-01）
+
+root、screenshot、paint-metrics、vendorのlockと全直接pinを0.36.2へ同期した。公式vendorからのsource差分は既存JISマッピング2箇所のみで、独立最終レビューのP0/P1は0件。root/screenshotのswash0.2.10は公開skrifa0.44.0に揃え、full locked metadataが受理する。git sourceはない。
+
+移行後のnative release全target strict Clippy、paint-metrics2件、供給網4カテゴリ、変更していない全coverage gateが成功。strict document surface100%、painter_grid184/184。証跡は`tmp/coverage-egui-0362-20261001.{log,json}`。compatible lock更新0件、直接依存更新0件、JS outdated0件を再確認した。新しい実mainのreleaseビルドと空workspace起動も成功したが、実入力再受入、platform/combined gate、公開上流の追加採用は完了扱いにしない。
+
 ## Remaining release boundary
 
-Task 4.7 remains open until the unchanged full quality gates pass and the
-egui migration candidate is adopted or dispositioned with verification.
+Task 4.7 remains open until actual input/capture, platform and combined gates
+pass after the verified egui migration.
 The older duplicate-V8 evidence in `v8-dependency-link-gate.md` is historical;
 the adopted KDV 0.5.7 / KRR 0.4.21 graph contains only V8 152.2.0.

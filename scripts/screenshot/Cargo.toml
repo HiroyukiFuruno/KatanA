@@ -20,8 +20,8 @@ katana-ui = { path = "../../crates/katana-ui", features = ["screenshot-test-hook
 katana-platform = { path = "../../crates/katana-platform" }
 katana-core = { path = "../../crates/katana-core" }
 katana-markdown-linter = "0.19.5"
-egui_kittest = { version = "=0.36.1", features = ["wgpu", "eframe"] }
-egui = "=0.36.1"
+egui_kittest = { version = "=0.36.2", features = ["wgpu", "eframe"] }
+egui = "=0.36.2"
 katana-paint-metrics = { path = "../paint-metrics" }
 image = { version = "0.25", default-features = false, features = ["png"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

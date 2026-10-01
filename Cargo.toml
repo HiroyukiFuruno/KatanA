@@ -18,9 +18,9 @@ description = "A context-aware AI desktop application."
 
 [workspace.dependencies]
 # UI
-eframe = { version = "=0.36.1", features = ["default"] }
-egui = "=0.36.1"
-egui_extras = { version = "=0.36.1", features = ["image", "file", "http", "svg", "svg_text"] }
+eframe = { version = "=0.36.2", features = ["default"] }
+egui = "=0.36.2"
+egui_extras = { version = "=0.36.2", features = ["image", "file", "http", "svg", "svg_text"] }
 egui_commonmark = { version = "0.25", default-features = false, features = ["better_syntax_highlighting", "load-images", "pulldown_cmark"] }
 egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonmark_backend" }
 
@@ -60,7 +60,7 @@ ignore = "0.4"
 resvg = "0.48"
 usvg = "0.48"
 tiny-skia = "0.12"
-epaint_default_fonts = "=0.36.1"
+epaint_default_fonts = "=0.36.2"
 mathjax_svg = "3.2.0"
 xmltree = "0.12"
 include_dir = "0.7.4"
