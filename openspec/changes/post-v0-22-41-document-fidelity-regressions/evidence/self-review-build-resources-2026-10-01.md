@@ -58,5 +58,11 @@ This is an installation failure before application tests, not a passing gate.
 The workflow now uses `cargo install cargo-sweep --locked` followed by a version
 check, matching setup. The workflow contract requires these exact commands.
 
+Cloud36c4633b confirms installation and the safety suite on macOS/Ubuntu.
+Windows installation also succeeds, but its nonregular-target assertion used
+only metadata-path discovery, before the guard's profile-directory validation.
+The contract now invokes both production validation stages. The four focused
+safety tests pass locally; another Windows cloud run must confirm the repair.
+
 PASS for the scoped resource-management changes and focused contracts;
 current-HEAD cloud / final document and distribution acceptance remain open.

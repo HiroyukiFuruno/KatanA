@@ -91,7 +91,7 @@ class CargoSweepGuardTest(unittest.TestCase):
             os.environ["CARGO_TARGET_DIR"] = str(linked)
             try:
                 with self.assertRaises(guard.CleanupUnavailable):
-                    guard.cargo_target_directory(manifest)
+                    guard.profile_directories(guard.cargo_target_directory(manifest))
             finally:
                 restore_environment("CARGO_TARGET_DIR", previous)
             custom = target / "ci" / ".fingerprint"
