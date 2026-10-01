@@ -169,3 +169,5 @@
 - [x] 狭いcellの実paint退避回帰を追加し、変更後の全coverageでstrict100%を再確認した。旧85/86失敗からGREEN、閾値/除外は不変。
 - [/] Windows MathJaxをcaller stack依存から専用persistent workerへ移した。公開同期APIとJS8MiB guardを維持、実worker12MiB確保、bounded channel・明示errorを実装。設計はdesign.md末尾。actual2MiB caller/全package/並列返信/非漏出/実JS例外後回復9件、全coverageは成功。実Windows CIのstack確認は未完了。
 - 正式統合: `7e4fb367` Office実書体/lease、`4d4a6a94` filterのP2 2件、`0e9a94a6` MathJax workerを通常hook付きcommitで履歴へ取り込んだ。最新strict locked test-inclusive UI Clippy、fmt、AST23、MathJax9件、変更後全coverageは成功。通常push、新HEADのcloud/全review reply-resolve、配布受入、公開は未完了。
+- 通常push `05685207` はnative標準テスト再buildのlinkでNo space left on deviceとなりexit1、remote未更新。active Cargo/rustc/lefthook0、公式dry-run15620files/18.7GiBを確認し、当該worktreeのkatana-ui/core dev生成物だけ公式Cargo cleanで15609files/17.9GiB削除、空き16GiBへ回復した。source、履歴、release成果物、llvm-cov結果、兄弟repoは保持。再生成可能な開発生成物のみ削除であり、通常pushはCIと同じdev/test debug=0・strip=none、並列2で再試行する。機能test・lint・coverage・platform・reviewゲートは省略しない。
+- 旧HEAD cloudはUbuntu全Test and Build成功、Windowsは上記stack障害、macOSはheadless前のV8取得HTTP504で失敗。正確な公開artifact URLは再確認でHTTP200。新HEADの実cloud確認を継続し、artifact取得失敗を描画受入成功/失敗へすり替えない。
