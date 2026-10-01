@@ -72,11 +72,20 @@ impl OsFontScanner {
         };
 
         for entry in entries.flatten() {
-            let path = entry.path();
-            if path.is_dir() && !path.is_symlink() {
-                Self::scan_directory(&path, fonts);
-                continue;
-            }
+            Self::scan_entry(entry, fonts);
+        }
+    }
+
+    fn scan_entry(entry: fs::DirEntry, fonts: &mut Vec<(String, String)>) {
+        let Ok(file_type) = entry.file_type() else {
+            return;
+        };
+        let path = entry.path();
+        if file_type.is_dir() {
+            Self::scan_directory(&path, fonts);
+        } else if file_type.is_file() {
+            Self::append_font_path(&path, fonts);
+        } else if file_type.is_symlink() {
             Self::process_entry(&path, fonts);
         }
     }
@@ -86,7 +95,10 @@ impl OsFontScanner {
         if !path.is_file() {
             return;
         }
+        Self::append_font_path(path, fonts);
+    }
 
+    fn append_font_path(path: &Path, fonts: &mut Vec<(String, String)>) {
         let ext = path
             .extension()
             .unwrap_or_default()
@@ -135,6 +147,37 @@ mod tests {
     fn directory_symlinks_do_not_create_recursive_scan_cycles() {
         let root = tempfile::tempdir().unwrap();
         std::os::unix::fs::symlink(root.path(), root.path().join("cycle")).unwrap();
+        let mut fonts = Vec::new();
+        OsFontScanner::scan_directory(root.path(), &mut fonts);
+        assert!(fonts.is_empty());
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn file_symlinks_keep_their_candidate_path() {
+        let root = tempfile::tempdir().unwrap();
+        let source = tempfile::tempdir().unwrap();
+        let font = source.path().join("Source.otf");
+        std::fs::write(&font, []).unwrap();
+        let alias = root.path().join("Linked.ttf");
+        std::os::unix::fs::symlink(&font, &alias).unwrap();
+        let mut fonts = Vec::new();
+        OsFontScanner::scan_directory(root.path(), &mut fonts);
+        assert_eq!(
+            fonts,
+            vec![("Linked".to_owned(), alias.to_string_lossy().into_owned())]
+        );
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn broken_file_symlinks_are_not_font_candidates() {
+        let root = tempfile::tempdir().unwrap();
+        std::os::unix::fs::symlink(
+            root.path().join("Missing.otf"),
+            root.path().join("Broken.ttf"),
+        )
+        .unwrap();
         let mut fonts = Vec::new();
         OsFontScanner::scan_directory(root.path(), &mut fonts);
         assert!(fonts.is_empty());

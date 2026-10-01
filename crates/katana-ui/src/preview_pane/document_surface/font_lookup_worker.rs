@@ -51,13 +51,15 @@ impl FontLookupWorker {
         if cancelled.load(Ordering::Acquire) {
             return;
         }
-        let candidates = katana_platform::os_fonts::OsFontScanner::cached_fonts();
+        let candidates = Self::candidates(surface_generation, lookup_generation);
+        let resolve_started = std::time::Instant::now();
         let resolution = FontFaceResolver::resolve(candidates, &requests, &cancelled);
+        let resolve_us = resolve_started.elapsed().as_micros();
         Self::log_faces(&resolution.faces);
         super::debug_log::DebugLog::write(
             "document_font_lookup",
             format_args!(
-                "surface_generation={surface_generation} lookup_generation={lookup_generation} requests={} faces={} elapsed_us={}",
+                "surface_generation={surface_generation} lookup_generation={lookup_generation} requests={} faces={} elapsed_us={} resolve_us={resolve_us}",
                 requests.len(),
                 resolution.faces.len(),
                 started.elapsed().as_micros()
@@ -71,6 +73,26 @@ impl FontLookupWorker {
             });
             repaint.request_repaint();
         }
+    }
+
+    fn candidates(surface_generation: u64, lookup_generation: u64) -> &'static [(String, String)] {
+        let started = std::time::Instant::now();
+        super::debug_log::DebugLog::write(
+            "document_font_candidates",
+            format_args!(
+                "surface_generation={surface_generation} lookup_generation={lookup_generation} phase=started"
+            ),
+        );
+        let candidates = katana_platform::os_fonts::OsFontScanner::cached_fonts();
+        super::debug_log::DebugLog::write(
+            "document_font_candidates",
+            format_args!(
+                "surface_generation={surface_generation} lookup_generation={lookup_generation} phase=ready candidates={} candidate_lookup_us={}",
+                candidates.len(),
+                started.elapsed().as_micros()
+            ),
+        );
+        candidates
     }
 
     fn log_faces(faces: &[crate::font_loader::office_faces::ResolvedFontFace]) {
