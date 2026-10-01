@@ -82,7 +82,10 @@ class ProcessGroupTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn(grandchild_pid, json.loads(result.stdout)["residual_observed"])
         pgid = json.loads(self.receipt.read_text())["pgid"]
-        self.wait_for(lambda: not any(p["pid"] == grandchild_pid for p in process_group._ps_snapshot(pgid)))
+        self.wait_for(lambda: not any(
+            p["pid"] == grandchild_pid and not p["state"].startswith("Z")
+            for p in process_group._ps_snapshot(pgid)
+        ))
 
     def test_unwitnessed_group_member_fails_closed_without_signal(self):
         pid_file = Path(self.temp.name) / "unwitnessed.pid"

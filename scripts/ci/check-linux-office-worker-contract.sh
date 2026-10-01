@@ -15,5 +15,13 @@ fail() {
 [[ "$CHECK_LINUX_RECIPE" == *"$EXPECTED_CHAIN"* ]] || {
     fail "check-linux must build the Office worker and pass its absolute debug path to workspace tests"
 }
+for contract in test_html_fixture_host_contract.py test_html_host_process_group.py; do
+    [[ "$CHECK_LINUX_RECIPE" == *"python3 scripts/ci/$contract"* ]] || {
+        fail "check-linux must execute the actual HTML host contract: $contract"
+    }
+done
+grep -qE '^[[:space:]]+procps[[:space:]]' "$ROOT_DIR/platforms/linux/ci/Dockerfile" || {
+    fail "Linux test image must provide ps for actual host process observations"
+}
 
 echo "PASS: check-linux Office worker contract is explicit"
