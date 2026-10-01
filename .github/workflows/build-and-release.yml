@@ -206,7 +206,7 @@ jobs:
       - name: Clean stale DMG files
         run: |
           STALE_DIR="$RUNNER_TEMP/katana-stale-release-assets"
-          mkdir -p "$STALE_DIR"
+          mkdir -p "$STALE_DIR" target/release
           find target/release -maxdepth 1 -name 'KatanA-Desktop-*.dmg' \
             -exec mv {} "$STALE_DIR/" \;
       - name: Build macOS .app

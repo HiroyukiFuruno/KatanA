@@ -28,6 +28,7 @@ assert_not_contains() {
 bash -n "$SMOKE_SCRIPT"
 bash -n "$HEARTBEAT_HELPER"
 bash -n "$IDENTITY_HELPER"
+PYTHONDONTWRITEBYTECODE=1 python3 "${ROOT_DIR}/scripts/release/test-macos-stale-dmg.py"
 bash "${ROOT_DIR}/scripts/release/test-startup-evidence-retention.sh"
 bash "${ROOT_DIR}/scripts/release/test-packaged-process-identity.sh"
 bash -n "${ROOT_DIR}/scripts/build/package-mac.sh"
