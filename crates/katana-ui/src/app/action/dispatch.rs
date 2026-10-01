@@ -119,7 +119,7 @@ impl KatanaApp {
 
     fn handle_action_close_workspace(&mut self) {
         self.save_workspace_state();
-        self.state.workspace.data = None;
+        self.state.workspace.set_data(None);
         self.state.document.open_documents.clear();
         self.state.document.active_doc_idx = None;
         self.state.document.tab_groups.clear();

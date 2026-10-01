@@ -34,15 +34,6 @@ fn test_workspace_collection() {
 }
 
 #[test]
-fn each_workspace_scan_has_a_distinct_revision() {
-    let first = Workspace::new("/root", Vec::new());
-    let second = Workspace::new("/root", Vec::new());
-
-    assert_ne!(first.revision(), second.revision());
-    assert_eq!(first.revision(), first.clone().revision());
-}
-
-#[test]
 fn test_image_extension_detection() {
     let image = TreeEntry::File {
         path: PathBuf::from("/root/asset/img/example.PNG"),

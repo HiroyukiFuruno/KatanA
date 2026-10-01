@@ -57,7 +57,13 @@ impl<'a> ExplorerContent<'a> {
             (self.workspace, self.search, self.active_path, self.action);
         ExplorerLogicOps::update_tree_expansion(workspace);
         let ws = workspace.data.as_ref().expect("workspace must be active");
-        ExplorerLogicOps::update_search_filter_cache(search, &ws.root, &ws.tree, ws.revision());
+        let workspace_revision = workspace.revision();
+        ExplorerLogicOps::update_search_filter_cache(
+            search,
+            &ws.root,
+            &ws.tree,
+            workspace_revision,
+        );
         let is_flat_view = workspace.is_flat_view(&ws.root);
         let filter = search
             .filter_cache
@@ -66,6 +72,7 @@ impl<'a> ExplorerContent<'a> {
         let projection_started = std::time::Instant::now();
         let rebuilt = workspace.explorer_projection.refresh(
             ws,
+            workspace_revision,
             &workspace.expanded_directories,
             filter,
             is_flat_view,
@@ -98,7 +105,7 @@ impl<'a> ExplorerContent<'a> {
                 "explorer_frame",
                 format_args!(
                     "workspace_revision={} total_rows={} visible_rows={} projection_rebuilt={} projection_bytes={} projection_us={} frame_us={}",
-                    ws.revision(),
+                    workspace_revision,
                     workspace.explorer_projection.rows().len(),
                     visible_rows,
                     rebuilt,

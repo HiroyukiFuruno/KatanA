@@ -57,15 +57,21 @@ impl ExplorerProjectionCache {
     pub fn refresh(
         &mut self,
         workspace: &Workspace,
+        workspace_revision: u64,
         expanded_directories: &HashSet<PathBuf>,
         filter: Option<(&SearchParams, &HashSet<PathBuf>)>,
         is_flat_view: bool,
     ) -> bool {
-        if self.matches(workspace, expanded_directories, filter, is_flat_view) {
+        if self.matches(
+            workspace_revision,
+            expanded_directories,
+            filter,
+            is_flat_view,
+        ) {
             return false;
         }
         let key = ExplorerProjectionKey {
-            workspace_revision: workspace.revision(),
+            workspace_revision,
             expanded_directories: expanded_directories.clone(),
             filter: filter.map(|(params, _)| params.clone()),
             is_flat_view,
@@ -85,13 +91,13 @@ impl ExplorerProjectionCache {
 
     fn matches(
         &self,
-        workspace: &Workspace,
+        workspace_revision: u64,
         expanded_directories: &HashSet<PathBuf>,
         filter: Option<(&SearchParams, &HashSet<PathBuf>)>,
         is_flat_view: bool,
     ) -> bool {
         self.key.as_ref().is_some_and(|key| {
-            key.workspace_revision == workspace.revision()
+            key.workspace_revision == workspace_revision
                 && key.expanded_directories == *expanded_directories
                 && key.filter.as_ref() == filter.map(|(params, _)| params)
                 && key.is_flat_view == is_flat_view
