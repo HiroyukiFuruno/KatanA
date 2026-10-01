@@ -100,6 +100,14 @@ KatanAのUIスレッドからcanonicalize/読込/検証/hashを背景intakeへ�
 
 配布CIのcwdを展開先へ変更し、checkout内resourceへの偶然の依存を排除。別レビューでpartial targetのskipped jobが公開を許可するP1を発見し、全platform job成功を必須化。新contract assertionは修正前に失敗し修正後成功（binary architecture7件を含む）。asset collectionは5成果物を非emptyで必須化し、欠損/空/未知/衝突/symlink/hidden-entry拒否と実checksum照合が成功。実Actions/clean-machine検証は未完了。
 
+## 正式統合後の全coverage再検証
+
+HEAD `7e43924d` の全coverageでworkspaceテスト、UI parallel141件（既存ignore2件）、serial18件は成功したが、strict document surface gateは`painter_grid.rs` 179/182行（98.3516%）で失敗した。ログは`tmp/coverage-gate-20261001.log`、集計は`tmp/coverage-gate-20261001-current.json`。全coverage成功とは報告しない。
+
+未実行のinlineクリックテスト失敗分岐を、正確なCandidatesコマンド1件とResizeのみのグリッドコマンドとの等価比較へ変更した。商用コード、100%閾値、除外設定は変更していない。format/diff check、focused実テスト1件、katana-ui lib strict Clippyが成功。独立レビューでP0/P1指摘なし、クリック不発・余分なコマンド・SelectAt混入の拒否を確認した。
+
+変更後の全coverage gateは成功。UI parallel141件（既存ignore2件）、serial18件を含む全工程と集計を完了し、strict document surfaceは100%、`painter_grid.rs`は184/184行。ログは`tmp/coverage-gate-20261001-rerun.log`、JSONは`tmp/coverage-gate-20261001-rerun.json`。依存更新前のこのsource graphの結果であり、次の依存移行後の再検証・配布受入・全combined gateを完了扱いにはしない。
+
 ## ビルド容量の記録
 
 空き容量が8.4GiBへ減ったため、使用中のroot/debug・coverage・新runner targetは残し、稼働していない旧`scripts/screenshot/target`だけをCargoのtarget-dir指定cleanで解放した。再生成可能な生成物38147ファイル、20.8GiBが対象。ソース、stash bundle、worktreeは削除していない。

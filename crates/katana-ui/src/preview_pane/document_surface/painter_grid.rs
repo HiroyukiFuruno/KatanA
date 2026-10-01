@@ -193,6 +193,7 @@ mod filter_pointer_tests {
             ..Default::default()
         };
 
+        let mut clicked_commands = None;
         for events in [
             vec![egui::Event::PointerMoved(pointer)],
             vec![pointer_input(pointer, true)],
@@ -200,9 +201,11 @@ mod filter_pointer_tests {
         ] {
             let mut grid_commands = Vec::new();
             let mut filter_commands = Vec::new();
+            let mut expected_resize = None;
             context.run_ui(input(events), |ui| {
                 let (rect, response) =
                     ui.allocate_exact_size(ui.available_size(), egui::Sense::click_and_drag());
+                expected_resize = Some(super::resize_command(rect));
                 grid_commands = super::commands(ui, rect, &response, &grid);
                 filter_commands = super::super::spreadsheet_filter_controls::show(
                     ui,
@@ -211,28 +214,20 @@ mod filter_pointer_tests {
                     &mut filter_state,
                 );
             });
-            if filter_commands.iter().any(|command| {
-                matches!(
-                    command,
-                    SpreadsheetFilterCommand::Candidates {
-                        sheet_index: FILTER_SHEET,
-                        column: FILTER_COLUMN,
-                        limit: FILTER_LIMIT,
-                    }
-                )
-            }) {
-                assert!(!grid_commands.iter().any(|command| {
-                    matches!(
-                        command,
-                        katana_document_viewer::DocumentSurfaceCommand::Grid(
-                            katana_document_viewer::DocumentGridCommand::SelectAt { .. }
-                        )
-                    )
-                }));
-                return;
+            if !filter_commands.is_empty() {
+                clicked_commands = Some((grid_commands, filter_commands, expected_resize));
             }
         }
-
-        panic!("filter header click did not request candidates");
+        let (grid_commands, filter_commands, expected_resize) =
+            clicked_commands.expect("filter header click must request candidates");
+        assert_eq!(
+            filter_commands,
+            vec![SpreadsheetFilterCommand::Candidates {
+                sheet_index: FILTER_SHEET,
+                column: FILTER_COLUMN,
+                limit: FILTER_LIMIT,
+            }]
+        );
+        assert_eq!(grid_commands, vec![expected_resize.expect("grid viewport")]);
     }
 }
