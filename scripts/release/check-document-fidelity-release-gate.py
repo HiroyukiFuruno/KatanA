@@ -24,6 +24,7 @@ BOOTSTRAP_ALLOWED = {
     *{f"3.{number}" for number in range(2, 8)},
     *{f"4.{number}" for number in range(3, 10)},
     *{f"4.{number}" for number in range(11, 18)},
+    "4.23",
     "5.1",
     "5.2",
     "5.3",
@@ -35,7 +36,7 @@ CRITICAL_REQUIRED = {
     "1.6",
     *{f"2.{number}" for number in range(1, 6)},
     *{f"3.{number}" for number in range(2, 9)},
-    *{f"4.{number}" for number in (3, 4, 5, 7, 13, 14, 16, 17)},
+    *{f"4.{number}" for number in (3, 4, 5, 7, 13, 14, 16, 17, 23)},
     *{f"5.{number}" for number in range(1, 4)},
     "6.2",
 }

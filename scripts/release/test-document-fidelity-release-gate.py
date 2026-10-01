@@ -183,6 +183,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
         self.assertNotEqual(result, 0)
         self.assertIn("9.1", output)
 
+    def test_pending_office_performance_evidence_only_allows_draft(self) -> None:
+        tasks = "".join(
+            f"- [x] {task_id} complete\n"
+            for task_id in sorted(MODULE.CRITICAL_REQUIRED - {"4.23"})
+        ) + "- [ ] 4.23 native Office performance evidence\n"
+        with self.repository(tasks, with_evidence=True) as directory:
+            root = Path(directory)
+            result, _ = self.run_gate(root, mode="pr-bootstrap")
+            self.assertEqual(result, 0)
+            for mode in ("strict", "release-artifact-pending", "post-release-evidence"):
+                result, output = self.run_gate(root, mode=mode)
+                self.assertNotEqual(result, 0, mode)
+                self.assertIn("4.23", output, mode)
+
+    def test_office_performance_task_cannot_be_removed(self) -> None:
+        tasks = "".join(
+            f"- [x] {task_id} complete\n"
+            for task_id in sorted(MODULE.CRITICAL_REQUIRED - {"4.23"})
+        )
+        with self.repository(tasks, with_evidence=True) as directory:
+            for mode in ("pr-bootstrap", "strict", "release-artifact-pending", "post-release-evidence"):
+                result, output = self.run_gate(Path(directory), mode=mode)
+                self.assertNotEqual(result, 0, mode)
+                self.assertIn("critical release task IDs are missing", output, mode)
+                self.assertIn("4.23", output, mode)
+
     def test_completed_tasks_pass(self) -> None:
         for mode in ("strict", "release-artifact-pending", "post-release-evidence"):
             with self.repository(self.completed_required_tasks(), with_evidence=True) as directory:

@@ -20,8 +20,14 @@
 ## Registered Office family follow-up
 
 - Actual egui layout fails before the fix because a registered named family becomes Proportional. The repaired lookup borrows `FontsView::definitions().families` and selects an existing Name case-insensitively. No family-vector clone, font file read or new font payload is introduced.
-- Two new tests cover registered identity/resource counts and unchanged unregistered-family fallback. Document-surface focused64 tests and strict Clippy pass; AST23 passes after replacing test-only hardcoded colors with the existing theme color. Post-change complete coverage/platform runs are in progress.
+- Two new tests cover registered identity/resource counts and unchanged unregistered-family fallback. Document-surface focused64 tests and strict Clippy pass; AST23 passes after replacing test-only hardcoded colors with the existing theme color. Post-change complete coverage and Linux/Windows gates pass, with strict document-surface100%, UI908 native/892 Linux and unchanged existing ignores. Real fixture integration8 also passes.
 - This does not claim that absent Aptos/Calibri fonts, name-table family registration or font weight selection are fixed. Full source-renderer fidelity remains open.
+
+## Draft-only Office evidence classification
+
+- The new explicit task4.23 represents native Office performance evidence, not completed runtime acceptance. Its absence is now rejected in every release mode; its pending state is permitted only for Draft bootstrap.
+- Two new real-checker unit regressions fail before the change and pass afterwards. All15 gate tests pass. Strict, artifact-pending and post-release modes still reject pending4.23 even with otherwise-valid acceptance evidence; unknown task9.1 still fails Draft.
+- This allows review while the human consent/external evidence prerequisite is unresolved. It does not permit Ready/merge/publication or reduce coverage, fidelity, resource or packaged acceptance requirements.
 
 ## Conclusion
 
