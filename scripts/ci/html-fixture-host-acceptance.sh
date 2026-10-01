@@ -45,8 +45,9 @@ mkdir -p "$OUTPUT_DIR"
 LOG="$OUTPUT_DIR/runner.log"
 EVIDENCE="$OUTPUT_DIR/evidence.txt"
 CPU_SAMPLES="$OUTPUT_DIR/cpu-samples.tsv"
-printf 'elapsed_seconds\tcpu_percent\n' >"$CPU_SAMPLES"
+printf 'elapsed_seconds\tstep\toperation\tcpu_percent\n' >"$CPU_SAMPLES"
 source "$ROOT_DIR/scripts/release/packaged-process-identity.sh"
+source "$ROOT_DIR/scripts/release/startup-process-cleanup.sh"
 
 # Build is deliberately outside the 60-second document contract.
 CARGO_TARGET_DIR="$TARGET_DIR" cargo build --locked --release -p katana-ui --bin kdv-office-worker
@@ -61,22 +62,39 @@ printf 'mode=in_process_host\nsource_head=%s\nrunner_path=%s\nrunner_sha256=%s\n
 
 KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER" "$RUNNER" --request "$REQUEST" --output "$OUTPUT_DIR" >"$LOG" 2>&1 &
 RUNNER_PID=$!
+MAIN_PID="$RUNNER_PID"
+EXPECTED_EXECUTABLE=$(packaged_canonical_path "$RUNNER")
+EXPECTED_SHA256=$(packaged_sha256 "$RUNNER")
+# 観測エラー時も、親子関係と実imageを確認できたrunnerだけを終了する。
+trap 'if [[ -n "${RUNNER_PID:-}" ]] && launcher_is_owned_child "$RUNNER_PID"; then terminate_verified_main; fi' EXIT
 started_epoch=$(date +%s)
+operation_started_epoch="$started_epoch"
+operation_step=0
+operation_name=startup
+operation_budget=60
 max_cpu=0
 frame_or_error=0
 
 while kill -0 "$RUNNER_PID" 2>/dev/null; do
     elapsed=$(( $(date +%s) - started_epoch ))
+    observed=$(python3 "$CONTRACT" --observe-operation "$REQUEST" "$LOG")
+    IFS=$'\t' read -r observed_step observed_name observed_budget <<<"$observed"
+    if [[ "$observed_step" != "$operation_step" ]]; then
+        operation_started_epoch=$(date +%s)
+        operation_step="$observed_step"
+    fi
+    operation_name="$observed_name"
+    operation_budget="$observed_budget"
     cpu=$(ps -o %cpu= -p "$RUNNER_PID" | tr -d ' ' || true)
     cpu=${cpu:-0}
-    printf '%s\t%s\n' "$elapsed" "$cpu" >>"$CPU_SAMPLES"
+    printf '%s\t%s\t%s\t%s\n' "$elapsed" "$operation_step" "$operation_name" "$cpu" >>"$CPU_SAMPLES"
     if awk "BEGIN { exit !($cpu > $max_cpu) }"; then
         max_cpu="$cpu"
     fi
     if rg -q 'HTML browser (first frame ready|did not produce an initial frame)|opening URL .* failed' "$LOG"; then
         frame_or_error=1
     fi
-    if (( elapsed >= 60 )); then
+    if (( $(date +%s) - operation_started_epoch >= operation_budget )); then
         break
     fi
     sleep 1
@@ -84,9 +102,11 @@ done
 
 elapsed=$(( $(date +%s) - started_epoch ))
 if kill -0 "$RUNNER_PID" 2>/dev/null; then
-    printf 'result=timeout_without_frame_or_error\nelapsed_seconds=%s\nmax_cpu_percent=%s\n' "$elapsed" "$max_cpu" >"$EVIDENCE"
-    kill -TERM "$RUNNER_PID"
+    printf 'result=operation_timeout\nstep=%s\noperation=%s\noperation_budget_seconds=%s\nelapsed_seconds=%s\nmax_cpu_percent=%s\n' \
+        "$operation_step" "$operation_name" "$operation_budget" "$elapsed" "$max_cpu" >"$EVIDENCE"
+    if launcher_is_owned_child "$RUNNER_PID"; then terminate_verified_main; fi
     wait "$RUNNER_PID" || true
+    RUNNER_PID=""
     printf 'close=terminated_after_timeout\n' >>"$EVIDENCE"
     python3 "$CONTRACT" --parse-log "$LOG" >"$OUTPUT_DIR/frame-close.json" || true
     cat "$EVIDENCE" >&2
@@ -96,6 +116,7 @@ fi
 set +e
 wait "$RUNNER_PID"
 status=$?
+RUNNER_PID=""
 set -e
 printf 'result=runner_exited\nexit_status=%s\nelapsed_seconds=%s\nmax_cpu_percent=%s\nframe_or_error_observed=%s\nrunner_exit_observed=true\n' \
     "$status" "$elapsed" "$max_cpu" "$frame_or_error" >"$EVIDENCE"

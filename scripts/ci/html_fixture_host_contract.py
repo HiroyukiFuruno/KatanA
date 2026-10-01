@@ -10,6 +10,27 @@ from urllib.parse import unquote, urlsplit
 SOURCE_SHA256 = "c02d2d7a2420e4e15e3d98a044a310c67bc75fa858c95c4867b9c3f5d7aca012"
 
 
+def observe_operation(payload: dict, log: str) -> tuple[int, str, int]:
+    markers = re.findall(r"^step ([0-9]+)/([0-9]+): ([a-z_]+)$", log, re.MULTILINE)
+    if not markers:
+        return (0, "startup", 60)
+    index, total, label = markers[-1]
+    index = int(index)
+    if int(total) != len(payload["steps"]) or not 1 <= index <= len(payload["steps"]):
+        raise ValueError("invalid HTML operation marker index")
+    step = payload["steps"][index - 1]
+    if step["type"] != label:
+        raise ValueError("HTML operation marker does not match the request")
+    budget = 60
+    if label == "open_file":
+        budget = int(step["max_first_frame_seconds"])
+    elif label == "action" and "open_url" in step["action"]:
+        budget = int(step["action"]["open_url"]["timeout_seconds"])
+    elif label == "action" and "close_active_document" in step["action"]:
+        budget = int(step["action"]["close_active_document"]["wait_seconds"])
+    return (index, label, budget)
+
+
 def summarize_log(log: str) -> dict:
     frame = re.search(r"HTML browser first frame ready in ([0-9]+\.[0-9]+)s", log)
     elapsed = float(frame[1]) if frame else None
@@ -52,11 +73,11 @@ def _validate_request(source: Path, payload: dict) -> None:
         raise ValueError("request must open the supplied workspace file")
     if opens[0].get("wait_for_html_frame") is not True or opens[0].get("max_first_frame_seconds") != 60:
         raise ValueError("HTML acceptance requires the 60-second initial-frame contract")
-    urls = [step["action"]["open_url"]["url"] for step in payload["steps"]
+    urls = [step["action"]["open_url"] for step in payload["steps"]
             if step["type"] == "action" and "open_url" in step.get("action", {})]
-    if len(urls) != 1:
-        raise ValueError("request must navigate to the supplied HTML #s15")
-    url = urlsplit(urls[0])
+    if len(urls) != 1 or urls[0].get("timeout_seconds") != 60:
+        raise ValueError("request must navigate to the supplied HTML #s15 within 60 seconds")
+    url = urlsplit(urls[0]["url"])
     if url.scheme != "file" or url.netloc or url.fragment != "s15" or Path(unquote(url.path)).resolve(strict=True) != source:
         raise ValueError("request navigation does not match the supplied HTML #s15")
     _validate_close(payload["steps"])
@@ -83,7 +104,11 @@ def validate(source: Path, request: Path, expected_sha256: str) -> dict:
 
 if __name__ == "__main__":
     try:
-        if sys.argv[1] == "--parse-log":
+        if sys.argv[1] == "--observe-operation":
+            operation = observe_operation(json.loads(Path(sys.argv[2]).read_text()), Path(sys.argv[3]).read_text())
+            print("\t".join(str(value) for value in operation))
+            sys.exit(0)
+        elif sys.argv[1] == "--parse-log":
             evidence = summarize_log(Path(sys.argv[2]).read_text(encoding="utf-8"))
         else:
             evidence = validate(Path(sys.argv[1]), Path(sys.argv[2]), SOURCE_SHA256)

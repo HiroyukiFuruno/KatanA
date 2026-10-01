@@ -22,7 +22,7 @@ class HostContractTests(unittest.TestCase):
                 {"type": "launch", "viewport": {"width": 1280, "height": 900}},
                 {"type": "open_file", "file_name": self.source.name,
                  "wait_for_html_frame": True, "max_first_frame_seconds": 60},
-                {"type": "action", "action": {"open_url": {"url": self.source.as_uri() + "#s15"}}},
+                {"type": "action", "action": {"open_url": {"url": self.source.as_uri() + "#s15", "timeout_seconds": 60}}},
                 {"type": "action", "action": {"close_active_document": {"wait_seconds": 5.0}}},
                 {"type": "record_runtime_snapshot", "name": "closed_idle"},
                 {"type": "quit"},
@@ -80,6 +80,19 @@ class HostContractTests(unittest.TestCase):
         del self.payload["steps"][4]
         with self.assertRaisesRegex(ValueError, "closed idle"):
             self.check()
+
+    def test_open_and_navigation_have_independent_deadlines(self):
+        first = contract.observe_operation(self.payload, "step 2/6: open_file\n")
+        navigation = contract.observe_operation(self.payload, "step 2/6: open_file\nstep 3/6: action\n")
+        self.assertEqual(first, (2, "open_file", 60))
+        self.assertEqual(navigation, (3, "action", 60))
+
+    def test_close_keeps_its_existing_five_second_deadline(self):
+        self.assertEqual(contract.observe_operation(self.payload, "step 4/6: action\n"), (4, "action", 5))
+
+    def test_mismatched_operation_marker_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "operation marker"):
+            contract.observe_operation(self.payload, "step 3/6: open_file\n")
 
 
 class HostLogTests(unittest.TestCase):
