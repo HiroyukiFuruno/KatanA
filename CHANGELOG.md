@@ -10,6 +10,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Relevant document tools**: HTML and Office previews disable unsupported download, slideshow, display, and table-of-contents tools.
 - **Excel filters**: Column headers provide value filters, blank-value selection, and filter clearing.
 - **Office loading responsiveness**: Initial file reads run in the background so a slow disk read does not stop the interface.
+- **Repeated large-document reads**: Reduced excess memory allocation while reading large files repeatedly; other document-memory regressions remain under investigation.
 
 ### 🐛 Bug Fixes
 
