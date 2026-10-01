@@ -19,6 +19,7 @@ fn receive_frame(
     Box<katana_document_viewer::DocumentFrame>,
     Option<katana_document_viewer::SpreadsheetFrameMetadata>,
     Option<SpreadsheetFilterEvent>,
+    usize,
 ) {
     match events
         .recv_timeout(FRAME_RECEIVE_TIMEOUT)
@@ -26,10 +27,16 @@ fn receive_frame(
     {
         DocumentWorkerEvent::Frame {
             frame,
+            border_cache,
             spreadsheet_metadata,
             filter_event,
             ..
-        } => (frame, spreadsheet_metadata, filter_event),
+        } => (
+            frame,
+            spreadsheet_metadata,
+            filter_event,
+            border_cache.cells.len(),
+        ),
         DocumentWorkerEvent::Failure { failure, .. } => panic!("worker failed: {failure}"),
     }
 }
@@ -57,11 +64,15 @@ fn start_worker() -> (
 fn worker_forwards_xlsx_filter_candidates_apply_and_clear() {
     let (commands, events, worker) = start_worker();
 
-    let (_, spreadsheet_metadata, filter_event) = receive_frame(&events);
+    let (frame, spreadsheet_metadata, filter_event, border_count) = receive_frame(&events);
     let metadata = spreadsheet_metadata.expect("initial spreadsheet metadata");
     assert_eq!(metadata.sheet_index, 0);
     assert!(metadata.auto_filter.is_some());
     assert_eq!(filter_event, None);
+    assert_eq!(
+        border_count,
+        frame.surface.grid().expect("grid").cells.len()
+    );
 
     commands
         .send(DocumentWorkerCommand::SpreadsheetFilter(
@@ -72,7 +83,7 @@ fn worker_forwards_xlsx_filter_candidates_apply_and_clear() {
             },
         ))
         .expect("candidate command");
-    let (_, spreadsheet_metadata, filter_event) = receive_frame(&events);
+    let (_, spreadsheet_metadata, filter_event, _) = receive_frame(&events);
     let SpreadsheetFilterEvent::Candidates { values, .. } = filter_event.expect("candidate event")
     else {
         panic!("expected candidate event");
@@ -93,7 +104,7 @@ fn worker_forwards_xlsx_filter_candidates_apply_and_clear() {
             },
         ))
         .expect("apply command");
-    let (_, spreadsheet_metadata, filter_event) = receive_frame(&events);
+    let (_, spreadsheet_metadata, filter_event, _) = receive_frame(&events);
     assert!(matches!(
         filter_event,
         Some(SpreadsheetFilterEvent::VisibilityChanged {
@@ -116,7 +127,7 @@ fn worker_forwards_xlsx_filter_candidates_apply_and_clear() {
             },
         ))
         .expect("clear command");
-    let (_, spreadsheet_metadata, filter_event) = receive_frame(&events);
+    let (_, spreadsheet_metadata, filter_event, _) = receive_frame(&events);
     assert!(matches!(
         filter_event,
         Some(SpreadsheetFilterEvent::VisibilityChanged {

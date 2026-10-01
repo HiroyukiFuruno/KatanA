@@ -55,6 +55,7 @@ impl DocumentSurface {
             command_tx: Some(command_tx),
             event_rx,
             frame: None,
+            border_cache: Default::default(),
             filter_ui: Default::default(),
             failure,
             painter: Default::default(),
@@ -103,13 +104,38 @@ impl DocumentSurface {
                 .frame(rail_frame)
                 .show_inside(ui, |ui| show_sheet_tabs(self, ui, &frame));
         }
-        let (commands, filter_commands) = if frame.surface.grid().is_some() {
-            super::painter_grid::paint_with_filters(ui, &frame.surface, &mut self.filter_ui)
-        } else {
-            (
-                paint_document_frame(&mut self.painter, ui, &frame.surface, self.generation),
-                Vec::new(),
+        let painted = if frame.surface.grid().is_some() {
+            super::painter_grid::paint_with_filters(
+                ui,
+                &frame.surface,
+                &mut self.filter_ui,
+                &self.border_cache,
             )
+        } else {
+            paint_document_frame(
+                &mut self.painter,
+                ui,
+                &frame.surface,
+                self.generation,
+                &self.border_cache,
+            )
+            .map(|commands| (commands, Vec::new()))
+        };
+        let (commands, filter_commands) = match painted {
+            Ok(value) => value,
+            Err(error) => {
+                let failure = DocumentFailure::new(
+                    DocumentFailureLayer::KatanaHost,
+                    "paint spreadsheet borders",
+                    self.source.uri.clone(),
+                    Some(self.source.format),
+                    error.to_string(),
+                );
+                failure.log();
+                self.failure = Some(failure);
+                self.frame = Some(frame);
+                return;
+            }
         };
         for command in commands {
             self.queue_surface(command);

@@ -129,6 +129,7 @@ pub(crate) struct DocumentSurface {
     pub(super) command_tx: Option<SyncSender<DocumentWorkerCommand>>,
     pub(super) event_rx: Receiver<DocumentWorkerEvent>,
     pub(super) frame: Option<DocumentFrame>,
+    pub(super) border_cache: super::painter_grid_borders::PreparedGridBorders,
     pub(super) filter_ui: super::spreadsheet_filter_controls::SpreadsheetFilterUiState,
     pub(super) failure: Option<DocumentFailure>,
     pub(super) painter: DocumentFramePainter,

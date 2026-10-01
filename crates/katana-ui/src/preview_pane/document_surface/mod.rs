@@ -4,6 +4,9 @@ mod debug_log;
 mod local_intake;
 mod painter;
 mod painter_grid;
+mod painter_grid_border_style;
+mod painter_grid_borders;
+mod painter_grid_borders_paint;
 mod painter_grid_conditional;
 mod painter_grid_style;
 mod painter_grid_text;
@@ -18,6 +21,8 @@ mod source_io;
 mod spreadsheet_filter_controls;
 mod types;
 mod worker;
+mod worker_border_projection;
+mod worker_session;
 mod worker_support;
 
 pub(crate) use local_intake::LocalDocumentIntake;

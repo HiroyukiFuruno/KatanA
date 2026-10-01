@@ -1,16 +1,13 @@
 use eframe::egui;
 use katana_document_viewer::{
-    DocumentFrame, DocumentSession, DocumentSessionConfig, DocumentSessionEvent, DocumentViewport,
-    OfficeWorkerConfig, SpreadsheetFilterEvent, SpreadsheetFrameMetadata,
+    DocumentFrame, DocumentSession, DocumentSessionEvent, SpreadsheetFilterEvent,
+    SpreadsheetFrameMetadata,
 };
 use std::sync::mpsc::{Receiver, Sender};
 
 use super::source::DocumentSurfaceSource;
 use super::types::{DocumentFailure, DocumentFailureLayer};
-use super::worker_support::{
-    INITIAL_VIEWPORT_HEIGHT, INITIAL_VIEWPORT_WIDTH, failure, format_extension,
-    office_worker_executable,
-};
+use super::worker_support::failure;
 
 #[path = "worker_commands.rs"]
 mod worker_commands;
@@ -21,6 +18,7 @@ pub(super) enum DocumentWorkerEvent {
     Frame {
         generation: u64,
         frame: Box<DocumentFrame>,
+        border_cache: super::painter_grid_borders::PreparedGridBorders,
         session_event: DocumentSessionEvent,
         spreadsheet_metadata: Option<SpreadsheetFrameMetadata>,
         filter_event: Option<SpreadsheetFilterEvent>,
@@ -39,10 +37,10 @@ pub(super) fn run(
     repaint: egui::Context,
 ) {
     let started_at = std::time::Instant::now();
-    let mut session = match open_session(&mut source) {
+    let mut session = match super::worker_session::open_session(&mut source) {
         Ok(session) => session,
         Err(failure) => {
-            send_failure(generation, failure, &events, &repaint);
+            super::worker_border_projection::send_failure(generation, failure, &events, &repaint);
             return;
         }
     };
@@ -76,25 +74,6 @@ pub(super) fn run(
     );
 }
 
-fn open_session(source: &mut DocumentSurfaceSource) -> Result<DocumentSession, DocumentFailure> {
-    let viewer_source = source.take_viewer_source()?;
-    let viewport = DocumentViewport::new(INITIAL_VIEWPORT_WIDTH, INITIAL_VIEWPORT_HEIGHT);
-    let config = session_config(source, viewport)?;
-    DocumentSession::open(viewer_source, config)
-        .map_err(|error| failure(source, "open", DocumentFailureLayer::KdvWorker, error))
-}
-
-fn session_config(
-    source: &DocumentSurfaceSource,
-    viewport: DocumentViewport,
-) -> Result<DocumentSessionConfig, DocumentFailure> {
-    let config = DocumentSessionConfig::new(viewport);
-    if source.format == katana_core::document_source::BinaryDocumentFormat::Pdf {
-        return Ok(config);
-    }
-    Ok(config.office_worker(OfficeWorkerConfig::new(office_worker_executable(source)?)))
-}
-
 fn process_commands(
     generation: u64,
     session: &mut DocumentSession,
@@ -120,7 +99,7 @@ fn process_commands(
             Ok(result) => result,
             Err(error) => {
                 let failure = failure(source, "input", DocumentFailureLayer::KdvWorker, error);
-                send_failure(generation, failure, events, repaint);
+                super::worker_border_projection::send_failure(generation, failure, events, repaint);
                 return;
             }
         };
@@ -151,16 +130,30 @@ fn send_frame(
         Ok(frame) => frame,
         Err(error) => {
             let failure = failure(source, "frame", DocumentFailureLayer::KdvSurface, error);
-            send_failure(generation, failure, events, repaint);
+            super::worker_border_projection::send_failure(generation, failure, events, repaint);
+            return false;
+        }
+    };
+    let border_cache = match super::worker_border_projection::project(&frame, generation) {
+        Ok(cache) => cache,
+        Err(error) => {
+            let failure = failure(
+                source,
+                "frame border projection",
+                DocumentFailureLayer::KatanaHost,
+                error,
+            );
+            super::worker_border_projection::send_failure(generation, failure, events, repaint);
             return false;
         }
     };
     let spreadsheet_metadata = session.spreadsheet_frame_metadata();
-    log_frame(generation, &frame);
+    super::worker_border_projection::log_frame(generation, &frame);
     if events
         .send(DocumentWorkerEvent::Frame {
             generation,
             frame: Box::new(frame),
+            border_cache,
             session_event,
             spreadsheet_metadata,
             filter_event,
@@ -173,33 +166,9 @@ fn send_frame(
     true
 }
 
-fn log_frame(generation: u64, frame: &DocumentFrame) {
-    tracing::debug!(
-        generation,
-        format = format_extension(frame.format),
-        active_index = frame.state.active_index,
-        item_count = frame.state.item_count,
-        surface = ?frame.surface.kind(),
-        "produced document frame"
-    );
-}
-
-fn send_failure(
-    generation: u64,
-    failure: DocumentFailure,
-    events: &Sender<DocumentWorkerEvent>,
-    repaint: &egui::Context,
-) {
-    let _ = events.send(DocumentWorkerEvent::Failure {
-        generation,
-        failure,
-    });
-    repaint.request_repaint_after(std::time::Duration::ZERO);
-}
-
 #[cfg(test)]
 mod tests {
-    use super::{DocumentSurfaceSource, open_session};
+    use super::DocumentSurfaceSource;
 
     #[test]
     fn opened_session_consumes_worker_source_bytes_but_keeps_identity() {
@@ -208,7 +177,8 @@ mod tests {
         let mut source = DocumentSurfaceSource::local(&fixture).expect("PDF source");
         let identity = source.descriptor();
         assert!(source.byte_len() > 0);
-        let mut session = open_session(&mut source).expect("PDF session");
+        let mut session =
+            super::super::worker_session::open_session(&mut source).expect("PDF session");
         assert_eq!(source.byte_len(), 0);
         assert_eq!(source.uri, identity.uri);
         assert_eq!(source.revision, identity.revision);

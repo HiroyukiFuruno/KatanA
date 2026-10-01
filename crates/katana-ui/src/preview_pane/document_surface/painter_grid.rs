@@ -7,27 +7,34 @@ use katana_document_viewer::{
 pub(super) fn paint(
     ui: &mut egui::Ui,
     frame: &DocumentSurfaceFrame,
-) -> Vec<DocumentSurfaceCommand> {
-    paint_with_filters(ui, frame, &mut Default::default()).0
+    borders: &super::painter_grid_borders::PreparedGridBorders,
+) -> Result<Vec<DocumentSurfaceCommand>, super::painter_grid_borders_paint::BorderPaintError> {
+    let mut filters = Default::default();
+    paint_with_filters(ui, frame, &mut filters, borders).map(|(commands, _)| commands)
 }
 
 pub(super) fn paint_with_filters(
     ui: &mut egui::Ui,
     frame: &DocumentSurfaceFrame,
     filters: &mut super::spreadsheet_filter_controls::SpreadsheetFilterUiState,
-) -> (
-    Vec<DocumentSurfaceCommand>,
-    Vec<katana_document_viewer::SpreadsheetFilterCommand>,
-) {
+    borders: &super::painter_grid_borders::PreparedGridBorders,
+) -> Result<
+    (
+        Vec<DocumentSurfaceCommand>,
+        Vec<katana_document_viewer::SpreadsheetFilterCommand>,
+    ),
+    super::painter_grid_borders_paint::BorderPaintError,
+> {
     let size = ui.available_size().max(egui::vec2(1.0, 1.0));
     let (rect, response) = ui.allocate_exact_size(size, egui::Sense::click_and_drag());
     let Some(grid) = frame.grid() else {
-        return (vec![resize_command(rect)], Vec::new());
+        return Ok((vec![resize_command(rect)], Vec::new()));
     };
     super::painter_grid_style::paint_grid(ui, rect, grid);
+    super::painter_grid_borders_paint::paint_prepared(ui, rect, grid, borders)?;
     let commands = commands(ui, rect, &response, grid);
     let filter_commands = super::spreadsheet_filter_controls::show(ui, rect, grid, filters);
-    (commands, filter_commands)
+    Ok((commands, filter_commands))
 }
 
 fn commands(

@@ -95,6 +95,8 @@ mod tests {
         let mut session = DocumentSession::open(viewer_source, config).expect("xlsx session");
         let frame = session.frame().expect("xlsx frame");
         let click_frame = frame.clone();
+        let border_cache =
+            super::super::painter_grid_borders::prepare(&frame.surface).expect("xlsx border cache");
         let first_label = frame
             .surface
             .item_labels()
@@ -110,6 +112,7 @@ mod tests {
             command_tx: Some(command_tx),
             event_rx,
             frame: Some(frame),
+            border_cache,
             filter_ui: Default::default(),
             failure: None,
             painter: Default::default(),
@@ -157,6 +160,7 @@ mod tests {
             command_tx: Some(click_tx),
             event_rx: click_event_rx,
             frame: None,
+            border_cache: Default::default(),
             filter_ui: Default::default(),
             failure: None,
             painter: Default::default(),

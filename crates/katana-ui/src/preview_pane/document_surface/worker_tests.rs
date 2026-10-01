@@ -1,3 +1,4 @@
+use super::painter_grid_borders::{PreparedCellBorders, PreparedGridBorders};
 use super::source::DocumentSurfaceSource;
 use super::worker::{DocumentWorkerCommand, DocumentWorkerEvent};
 use katana_document_viewer::{
@@ -61,6 +62,7 @@ fn idle_surface() -> (
         command_tx: Some(command_tx),
         event_rx,
         frame: Some(test_frame()),
+        border_cache: Default::default(),
         failure: None,
         painter: Default::default(),
         loading: false,
@@ -94,6 +96,7 @@ fn document_surface_preserves_commands_until_each_frame_arrives() {
         DocumentWorkerEvent::Frame {
             generation: surface.generation,
             frame: Box::new(test_frame()),
+            border_cache: Default::default(),
             session_event: DocumentSessionEvent::None,
             spreadsheet_metadata: None,
             filter_event: None,
@@ -107,6 +110,73 @@ fn document_surface_preserves_commands_until_each_frame_arrives() {
     );
     assert!(surface.failure.is_none());
     assert!(surface.pending_commands.is_empty());
+}
+
+#[test]
+fn stale_frame_rejects_frame_and_border_cache_together() {
+    let ctx = eframe::egui::Context::default();
+    let (mut surface, _command_rx, _event_tx) = idle_surface();
+    let sentinel = PreparedGridBorders {
+        cells: vec![PreparedCellBorders {
+            coordinate: katana_document_viewer::DocumentGridCoordinate { row: 9, column: 9 },
+            left: None,
+            right: None,
+            top: None,
+            bottom: None,
+        }],
+    };
+    surface.border_cache = sentinel.clone();
+    surface.apply_event(
+        &ctx,
+        DocumentWorkerEvent::Frame {
+            generation: surface.generation + 1,
+            frame: Box::new(test_frame()),
+            border_cache: PreparedGridBorders::default(),
+            session_event: DocumentSessionEvent::None,
+            spreadsheet_metadata: None,
+            filter_event: None,
+        },
+    );
+    assert_eq!(surface.border_cache, sentinel);
+    assert_eq!(
+        surface
+            .frame
+            .as_ref()
+            .expect("current frame")
+            .surface
+            .page()
+            .unwrap()
+            .fingerprint,
+        "test-page"
+    );
+}
+
+#[test]
+fn current_frame_accepts_frame_and_border_cache_together() {
+    let ctx = eframe::egui::Context::default();
+    let (mut surface, _command_rx, _event_tx) = idle_surface();
+    let accepted = PreparedGridBorders {
+        cells: vec![PreparedCellBorders {
+            coordinate: katana_document_viewer::DocumentGridCoordinate { row: 3, column: 4 },
+            left: None,
+            right: None,
+            top: None,
+            bottom: None,
+        }],
+    };
+    surface.apply_event(
+        &ctx,
+        DocumentWorkerEvent::Frame {
+            generation: surface.generation,
+            frame: Box::new(test_frame()),
+            border_cache: accepted.clone(),
+            session_event: DocumentSessionEvent::None,
+            spreadsheet_metadata: None,
+            filter_event: None,
+        },
+    );
+    assert_eq!(surface.border_cache, accepted);
+    assert!(surface.frame.is_some());
 }
 
 #[test]

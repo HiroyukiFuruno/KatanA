@@ -43,6 +43,7 @@ impl DocumentSurface {
         match event {
             DocumentWorkerEvent::Frame {
                 frame,
+                border_cache,
                 session_event,
                 spreadsheet_metadata,
                 filter_event,
@@ -71,6 +72,7 @@ impl DocumentSurface {
                 apply_platform_event(ctx, &frame, session_event);
                 self.filter_ui
                     .update_metadata(spreadsheet_metadata, filter_event.as_ref());
+                self.border_cache = border_cache;
                 self.frame = Some(*frame);
                 self.failure = None;
             }
