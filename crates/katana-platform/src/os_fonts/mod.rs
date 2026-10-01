@@ -59,9 +59,20 @@ impl OsFontScanner {
             Self::scan_directory(Path::new(&dir), &mut fonts);
         }
 
-        fonts.sort_by(|a, b| a.0.cmp(&b.0));
+        Self::sort_fonts(&mut fonts, cfg!(target_os = "windows"));
         fonts.dedup_by(|a, b| a.0 == b.0);
         fonts
+    }
+
+    fn sort_fonts(fonts: &mut [(String, String)], case_insensitive: bool) {
+        fonts.sort_by_cached_key(|(name, _)| {
+            let key = if case_insensitive {
+                name.to_ascii_lowercase()
+            } else {
+                name.clone()
+            };
+            (key, name.clone())
+        });
     }
 
     /* WHY: Recursively unnested scan to adhere to maximum nest rules (2 levels focus). */
@@ -122,6 +133,36 @@ impl OsFontScanner {
 #[cfg(test)]
 mod tests {
     use super::OsFontScanner;
+
+    #[test]
+    fn windows_font_order_reaches_lowercase_arial_before_large_uppercase_fonts() {
+        let mut fonts = vec![
+            ("YuGothB".to_owned(), "large-collection".to_owned()),
+            ("arialbd".to_owned(), "bold".to_owned()),
+            ("Candara".to_owned(), "unrelated".to_owned()),
+            ("arial".to_owned(), "regular".to_owned()),
+        ];
+        OsFontScanner::sort_fonts(&mut fonts, true);
+        let names: Vec<_> = fonts.iter().map(|(name, _)| name.as_str()).collect();
+        assert_eq!(names, ["arial", "arialbd", "Candara", "YuGothB"]);
+    }
+
+    #[test]
+    fn non_windows_font_order_and_duplicate_priority_are_preserved() {
+        let mut fonts = vec![
+            ("arial".to_owned(), "first-directory".to_owned()),
+            ("Arial".to_owned(), "uppercase".to_owned()),
+            ("arial".to_owned(), "second-directory".to_owned()),
+        ];
+        for case_insensitive in [false, true] {
+            OsFontScanner::sort_fonts(&mut fonts, case_insensitive);
+            let paths: Vec<_> = fonts.iter().map(|(_, path)| path.as_str()).collect();
+            assert_eq!(paths, ["uppercase", "first-directory", "second-directory"]);
+        }
+        fonts.dedup_by(|a, b| a.0 == b.0);
+        let paths: Vec<_> = fonts.iter().map(|(_, path)| path.as_str()).collect();
+        assert_eq!(paths, ["uppercase", "first-directory"]);
+    }
 
     #[test]
     fn discovers_fonts_in_nested_directories() {

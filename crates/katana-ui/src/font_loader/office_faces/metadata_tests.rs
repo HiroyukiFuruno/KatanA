@@ -73,6 +73,32 @@ fn metadata_only_nonexact_bold_keeps_its_actual_weight() {
     assert_eq!(report.faces[0].weight, SEMIBOLD_WEIGHT);
 }
 
+#[test]
+fn metadata_only_equal_distance_preserves_candidate_priority() {
+    let bytes = embedded_font();
+    let family = family_name(&skrifa::FontRef::new(&bytes).expect("embedded font"));
+    let temporary = tempfile::tempdir().expect("temporary directory");
+    let payload = with_os2_style(&bytes, SEMIBOLD_WEIGHT, OS2_BOLD_SELECTION);
+    let mut candidates = Vec::new();
+    for filename in ["first.ttf", "second.ttf"] {
+        let path = temporary.path().join(filename);
+        fs::write(&path, &payload).expect("write metadata fixture");
+        candidates.push((filename.to_owned(), path.to_string_lossy().into_owned()));
+    }
+    for _ in 0..candidates.len() {
+        let report = FontFaceResolver::resolve(
+            &candidates,
+            &[request(&family, true, false)],
+            &AtomicBool::new(false),
+        );
+        assert!(report.diagnostics.is_empty());
+        assert_eq!(report.faces.len(), 1);
+        assert_eq!(report.faces[0].path.to_string_lossy(), candidates[0].1);
+        assert_eq!(report.faces[0].weight, SEMIBOLD_WEIGHT);
+        candidates.reverse();
+    }
+}
+
 fn write_metadata_variants(root: &std::path::Path, bytes: &[u8]) -> Vec<(String, String)> {
     [
         ("regular.ttf", REGULAR_WEIGHT, 0),
