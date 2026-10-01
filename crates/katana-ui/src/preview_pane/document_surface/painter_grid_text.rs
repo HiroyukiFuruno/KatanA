@@ -71,14 +71,18 @@ fn layout_text(
         cell.appearance.horizontal_alignment,
         DocumentGridHorizontalAlignment::Justify | DocumentGridHorizontalAlignment::Distributed
     );
-    job.append(&cell.text, 0.0, text_format(cell, color));
+    job.append(&cell.text, 0.0, text_format(ui, cell, color));
     ui.fonts_mut(|fonts| fonts.layout_job(job))
 }
 
-fn text_format(cell: &DocumentGridCell, color: egui::Color32) -> egui::TextFormat {
+fn text_format(ui: &egui::Ui, cell: &DocumentGridCell, color: egui::Color32) -> egui::TextFormat {
     let decoration = egui::Stroke::new(1.0, color);
     egui::TextFormat {
-        font_id: font_id(cell.appearance.font_size_px, &cell.appearance.font_family),
+        font_id: font_id(
+            ui,
+            cell.appearance.font_size_px,
+            &cell.appearance.font_family,
+        ),
         color,
         italics: cell.appearance.italic,
         underline: if cell.appearance.underline {
@@ -95,12 +99,20 @@ fn text_format(cell: &DocumentGridCell, color: egui::Color32) -> egui::TextForma
     }
 }
 
-fn font_id(size: u16, family: &str) -> egui::FontId {
+fn font_id(ui: &egui::Ui, size: u16, family: &str) -> egui::FontId {
     let size = if size == 0 {
         DEFAULT_FONT_SIZE
     } else {
         f32::from(size)
     };
+    let registered = ui.fonts(|fonts| {
+        fonts.definitions().families.keys().find(|candidate| {
+            matches!(candidate, egui::FontFamily::Name(name) if name.eq_ignore_ascii_case(family))
+        }).cloned()
+    });
+    if let Some(family) = registered {
+        return egui::FontId::new(size, family);
+    }
     let normalized = family.to_ascii_lowercase();
     let monospace = ["mono", "courier", "consolas"]
         .iter()

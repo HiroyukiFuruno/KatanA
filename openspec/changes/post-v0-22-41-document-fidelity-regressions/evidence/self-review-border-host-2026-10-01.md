@@ -17,6 +17,12 @@
 - KRR's required next public version is not yet available. No private path/git override or sibling implementation is introduced.
 - The native Office diagnostic requires human Terms consent. It does not change the consent setting or automate approval.
 
+## Registered Office family follow-up
+
+- Actual egui layout fails before the fix because a registered named family becomes Proportional. The repaired lookup borrows `FontsView::definitions().families` and selects an existing Name case-insensitively. No family-vector clone, font file read or new font payload is introduced.
+- Two new tests cover registered identity/resource counts and unchanged unregistered-family fallback. Document-surface focused64 tests and strict Clippy pass; AST23 passes after replacing test-only hardcoded colors with the existing theme color. Post-change complete coverage/platform runs are in progress.
+- This does not claim that absent Aptos/Calibri fonts, name-table family registration or font weight selection are fixed. Full source-renderer fidelity remains open.
+
 ## Conclusion
 
 The local changes are suitable for formal incremental commits after targeted verification; the release is not ready. Full gates, public dependency adoption, current PR review and distribution evidence are still required.

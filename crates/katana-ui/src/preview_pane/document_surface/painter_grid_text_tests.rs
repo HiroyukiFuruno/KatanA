@@ -8,6 +8,48 @@ const TEXT_RECT_HEIGHT: f32 = 40.0;
 const HIDDEN_TEXT_INDICATOR_WIDTH: f32 = 1_000.0;
 
 #[test]
+fn grid_text_honors_registered_family_without_expanding_font_resources() {
+    let context = crate::test_ui::Context::default();
+    let mut definitions = egui::FontDefinitions::default();
+    let registered = egui::FontFamily::Name("Office Fixture Sans".into());
+    let proportional = definitions.families[&egui::FontFamily::Proportional].clone();
+    definitions
+        .families
+        .insert(registered.clone(), proportional);
+    let expected_data_count = definitions.font_data.len();
+    let expected_family_count = definitions.families.len();
+    context.set_fonts(definitions);
+    for name in ["Office Fixture Sans", "office fixture sans"] {
+        context.run_ui(egui::RawInput::default(), |ui| {
+            let mut cell = grid_cell();
+            cell.appearance.font_family = name.to_owned();
+            let galley = super::layout_text(ui, &cell, TEXT_RECT_WIDTH, ui.visuals().text_color());
+            assert_eq!(galley.job.sections[0].format.font_id.family, registered);
+            ui.fonts(|fonts| {
+                assert_eq!(fonts.definitions().font_data.len(), expected_data_count);
+                assert_eq!(fonts.definitions().families.len(), expected_family_count);
+            });
+        });
+    }
+}
+
+#[test]
+fn grid_text_keeps_existing_fallback_for_unregistered_families() {
+    let context = crate::test_ui::Context::default();
+    context.run_ui(egui::RawInput::default(), |ui| {
+        for (name, expected) in [
+            ("Uninstalled Office Sans", egui::FontFamily::Proportional),
+            ("Uninstalled Office Mono", egui::FontFamily::Monospace),
+        ] {
+            let mut cell = grid_cell();
+            cell.appearance.font_family = name.to_owned();
+            let galley = super::layout_text(ui, &cell, TEXT_RECT_WIDTH, ui.visuals().text_color());
+            assert_eq!(galley.job.sections[0].format.font_id.family, expected);
+        }
+    });
+}
+
+#[test]
 fn grid_text_covers_alignment_font_decoration_wrap_and_visibility() {
     let context = crate::test_ui::Context::default();
     context.run_ui(egui::RawInput::default(), |ui| {
