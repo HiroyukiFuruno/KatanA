@@ -24,3 +24,15 @@ The separate Office real-face implementation, published KDV/KRR adoption, packag
 ## Conclusion
 
 PASS for the targeted migration checks, with no remaining finding in this diff review. Full coverage, normal push, public-dependency adoption and release remain incomplete.
+
+## Independent review follow-up
+
+Independent review found one P2: `skrifa` classification can return Normal when OS/2 does not advertise italic/oblique, while the post table contains a nonzero italic angle. The previous parser rejected this combination, so style alone was not a compatible exclusion predicate.
+
+The real Ubuntu fixture now sets OS/2 Normal and post angle -12 degrees. Its metadata is asserted through the real parser. Before the fix, the regression exits 101 because a Regular Ubuntu alias is wrongly registered; after checking post angle as well, all 25 font-loader tests pass. Strict test-inclusive UI/core Clippy passes (6.18 seconds), and all 23 AST contracts pass with no threshold/exclusion changes.
+
+Independent re-review confirms the original P2 is repaired and finds no new P0/P1/P2 in the two-file follow-up. Its review is source/diff evidence; the executed tests above were run separately by the main task.
+
+The normal push of `3b21a4db` was interrupted with exit 130 to repair this finding before publishing more changes. The exact owned test container `7b7689e1a448` was verified by compose working-directory/command identity and stopped; `--rm` removed it. No cargo/rustc/lefthook process or test container remained. This interrupted gate is not a successful full verification; remote is still `e602456a`.
+
+Valid nonzero TTC collection index and multilingual family selection remain explicit verification gaps, not proven by bad-index/default-font tests. True Bold glyph fidelity is still separate from these classification tests.
