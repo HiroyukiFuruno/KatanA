@@ -189,3 +189,12 @@ HEAD `438ea436`は通常pre-push hookを通過し、`release/v0.22.42`を公開b
 監査後の独立修正: 既存requestに5秒以内の条件付きcloseとclosed-idle snapshotを追加し、close欠落/時間延長/snapshot欠落の3回帰をRED→GREENで確認。成功frame60秒以内と全7resource countゼロを要求し、明示failure/close欠落/遅いframe/残存frameを拒否するlog回帰も追加、全14件成功。旧実HTMLの60秒timeout生ログは新checkerでもexit1、frame/closeとも未確認として拒否。shell syntax、実原本preflight、JSON/JSゲートも成功。poll別CPUをTSVへ保存し、単なるrunner終了をnormal closeと表示する旧ラベルを廃止した。本原本での成功描画、sticky、kernel-level descendant不在、配布mainでの通常closeは未確認のまま維持する。
 
 PRの追加P2「全runnerの60秒監視が独立したHTML遷移を早期終了する」は採用した。owned runnerのstep index/typeをrequestと照合し、同じstep内では期限を更新せず、open_file60秒・open_url60秒・close5秒を別々に外部監視する。制限時間自体は増やしていない。新規3回帰は修正前ERROR、修正後GREENで、全17件成功。実原本preflight・shell syntax・JSON/JSと共有cleanupの実子process回帰も成功。観測エラー時のEXIT cleanupは親子関係と実image/hashを確認できたrunnerのみを終了する。新driverや上流repo編集は行っていない。成功原本の連続2操作での本実行は未公開KRR待ちのままであり、ここではcontroller契約と安全な終了経路の検証を記録する。
+
+## 現HEADレビューとCI前提の追加修正
+
+- `77308932`へのP2 comment4152555278: hiddenの実RawInputでzoomが1.25→1.875へ変化するREDを確認。controls-offをhover専用にし状態更新をvisibleへ限定した。hidden/visible入力とtexture回帰5件、同一identity保持1件、strict test-inclusive Clippyが成功。二重罫線の定数assertも実paint座標assertへ置換しfocused2件成功。AST23件、format/diff成功。
+- P2 comment4152555290: sleepを残期限以下へ制限し、runnerのInstantで各stepの実elapsed_nsを記録。欠落・重複・遅延を拒否する契約23件と実process-group7件が成功。専用groupをkernel PID/PGID/starttimeとlaunch parentで観測し、正常終了後の残存を成功扱いしない。Darwinの秒精度とgroup離脱子孫の対象外を明記し、全descendant保証とは扱わない。
+- screenshot runnerのlocked release buildとrelease strict Clippyがexit0。実xlsx-sheet-tab-inputは2回exit0、初期frame2.381s/0.925s、Notes/Dashboard実クリックでactive_index0→1→0。保存済み`/tmp/katana-xlsx-operation-contract.moqqJE/runner.log`の全8step実時間を同contractで検証し成功。in-processであり、原本HTML成功、正常Office close、packaged-main受入ではない。
+- 最新CIのmacOS job110250136475/Ubuntu job110250136572はworker_filter_testsで`target/debug/deps/kdv-office-worker`不在のため失敗。Run testsを全3OSでbash/既存with-office-test-worker.sh経由へ変更し、workspace範囲は維持。既存native prerequisite契約へworkflow検査を追加しRED→GREEN、root再実行もexit0。修正後cloud結果は未確認。
+- 公開版をライブ確認: KRR v0.4.21、KDV v0.5.7。必要な後続公開版の採用、残fidelity/全ゲート/配布受入/公開は未完了。cache削除・master編集・stash作成は行っていない。
+- 正式履歴: hidden入力`093efcb5`、罫線実座標検査`b52102e4`、HTML操作期限/process-group契約`3b95e7b9`、CI worker前提`7ece228b`。通常pre-commit hookは全て成功。CI helperはGit mode100644のため明示bashで起動し、直接実行を拒否する追加RED→GREENも確認。次に通常push hookを実施する。レビューへの返信・resolveはpush成功後に行い、現時点では未解決のまま保持する。
