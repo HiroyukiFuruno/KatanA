@@ -22,11 +22,9 @@ impl FontLookupWorker {
         let worker_cancelled = Arc::clone(&cancelled);
         let (events, results) = mpsc::channel();
         let repaint = ctx.clone();
-        std::thread::Builder::new()
-            .name(format!(
-                "katana-font-{surface_generation}-{lookup_generation}"
-            ))
-            .spawn(move || {
+        Self::spawn(
+            format!("katana-font-{surface_generation}-{lookup_generation}"),
+            move || {
                 Self::resolve(
                     surface_generation,
                     lookup_generation,
@@ -35,8 +33,16 @@ impl FontLookupWorker {
                     events,
                     repaint,
                 );
-            })?;
+            },
+        )?;
         Ok(FontLookupJob { cancelled, results })
+    }
+
+    pub(super) fn spawn(
+        name: String,
+        work: impl FnOnce() + Send + 'static,
+    ) -> std::io::Result<std::thread::JoinHandle<()>> {
+        super::DocumentWorkerLifecycle::spawn(name, work)
     }
 
     fn resolve(
@@ -113,3 +119,7 @@ impl FontLookupWorker {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "font_lookup_worker_tests.rs"]
+mod tests;
