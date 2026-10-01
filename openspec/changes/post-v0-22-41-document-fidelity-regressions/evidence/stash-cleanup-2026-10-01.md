@@ -42,7 +42,7 @@
 36ファイルを現作業ツリーと照合した。14ファイルは完全一致、22ファイルは機能分離・診断共通化・後続修正・進捗更新による差分であり、旧版の無条件再適用は後続修正を戻してしまう。下記はソース内容の照合であり、全gateや正式commitの完了証跡ではない。
 
 | 旧stashの対象 | 判定・現版での根拠 |
-|---|---|
+| --- | --- |
 | `crates/katana-ui/src/app/action/dispatch.rs` | dispatch_panels.rsへ分離。PreviewPanel型で同じ4メニューの可否判定・閉鎖・排他制御を維持。 |
 | `crates/katana-ui/src/app/action/process_helpers.rs` | 現作業ツリーとbyte単位で完全一致。再適用不要。 |
 | `crates/katana-ui/src/font_loader/helpers.rs` | 現作業ツリーとbyte単位で完全一致。再適用不要。 |

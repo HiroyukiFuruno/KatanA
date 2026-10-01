@@ -13,7 +13,7 @@
 画面原点のlogical point。本文原点=(44,134)。Labelのaccessibility boundsとpaint galley boundsの一致をJSON検査で確認した。
 
 | 対象 | source line | font size | label y | label height | row top→font baseline | 次のlabel y |
-|---|---:|---:|---:|---:|---:|---:|
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | H1 Heading | 91 | 21 | 1608 | 31.5 | 18.5 | 1660.5 |
 | H2 Heading | 93 | 19.845 | 1660.5 | 30 | 17.5 | 1711.5 |
 | H3 Heading | 95 | 18.676 | 1711.5 | 28 | 16.5 | 1760.5 |

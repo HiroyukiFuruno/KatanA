@@ -142,7 +142,8 @@ Task 4.7 remains open until actual input/capture, platform and combined gates
 pass after the verified egui migration.
 The older duplicate-V8 evidence in `v8-dependency-link-gate.md` is historical;
 the adopted KDV 0.5.7 / KRR 0.4.21 graph contains only V8 152.2.0.
-# MathJax JavaScript dependency scope confirmation
+
+## MathJax JavaScript dependency scope confirmation
 
 - The actual repository package is `vendor/mathjax_svg/js/package.json`, not the ancestor workspace package selected by running Bun from the repository root.
 - Running `bun outdated` from that package exits0 with no outdated entries. Its current declarations are `@mathjax/src ^4.1.3`, `@types/bun ^1.4.2`, `bun ^1.4.2` and `typescript ^7.0.2`.

@@ -160,6 +160,35 @@
 
 ## 最新レビューと判断待ち
 
+- [/] 公開v0.22.41 macOS ZIPを実取得しchecksum一致、本体arm64のみでuniversal配布契約違反を確認。検査tool全体exit0でも内部architecture FAILを成功扱いしない。Intel起動不能の原因候補であり全報告PCの原因とは断定しない。既存0.22.42 package-macで本体/sidecar双方のuniversal化・ad-hoc署名を実行中、実体とnative起動確認・公開再取得を残す。証跡: evidence/published-macos-architecture-2026-10-02.md。
+- [x] reader後fullcoverageの旧253/256・256/257失敗を保持し、実File型のbound/reservation overflow伝搬UTで解消。関連12件成功の後、最終sourceで通常just coverage exit0（UI995/core215/platform115/export13/parallel143/serial18、既存ignored不変）。strict document surface100%/uncovered0・全target strict Clippy・format・KML成功。除外・閾値・製品コードをcoverage都合で変更していない。複数文書RSS・各OS/配布・公開の完了ではない。
+- [x] 追加sourceを関心事別に通常hook付き正式統合: font DEBUG段階ログe85119b5、論理worker/KDV資源解放検査eccf3923、取消済みOS読込による容量枯渇終端512d14b3、bounded容量予約/実File回帰と日英履歴594e7358。証跡を続いて統合し、通常push・実Windows CI・review thread再取得/対応を実施する。Draft維持。
+- [ ] KDV #59へ残るcold/unique RSS失敗と原本convert後寿命/PDF画像一時領域の未確定候補をIssue firstでhandoff。root原本Vecはmoveのみ・共有Arc化削減根拠無し。5件reader単独はRSS増分64768KiBで全体315504KiBは未再現。別repo編集・新worktreeは無し。既存KDV担当が独立score #58と分離してread-only測定を継続する。
+- [/] bounded reader後の実runner5165e343で大型PPTX11openはexit0、warm301424→306960KiB（増分5536、旧646448）、全worker/KDV8counter0。反復増加経路の改善であり全解消ではない。同binaryのmixed HTML/PPTX cold増分254672>196608、提供5件sequence増分315504>196608はexit1を保持。原本copy/解放後保持の経路をreadonlyで追加調査中。
+- [/] root bounded readerを実装しsource凍結。opened handleのregular file長をlimit+1以内の容量hintにし、try_reserve_exactのtyped failure、実read上限/最終size guard/FIFOを維持。生成3MiB+1のcapacity回帰は旧4194304でRED→修正後GREEN、source_io関連11件成功（実grow/shrink/非regular/metadata error/overflow/partial read）。変更後の全coverage/strict lint/実runner再buildと提供Office受入を実行中。まだ全体メモリ解消・正式commit・公開の完了ではない。
+- [x] lifecycle/capacity/font段階ログの凍結sourceで通常`just coverage` exit0。UI986 passed/2既存ignored、core215、platform115、実export13、UI parallel143/2既存ignored、serial18成功。strict document surface100%/uncovered0を維持。全target strict Clippy・AST23・formatも成功。続いてroot bounded readerの容量予約修正を実装し、変更後の全検証・実入力受入を再実行する。
+- [/] root bounded readerのallocation保持を単独再現: 実PPTX40852621bytesをVec::new+File.take+read_to_endで11回read/dropするとcapacity67108864/RSS1840→445376KiB。opened file lengthを同limit内でreserveした別fresh processは41872KiBでplateau。KDV/GUI無しのroot経路再現であり、製品全回帰解消は未検証。現source凍結の全coverage/strict all-target Clippyを実行中、完了後に安全なregular-file容量予約と回帰を実装する。
+- [x] 容量回復後、同hash8b9e0639の代表HTML/PPTX1+10cycleを再実行しexit0。warm191424→173920KiB、全worker/KDV8counter0、既存RSS/時間基準不変。先のprotocol failedは証跡に保持し、disk原因とは未断定。
+
+- [ ] 新lifecycle実binary(hash8b9e0639)でも大型PPTX11open後RSS268896→915344KiB（646448>65536）FAIL。全idleの文書workerと公開KDV8counterは0。release待機だけで解消しない。代表PPTXはdisk残119Mi時に5cycle目のOffice response missingでexit1、容量安定後再実行する。source/report/raw profile/release保持し、root旧dev platform2.9GiB/core2.1GiBのみ公式cleanで解放済み。
+- [ ] current HEAD新P2 comment4157985547: cancelled blocking readsが固定2枠を占有すると後続regular要求が無期限Loading。active要求を有界追跡し、取消済みOS読込による枯渇時はqueued/new要求をtyped failureへ終端する修正と実FIFO回帰を継続。worker増加・deadline延長・fallbackは禁止。
+- [/] lifecycleのAST2違反は型のassociated spawn/live_countへ責務分割して解消。AST23件/軽量RAII6件成功。新source compile・厳密lint/coverage・正式commitは未完了。
+
+- [/] lifecycle計測を実装: root文書workerのRAIIと公開KDV0.5.8の8counterをhidden hookへ投影し、close待機/idle受入に追加。元判定で新2testがRED(exit101)、復元後GREEN(2passed)、RAII軽量5test成功。大型実入力/new standalone binary・strict lint/coverage・正式commitは未完了。OS TLS/GPU/allocator解放をこのcounterで保証しない。
+- [ ] current9bのWindows cold単独fonttestも10秒Timeout。候補147取得は1700usで完了、resolver内の読込/metadata解析が未完了。通常fulltest/headlessは未実行。次のDEBUG限定phaseログを追加し、期限/候補順/全検査は維持する。
+- [/] 独立Rust allocator診断: 64〜73MiBを毎回dropしてもRSS1840→703552KiB、SDK relief返値0/即時減少なし。MallocNanoZoneをunsetしても同様。固定64MiB反復は67520KiBでplateau。製品の具体的割当経路は未確定で、allocator reliefを製品へ採用しない。
+
+- [/] OS vmmapで保持の分類を前進: 同大型PPTX/HTML無し反復の同process前半→後半でphysical footprint274.4→726.4MiB、Malloc Large(empty)dirty164.9→605.4MiB、使用中malloc118.3MiBは同量。live leakと断定せず、解放後allocator保持が増加の大部分と確認。close同期点ではないため新lifecycle計測後に再測定し、製品本体/実reclaim効果は未検証。実描画でもRSS350448→1176240KiBでFAIL、rendererだけの問題とはしない。
+- [x] 9b0226baの通常push exit0、native/Linux全workspace/Windows test-inclusive cross-checkとDraft preflightを通過しremote HEAD一致/ahead-behind0を確認。intake threadへreply4157943228、candidate queueへreply4157943811後に個別resolve。全15threads/各commentsを再取得してpage残なし、未resolveはmanual target1件。最新HEAD reviewをissuecomment5935922655で依頼、Draft維持。current cloud36892925945実行中、Release Readiness成功。
+
+- [ ] 大型PPTX反復でもRSS基準超過を再現: immutable9b runnerでcold104080→331040KiB（増分226960>196608、exit1）、別warm-only診断では同PPTX+小HTMLの10cycleで331024→975056KiB（増分644032>65536、exit1）。warm-onlyはcold失敗の置換受入ではなく原因切分け。WGPU初期化/各close描画の別5件比較はproposal初回21.154秒>15秒で途中失敗し、最終RSS比較は未取得。締切・予算を延長しない。
+- [/] 既存資源counterの観測不足をsourceで確定。tab_previews除去後の0はdetached文書worker終了/KDV原本・page/cell cache解放を保証しない。公開KDV0.5.8の8counterとroot RAII worker lifetimeをstandalone harnessへ投影する計画（OS TLS/allocator/GPUの完全解放とは区別）。通常push gate中はsource凍結を維持し、追加計測の実装はgate後に開始する。
+- [x] 新9b sourceの公式HTML/XLSX・HTML/PPTX各1+10cycleは基準不変でexit0。XLSX warm253472→263376KiB（9904）、PPTX warm183456→193600KiB（10144）。提供大型Office失敗と分けて記録し、全体解消扱いにはしない。evidence/supplied-office-memory-2026-10-02.mdへ現binary hash/失敗/観測限界を保持。
+- [/] 検証済み6commitの通常pushを実行中（pre-push省略なし）。直前publicf793 cloudはmacOS/Ubuntu全Test and Buildと全OS lint/supply-chain/CodeQL成功、Windows実font timeoutのみ失敗。新Windows診断のremote反映・実原因確定はgate終了後に確認。
+
+- [ ] 新HEAD9b0226baの実入力memory受入で失敗: 提供5件(XLSX2/PPTX3)の初回frameは0.941/0.100/4.402/2.020/1.457秒で全件成功、close後内部counterは全0だがRSS105152→420096KiB、増分314944が既存cold budget196608を超過(exit1)。RSSだけでleakとは断定せず、GPU/allocator highwater・画像cache・document lifetime保持を切り分ける。予算緩和で成功扱いにしない。
+- [x] 同HEADの提供82MB XLSXは実初回frame5.949秒/Grid1sheet、close後RSS279248KiB・増分175520で同基準成功。別fresh processのOS200ms samplingではhostpeak291808KiB/direct Office worker94640KiB、初回4.581秒、close後counter全0/増分187792で成功。これはin-processとsampled peakであり、製品本体/全時刻peak/全Workbook fidelityの証明ではない。実ファイル内容はignored tmpから参照のみ。
+
 - [x] font候補IO/段階ログ0c9464ad、Windows診断CI/契約9c35982eを通常hook付きcommitで正式統合。次の実ファイル受入はsourceを凍結して現binaryを再buildし、提供82MB XLSXも既存XLSX初回15秒/close後RSS196608KiB基準で測定する。入力はignored tmpのprivate requestから参照し、文書内容を公開履歴へ追加しない。remote反映・Windows実改善・実ファイル測定はまだ未完了。
 
 - [x] font候補探索/段階DEBUG変更後の通常`just coverage` exit0。platform115、UI978/2既存ignored、core215、実export13、UI parallel143/2既存ignored、serial18成功。meaningful未実行0・strict document surface100%/uncovered0を維持。Windows診断stepのCI resource contract3件/Office worker contract4件成功。正式pushとWindowsでの原因確定/改善検証は未完了。

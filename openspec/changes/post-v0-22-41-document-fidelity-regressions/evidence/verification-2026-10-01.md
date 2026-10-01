@@ -120,7 +120,7 @@ egui0.36.2移行を通常hookを通したcommit`886907a1`へ正式統合した�
 
 ## ビルド容量の記録
 
-通常commit hookのdevチェックと別runnerの再ビルドでhost空きが857MiBまで減少した。commit hookは成功したがrunnerは1GiB閾値に従い中断し、終了済みの誤った別target` scripts/screenshot/target`のみCargo cleanで6443ファイル/2.8GiB解放。既存`target/screenshot-harness`を明示して再開する。実source/証跡/使用中アプリ/他repoは削除していない。
+通常commit hookのdevチェックと別runnerの再ビルドでhost空きが857MiBまで減少した。commit hookは成功したがrunnerは1GiB閾値に従い中断し、終了済みの誤った別target `scripts/screenshot/target`のみCargo cleanで6443ファイル/2.8GiB解放。既存`target/screenshot-harness`を明示して再開する。実source/証跡/使用中アプリ/他repoは削除していない。
 
 空き容量が8.4GiBへ減ったため、使用中のroot/debug・coverage・新runner targetは残し、稼働していない旧`scripts/screenshot/target`だけをCargoのtarget-dir指定cleanで解放した。再生成可能な生成物38147ファイル、20.8GiBが対象。ソース、stash bundle、worktreeは削除していない。
 
@@ -163,7 +163,8 @@ Office native未達の原因はsource確認でTerms未承認と確定した。�
 style責務分割後にmodule登録漏れを実コンパイルで検出し、rootがsibling module登録/importを修正した。`tmp/native-border-full-test-repaired-20261001.log`の通常`just test`はexit0、core export13件238.63s、AST23件、UI903件/2既存ignored、UI parallel143件/2既存ignored、serial18件、main17件が成功した。`just fmt-check`とworkspace厳格Clippyもexit0。最後にchild testへ移設済みdouble定数の不要な公開visibilityを除去し、focusedコンパイルを再確認する。罫線追加後のcoverage/platform/packaged受入は未達のまま。
 
 Biome2.5.15へtool pin/config schemaを同期した。公式migration previewに従いfile-length規則をnurseryからstyleへ移動、error/max200/skipBlankLinesは保持し、function30/cognitive1等の閾値も変更しない。50 JSONのformat検査とJS設定対象のlint/format検査が成功し、Rust全体のformat/Clippyにも問題がない。Cargo直接依存dry-runは63 latest/no upgrade proposal。rootにはpackage.jsonがなく、rootでのBun outdatedはancestor packageを参照するため、過去のroot Bun零件をrepo全JS依存証明と扱わない。
-# 最新の正式統合と再検証
+
+## 最新の正式統合と再検証
 
 - フォント追加修正`c4678022`後も全coverage gateはexit0、strict document surface100%、meaningful uncovered0。UI908件/既存ignore2、parallel143件/既存ignore2、serial18件、main17件、core export13件が成功。Linux workspaceはUI892件/既存ignore2を含み成功、Windows test-inclusive cross-checkも成功。native実fixture8件も7.80sで成功。
 - 4.23のDraft分類を明示し、同時にcritical required IDへ追加した。新規2回帰は修正前に失敗、修正後は15件すべて成功。Draft checker exit0、strict checker exit1（未完了受入を拒否）を確認。最終公開の条件緩和やfalse completionはない。
@@ -176,7 +177,7 @@ Biome2.5.15へtool pin/config schemaを同期した。公式migration previewに
 - 最終集計: 最新罫線sourceのcoverage gateはexit0、meaningful uncovered0、strict document surface100%。計測付きUI906件/既存ignore2、parallel143件/既存ignore2、serial18件、main17件、core export13件が成功。Linux locked workspaceはUI890件/既存ignore2、core export14件、fixture8件、parallel141件/既存ignore2、serial18件を含み成功。Windows test-inclusive cross-checkも成功し、`just check-platforms`はexit0。
 - Draft bootstrap検査はexit1、未完了の4.23を正しく拒否。unknown task許容や受入基準緩和は行わず、利用規約の人間承認後に実アプリ計測を再開する。release/PRは未公開。
 
-# Draft PRとHTML再受入の事前準備
+## Draft PRとHTML再受入の事前準備
 
 HEAD `438ea436`は通常pre-push hookを通過し、`release/v0.22.42`を公開branchへpushした。Draft [PR #346](https://github.com/HiroyukiFuruno/KatanA/pull/346)を作成して`@codex review`を依頼。Ready/merge/releaseは未実施。上記の旧Draft拒否結果は4.23の明示分類修正で解消したが、strict公開ゲートの未完了拒否は維持する。
 

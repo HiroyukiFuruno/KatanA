@@ -7,8 +7,8 @@ It does not invoke DocumentNext or JumpTo directly.
 
 Two runs fail at the first Notes selection: active_index remains 0. The first
 frame is a Grid with two items (9.026 seconds cold, 0.113 seconds on the debug
-rerun). The Notes node rectangle is [[349.7,839.0],[398.5,862.0]] in the
-1280x900 logical viewport; the input center is [374.1,850.5].
+rerun). The Notes node rectangle is `[[349.7,839.0],[398.5,862.0]]` in the
+1280x900 logical viewport; the input center is `[374.1,850.5]`.
 
 On the debug rerun, document_surface logs show the initial frame, viewport
 Resize send/apply and its returned frame, but no JumpTo send/apply after the
@@ -40,8 +40,8 @@ after the grid consumed all available space, overlapping the bottom sheet rail.
 
 `DocumentSurface::show` now allocates diagnostics before the grid and sheet
 rail. The same real-pointer fixture succeeds with unchanged Notes coordinates
-[[349.7,839.0],[398.5,862.0]] and Dashboard coordinates
-[[258.0,839.0],[341.7,862.0]], confirming active-index transitions 0 -> 1 -> 0.
+`[[349.7,839.0],[398.5,862.0]]` and Dashboard coordinates
+`[[258.0,839.0],[341.7,862.0]]`, confirming active-index transitions 0 -> 1 -> 0.
 The fixed run exits 0; the preceding runs with the old layout exit 1. Its
 first frame is 0.145 seconds, a warm observation rather than a cold-start claim.
 
@@ -58,7 +58,7 @@ rectangle to fit a finite, positive region inside the viewport. Unit tests
 reject displaced tabs, partial overflow, empty/reversed regions, non-finite
 coordinates, and a region outside the viewport.
 
-Both XLSX fixtures now require the bottom region [250,828,1250,872] for the
+Both XLSX fixtures now require the bottom region `[250,828,1250,872]` for the
 fixed 1280x900 viewport. The focused real-workbook run verifies both Notes and
 Dashboard bounds and completes active-index transitions 0 -> 1 -> 0, exit 0.
 All 36 diagnostic harness tests and formal all-target Clippy pass. Older

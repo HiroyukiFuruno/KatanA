@@ -68,7 +68,7 @@ Output root, relative to this implementation worktree:
 `provenance.json` records source, binary, input, configuration and output identity.
 
 | Contract | Both captures |
-|---|---|
+| --- | --- |
 | Logical host viewport | 1282.5 x 2387 |
 | Full physical PNG | 2565 x 4774 |
 | Logical document content | x=44, y=134, width=1187, height=2225 |
