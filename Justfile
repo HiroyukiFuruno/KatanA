@@ -34,7 +34,7 @@ KML_EXCLUDE_ARGS := env_var_or_default("KML_EXCLUDE_ARGS", "--exclude \"openspec
 KML_CHECK_ARGS := env_var_or_default("KML_CHECK_ARGS", "--config " + KML_CONFIG + " --include \"**/*.md\" --include \"**/*.markdown\" " + KML_EXCLUDE_ARGS + " " + KML_SCOPE)
 OPENSPEC := env_var_or_default("OPENSPEC", "scripts/openspec")
 
-BIOME_VERSION := env_var_or_default("BIOME_VERSION", "2.4.13")
+BIOME_VERSION := env_var_or_default("BIOME_VERSION", "2.5.15")
 BIOME := env_var_or_default("BIOME", "bunx @biomejs/biome@" + BIOME_VERSION)
 BIOME_JS_TS_FILES := env_var_or_default("BIOME_JS_TS_FILES", "")
 BIOME_JSON_FILES := env_var_or_default("BIOME_JSON_FILES", ".markdownlint.json .vscode/settings.json biome.jsonc crates/katana-ui/locales/*.json crates/katana-ui/resources/*.json scripts/screenshot/examples/*.json")
