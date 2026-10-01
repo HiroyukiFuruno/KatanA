@@ -9,11 +9,7 @@ cd "$ROOT_DIR"
     exit 1
 }
 
-TARGET_DIR=$(cargo metadata --locked --format-version 1 --no-deps | python3 -c 'import json, sys; print(json.load(sys.stdin)["target_directory"])')
-[[ "$TARGET_DIR" = /* ]] || {
-    echo "FAIL: cargo metadata returned a non-absolute target directory: $TARGET_DIR" >&2
-    exit 1
-}
+TARGET_DIR=$(cargo metadata --locked --format-version 1 --no-deps | python3 "$ROOT_DIR/scripts/ci/office_worker_target.py")
 
 cargo build --locked -p katana-ui --bin kdv-office-worker
 

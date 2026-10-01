@@ -20,7 +20,7 @@ fail() {
 HELPER_SOURCE=$(<"$HELPER")
 for required_marker in \
     'cargo metadata --locked --format-version 1 --no-deps' \
-    'target_directory' \
+    'office_worker_target.py' \
     'cargo build --locked -p katana-ui --bin kdv-office-worker' \
     '[[ -x "$OFFICE_WORKER" ]]' \
     'export KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER"'; do
@@ -47,4 +47,5 @@ RUN_TEST_STEP=$(awk '
     fail "Run tests workflow step must invoke the native Office worker helper with bash for the full workspace suite"
 }
 
+python3 "$ROOT_DIR/scripts/ci/test_office_worker_target.py"
 echo "PASS: native Office worker test contract is explicit"
