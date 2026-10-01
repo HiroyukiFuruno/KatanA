@@ -165,6 +165,9 @@ style責務分割後にmodule登録漏れを実コンパイルで検出し、roo
 Biome2.5.15へtool pin/config schemaを同期した。公式migration previewに従いfile-length規則をnurseryからstyleへ移動、error/max200/skipBlankLinesは保持し、function30/cognitive1等の閾値も変更しない。50 JSONのformat検査とJS設定対象のlint/format検査が成功し、Rust全体のformat/Clippyにも問題がない。Cargo直接依存dry-runは63 latest/no upgrade proposal。rootにはpackage.jsonがなく、rootでのBun outdatedはancestor packageを参照するため、過去のroot Bun零件をrepo全JS依存証明と扱わない。
 # 最新の正式統合と再検証
 
+- フォント追加修正`c4678022`後も全coverage gateはexit0、strict document surface100%、meaningful uncovered0。UI908件/既存ignore2、parallel143件/既存ignore2、serial18件、main17件、core export13件が成功。Linux workspaceはUI892件/既存ignore2を含み成功、Windows test-inclusive cross-checkも成功。native実fixture8件も7.80sで成功。
+- 4.23のDraft分類を明示し、同時にcritical required IDへ追加した。新規2回帰は修正前に失敗、修正後は15件すべて成功。Draft checker exit0、strict checker exit1（未完了受入を拒否）を確認。最終公開の条件緩和やfalse completionはない。
+
 - `714bbe15`: Biome2.5.15と既存ルールを保ったschema移行。
 - `dbc52b6a`: Office復元診断のevent identity、UI進行、poll別subtree resource、実子プロセスcleanup回帰。
 - `43d7043e`: セル四辺の罫線をworkerで型付き準備し、frameと同じgenerationで受信して描画。正式commit前の通常hookも成功。
