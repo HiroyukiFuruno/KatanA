@@ -26,7 +26,18 @@ class CargoSweepGuardTest(unittest.TestCase):
             with self.subTest(entry=label):
                 assert_sweep_commands_are_dry_run(self, source)
 
-    def test_real_build_blocks_sweep_then_sweep_dry_run_succeeds(self):
+    def test_macos_setup_installs_the_declared_sweep_tool_with_lockfile(self):
+        repository = Path(__file__).resolve().parents[2]
+        setup = (repository / "scripts/setup/setup.sh").read_text(encoding="utf-8")
+        self.assertRegex(setup, r"(?m)^#   - cargo-sweep\s+: Clean up unused build artifacts$")
+        self.assertIn('• cargo-sweep     (just sweep)', setup)
+        self.assertIn("# 8c. cargo-sweep", setup)
+        self.assertIn("# 8d. git-cliff", setup)
+        self.assertIn('if cargo sweep --version &>/dev/null; then', setup)
+        self.assertIn("cargo install cargo-sweep --locked", setup)
+        self.assertIn('echo "  cargo-sweep  $(cargo sweep --version)"', setup)
+
+    def test_real_build_blocks_sweep_then_sweep_dry_run_succeeds_or_skips_safely(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
             manifest = create_crate(root)
@@ -47,22 +58,35 @@ class CargoSweepGuardTest(unittest.TestCase):
                 self.assertEqual(0, built.returncode, built.stdout + built.stderr)
                 swept = run_guard(manifest, environment)
                 self.assertEqual(0, swept.returncode, swept.stderr)
-                self.assertIn("Running cargo-sweep", swept.stdout)
+                safe_skip = guard.fcntl is None or os.name != "posix"
+                if safe_skip:
+                    self.assertIn("Cargo sweep skipped safely", swept.stdout)
+                    self.assertNotIn("Running cargo-sweep", swept.stdout)
+                else:
+                    self.assertIn("Running cargo-sweep", swept.stdout)
                 for profile in ("debug", "release"):
-                    self.assertTrue((target / profile / ".cargo-lock").is_file())
-                    self.assertTrue(
-                        (target / "x86_64-unknown-linux-gnu" / profile / ".cargo-lock").is_file()
+                    target_triple_profile = (
+                        target / "x86_64-unknown-linux-gnu" / profile
                     )
+                    if safe_skip:
+                        self.assertTrue((target_triple_profile / ".fingerprint").is_dir())
+                        self.assertFalse((target_triple_profile / ".cargo-lock").exists())
+                    else:
+                        self.assertTrue((target / profile / ".cargo-lock").is_file())
+                        self.assertTrue((target_triple_profile / ".cargo-lock").is_file())
             finally:
                 finally_release(process, barrier)
 
-    def test_symlink_target_and_ambiguous_profile_fail_closed(self):
+    def test_non_regular_target_and_ambiguous_profile_fail_closed(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
             manifest = create_crate(root)
             target = root / "target"
             linked = root / "linked-target"
-            linked.symlink_to(target)
+            if os.name == "posix":
+                linked.symlink_to(target)
+            else:
+                linked.write_text("not a target directory", encoding="utf-8")
             previous = os.environ.get("CARGO_TARGET_DIR")
             os.environ["CARGO_TARGET_DIR"] = str(linked)
             try:

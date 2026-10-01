@@ -41,5 +41,16 @@ from this earlier failure, and are not evidence of an application regression.
 
 ## Conclusion
 
+PR #346 review comments4154830915 (P1) and4154830927 (P2) identified a
+missing declared cargo-sweep setup installation and a Windows contract that
+incorrectly demanded POSIX lock success. The macOS setup now installs the
+locked tool; the three-OS workflow explicitly installs it and runs the safety
+contract. Windows must prove safe skip and preservation of the synthetic
+target-triple fingerprint without creating a lock, not POSIX sweep execution.
+The static nonregular-target check does not require Windows symlink privilege.
+All six focused contracts pass locally; setup passes `zsh -n`.
+The Windows branch and current cloud result remain unverified until CI runs;
+no application test, acceptance or coverage gate is skipped.
+
 PASS for the scoped resource-management changes and focused contracts;
 current-HEAD cloud / final document and distribution acceptance remain open.
