@@ -1,6 +1,10 @@
 mod controls;
 mod controls_sheet_tabs;
 mod debug_log;
+mod font_lookup;
+mod font_lookup_types;
+mod font_lookup_worker;
+mod font_requests;
 mod local_intake;
 mod painter;
 mod painter_grid;

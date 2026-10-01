@@ -1,3 +1,4 @@
+use crate::font_loader::office_font_leases::DocumentFontLease;
 use eframe::egui;
 use katana_document_viewer::{
     DocumentGridCommand, DocumentGridNavigation, DocumentGridSurfaceFrame, DocumentSurfaceCommand,
@@ -10,14 +11,31 @@ pub(super) fn paint(
     borders: &super::painter_grid_borders::PreparedGridBorders,
 ) -> Result<Vec<DocumentSurfaceCommand>, super::painter_grid_borders_paint::BorderPaintError> {
     let mut filters = Default::default();
-    paint_with_filters(ui, frame, &mut filters, borders).map(|(commands, _)| commands)
+    paint_inner(ui, frame, &mut filters, borders, None).map(|(commands, _)| commands)
 }
 
-pub(super) fn paint_with_filters(
+pub(super) fn paint_with_filters_and_fonts(
     ui: &mut egui::Ui,
     frame: &DocumentSurfaceFrame,
     filters: &mut super::spreadsheet_filter_controls::SpreadsheetFilterUiState,
     borders: &super::painter_grid_borders::PreparedGridBorders,
+    fonts: Option<&DocumentFontLease>,
+) -> Result<
+    (
+        Vec<DocumentSurfaceCommand>,
+        Vec<katana_document_viewer::SpreadsheetFilterCommand>,
+    ),
+    super::painter_grid_borders_paint::BorderPaintError,
+> {
+    paint_inner(ui, frame, filters, borders, fonts)
+}
+
+fn paint_inner(
+    ui: &mut egui::Ui,
+    frame: &DocumentSurfaceFrame,
+    filters: &mut super::spreadsheet_filter_controls::SpreadsheetFilterUiState,
+    borders: &super::painter_grid_borders::PreparedGridBorders,
+    fonts: Option<&DocumentFontLease>,
 ) -> Result<
     (
         Vec<DocumentSurfaceCommand>,
@@ -30,7 +48,7 @@ pub(super) fn paint_with_filters(
     let Some(grid) = frame.grid() else {
         return Ok((vec![resize_command(rect)], Vec::new()));
     };
-    super::painter_grid_style::paint_grid(ui, rect, grid);
+    super::painter_grid_style::paint_grid(ui, rect, grid, fonts);
     super::painter_grid_borders_paint::paint_prepared(ui, rect, grid, borders)?;
     let commands = commands(ui, rect, &response, grid);
     let filter_commands = super::spreadsheet_filter_controls::show(ui, rect, grid, filters);

@@ -1,0 +1,112 @@
+use std::collections::BTreeMap;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
+
+use skrifa::FontRef;
+
+use super::font_metadata::{FaceMetadata, face_metadata, matches_request, weight_distance};
+use super::types::{FontFaceRequest, ResolvedFontFace};
+
+pub(super) type RequestKey = (String, bool, bool);
+
+pub(super) struct SelectedFace {
+    metadata: FaceMetadata,
+    path: PathBuf,
+    index: u32,
+    distance: u16,
+    payload: Arc<egui::FontData>,
+}
+
+pub(super) fn all_exact_matches(
+    selected: &BTreeMap<RequestKey, SelectedFace>,
+    requests: &BTreeMap<RequestKey, FontFaceRequest>,
+) -> bool {
+    selected.len() == requests.len() && selected.values().all(|face| face.distance == 0)
+}
+
+impl SelectedFace {
+    pub(super) fn into_resolved(self, request: FontFaceRequest) -> ResolvedFontFace {
+        ResolvedFontFace {
+            request,
+            family: self.metadata.family,
+            weight: self.metadata.weight,
+            bold: self.metadata.bold,
+            italic: self.metadata.italic,
+            monospaced: self.metadata.monospaced,
+            path: self.path,
+            face_index: self.index,
+            payload: self.payload,
+        }
+    }
+}
+
+pub(super) struct PendingMatch {
+    key: RequestKey,
+    metadata: FaceMetadata,
+    index: u32,
+    distance: u16,
+}
+
+pub(super) fn selected_match(
+    face: &FontRef<'_>,
+    index: usize,
+    requests: &BTreeMap<RequestKey, FontFaceRequest>,
+) -> Option<PendingMatch> {
+    let index = u32::try_from(index).ok()?;
+    let metadata = face_metadata(face)?;
+    let (key, request) = requests.iter().find(|(_, request)| {
+        matches_request(&metadata, &request.family, request.bold, request.italic)
+    })?;
+    Some(PendingMatch {
+        key: key.clone(),
+        distance: weight_distance(&metadata, request.bold),
+        metadata,
+        index,
+    })
+}
+
+pub(super) fn append_matches(
+    path: &Path,
+    matches: Vec<PendingMatch>,
+    payload: Vec<u8>,
+    selected: &mut BTreeMap<RequestKey, SelectedFace>,
+) {
+    let multi_face = matches.len() > 1;
+    let mut owned_payload = Some(payload);
+    for found in matches {
+        if !should_replace(selected.get(&found.key), found.distance) {
+            continue;
+        }
+        let Some(bytes) = payload_for_match(&mut owned_payload, multi_face) else {
+            continue;
+        };
+        let mut font_data = egui::FontData::from_owned(bytes);
+        font_data.index = found.index;
+        selected.insert(
+            found.key,
+            SelectedFace {
+                metadata: found.metadata,
+                path: path.to_owned(),
+                index: found.index,
+                distance: found.distance,
+                payload: Arc::new(font_data),
+            },
+        );
+    }
+}
+
+fn should_replace(current: Option<&SelectedFace>, distance: u16) -> bool {
+    current.is_none_or(|selected| distance < selected.distance)
+}
+
+fn payload_for_match(payload: &mut Option<Vec<u8>>, multi_face: bool) -> Option<Vec<u8>> {
+    if multi_face {
+        payload.as_ref().cloned()
+    } else {
+        payload.take()
+    }
+}
+
+pub(super) fn request_key(request: &FontFaceRequest) -> RequestKey {
+    (request.family.to_lowercase(), request.bold, request.italic)
+}

@@ -1,8 +1,11 @@
 use egui::{Context, FontFamily};
+use std::sync::Arc;
 
 mod helpers;
 mod named_families;
 mod normalize;
+pub(crate) mod office_faces;
+pub(crate) mod office_font_leases;
 mod types;
 
 pub use types::{NormalizeFonts, SystemFontLoader};
@@ -43,7 +46,10 @@ impl SystemFontLoader {
             .fonts
             .families
             .contains_key(&egui::FontFamily::Name("MarkdownProportional".into()));
-        ctx.set_fonts(normalized.into_inner());
+        office_font_leases::DocumentFontLeaseManager::install_base(
+            ctx,
+            Arc::new(normalized.into_inner()),
+        );
         let id = egui::Id::new("katana_fonts_loaded");
         ctx.data_mut(|d| d.insert_temp(id, is_loaded));
 

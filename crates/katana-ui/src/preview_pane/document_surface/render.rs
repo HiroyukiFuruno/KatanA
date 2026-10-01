@@ -57,6 +57,7 @@ impl DocumentSurface {
             frame: None,
             border_cache: Default::default(),
             filter_ui: Default::default(),
+            fonts: Default::default(),
             failure,
             painter: Default::default(),
             loading: started,
@@ -105,11 +106,12 @@ impl DocumentSurface {
                 .show_inside(ui, |ui| show_sheet_tabs(self, ui, &frame));
         }
         let painted = if frame.surface.grid().is_some() {
-            super::painter_grid::paint_with_filters(
+            super::painter_grid::paint_with_filters_and_fonts(
                 ui,
                 &frame.surface,
                 &mut self.filter_ui,
                 &self.border_cache,
+                self.fonts.lease(),
             )
         } else {
             paint_document_frame(

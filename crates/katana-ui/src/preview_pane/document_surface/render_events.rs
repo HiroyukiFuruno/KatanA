@@ -20,6 +20,7 @@ impl DocumentSurface {
                 }
             }
         }
+        self.fonts.poll(self.generation);
         if !self.command_in_flight
             && let Some(command) = self.pending_commands.take_next()
         {
@@ -44,6 +45,7 @@ impl DocumentSurface {
             DocumentWorkerEvent::Frame {
                 frame,
                 border_cache,
+                font_requests,
                 session_event,
                 spreadsheet_metadata,
                 filter_event,
@@ -75,12 +77,14 @@ impl DocumentSurface {
                 self.border_cache = border_cache;
                 self.frame = Some(*frame);
                 self.failure = None;
+                self.fonts.update(self.generation, font_requests, ctx);
             }
             DocumentWorkerEvent::Failure { failure, .. } => {
                 failure.log();
                 self.failure = Some(failure);
                 self.command_tx.take();
                 self.pending_commands.clear();
+                self.fonts.cancel();
             }
         }
     }
@@ -126,6 +130,7 @@ impl DocumentSurface {
         self.failure = Some(failure);
         self.command_tx.take();
         self.pending_commands.clear();
+        self.fonts.cancel();
     }
 }
 

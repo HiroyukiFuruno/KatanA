@@ -19,6 +19,7 @@ pub(super) enum DocumentWorkerEvent {
         generation: u64,
         frame: Box<DocumentFrame>,
         border_cache: super::painter_grid_borders::PreparedGridBorders,
+        font_requests: Vec<crate::font_loader::office_faces::FontFaceRequest>,
         session_event: DocumentSessionEvent,
         spreadsheet_metadata: Option<SpreadsheetFrameMetadata>,
         filter_event: Option<SpreadsheetFilterEvent>,
@@ -148,12 +149,14 @@ fn send_frame(
         }
     };
     let spreadsheet_metadata = session.spreadsheet_frame_metadata();
+    let font_requests = super::font_requests::DocumentFontRequestsOps::project(&frame.surface);
     super::worker_border_projection::log_frame(generation, &frame);
     if events
         .send(DocumentWorkerEvent::Frame {
             generation,
             frame: Box::new(frame),
             border_cache,
+            font_requests,
             session_event,
             spreadsheet_metadata,
             filter_event,

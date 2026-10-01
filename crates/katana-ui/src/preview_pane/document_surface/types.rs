@@ -131,6 +131,7 @@ pub(crate) struct DocumentSurface {
     pub(super) frame: Option<DocumentFrame>,
     pub(super) border_cache: super::painter_grid_borders::PreparedGridBorders,
     pub(super) filter_ui: super::spreadsheet_filter_controls::SpreadsheetFilterUiState,
+    pub(super) fonts: super::font_lookup::DocumentFontLookup,
     pub(super) failure: Option<DocumentFailure>,
     pub(super) painter: DocumentFramePainter,
     pub(super) loading: bool,
