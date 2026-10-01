@@ -107,6 +107,8 @@
 
 ## 作業保全と整理（2026-10-01）
 
+- [ ] 最新5commitの通常push再実行: HEAD f4139a57、release/v0.22.42はahead5/behind0、stash0、primary明示worktree検査clean。pre-pushでformat/strict Clippy/HTML23＋process7/native worker契約が成功後、全test再compileで`No space left on device`となりpushはexit1。空き約119MiBとなりcache削除可否をユーザーへ確認したが、承認前にKRR担当が自身の生成cacheを整理し、rootも空き4.8GiBをライブ確認した。KatanA cache削除・hook回避は行わず、通常push・現HEADレビュー返信/resolve・再レビュー/CIを継続する。最新2review threadは未resolveのまま保持。
+
 - [ ] ユーザー指摘: 上流待ちだけを理由に独立したKatanA作業を停止しない。未対応は「即実行可能／上流依存／外部環境依存」に分類し、即実行可能な全品質ゲート、依存棚卸し、差分の正式統合を継続する。進捗報告だけを停止条件にしない。2026-10-01: `just check-full`を開始し、依存棚卸しと別Cargo rootのハーネス障害調査を並行実施。
 
 - [x] 共通stash3件を完全履歴bundleへ保全・検証し、stash一覧を0件にする。masterは変更・未追跡ファイルなし。
