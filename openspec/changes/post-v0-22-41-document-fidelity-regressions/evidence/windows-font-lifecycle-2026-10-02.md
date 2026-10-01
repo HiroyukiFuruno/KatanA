@@ -80,6 +80,26 @@ memory acceptance remain separate gates.
 
 ## Limits and retained evidence
 
+### Actual Windows follow-up
+
+GitHub CI run36924444367 at `e69bdfa6046e76d2d8b3ddf479b66d08503fd532`,
+job110578178671, reports success for the cold actual-font step and normal tests.
+The workflow runs the exact actual Arial Bold/UI-paint regression with the
+original ten-second bound; it does not substitute metadata-only fixtures.
+macOS and Ubuntu full jobs, all three lint jobs, supply-chain and CodeQL also
+report success. Windows headless acceptance and coverage are still running.
+This closes the observed cold lookup failure, not the complete Windows release
+gate. Raw timing logs will be retrieved after the job finishes.
+
+The lifecycle review thread was replied to at4160357514, resolved, and re-read
+with all comments and pages checked. Only the manual-target publication-policy
+thread remained unresolved at this check; PR346 remains Draft.
+
+The latest source was re-run against the original five-Office cold budget after
+release runner rebuild: delta317328KiB above196608KiB, exit1. Owned counters and
+five document frames are recorded separately in the memory evidence; resource
+accounting improvement is not a claimed RSS fix.
+
 The lifecycle counter does not prove allocator/TLS/GPU release or interrupt OS
 syscalls. The supplied unique-Office RSS budget still fails; do not declare the
 whole memory regression fixed. Actual Windows, current review, public packaging

@@ -216,3 +216,34 @@ had finished. OS allocator, TLS and GPU release remain separate from owned count
 The raw ignored log is `tmp/office-font-phase-rss-diagnostic-run-2026-10-02.log`.
 The KDV owner received the source, request and measurements through Issue #59 and
 the existing task; no sibling implementation or new worktree was created here.
+
+## Reacceptance after font-worker accounting repair
+
+The actual in-process runner was rebuilt with locked public dependencies at
+KatanA source `e69bdfa6046e76d2d8b3ddf479b66d08503fd532`. The release build exited0;
+the executable was copied to an immutable ignored path before execution.
+
+- Runner SHA256: `e9ec42318abc34cfb2689301f160edfe6a3c1810e88bf6a6de3ad3c5d2bf9168`.
+- Explicit release-worker SHA256: `be0283a71ce5e41cca487b46bd9818b4a6ef0dce2f9921907c81286595ca5a2d`.
+- Unchanged request SHA256: `f58b929fab7430afc4eb5893f49bccd0d7a7efd6a8cf2fddc29339c7a3641d0c`.
+
+With `DEBUG=false`, the same five supplied Office documents produced five
+document frames. Final close observed zero previews, surfaces, workers, frames,
+textures, cache entries and all eight KDV resource counters. Font threads now
+participate in the document-worker count until owned work actually finishes.
+The unchanged cold budget still **FAILS, exit1**: 105024 to422352KiB, delta317328
+above196608KiB. UI frames advanced76 to439. No process from this exact run remained
+in the final process check. The ignored raw log is
+`tmp/font-lifecycle-office-sequence-e69bdfa6-2026-10-02.log`.
+
+This is strengthened resource-observation acceptance, not a memory fix or a
+packaged-binary test. The explicit sidecar differs from the earlier8f919b20
+sidecar, so these runs are not claimed as a source-only controlled performance
+A/B. The original failed evidence and unchanged threshold remain intact.
+
+The KDV owner's independent fresh-process PDF and original-lifetime measurements
+are recorded in [Issue59](https://github.com/HiroyukiFuruno/katana-document-viewer/issues/59#issuecomment-5939908326).
+Those measurements distinguish freed-but-resident large allocations from live
+owners and show a diagnostic early-source-drop benefit, but do not constitute a
+product repair or passing KatanA acceptance. No sibling implementation is made
+here while the existing owner requests a usable checkout.
