@@ -9,6 +9,12 @@ pub struct FixtureEnv {
 }
 
 pub fn setup(fixture: &Fixture, tmp_root: &Path) -> Result<FixtureEnv> {
+    if let Some(size) = fixture.settings.font_size {
+        anyhow::ensure!(
+            size.is_finite() && (8.0..=32.0).contains(&size),
+            "fixture font_size must be between 8 and 32"
+        );
+    }
     let home_dir = tmp_root.join("home");
     std::fs::create_dir_all(&home_dir)?;
 
@@ -38,6 +44,11 @@ pub fn setup(fixture: &Fixture, tmp_root: &Path) -> Result<FixtureEnv> {
     let cfg_dir = config_dir(&home_dir);
     std::fs::create_dir_all(&cfg_dir)?;
     let settings_json = build_settings_json(&fixture.settings, workspace_dir.as_deref());
+    let mut settings_value: serde_json::Value = serde_json::from_str(&settings_json)?;
+    if let Some(size) = fixture.settings.font_size {
+        settings_value["font"] = serde_json::json!({ "size": size });
+    }
+    let settings_json = serde_json::to_vec_pretty(&settings_value)?;
     std::fs::write(cfg_dir.join("settings.json"), settings_json)?;
 
     Ok(FixtureEnv {
@@ -163,6 +174,22 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
 mod tests {
     use super::*;
     use katana_platform::{JsonFileRepository, SettingsRepository};
+
+    #[test]
+    fn typography_font_setting_is_written_and_invalid_sizes_are_rejected() -> Result<()> {
+        let root = tempfile::tempdir()?;
+        let mut fixture = Fixture::default();
+        fixture.settings.font_size = Some(14.0);
+        let env = setup(&fixture, root.path())?;
+        let value: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(env.config_dir.join("settings.json"))?)?;
+        assert_eq!(value["font"]["size"], 14.0);
+        for size in [0.0, 33.0, f32::NAN, f32::INFINITY] {
+            fixture.settings.font_size = Some(size);
+            assert!(setup(&fixture, root.path()).is_err());
+        }
+        Ok(())
+    }
 
     #[test]
     fn screenshot_settings_can_disable_diagram_controls() {

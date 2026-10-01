@@ -1,0 +1,50 @@
+{
+  "schema_version": "1",
+  "name": "supplied-html-s15-host-acceptance",
+  "fixture": {
+    "settings": {
+      "theme": "light",
+      "locale": "ja",
+      "explorer_visible": true,
+      "linter_enabled": false,
+      "auto_refresh": false
+    },
+    "workspace_files": [
+      {
+        "name": "要件定義書_v1.0.html",
+        "source": "/Users/hiroyuki_furuno/Desktop/KatanA-不具合/要件定義書_v1.0.html"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1280, "height": 900 },
+      "wait_seconds": 0.1
+    },
+    {
+      "type": "open_file",
+      "file_name": "要件定義書_v1.0.html",
+      "wait_seconds": 60.0,
+      "wait_for_html_frame": true,
+      "max_first_frame_seconds": 60.0
+    },
+    { "type": "assert_html_browser_viewport_matches_display_rect" },
+    {
+      "type": "action",
+      "action": {
+        "open_url": {
+          "url": "file:///Users/hiroyuki_furuno/Desktop/KatanA-%E4%B8%8D%E5%85%B7%E5%90%88/%E8%A6%81%E4%BB%B6%E5%AE%9A%E7%BE%A9%E6%9B%B8_v1.0.html#s15",
+          "timeout_seconds": 60.0
+        }
+      }
+    },
+    {
+      "type": "assert_html_browser_origin",
+      "origin_ends_with": "#s15",
+      "timeout_seconds": 60.0
+    },
+    { "type": "screenshot", "output_name": "s15" },
+    { "type": "quit" }
+  ]
+}

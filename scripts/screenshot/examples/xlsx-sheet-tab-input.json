@@ -1,0 +1,75 @@
+{
+  "schema_version": "1",
+  "name": "xlsx-sheet-tab-input",
+  "fixture": {
+    "settings": {
+      "theme": "light",
+      "locale": "en",
+      "explorer_visible": true,
+      "linter_enabled": false
+    },
+    "workspace_files": [
+      {
+        "name": "representative.xlsx",
+        "source": "scripts/screenshot/fixtures/v0-22-38-multi-format/representative.xlsx"
+      }
+    ]
+  },
+  "steps": [
+    { "type": "launch", "viewport": { "width": 1280, "height": 900 }, "wait_seconds": 1.0 },
+    {
+      "type": "open_file",
+      "file_name": "representative.xlsx",
+      "wait_seconds": 30.0,
+      "wait_for_document_frame": true,
+      "max_first_frame_seconds": 15.0,
+      "expected_document_format": "xlsx",
+      "expected_document_item_count": 2,
+      "expected_document_node_kind": "Grid"
+    },
+    {
+      "type": "assert_document_frame",
+      "format": "xlsx",
+      "item_count": 2,
+      "node_kind": "Grid",
+      "active_index": 0
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_node": {
+          "label": "Notes",
+          "button": "primary",
+          "wait_seconds": 0.0,
+          "expected_bounds": [250.0, 828.0, 1250.0, 872.0]
+        }
+      }
+    },
+    {
+      "type": "assert_document_frame",
+      "format": "xlsx",
+      "item_count": 2,
+      "node_kind": "Grid",
+      "active_index": 1
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_node": {
+          "label": "Dashboard",
+          "button": "primary",
+          "wait_seconds": 0.0,
+          "expected_bounds": [250.0, 828.0, 1250.0, 872.0]
+        }
+      }
+    },
+    {
+      "type": "assert_document_frame",
+      "format": "xlsx",
+      "item_count": 2,
+      "node_kind": "Grid",
+      "active_index": 0
+    },
+    { "type": "quit" }
+  ]
+}

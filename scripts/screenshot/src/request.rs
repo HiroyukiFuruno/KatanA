@@ -48,6 +48,7 @@ impl WorkspaceFile {
 
 #[derive(Debug, Deserialize, Default)]
 pub struct FixtureSettings {
+    pub font_size: Option<f32>,
     pub theme: Option<String>,
     pub preset: Option<String>,
     pub locale: Option<String>,
@@ -79,6 +80,8 @@ pub enum Step {
     OpenWorkspace(OpenWorkspaceStep),
     /// Assert that the active document matches the expected screenshot state.
     AssertActiveDocument(AssertActiveDocumentStep),
+    /// Assert the active viewer frame, including its current page or sheet index.
+    AssertDocumentFrame(AssertDocumentFrameStep),
     /// Assert that the active KRR frame retains the expected complete origin.
     AssertHtmlBrowserOrigin(AssertHtmlBrowserOriginStep),
     /// Assert pixels directly in the active KRR RGBA frame.
@@ -93,6 +96,13 @@ pub enum Step {
     AssertUrlHistory(AssertUrlHistoryStep),
     /// Assert that the active diff review state matches the expected content.
     AssertDiffReview(AssertDiffReviewStep),
+    /// Record UI progress, process RSS, and retained preview resources.
+    RecordRuntimeSnapshot(RecordRuntimeSnapshotStep),
+    /// Record Markdown preview geometry in logical points and physical screenshot pixels.
+    RecordPreviewGeometry(RecordPreviewGeometryStep),
+    RecordTypography(RecordTypographyStep),
+    /// Compare current runtime state with a previously recorded snapshot.
+    AssertRuntimeSnapshot(AssertRuntimeSnapshotStep),
     /// Trigger a named UI action (e.g. toggle_toc, toggle_split_view).
     Action(ActionStep),
     /// Drag a labelled source node to a labelled target node.
@@ -108,8 +118,26 @@ pub struct ExportPngStep {
 #[derive(Debug, Deserialize)]
 pub struct LaunchStep {
     pub viewport: Option<Viewport>,
+    pub logical_viewport: Option<LogicalViewport>,
     #[serde(default = "default_wait_seconds")]
     pub wait_seconds: f64,
+}
+
+impl LaunchStep {
+    pub fn viewport_size(&self) -> anyhow::Result<(f32, f32)> {
+        anyhow::ensure!(
+            !(self.viewport.is_some() && self.logical_viewport.is_some()),
+            "launch cannot specify both viewport and logical_viewport"
+        );
+        Ok(self
+            .logical_viewport
+            .map(|viewport| (viewport.width, viewport.height))
+            .or_else(|| {
+                self.viewport
+                    .map(|viewport| (viewport.width as f32, viewport.height as f32))
+            })
+            .unwrap_or((1728.0, 1117.0)))
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -217,6 +245,16 @@ pub struct AssertActiveDocumentStep {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct AssertDocumentFrameStep {
+    pub format: String,
+    pub item_count: usize,
+    pub node_kind: String,
+    pub active_index: usize,
+    #[serde(default = "default_async_assert_timeout_seconds")]
+    pub timeout_seconds: f64,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct AssertHtmlBrowserOriginStep {
     pub origin_ends_with: String,
     #[serde(default = "default_async_assert_timeout_seconds")]
@@ -260,6 +298,48 @@ pub struct AssertDiffReviewStep {
     pub before_contains: Option<String>,
     #[serde(default)]
     pub after_contains: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RecordRuntimeSnapshotStep {
+    pub name: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RecordPreviewGeometryStep {
+    pub output_name: String,
+    /// When present, save the exact rendered frame used for the geometry record.
+    pub full_screenshot_output_name: Option<String>,
+    pub expected_content_viewport: Viewport,
+    pub expected_scroll_y: f32,
+    #[serde(default)]
+    pub require_clean_interaction_state: bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RecordTypographyStep {
+    pub output_name: String,
+    pub required_text: Vec<String>,
+    pub expected_content_viewport: Viewport,
+    pub expected_scroll_y: f32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AssertRuntimeSnapshotStep {
+    pub baseline: String,
+    pub max_rss_delta_kib: u64,
+    pub min_ui_frame_delta: u64,
+    #[serde(default)]
+    pub min_html_frames_observed: u64,
+    #[serde(default)]
+    pub min_document_frames_observed: u64,
+    pub max_previews: usize,
+    pub max_html_surfaces: usize,
+    pub max_document_surfaces: usize,
+    pub max_office_workers: usize,
+    pub max_frames: usize,
+    pub max_textures: usize,
+    pub max_cache_entries: usize,
 }
 
 #[derive(Debug, Deserialize)]
@@ -329,6 +409,22 @@ pub enum UiAction {
     CloseSearchModal,
     /// Close the in-document search bar if it is open.
     CloseDocSearch,
+    /// Close the active document and allow its preview/session resources to drain.
+    CloseActiveDocument {
+        wait_seconds: f64,
+    },
+    /// Open HTML and Office documents alternately, closing each generation before continuing.
+    RunMixedDocumentCycles {
+        html_file_name: String,
+        document_file_name: String,
+        cycles: u32,
+        html_timeout_seconds: f64,
+        document_timeout_seconds: f64,
+        close_timeout_seconds: f64,
+        expected_document_format: String,
+        expected_document_item_count: usize,
+        expected_document_node_kind: String,
+    },
     /// Refresh diagnostics for currently open Markdown documents.
     RefreshDiagnostics,
     /// Reload the active document through the same action exposed by KatanA.
@@ -417,6 +513,9 @@ pub enum UiAction {
         label: String,
         button: ClickButton,
         wait_seconds: f64,
+        /// Verify that the entire tab, not only the click point, fits within the expected logical region.
+        #[serde(default)]
+        expected_bounds: Option<[f32; 4]>,
     },
     /// Move the pointer to a logical viewport coordinate without clicking.
     HoverAt {
@@ -513,6 +612,12 @@ pub struct Viewport {
     pub height: u32,
 }
 
+#[derive(Debug, Deserialize, Clone, Copy)]
+pub struct LogicalViewport {
+    pub width: f32,
+    pub height: f32,
+}
+
 fn default_wait_seconds() -> f64 {
     3.0
 }
@@ -538,12 +643,91 @@ pub fn load(path: &std::path::Path) -> anyhow::Result<Request> {
     );
     anyhow::ensure!(!req.name.is_empty(), "request.name must not be empty");
     anyhow::ensure!(!req.steps.is_empty(), "request.steps must not be empty");
+    for step in &req.steps {
+        if let Step::Launch(launch) = step {
+            launch.viewport_size()?;
+        }
+    }
     Ok(req)
 }
 
 #[cfg(test)]
 mod tests {
     use super::{Request, ScrollDirection, Step, UiAction};
+
+    #[test]
+    fn typography_fixture_requires_heading_measurements_and_explicit_font_size() {
+        let request: Request =
+            serde_json::from_str(include_str!("../examples/sample-typography.json"))
+                .expect("valid typography fixture");
+        assert_eq!(request.fixture.settings.font_size, Some(14.0));
+        assert!(request.steps.iter().any(|step| matches!(step,
+            Step::RecordTypography(record) if record.required_text == ["H1 Heading", "H2 Heading", "H3 Heading", "H4 Heading"]
+        )));
+    }
+
+    #[test]
+    fn launch_rejects_ambiguous_logical_and_physical_viewports() {
+        let request: Request = serde_json::from_str(
+            r#"{
+                "schema_version": "1",
+                "name": "ambiguous-launch",
+                "steps": [{
+                    "type": "launch",
+                    "viewport": { "width": 1280, "height": 900 },
+                    "logical_viewport": { "width": 640.0, "height": 450.0 }
+                }]
+            }"#,
+        )
+        .expect("request syntax is valid");
+        let Step::Launch(launch) = &request.steps[0] else {
+            panic!("first step must be launch");
+        };
+        assert!(launch.viewport_size().is_err());
+    }
+
+    #[test]
+    fn diagram_capture_fixture_records_the_canonical_content_rect() {
+        let request: Request = serde_json::from_str(include_str!(
+            "../examples/sample-diagrams-canonical-capture.json"
+        ))
+        .expect("valid diagram capture fixture");
+        assert_eq!(request.fixture.settings.theme.as_deref(), Some("dark"));
+        assert_eq!(
+            request.fixture.settings.preset.as_deref(),
+            Some("KatanaDark")
+        );
+        assert_eq!(request.fixture.settings.font_size, Some(14.0));
+        assert_eq!(
+            request.fixture.settings.preview_show_diagram_controls,
+            Some(false)
+        );
+        assert!(request.steps.iter().any(|step| matches!(step,
+            Step::RecordPreviewGeometry(record)
+                if record.expected_content_viewport.width == 1187
+                    && record.expected_content_viewport.height == 2225
+                    && record.expected_scroll_y == 0.0
+        )));
+    }
+
+    #[test]
+    fn typography_capture_fixture_records_the_same_frame_as_geometry() {
+        let request: Request = serde_json::from_str(include_str!(
+            "../examples/sample-typography-canonical-capture.json"
+        ))
+        .expect("valid typography capture fixture");
+        assert_eq!(request.fixture.settings.theme.as_deref(), Some("light"));
+        assert_eq!(
+            request.fixture.settings.preset.as_deref(),
+            Some("KatanaLight")
+        );
+        assert!(request.steps.iter().any(|step| matches!(step,
+            Step::RecordPreviewGeometry(record)
+                if record.full_screenshot_output_name.as_deref() == Some("sample-typography-full")
+                    && record.expected_content_viewport.width == 1187
+                    && record.expected_content_viewport.height == 2225
+        )));
+    }
 
     #[test]
     fn browser_evidence_actions_are_valid_request_steps() {
@@ -733,8 +917,8 @@ mod tests {
     }
 
     #[test]
-    fn browser_input_burst_action_requires_explicit_count_and_timeout(
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn browser_input_burst_action_requires_explicit_count_and_timeout()
+    -> Result<(), Box<dyn std::error::Error>> {
         let request = serde_json::from_str::<Request>(
             r#"{
                 "schema_version": "1",
@@ -763,8 +947,8 @@ mod tests {
     }
 
     #[test]
-    fn document_evidence_steps_deserialize_frame_contract_and_navigation(
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn document_evidence_steps_deserialize_frame_contract_and_navigation()
+    -> Result<(), Box<dyn std::error::Error>> {
         let request = serde_json::from_str::<Request>(
             r#"{
                 "schema_version": "1",
@@ -883,8 +1067,125 @@ mod tests {
     }
 
     #[test]
-    fn scroll_steps_accept_horizontal_and_vertical_directions(
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn runtime_resource_steps_deserialize_progress_and_idle_bounds()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let request = serde_json::from_str::<Request>(
+            r#"{
+                "schema_version": "1",
+                "name": "runtime-resource-cycle",
+                "steps": [
+                    { "type": "record_runtime_snapshot", "name": "idle" },
+                    {
+                        "type": "action",
+                        "action": { "close_active_document": { "wait_seconds": 0.5 } }
+                    },
+                    {
+                        "type": "action",
+                        "action": {
+                            "run_mixed_document_cycles": {
+                                "html_file_name": "representative.html",
+                                "document_file_name": "representative.xlsx",
+                                "cycles": 10,
+                                "html_timeout_seconds": 10.0,
+                                "document_timeout_seconds": 15.0,
+                                "close_timeout_seconds": 5.0,
+                                "expected_document_format": "xlsx",
+                                "expected_document_item_count": 2,
+                                "expected_document_node_kind": "Grid"
+                            }
+                        }
+                    },
+                    {
+                        "type": "assert_runtime_snapshot",
+                        "baseline": "idle",
+                        "max_rss_delta_kib": 65536,
+                        "min_ui_frame_delta": 10,
+                        "min_html_frames_observed": 10,
+                        "min_document_frames_observed": 10,
+                        "max_previews": 0,
+                        "max_html_surfaces": 0,
+                        "max_document_surfaces": 0,
+                        "max_office_workers": 0,
+                        "max_frames": 0,
+                        "max_textures": 0,
+                        "max_cache_entries": 0
+                    }
+                ]
+            }"#,
+        )?;
+
+        assert!(matches!(
+            &request.steps[0],
+            Step::RecordRuntimeSnapshot(step) if step.name == "idle"
+        ));
+        assert!(matches!(
+            &request.steps[1],
+            Step::Action(action)
+                if action.action == (UiAction::CloseActiveDocument { wait_seconds: 0.5 })
+        ));
+        assert!(matches!(
+            &request.steps[2],
+            Step::Action(action)
+                if matches!(
+                    &action.action,
+                    UiAction::RunMixedDocumentCycles {
+                        cycles: 10,
+                        expected_document_item_count: 2,
+                        ..
+                    }
+                )
+        ));
+        assert!(matches!(
+            &request.steps[3],
+            Step::AssertRuntimeSnapshot(step)
+                if step.min_html_frames_observed == 10
+                    && step.min_document_frames_observed == 10
+                    && step.max_office_workers == 0
+        ));
+        Ok(())
+    }
+
+    #[test]
+    fn multi_format_fixture_uses_real_xlsx_tab_click_and_frame_assertion()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let request: Request = serde_json::from_str(include_str!(
+            "../examples/v0-22-38-multi-format-documents.json"
+        ))?;
+        let xlsx_click = request.steps.iter().any(|step| {
+            matches!(
+                step,
+                Step::Action(action)
+                    if matches!(
+                        &action.action,
+                        UiAction::ClickNode {
+                            label,
+                            button: super::ClickButton::Primary,
+                            ..
+                        } if label == "Notes"
+                    )
+            )
+        });
+        let frame_assertion = request.steps.iter().any(|step| {
+            matches!(
+                step,
+                Step::AssertDocumentFrame(assertion)
+                    if assertion.format == "xlsx"
+                        && assertion.item_count == 2
+                        && assertion.node_kind == "Grid"
+                        && assertion.active_index == 1
+            )
+        });
+        assert!(xlsx_click, "fixture must click the bottom sheet rail");
+        assert!(
+            frame_assertion,
+            "fixture must assert the selected sheet index"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn scroll_steps_accept_horizontal_and_vertical_directions()
+    -> Result<(), Box<dyn std::error::Error>> {
         let request = serde_json::from_str::<Request>(
             r#"{
                 "schema_version": "1",

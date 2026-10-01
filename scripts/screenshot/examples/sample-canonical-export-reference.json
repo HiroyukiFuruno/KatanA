@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "name": "sample-canonical-export-reference",
+  "fixture": {
+    "settings": {
+      "theme": "light",
+      "preset": "KatanaLight",
+      "locale": "en",
+      "explorer_visible": false,
+      "linter_enabled": false,
+      "preview_show_diagram_controls": false
+    },
+    "workspace_files": [
+      {
+        "name": "sample.md",
+        "source": "assets/fixtures/sample.md"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "wait_seconds": 3.0
+    },
+    {
+      "type": "open_file",
+      "file_name": "sample.md",
+      "wait_seconds": 8.0
+    },
+    {
+      "type": "assert_active_document",
+      "path_contains": "sample.md"
+    },
+    {
+      "type": "export_png",
+      "output_name": "sample"
+    },
+    {
+      "type": "quit"
+    }
+  ]
+}

@@ -21,6 +21,14 @@ test-core:
 test-ui:
     {{CARGO}} test -p katana-ui
 
+# Run the supplied Office and HTML fixtures through the explicit acceptance gate.
+test-document-fixtures:
+    scripts/ci/document-fixture-acceptance.sh
+
+# Execute paint-metrics coordinate extraction independently from Office/V8 integration checks.
+test-paint-metrics:
+    {{CARGO}} test --locked --manifest-path scripts/paint-metrics/Cargo.toml
+
 # Run tests with verbose output
 test-verbose:
     {{CARGO}} test --workspace -- --nocapture
