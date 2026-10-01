@@ -112,6 +112,16 @@ impl KatanaApp {
     }
 
     #[doc(hidden)]
+    pub fn document_lifecycle_resources_for_test(
+        &self,
+    ) -> (usize, super::DocumentResourceSnapshotForTest) {
+        (
+            crate::preview_pane::DocumentWorkerLifecycle::live_count(),
+            katana_document_viewer::DocumentSession::resource_snapshot(),
+        )
+    }
+
+    #[doc(hidden)]
     pub fn app_state_mut(&mut self) -> &mut AppState {
         &mut self.state
     }

@@ -31,9 +31,12 @@ impl DocumentSurface {
         );
         let worker_source = source;
         let repaint = ctx.clone();
-        let spawn = std::thread::Builder::new()
-            .name(format!("katana-document-{generation}"))
-            .spawn(move || worker::run(generation, worker_source, command_rx, event_tx, repaint));
+        let spawn = super::DocumentWorkerLifecycle::spawn(
+            format!("katana-document-{generation}"),
+            move || {
+                worker::run(generation, worker_source, command_rx, event_tx, repaint);
+            },
+        );
         let failure = match spawn {
             Ok(_worker) => None,
             Err(error) => {

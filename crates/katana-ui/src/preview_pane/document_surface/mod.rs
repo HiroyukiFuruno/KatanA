@@ -26,12 +26,14 @@ mod spreadsheet_filter_controls;
 mod types;
 mod worker;
 mod worker_border_projection;
+mod worker_lifecycle;
 mod worker_session;
 mod worker_support;
 
 pub(crate) use local_intake::LocalDocumentIntake;
 pub(crate) use source::DocumentSurfaceSource;
 pub(crate) use types::{DocumentFailure, DocumentSurface};
+pub(crate) use worker_lifecycle::DocumentWorkerLifecycle;
 
 #[cfg(test)]
 mod failure_tests;

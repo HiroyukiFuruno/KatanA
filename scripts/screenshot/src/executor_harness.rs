@@ -27,6 +27,10 @@ use tempfile::TempDir;
 const HARNESS_PIXELS_PER_POINT: f32 = 2.0;
 const DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS: f64 = 30.0;
 
+#[cfg(test)]
+#[path = "executor_lifecycle_tests.rs"]
+mod lifecycle_tests;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct HtmlBrowserFrameIdentity {
     document_path: PathBuf,
@@ -58,6 +62,8 @@ struct RuntimeSnapshot {
     html_surfaces: usize,
     document_surfaces: usize,
     office_workers: usize,
+    document_workers: usize,
+    kdv_resources: katana_ui::shell::DocumentResourceSnapshotForTest,
     frames: usize,
     textures: usize,
     cache_entries: usize,
@@ -1724,13 +1730,20 @@ fn close_active_document_and_wait_for_idle(
             .open_documents
             .len();
         let resources = harness.state_mut().preview_resource_counts_for_test();
+        let (document_workers, kdv_resources) =
+            harness.state_mut().document_lifecycle_resources_for_test();
         let office_workers = current_office_worker_count()?;
-        if open_documents == 0 && resources == (0, 0, 0, 0, 0, 0) && office_workers == 0 {
+        if open_documents == 0
+            && resources == (0, 0, 0, 0, 0, 0)
+            && office_workers == 0
+            && document_workers == 0
+            && kdv_resources == Default::default()
+        {
             return Ok(());
         }
         if Instant::now() >= deadline {
             bail!(
-                "{operation} did not release resources within {timeout_seconds:.2}s: open_documents={open_documents}, resources={resources:?}, office_workers={office_workers}"
+                "{operation} did not release resources within {timeout_seconds:.2}s: open_documents={open_documents}, resources={resources:?}, office_workers={office_workers}, document_workers={document_workers}, kdv_resources={kdv_resources:?}"
             );
         }
         sleep_frame(60.0);
@@ -1743,6 +1756,8 @@ fn capture_runtime_snapshot(
 ) -> Result<RuntimeSnapshot> {
     let (previews, html_surfaces, document_surfaces, frames, textures, cache_entries) =
         harness.state_mut().preview_resource_counts_for_test();
+    let (document_workers, kdv_resources) =
+        harness.state_mut().document_lifecycle_resources_for_test();
     Ok(RuntimeSnapshot {
         rss_kib: current_process_rss_kib()?,
         ui_frame: harness.ctx.cumulative_frame_nr(),
@@ -1751,6 +1766,8 @@ fn capture_runtime_snapshot(
         html_surfaces,
         document_surfaces,
         office_workers: current_office_worker_count()?,
+        document_workers,
+        kdv_resources,
         frames,
         textures,
         cache_entries,
@@ -1789,6 +1806,12 @@ fn assert_runtime_snapshot(
         "document generation progress is incomplete: {document_frame_delta} < {}; baseline={baseline:?}, current={current:?}",
         expected.min_document_frames_observed
     );
+    if expected.max_document_surfaces == 0 {
+        ensure!(
+            current.document_workers == 0 && current.kdv_resources == Default::default(),
+            "document lifecycle resources remain after preview removal: current={current:?}"
+        );
+    }
     ensure!(
         current.previews <= expected.max_previews
             && current.html_surfaces <= expected.max_html_surfaces

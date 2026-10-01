@@ -49,7 +49,9 @@ pub use renderer::*;
 pub use types::*;
 pub(crate) mod section_images;
 mod section_local_images;
-pub(crate) use document_surface::{DocumentFailure, DocumentSurfaceSource};
+pub(crate) use document_surface::{
+    DocumentFailure, DocumentSurfaceSource, DocumentWorkerLifecycle,
+};
 
 #[cfg(test)]
 pub(crate) fn html_browser_runtime_test_guard() -> std::sync::MutexGuard<'static, ()> {
