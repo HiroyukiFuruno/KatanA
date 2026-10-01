@@ -17,6 +17,24 @@ def remaining_nanoseconds(started: int, observed: int, budget_seconds: int) -> i
     return budget_seconds * 1_000_000_000 - (observed - started)
 
 
+def poll_seconds(remaining_ns: int) -> float:
+    return max(0.0, min(1.0, remaining_ns / 1_000_000_000))
+
+
+def operations_within_deadlines(payload: dict, log: str) -> bool:
+    completions = re.findall(r"^completed step ([0-9]+)/([0-9]+) elapsed_ns=([0-9]+)$", log, re.MULTILINE)
+    steps = payload["steps"]
+    if len(completions) != len(steps):
+        return False
+    for expected_index, (index, total, elapsed_ns) in enumerate(completions, 1):
+        if int(index) != expected_index or int(total) != len(steps):
+            return False
+        _, _, budget = observe_operation(payload, f"step {index}/{total}: {steps[expected_index - 1]['type']}")
+        if int(elapsed_ns) > budget * 1_000_000_000:
+            return False
+    return True
+
+
 def observe_operation(payload: dict, log: str) -> tuple[int, str, int]:
     markers = re.findall(r"^step ([0-9]+)/([0-9]+): ([a-z_]+)$", log, re.MULTILINE)
     if not markers:
@@ -38,7 +56,7 @@ def observe_operation(payload: dict, log: str) -> tuple[int, str, int]:
     return (index, label, budget)
 
 
-def summarize_log(log: str) -> dict:
+def summarize_log(log: str, payload: dict | None = None) -> dict:
     frame = re.search(r"HTML browser first frame ready in ([0-9]+\.[0-9]+)s", log)
     elapsed = float(frame[1]) if frame else None
     typed_failure = bool(re.search(r"HTML browser did not produce an initial frame|opening URL .* failed", log))
@@ -46,11 +64,13 @@ def summarize_log(log: str) -> dict:
     resources = ("previews", "html_surfaces", "document_surfaces", "office_workers",
                  "frames", "textures", "cache_entries")
     closed_idle = bool(snapshot) and all(re.search(rf"\b{name}: 0\b", snapshot[1]) for name in resources)
+    within_deadlines = payload is not None and operations_within_deadlines(payload, log)
     return {
         "first_frame_seconds": elapsed,
         "typed_failure_observed": typed_failure,
         "closed_idle_observed": closed_idle,
-        "successful_frame_and_close": elapsed is not None and elapsed <= 60 and closed_idle and not typed_failure,
+        "operation_deadlines_verified": within_deadlines,
+        "successful_frame_and_close": elapsed is not None and elapsed <= 60 and closed_idle and within_deadlines and not typed_failure,
     }
 
 
@@ -117,12 +137,16 @@ if __name__ == "__main__":
         elif sys.argv[1] == "--remaining-ns":
             print(remaining_nanoseconds(int(sys.argv[2]), time.monotonic_ns(), int(sys.argv[3])))
             sys.exit(0)
+        elif sys.argv[1] == "--poll-sleep":
+            remaining = remaining_nanoseconds(int(sys.argv[2]), time.monotonic_ns(), int(sys.argv[3]))
+            time.sleep(poll_seconds(remaining))
+            sys.exit(0)
         elif sys.argv[1] == "--observe-operation":
             operation = observe_operation(json.loads(Path(sys.argv[2]).read_text()), Path(sys.argv[3]).read_text())
             print("\t".join(str(value) for value in operation))
             sys.exit(0)
         elif sys.argv[1] == "--parse-log":
-            evidence = summarize_log(Path(sys.argv[2]).read_text(encoding="utf-8"))
+            evidence = summarize_log(Path(sys.argv[2]).read_text(encoding="utf-8"), json.loads(Path(sys.argv[3]).read_text()))
         else:
             evidence = validate(Path(sys.argv[1]), Path(sys.argv[2]), SOURCE_SHA256)
     except (OSError, ValueError, KeyError, TypeError, IndexError) as error:

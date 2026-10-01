@@ -22,6 +22,12 @@ class OperationDeadlineTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "monotonic"):
             contract.remaining_nanoseconds(100, 99, 5)
 
+    def test_polling_cannot_oversleep_fractional_remaining_budget(self):
+        self.assertEqual(contract.poll_seconds(200_000_000), 0.2)
+        self.assertEqual(contract.poll_seconds(1), 0.000000001)
+        self.assertEqual(contract.poll_seconds(2_000_000_000), 1.0)
+        self.assertEqual(contract.poll_seconds(-1), 0.0)
+
 
 class HostContractTests(unittest.TestCase):
     def setUp(self):
@@ -115,7 +121,9 @@ class HostLogTests(unittest.TestCase):
               'document_surfaces: 0, office_workers: 0, frames: 0, textures: 0, cache_entries: 0 }\n')
 
     def test_success_requires_frame_and_close(self):
-        result = contract.summarize_log('HTML browser first frame ready in 35.125s\n' + self.CLOSED)
+        payload = {"steps": [{"type": "action", "action": {"close_active_document": {"wait_seconds": 5}}}]}
+        result = contract.summarize_log('HTML browser first frame ready in 35.125s\n' + self.CLOSED
+                                        + 'completed step 1/1 elapsed_ns=500000000\n', payload)
         self.assertEqual(result["first_frame_seconds"], 35.125)
         self.assertTrue(result["successful_frame_and_close"])
 
@@ -137,6 +145,18 @@ class HostLogTests(unittest.TestCase):
             'HTML browser first frame ready in 1.000s\n' + self.CLOSED.replace("frames: 0", "frames: 1")
         )
         self.assertFalse(result["successful_frame_and_close"])
+
+
+class OperationDurationTests(unittest.TestCase):
+    def test_close_duration_exceeding_budget_is_rejected(self):
+        payload = {"steps": [{"type": "action", "action": {"close_active_document": {"wait_seconds": 5}}}]}
+        self.assertFalse(contract.operations_within_deadlines(payload, "completed step 1/1 elapsed_ns=5001000000\n"))
+        self.assertTrue(contract.operations_within_deadlines(payload, "completed step 1/1 elapsed_ns=5000000000\n"))
+
+    def test_missing_or_ambiguous_operation_duration_is_rejected(self):
+        payload = {"steps": [{"type": "open_file", "max_first_frame_seconds": 60}]}
+        self.assertFalse(contract.operations_within_deadlines(payload, ""))
+        self.assertFalse(contract.operations_within_deadlines(payload, "completed step 1/1 elapsed_ns=1000000000\n" * 2))
 
 
 if __name__ == "__main__":

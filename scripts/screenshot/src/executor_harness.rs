@@ -257,6 +257,7 @@ pub fn run(
             Step::Quit => "quit",
         };
         println!("step {}/{}: {label}", i + 1, steps.len());
+        let operation_started = Instant::now();
 
         match step {
             Step::Launch(s) => {
@@ -1683,6 +1684,12 @@ pub fn run(
             }
             Step::Quit => {}
         }
+        println!(
+            "completed step {}/{} elapsed_ns={}",
+            i + 1,
+            steps.len(),
+            operation_started.elapsed().as_nanos()
+        );
     }
     if recording.is_some() {
         bail!("record_start was called but record_stop was not reached");

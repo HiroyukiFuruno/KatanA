@@ -15,6 +15,7 @@ cd "$ROOT_DIR"
 
 REQUEST="$ROOT_DIR/scripts/screenshot/examples/supplied-html-s15-host-acceptance.json"
 CONTRACT="$ROOT_DIR/scripts/ci/html_fixture_host_contract.py"
+PROCESS_CONTRACT="$ROOT_DIR/scripts/ci/html_host_process_group.py"
 if [[ "$#" -gt 1 || ( "$#" -eq 1 && "$1" != "--validate-input" ) ]]; then
     echo "Usage: html-fixture-host-acceptance.sh [--validate-input]" >&2
     exit 2
@@ -45,6 +46,8 @@ mkdir -p "$OUTPUT_DIR"
 LOG="$OUTPUT_DIR/runner.log"
 EVIDENCE="$OUTPUT_DIR/evidence.txt"
 CPU_SAMPLES="$OUTPUT_DIR/cpu-samples.tsv"
+PROCESS_RECEIPT="$OUTPUT_DIR/process-receipt.json"
+PROCESS_SAMPLES="$OUTPUT_DIR/process-samples.jsonl"
 printf 'elapsed_seconds\tstep\toperation\tcpu_percent\n' >"$CPU_SAMPLES"
 source "$ROOT_DIR/scripts/release/packaged-process-identity.sh"
 source "$ROOT_DIR/scripts/release/startup-process-cleanup.sh"
@@ -60,13 +63,38 @@ printf 'mode=in_process_host\nsource_head=%s\nrunner_path=%s\nrunner_sha256=%s\n
     "$(packaged_canonical_path "$OFFICE_WORKER")" "$(packaged_sha256 "$OFFICE_WORKER")" \
     "$(packaged_sha256 "$ROOT_DIR/scripts/screenshot/Cargo.lock")" >"$OUTPUT_DIR/artifact-identity.txt"
 
-KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER" "$RUNNER" --request "$REQUEST" --output "$OUTPUT_DIR" >"$LOG" 2>&1 &
+KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER" python3 "$PROCESS_CONTRACT" launch \
+    "$PROCESS_RECEIPT" "$PROCESS_SAMPLES" -- "$RUNNER" --request "$REQUEST" --output "$OUTPUT_DIR" >"$LOG" 2>&1 &
 RUNNER_PID=$!
 MAIN_PID="$RUNNER_PID"
 EXPECTED_EXECUTABLE=$(packaged_canonical_path "$RUNNER")
 EXPECTED_SHA256=$(packaged_sha256 "$RUNNER")
-# 観測エラー時も、親子関係と実imageを確認できたrunnerだけを終了する。
-trap 'if [[ -n "${RUNNER_PID:-}" ]] && launcher_is_owned_child "$RUNNER_PID"; then terminate_verified_main; fi' EXIT
+process_cleanup_attempted=0
+cleanup_html_runner() {
+    [[ "$process_cleanup_attempted" == 0 ]] || return 0
+    process_cleanup_attempted=1
+    # 残存を成功へ変えず、記録済みのkernel identityが一致するPIDだけを終了する。
+    if [[ -s "$PROCESS_RECEIPT" ]]; then
+        python3 "$PROCESS_CONTRACT" finish "$PROCESS_RECEIPT" "$PROCESS_SAMPLES" \
+            >"$OUTPUT_DIR/process-cleanup.json" || true
+    fi
+    if [[ -n "${RUNNER_PID:-}" ]] && launcher_is_owned_child "$RUNNER_PID"; then
+        if packaged_verify_process_identity "$RUNNER_PID" "$EXPECTED_EXECUTABLE" "$EXPECTED_SHA256"; then
+            kill "$RUNNER_PID" 2>/dev/null || true
+            cleanup_started_ns=$(python3 "$CONTRACT" --monotonic-ns)
+            while kill -0 "$RUNNER_PID" 2>/dev/null; do
+                cleanup_remaining_ns=$(python3 "$CONTRACT" --remaining-ns "$cleanup_started_ns" 2)
+                (( cleanup_remaining_ns > 0 )) || break
+                sleep 0.05
+            done
+            if kill -0 "$RUNNER_PID" 2>/dev/null \
+                && packaged_verify_process_identity "$RUNNER_PID" "$EXPECTED_EXECUTABLE" "$EXPECTED_SHA256"; then
+                kill -KILL "$RUNNER_PID" 2>/dev/null || true
+            fi
+        fi
+    fi
+}
+trap cleanup_html_runner EXIT
 started_ns=$(python3 "$CONTRACT" --monotonic-ns)
 operation_started_ns="$started_ns"
 operation_step=0
@@ -78,6 +106,9 @@ frame_or_error=0
 while kill -0 "$RUNNER_PID" 2>/dev/null; do
     now_ns=$(python3 "$CONTRACT" --monotonic-ns)
     elapsed=$(( (now_ns - started_ns) / 1000000000 ))
+    if [[ -s "$PROCESS_RECEIPT" ]]; then
+        python3 "$PROCESS_CONTRACT" observe "$PROCESS_RECEIPT" "$PROCESS_SAMPLES" >/dev/null
+    fi
     observed=$(python3 "$CONTRACT" --observe-operation "$REQUEST" "$LOG")
     IFS=$'\t' read -r observed_step observed_name observed_budget <<<"$observed"
     if [[ "$observed_step" != "$operation_step" ]]; then
@@ -99,7 +130,7 @@ while kill -0 "$RUNNER_PID" 2>/dev/null; do
     if (( remaining_ns <= 0 )); then
         break
     fi
-    sleep 1
+    python3 "$CONTRACT" --poll-sleep "$operation_started_ns" "$operation_budget"
 done
 
 now_ns=$(python3 "$CONTRACT" --monotonic-ns)
@@ -107,11 +138,15 @@ elapsed=$(( (now_ns - started_ns) / 1000000000 ))
 if kill -0 "$RUNNER_PID" 2>/dev/null; then
     printf 'result=operation_timeout\nstep=%s\noperation=%s\noperation_budget_seconds=%s\nelapsed_seconds=%s\nmax_cpu_percent=%s\n' \
         "$operation_step" "$operation_name" "$operation_budget" "$elapsed" "$max_cpu" >"$EVIDENCE"
-    if launcher_is_owned_child "$RUNNER_PID"; then terminate_verified_main; fi
+    cleanup_html_runner
+    if kill -0 "$RUNNER_PID" 2>/dev/null; then
+        echo "runner cleanup could not verify terminal state" >&2
+        exit 1
+    fi
     wait "$RUNNER_PID" || true
     RUNNER_PID=""
     printf 'close=terminated_after_timeout\n' >>"$EVIDENCE"
-    python3 "$CONTRACT" --parse-log "$LOG" >"$OUTPUT_DIR/frame-close.json" || true
+    python3 "$CONTRACT" --parse-log "$LOG" "$REQUEST" >"$OUTPUT_DIR/frame-close.json" || true
     cat "$EVIDENCE" >&2
     exit 1
 fi
@@ -124,7 +159,9 @@ set -e
 printf 'result=runner_exited\nexit_status=%s\nelapsed_seconds=%s\nmax_cpu_percent=%s\nframe_or_error_observed=%s\nrunner_exit_observed=true\n' \
     "$status" "$elapsed" "$max_cpu" "$frame_or_error" >"$EVIDENCE"
 cat "$EVIDENCE"
+python3 "$PROCESS_CONTRACT" finish "$PROCESS_RECEIPT" "$PROCESS_SAMPLES" >"$OUTPUT_DIR/process-close.json"
+printf 'process_group_close=zero_live_members\n' >>"$EVIDENCE"
 [[ "$frame_or_error" == 1 ]] || { echo "runner exited without a frame or typed error" >&2; exit 1; }
-python3 "$CONTRACT" --parse-log "$LOG" >"$OUTPUT_DIR/frame-close.json"
+python3 "$CONTRACT" --parse-log "$LOG" "$REQUEST" >"$OUTPUT_DIR/frame-close.json"
 printf 'close=idle_resources_verified\n' >>"$EVIDENCE"
 exit "$status"
