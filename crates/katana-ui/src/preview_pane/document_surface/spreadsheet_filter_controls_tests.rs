@@ -243,3 +243,6 @@ fn header_input_requests_candidates_for_an_eligible_filter_column() {
 
 #[path = "spreadsheet_filter_controls_ui_tests.rs"]
 mod ui_tests;
+
+#[path = "spreadsheet_filter_controls_scroll_tests.rs"]
+mod scroll_tests;

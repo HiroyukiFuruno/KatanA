@@ -238,3 +238,6 @@ fn real_menu_select_all_keeps_the_menu_open_until_apply() {
         }]
     );
 }
+
+#[path = "spreadsheet_filter_controls_unsupported_ui_tests.rs"]
+mod unsupported_ui_tests;
