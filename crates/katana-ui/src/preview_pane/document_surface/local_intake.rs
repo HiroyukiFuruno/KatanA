@@ -22,6 +22,10 @@ mod tests;
 #[path = "local_intake_resource_tests.rs"]
 mod resource_tests;
 
+#[cfg(all(test, unix))]
+#[path = "local_intake_capacity_tests.rs"]
+mod capacity_tests;
+
 const INTAKE_POLL_INTERVAL: std::time::Duration = std::time::Duration::from_millis(25);
 
 #[derive(Debug)]
@@ -94,16 +98,7 @@ impl PreviewPane {
 
     fn poll_document_intake_result(&mut self, pending: LocalDocumentIntake, ctx: &egui::Context) {
         match pending.result.try_recv() {
-            Ok(result) => {
-                self.is_loading = false;
-                match result {
-                    Ok(source) => self.full_render_document_source(source, pending.force),
-                    Err(error) => self.full_render_document_failure(error),
-                }
-                if pending.refresh_requested {
-                    self.full_render_document_path(&pending.path, false);
-                }
-            }
+            Ok(result) => self.finish_document_intake(pending, result),
             Err(TryRecvError::Empty) => {
                 self.continue_document_intake(pending, ctx);
             }
@@ -118,12 +113,45 @@ impl PreviewPane {
         }
     }
 
+    fn finish_document_intake(
+        &mut self,
+        pending: LocalDocumentIntake,
+        result: request::IntakeResult,
+    ) {
+        self.is_loading = false;
+        match result {
+            Ok(source) => self.full_render_document_source(source, pending.force),
+            Err(error) => self.full_render_document_failure(error),
+        }
+        if pending.refresh_requested {
+            self.full_render_document_path(&pending.path, false);
+        }
+    }
+
     fn continue_document_intake(&mut self, pending: LocalDocumentIntake, ctx: &egui::Context) {
-        if let Some(cause) = pool::IntakePool::global().failure_cause() {
+        let pool = pool::IntakePool::global();
+        if let Some(cause) = pool.failure_cause() {
             self.full_render_document_failure(pending.request.failure(cause));
+        } else if let Some(cause) = pool.capacity_failure_cause(&pending.request) {
+            self.finish_or_fail_capacity(pending, cause, ctx);
         } else {
             self.document_intake = Some(pending);
             ctx.request_repaint_after(INTAKE_POLL_INTERVAL);
+        }
+    }
+
+    fn finish_or_fail_capacity(
+        &mut self,
+        pending: LocalDocumentIntake,
+        cause: String,
+        ctx: &egui::Context,
+    ) {
+        match pending.result.try_recv() {
+            Ok(result) => self.finish_document_intake(pending, result),
+            Err(TryRecvError::Empty) => {
+                self.full_render_document_failure(pending.request.failure(cause));
+            }
+            Err(TryRecvError::Disconnected) => self.poll_document_intake_result(pending, ctx),
         }
     }
 }

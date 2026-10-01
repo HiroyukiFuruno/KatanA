@@ -23,6 +23,7 @@ impl FailureHarness {
         let state = PoolState {
             phase: PoolPhase::Ready,
             pending: VecDeque::from([Arc::downgrade(&queued)]),
+            active: Vec::new(),
         };
         Self {
             shared: Arc::new(SharedPool {

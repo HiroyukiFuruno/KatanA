@@ -43,7 +43,8 @@ fn fifo_resource_child() {
             .success()
     );
     let baseline = process_threads();
-    let mut active_pane = active_fifo_pane(&path);
+    let mut active = occupy_workers(&path);
+    let mut active_pane = active_fifo_pane(&mut active);
     abandon_reads(&path);
     let actual = wait_for_workers(baseline);
     println!("intake resource bound: baseline={baseline} actual={actual} max_workers=2");
@@ -54,8 +55,7 @@ fn fifo_resource_child() {
     verify_terminal_failure(&mut active_pane, &path);
 }
 
-fn active_fifo_pane(path: &std::path::Path) -> PreviewPane {
-    let mut active = occupy_workers(path);
+fn active_fifo_pane(active: &mut Vec<LocalDocumentIntake>) -> PreviewPane {
     let mut pane = PreviewPane::default();
     pane.document_intake = active.pop();
     pane.is_loading = true;

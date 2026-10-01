@@ -11,6 +11,17 @@ mod tests;
 
 struct WorkerExitGuard(Arc<SharedPool>);
 
+struct ActiveReadGuard<'a> {
+    shared: &'a SharedPool,
+    request: &'a IntakeRequest,
+}
+
+impl Drop for ActiveReadGuard<'_> {
+    fn drop(&mut self) {
+        self.shared.release(self.request);
+    }
+}
+
 impl Drop for WorkerExitGuard {
     fn drop(&mut self) {
         self.0.fail("document intake worker stopped");
@@ -24,7 +35,13 @@ impl IntakeWorkerOps {
         let _exit_guard = WorkerExitGuard(shared.clone());
         loop {
             match Self::next_request(&shared) {
-                Ok(Some(request)) => Self::process_request(&shared, &request),
+                Ok(Some(request)) => {
+                    let _guard = ActiveReadGuard {
+                        shared: &shared,
+                        request: &request,
+                    };
+                    Self::process_request(&shared, &request);
+                }
                 Ok(None) => return,
                 Err(cause) => {
                     shared.fail(&cause);
@@ -41,6 +58,7 @@ impl IntakeWorkerOps {
                 PoolPhase::Ready => {
                     if let Some(request) = state.pending.pop_front() {
                         if let Some(request) = request.upgrade() {
+                            state.active.push(Arc::downgrade(&request));
                             return Ok(Some(request));
                         }
                         continue;

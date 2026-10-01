@@ -20,6 +20,23 @@ pub(super) struct SharedPool {
 pub(super) struct PoolState {
     pub(super) phase: PoolPhase,
     pub(super) pending: VecDeque<Weak<IntakeRequest>>,
+    pub(super) active: Vec<Weak<IntakeRequest>>,
+}
+
+impl PoolState {
+    fn capacity_failure_cause(&self, request: &IntakeRequest) -> Option<String> {
+        let request_is_active = self
+            .active
+            .iter()
+            .any(|active| std::ptr::eq(active.as_ptr(), request));
+        let has_cancelled_read = self
+            .active
+            .iter()
+            .any(|active| active.upgrade().is_some_and(|active| active.is_cancelled()));
+        (self.active.len() == WORKER_LIMIT && !request_is_active && has_cancelled_read).then(|| {
+            format!("document intake capacity is occupied by cancelled reads (worker limit {WORKER_LIMIT})")
+        })
+    }
 }
 
 pub(super) enum PoolPhase {
@@ -66,6 +83,9 @@ impl IntakePool {
             PoolPhase::Failed(cause) => return Err(cause.clone()),
             PoolPhase::Booting => return Err("document intake pool has not started".to_owned()),
         }
+        if let Some(cause) = state.capacity_failure_cause(request) {
+            return Err(cause);
+        }
         state.pending.retain(|request| request.strong_count() > 0);
         if state.pending.len() == QUEUE_LIMIT {
             return Err(format!(
@@ -87,6 +107,13 @@ impl IntakePool {
             Err(cause) => Some(cause),
         }
     }
+
+    pub(super) fn capacity_failure_cause(&self, request: &IntakeRequest) -> Option<String> {
+        match self.shared.lock() {
+            Ok(state) => state.capacity_failure_cause(request),
+            Err(cause) => Some(cause),
+        }
+    }
 }
 
 impl SharedPool {
@@ -95,6 +122,7 @@ impl SharedPool {
             state: Mutex::new(PoolState {
                 phase: PoolPhase::Booting,
                 pending: VecDeque::new(),
+                active: Vec::with_capacity(WORKER_LIMIT),
             }),
             wake: Condvar::new(),
         }
@@ -142,5 +170,14 @@ impl SharedPool {
         for request in pending.into_iter().filter_map(|request| request.upgrade()) {
             request.fail(cause);
         }
+    }
+
+    pub(super) fn release(&self, request: &IntakeRequest) {
+        let Ok(mut state) = self.lock() else {
+            return;
+        };
+        state
+            .active
+            .retain(|active| !std::ptr::eq(active.as_ptr(), request));
     }
 }
