@@ -108,7 +108,19 @@ HEAD `7e43924d` の全coverageでworkspaceテスト、UI parallel141件（既存
 
 変更後の全coverage gateは成功。UI parallel141件（既存ignore2件）、serial18件を含む全工程と集計を完了し、strict document surfaceは100%、`painter_grid.rs`は184/184行。ログは`tmp/coverage-gate-20261001-rerun.log`、JSONは`tmp/coverage-gate-20261001-rerun.json`。依存更新前のこのsource graphの結果であり、次の依存移行後の再検証・配布受入・全combined gateを完了扱いにはしない。
 
+## egui移行後の実アプリ起動と品質（2026-10-01）
+
+egui0.36.2移行を通常hookを通したcommit`886907a1`へ正式統合した。公開KDV0.5.7/KRR0.4.21/KUC0.3.17 graphのfull locked metadata、native release全target strict Clippy、paint-metrics2件、供給網4カテゴリ、全coverage gateが成功。document surface100%、painter_grid184/184。移行後の全coverageログ/JSONは`tmp/coverage-egui-0362-20261001.{log,json}`。実input/capture、platform/combined、公開は未完了。
+
+新release main SHA-256`46e618fe768abc29d65c1fd5e1f8bd565f363e905c34d68a8aa742b8a6b3f3aa`を独立した設定で起動し、PID64901、継続UI heartbeat、peak RSS253392KiB（247.45MiB）、owned fonts27093388bytes、Office worker0を確認した。原始ログ/heartbeat/configは`tmp/trash/2026-10-01-113653-startup.YMB8Av/`へ保持。これはlocal native実mainの空workspace smokeであり、全OS clean-machineやOffice入力を含む配布受入ではない。旧PID50338は終了させていない。
+
+起動テストの独立レビューでLinux wrapperのみ終了させるcleanupをP1として検出し、`f5eaadb9`で修正した。shared helperを実bash/sleep子孫で実行し、既知main/初期frame前の探索の両経路でowned main/wrapper消滅、PID clear、無関係プロセス生存を条件pollで確認。実early-exit負例と全startup contractも成功した。修正後の実main smokeはPID94562、peak RSS234976KiB、同じfont bytes、worker0で成功し、終了後PID94562は消滅、旧PID50338は保持。
+
+移行後runner SHA-256`c7a527c638db70fceff2daea1081afeb456e73ce6189ad925e0f2e0848e917cb`でcanonical interaction contractとExcelタブの実0→1→0が成功。生資料は`tmp/canonical-egui-0362-20261001/`と`tmp/xlsx-sheet-tab-input-egui-0362-20261001/`。両full PNGは移行前のhashと完全一致（typography`394f828d1a89f89d0f15f6b4a62a6d704f4b275b9222f0e2b1225d2930ccfa3d`、diagrams`f77baa764224dcc653ed0288263dab16c292d8a353933d4278e6343c8ed67bf1`）。same-frame geometry/counterも保持する。独立source-renderer95点採用や配布main入力の完了ではない。
+
 ## ビルド容量の記録
+
+通常commit hookのdevチェックと別runnerの再ビルドでhost空きが857MiBまで減少した。commit hookは成功したがrunnerは1GiB閾値に従い中断し、終了済みの誤った別target` scripts/screenshot/target`のみCargo cleanで6443ファイル/2.8GiB解放。既存`target/screenshot-harness`を明示して再開する。実source/証跡/使用中アプリ/他repoは削除していない。
 
 空き容量が8.4GiBへ減ったため、使用中のroot/debug・coverage・新runner targetは残し、稼働していない旧`scripts/screenshot/target`だけをCargoのtarget-dir指定cleanで解放した。再生成可能な生成物38147ファイル、20.8GiBが対象。ソース、stash bundle、worktreeは削除していない。
 
