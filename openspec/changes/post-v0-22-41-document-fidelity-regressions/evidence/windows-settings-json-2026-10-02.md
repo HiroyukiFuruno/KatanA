@@ -39,6 +39,13 @@ Normal commit/push, fresh current review and repaired Windows cloud execution
 remain required.
 String round-trip tests on macOS do not establish Windows filesystem acceptance.
 
+The screenshot workspace is separate from root `cargo test --workspace`.
+CI now runs its entire locked release test suite in its existing isolated target
+on each OS before the unchanged headless acceptance step. The CI resource
+contract (4 tests) and native Office-worker contract (4 tests) passed; the new
+contract guards the command, target, event condition and execution ordering.
+Existing full workspace tests, coverage and artifact requirements are unchanged.
+
 ## Separate observations
 
 The audit also identified manual JSON interpolation of locale/theme/preset and

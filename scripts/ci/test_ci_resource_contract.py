@@ -21,6 +21,22 @@ def step_block(job, name):
 
 
 class CiResourceContractTest(unittest.TestCase):
+    def test_separate_screenshot_workspace_runs_before_acceptance(self):
+        job = current_test_job()
+        name = "Test screenshot harness contracts"
+        contracts = step_block(job, name)
+        self.assertIn("shell: bash", contracts)
+        self.assertIn("CARGO_TARGET_DIR: target/screenshot-harness", contracts)
+        self.assertIn(
+            "cargo test --locked --release --manifest-path scripts/screenshot/Cargo.toml",
+            contracts,
+        )
+        acceptance = step_block(job, "Run multi-format headless acceptance")
+        condition = "if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')"
+        self.assertIn(condition, contracts)
+        self.assertIn(condition, acceptance)
+        self.assertLess(job.index(name), job.index("- name: Run multi-format headless acceptance"))
+
     def test_cold_font_diagnostic_keeps_full_suite_and_isolates_debug(self):
         job = current_test_job()
         diagnostic_name = "Measure cold real-font lookup (Windows)"

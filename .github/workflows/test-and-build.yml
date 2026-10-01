@@ -121,6 +121,13 @@ jobs:
         shell: bash
         run: bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
 
+      - name: Test screenshot harness contracts
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        shell: bash
+        env:
+          CARGO_TARGET_DIR: target/screenshot-harness
+        run: cargo test --locked --release --manifest-path scripts/screenshot/Cargo.toml
+
       - name: Run multi-format headless acceptance
         if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
         shell: bash
