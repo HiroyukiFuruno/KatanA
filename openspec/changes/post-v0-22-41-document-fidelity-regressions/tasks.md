@@ -160,6 +160,19 @@
 
 ## 最新レビューと判断待ち
 
+- [x] intake修正263a9c76、filter queue修正d0e8e910を通常hook付きcommitで正式履歴へ統合。全coverage/strict Clippy/ASTの成功後に関心事を分離した。まだremote未反映のため、レビュー返信/resolveやリリース済みとは報告しない。
+
+- [x] intake/filter新修正後の凍結sourceで通常`just coverage` exit0。UI978 passed/2既存ignored、core215、platform113、実export13、UI parallel143/2既存ignored、serial18成功。meaningful未実行0、既存strict document surface100%/uncovered0。閾値・除外は変更していない。正式commit/push・current Windows font timeout・review reply/resolve・配布受入は別途未完了。
+
+- [/] intake固定2 worker/Weak queue64とfilter候補保護queueを実装。実FIFOは旧3→15本をRED、新3→5本をGREEN、取消/満杯/容量再利用/実UI frame/terminal failureを含むintake9件成功。filterはqueue5件・実XLSX workerを含む飽和2件・既存bounded2件成功。最新test-inclusive strict Clippy/AST23件も成功。全coverage、正式commit/push、thread返信/resolve、配布受入は別途未完了。
+- [ ] current HEAD f7931084のWindows cloud run36876961856/job110418734635はUI948 passed/1 failed/2既存ignored。失敗はfont_lookup実background workerの10秒result timeoutであり、今回ログにMathJax STACK_OVERFLOWはない。macOS/UbuntuのRun testsは成功。フォントscanは既にexact matchで早期終了しているため、単純な全件scanと決めつけず実候補/metadata/scan取得を調査する。deadline延長・mock・ignoreで通さない。
+
+- [/] 同じf7931084実binaryでPPTXのHTML/Office 1+10cycleもexit0。2slide/Pageの初期frame2.785s、warm0.969-1.099s、warm RSS185712→193936KiB（増分8224KiB）、idle内部counter全0。既存timeout/RSS基準のまま新inputをdocument-pptx-resource-cycle.jsonへ保持。指定大型Office/packaged/新intake修正後受入は未完了。
+- [ ] PR #346 comment4156681273 / P2: 16件の共通user queue飽和でCandidatesがevictされ、filterがLoadingから戻らない。独立したqueue担当で候補の有界保持または明示取消を修正する。通常navigationの16件上限、coalescing、filter request identity・Clear/Apply順序を維持し、RED→GREEN・全coverage・thread reply/resolveを行う。
+- [/] f7931084のactual candidate生成とmixed HTML/XLSX実1+10cycleがexit0。同frame1223/overlay0の候補は非上書き、KDV独立scoreは未完了。cold RSS103456KiB、warm204304KiB、10cycle後233520KiB、warm増分29216KiBで既存65536KiB基準を維持、idle内部資源counter全0。これはin-processでありPPTX/指定HTML/packaged RSS/新intake修正後受入とは分離する。詳細はevidence/current-head-capture-resource-2026-10-01.md。
+- [x] Linux実斜体font候補修正を`f7931084`へ正式統合し、通常pushがexit0。native通常検査、Linux全workspace、Windows test-inclusive cross-check、Draft preflightを省略せずremoteへ反映。ahead/behind0、stash0、source cleanを確認。新HEADのcloud確認・最終配布受入は別途未完了。
+- [/] filterのP2 2件は修正commit公開後に各threadへ返信4156596967/4156597719して個別resolve。全thread/commentsを再取得してページ残なし、未resolveは手動targetと新intake問題の2件。current HEAD再reviewをissuecomment5933616612で依頼、Draftは維持。
+- [ ] PR #346 comment4155543091 / P2: intakeのreceiver破棄だけではFIFO/network/FUSEの停止不能OS読込threadが残り、文書切替で増殖する。固定2 worker・Weak要求queue上限64・Drop取消・typed failure・異常終了時terminal failedへ変更中。Contextを要求に保持せず25ms pollingを維持する。OS syscall自体の中断は保証せず、実FIFO subprocessでwriter無しの上限/取消/HTML維持をRED→GREEN検証する。新規worktree/同期fallback/追加worker/閾値変更は行わない。
 - [/] 通常pushのLinux実フォント回帰: UI949 passed/3 failed/2既存ignoredで停止しremote未更新。CIのfonts-dejavu-coreにはDejaVuSansMono-Oblique.ttfが実在するが、helper候補から漏れていた。実ファイルを候補へ追加し、italic metadata・usable glyph・実layout/paintの判定は維持した。標準RUSTFLAGSを使ったlocked Linux focused検証は8 passed/0 failed。自己レビューはtest入力の漏れに限定した修正としてPASS、fmt/diff確認済み。変更後の通常push・current HEAD全platform結果は未完了。
 - [/] PR #346 comment4155296989 / P2: XLSX Unsupported criterionを空selectionで上書きする問題。実UI disabled/dispatch拒否のRED→GREENと明示Clear許可を確認。focused14件、通常lib check、AST23件成功。正式commit・thread返信/resolve・全gateは未完了。
 - [/] PR #346 comment4155296996 / P2: 一部隠れたheaderのfilter buttonがviewport端へ移動する問題。full cell edgeをanchorにしてclip/hit-testし、実RawInputの誤Candidates dispatchをRED→GREEN確認。上記focused14件に含む。正式commit・thread返信/resolve・全gateは未完了。
@@ -168,7 +181,7 @@
 - [x] 新Office lease全coverage: callback条件、通常worker compile、狭いcellの未実行分岐を修正して通常`just coverage` exit0。変更後UI968 passed/2既存ignored、core215、platform113、実export13、UI parallel143/2既存ignored、serial18等成功。meaningful未実行0、strict document surface100%/uncovered0。閾値・除外不変で新分離styleもrequired対象。
 - [ ] df2ba845のWindows cloud test: run36863047888/job110371948428でMathJax package互換テストがSTATUS_STACK_OVERFLOWにより異常終了。sweep契約は全3OS成功。stack障害の原因・修正とcurrent HEADの再検証を継続する。headless artifact不在はtests異常終了後の二次失敗として記録。
 - [x] 狭いcellの実paint退避回帰を追加し、変更後の全coverageでstrict100%を再確認した。旧85/86失敗からGREEN、閾値/除外は不変。
-- [/] Windows MathJaxをcaller stack依存から専用persistent workerへ移した。公開同期APIとJS8MiB guardを維持、実worker12MiB確保、bounded channel・明示errorを実装。設計はdesign.md末尾。actual2MiB caller/全package/並列返信/非漏出/実JS例外後回復9件、全coverageは成功。実Windows CIのstack確認は未完了。
+- [/] Windows MathJaxをcaller stack依存から専用persistent workerへ移した。公開同期APIとJS8MiB guardを維持、実worker12MiB確保、bounded channel・明示errorを実装。設計はdesign.md末尾。actual2MiB caller/全package/並列返信/非漏出/実JS例外後回復9件、全coverageは成功。current f7931084のWindows実CI job110418734635では同9件すべてokを確認。job全体は別font worker timeoutで失敗しており、全Windowsゲート成功とは扱わない。
 - 正式統合: `7e4fb367` Office実書体/lease、`4d4a6a94` filterのP2 2件、`0e9a94a6` MathJax workerを通常hook付きcommitで履歴へ取り込んだ。最新strict locked test-inclusive UI Clippy、fmt、AST23、MathJax9件、変更後全coverageは成功。通常push、新HEADのcloud/全review reply-resolve、配布受入、公開は未完了。
 - 通常push `05685207` はnative標準テスト再buildのlinkでNo space left on deviceとなりexit1、remote未更新。active Cargo/rustc/lefthook0、公式dry-run15620files/18.7GiBを確認し、当該worktreeのkatana-ui/core dev生成物だけ公式Cargo cleanで15609files/17.9GiB削除、空き16GiBへ回復した。source、履歴、release成果物、llvm-cov結果、兄弟repoは保持。再生成可能な開発生成物のみ削除であり、通常pushはCIと同じdev/test debug=0・strip=none、並列2で再試行する。機能test・lint・coverage・platform・reviewゲートは省略しない。
 - 旧HEAD cloudはUbuntu全Test and Build成功、Windowsは上記stack障害、macOSはheadless前のV8取得HTTP504で失敗。正確な公開artifact URLは再確認でHTTP200。新HEADの実cloud確認を継続し、artifact取得失敗を描画受入成功/失敗へすり替えない。
