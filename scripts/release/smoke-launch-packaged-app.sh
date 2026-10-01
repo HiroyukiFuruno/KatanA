@@ -5,15 +5,20 @@ MODE="${1:-}"
 EXECUTABLE="${2:-}"
 [[ -x "$EXECUTABLE" ]] || { echo "FAIL: executable not found: $EXECUTABLE" >&2; exit 1; }
 
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+mkdir -p "$ROOT_DIR/tmp/trash"
+EVIDENCE_DIR=$(mktemp -d "$ROOT_DIR/tmp/trash/$(date +%Y-%m-%d-%H%M%S)-startup.XXXXXX")
 HEARTBEAT=$(mktemp -t katana-startup-heartbeat.XXXXXX)
 LOG_PATH=$(mktemp -t katana-startup-log.XXXXXX)
 CONFIG_DIR=$(mktemp -d -t katana-startup-config.XXXXXX)
 MAX_RSS_MIB=${KATANA_EMPTY_WORKSPACE_MAX_RSS_MIB:-512}
 MAX_FONT_BYTES=${KATANA_EMPTY_WORKSPACE_MAX_FONT_BYTES:-134217728}
 APP_PID=""
+MAIN_PID=""
 
 source "$(dirname "${BASH_SOURCE[0]}")/startup-heartbeat.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/packaged-process-identity.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/startup-process-cleanup.sh"
 
 EXPECTED_EXECUTABLE=$(packaged_canonical_path "$EXECUTABLE")
 EXPECTED_SHA256=$(packaged_sha256 "$EXPECTED_EXECUTABLE")
@@ -23,12 +28,7 @@ EXPECTED_SHA256=$(packaged_sha256 "$EXPECTED_EXECUTABLE")
 }
 
 cleanup() {
-    if [[ -n "$APP_PID" ]]; then
-        kill "$APP_PID" 2>/dev/null || true
-        wait "$APP_PID" 2>/dev/null || true
-    fi
-    rm -f "$HEARTBEAT" "$LOG_PATH"
-    rm -rf "$CONFIG_DIR"
+    startup_process_cleanup
 }
 trap cleanup EXIT
 
@@ -80,6 +80,7 @@ for _ in {1..40}; do
     fi
     if ! kill -0 "$APP_PID" 2>/dev/null; then
         wait "$APP_PID" || true
+        APP_PID=""
         echo "FAIL: packaged app exited before first frame ($MODE)" >&2
         cat "$LOG_PATH" >&2
         exit 1
@@ -95,7 +96,6 @@ fi
 
 LAST_HEARTBEAT_FRAME=$(heartbeat_frame "$HEARTBEAT")
 
-MAIN_PID=""
 for _ in {1..10}; do
     if MAIN_PID=$(packaged_find_matching_pid "$APP_PID" "$EXPECTED_EXECUTABLE"); then
         break

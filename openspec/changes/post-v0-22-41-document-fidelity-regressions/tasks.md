@@ -32,6 +32,8 @@
 
 ## 4. Regression harness and full verification
 
+- [x] 4.21 Preserve startup heartbeat/log/isolated configuration and terminate the verified main before its owned launcher. Independent review found a wrapper-only cleanup P1; real bash/sleep descendant regressions now run the shared cleanup helper and require both owned PIDs to disappear while unrelated processes survive. Verified/discovery paths, actual early exit, startup contracts and local native smoke pass. The old interactive PID50338 remains running; this does not complete clean-machine or Office-input acceptance.
+
 - [x] 4.19 Reject PNG export without an active document instead of warning and reporting success. The actual previous runner returned exit0 without a PNG; the repaired runner returns an explicit error and the real CLI negative contract passes. Candidate generators require new absolute output roots outside `assets/reference`; no baseline is adopted.
 - [x] 4.20 Reject partial-platform publication and rerun the full artifact collection contract. The workflow now requires success from every macOS/build-smoke/Linux/Windows job; the new startup-contract assertion fails before the fix and passes afterwards. All five nonempty assets and checksums are required; missing/empty/unknown/collision/symlink/hidden-entry filesystem contracts pass. Actual Actions/clean-machine execution remains under 1.6/6.2, not claimed by these contracts.
 
