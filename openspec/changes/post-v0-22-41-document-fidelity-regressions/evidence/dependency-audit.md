@@ -147,3 +147,12 @@ the adopted KDV 0.5.7 / KRR 0.4.21 graph contains only V8 152.2.0.
 - The actual repository package is `vendor/mathjax_svg/js/package.json`, not the ancestor workspace package selected by running Bun from the repository root.
 - Running `bun outdated` from that package exits0 with no outdated entries. Its current declarations are `@mathjax/src ^4.1.3`, `@types/bun ^1.4.2`, `bun ^1.4.2` and `typescript ^7.0.2`.
 - The Biome2.5.15 tooling update is committed separately in714bbe15. No dependency-update scope or release quality gate is reduced.
+
+## 全依存関係の再調査（2026-10-01、df2ba845）
+
+- root/screenshotで実行した`cargo update --dry-run --verbose`は双方exit0、更新候補0件。`cargo upgrade --dry-run --incompatible allow --pinned allow --verbose`はroot64件、screenshot10件の直接依存を調査し、majorを含め追加提案なし。
+- 実JS packageの`bun outdated --dry-run --no-save --frozen-lockfile`はexit0、追加候補なし。
+- `cargo outdated`は一時workspaceへvendored egui-winitをコピーできず失敗した。このツールを成功扱いせず、実workspaceに対する上記調査を証跡とする。generic-array0.14.9はcrypto-common0.1.7のexact0.14.7制約で引き続き不採用。
+- 双方のlockでKDV0.5.8/KRR0.4.21/KUC0.4.0のregistry source/checksumを親担当も確認。兄弟repoのpath/git overrideなし。
+- 調査前後のlock SHA256は不変。root: `71e11503a40c1ef725da7efa71fc48cf51d1b14d541854fa8e6bbb58bbe1ac0b`、screenshot: `6c9fbf51d7d10c3e6306bba4ea5524bd8cc4eee223bf2e68c949aac9eea2bb05`。
+- 依存調査の完了と、未コミットOfficeフォント/フィルター変更後の全品質ゲート・配布受入・リリース完了は区別する。

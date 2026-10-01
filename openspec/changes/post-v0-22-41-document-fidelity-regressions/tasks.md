@@ -24,6 +24,8 @@
 - [ ] 3.4 Fix the shared DOCX/XLSX/PPTX data-descriptor ZIP path without weakening archive safety limits.
   - 2026-10-01: latest in-process host and published KDV0.5.7 release worker open the legal data-descriptor DOCX in2.026s, Page1/2, then close to idle. Final packaged-main acceptance remains required.
 - [ ] 3.5 Measure and improve DOCX/XLSX fidelity against the agreed source renderer with objective missing-element and geometry checks.
+  - 追加実装中: frameのfamily/weight/style要求をworkerで一度抽出し、OS name-tableの実face解決を別threadへ移した。surface/lookup双方の世代検査、chunk取消、document leaseの共有・close時解放を接続。実Regular/Bold outlineと実描画mesh、十回close、複数paneの回帰を追加したが、現在ビルド中であり成功扱いしない。未導入family、実Italic、源rendererとの全fidelity、配布・性能受入は残す。
+  - 同実装のfocused font25件、実Office-worker前提付きdocument-surface77件、strict all-target Clippy、AST23件が成功。初回compileの未使用/所有権/test caller、egui texture deltaの未消費を修正して再実行した。全coverage実行中、正式統合・各OS・配布と源renderer受入は未完了。証跡: evidence/office-font-leases-2026-10-01.md。
   - 2026-10-01: KDV0.5.7公開frameはセル別の四辺罫線/style/colorを保持するが、KatanAのgrid painterは一律grid lineのみを描き、個別罫線を使用していない。KatanA側の描画・回帰を実装する。公開grid_cell_bordersはVec線形探索のため、UIフレーム毎のO(n²)呼出は禁止し、workerで一度投影して受信frameと同じ世代で保持する。線形時間の公開batch取得は[KDV #56](https://github.com/HiroyukiFuruno/katana-document-viewer/issues/56)へ切り分け、既存担当へ実装・公開を依頼した。初回projectionの計算量と実測も未検証として残す。named font familyを2分類へ縮約している点も未対応であり、libの限界と断定しない。
   - 独立したフォント修正を継続: 登録済みnamed familyも無視するhostバグの実フォントlayout回帰を追加。既存FontDefinitionsを借用し、case-insensitiveで登録済みNameだけを選択する最小修正を検証する。全OS font payload読込、セル毎FSアクセス、font family Vecのcloneは追加しない。これは未導入Aptos/Calibri、font name-table登録、bold face選択、全Office fidelityの完了とは別である。
   - 登録済みfamily修正は`c4678022`に正式統合。追加後の全coverage/strict document surface100%、Linux workspace UI892件/既存ignore2、Windows test-inclusive cross-check、native実fixture8件が成功。源rendererとの全fidelity、未導入family/weight、公開KDV batch APIと配布受入は未完了のまま維持。
@@ -102,7 +104,7 @@
 ## 5. Published dependency integration
 
 - [ ] 5.1 Publish required owner-layer fixes in dependency order and verify each public registry artifact.
-- [/] 5.2 Update KatanA to exact published registry versions with no path/git overrides and rerun the packaged acceptance suite. 2026-09-28: adopted `katana-document-viewer =0.5.7` and the latest published `katana-render-runtime =0.4.21`; `cargo tree` resolves the single public KUC 0.3.17 / KRR 0.4.21 / V8 152.2.0 graph with no path/git override, and `cargo check -p katana-ui` passes. KatanA #345 corrected the acceptance harness to use the packaged release worker, so all Office files now pass. The supplied HTML still times out and remains CPU-bound on KRR 0.4.21 (KRR #95), so HTML packaged acceptance requires a later public KRR fix.
+- [/] 5.2 Update KatanA to exact published registry versions with no path/git overrides and rerun the packaged acceptance suite. 2026-10-01: root/screenshot resolve public KDV0.5.8 / KUC0.4.0 / KRR0.4.21 / singleton V8 152.2.0 with no sibling path/git override. Both lockfiles retain registry checksums; the full compatible and major/pinned audit proposes no further feasible update. Earlier packaged Office worker acceptance after KatanA #345 is not current main-app/updated-font acceptance. The supplied HTML still times out and remains CPU-bound on KRR0.4.21 (KRR #95), so HTML packaged acceptance requires a later public KRR fix.
 - [ ] 5.3 Report all tracked user findings as verified fixed or explicitly unresolved; do not mark this change complete while any required item lacks evidence.
 
 ## 6. User Review Phase
@@ -155,3 +157,15 @@
 - [x] 採用差分をリリース差分とともに正式履歴へ統合する。2026-10-01: navigation回帰を含むnative文書修正・Explorer・メモリ対策・公開registry依存をcommit `a296e49e`へ統合。Linux全workspace、Windows test-inclusive cross-check、native全target strict Clippy、AST23件、format/diff、MathJax型検査/再生成が成功。リリース完了ではなく、残るcoverage・配布受入・canonical scoreは各未完了タスクへ維持する。
 - [x] KatanAシリーズ全体のrelease/*制約hookを検証・登録し、有効化を確認する。シリーズ外は対象外。2026-10-01: 共通AGENTSへ明文化し、Codex PreToolUseへ登録。TOML検証とhook回帰9件成功（alias／改名／短縮オプション／暗黙作成／シリーズ外を含む）。ユーザーの信頼操作後、hooks/listでenabled=true／trustStatus=trustedをライブ確認。
   - repoの通常pre-commitにもrelease/vX.Y.Z判定を追加。実作業branchでexit0、同じscriptを実masterで実行してexit1を確認。master編集・branch作成・stash作成は行っていない。
+
+## 最新レビューと判断待ち
+
+- [/] PR #346 comment4155296989 / P2: XLSX Unsupported criterionを空selectionで上書きする問題。実UI disabled/dispatch拒否のRED→GREENと明示Clear許可を確認。focused14件、通常lib check、AST23件成功。正式commit・thread返信/resolve・全gateは未完了。
+- [/] PR #346 comment4155296996 / P2: 一部隠れたheaderのfilter buttonがviewport端へ移動する問題。full cell edgeをanchorにしてclip/hit-testし、実RawInputの誤Candidates dispatchをRED→GREEN確認。上記focused14件に含む。正式commit・thread返信/resolve・全gateは未完了。
+- [ ] PR #346 comment4155352623 / P2: 手動OS単独release inputと全OS必須publish条件の矛盾。全asset/smoke基準を下げず、単独選択肢を廃止して全OSへ統一する案をユーザーへ確認中。未承認の互換性変更は行わない。
+- [ ] KDV #58: 担当はbare repoのみで既存作業worktreeなし。新規worktree禁止を迂回せず、今回1個だけの例外許可をユーザーへ確認中。KatanAの独立作業は継続。
+- [x] 新Office lease全coverage: callback条件、通常worker compile、狭いcellの未実行分岐を修正して通常`just coverage` exit0。変更後UI968 passed/2既存ignored、core215、platform113、実export13、UI parallel143/2既存ignored、serial18等成功。meaningful未実行0、strict document surface100%/uncovered0。閾値・除外不変で新分離styleもrequired対象。
+- [ ] df2ba845のWindows cloud test: run36863047888/job110371948428でMathJax package互換テストがSTATUS_STACK_OVERFLOWにより異常終了。sweep契約は全3OS成功。stack障害の原因・修正とcurrent HEADの再検証を継続する。headless artifact不在はtests異常終了後の二次失敗として記録。
+- [x] 狭いcellの実paint退避回帰を追加し、変更後の全coverageでstrict100%を再確認した。旧85/86失敗からGREEN、閾値/除外は不変。
+- [/] Windows MathJaxをcaller stack依存から専用persistent workerへ移した。公開同期APIとJS8MiB guardを維持、実worker12MiB確保、bounded channel・明示errorを実装。設計はdesign.md末尾。actual2MiB caller/全package/並列返信/非漏出/実JS例外後回復9件、全coverageは成功。実Windows CIのstack確認は未完了。
+- 正式統合: `7e4fb367` Office実書体/lease、`4d4a6a94` filterのP2 2件、`0e9a94a6` MathJax workerを通常hook付きcommitで履歴へ取り込んだ。最新strict locked test-inclusive UI Clippy、fmt、AST23、MathJax9件、変更後全coverageは成功。通常push、新HEADのcloud/全review reply-resolve、配布受入、公開は未完了。

@@ -33,7 +33,10 @@ macro definitions do not leak between jobs, and a real unclosed environment
 returns JavaScriptException followed by successful normal rendering.
 
 AST23 tests, strict locked test-inclusive UI Clippy and formatting pass.
-The full changed-source coverage is running separately. Actual Windows
+The normal full changed-source coverage exits0 after commit0e9a94a6:
+UI968 passed/two existing ignored, core215, platform113, actual export13,
+parallel143/two existing ignored and serial18; meaningful uncovered lines0
+and strict document surface100%. Actual Windows
 rerun and all-platform release acceptance remain pending;12MiB sufficiency
 on Windows is not yet proven.
 

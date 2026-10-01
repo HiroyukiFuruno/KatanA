@@ -46,6 +46,14 @@ Text shape and no panic; the focused test passes. Neither the strict100%
 threshold nor coverage exclusions changed. The updated strict report and
 full release gates are still pending.
 
+After that regression and the MathJax stack repair, the normal full
+`just coverage` run exits0: UI968 passed/two existing ignored, core215,
+platform113, actual export13, UI parallel143/two existing ignored, serial18.
+Meaningful uncovered lines are0 and every strict document-surface file is100%,
+including the newly separated style file. Strict locked test-inclusive UI
+Clippy, AST23 and formatting also pass. Source integration is commit7e4fb367;
+normal push/current-HEAD cloud and packaged acceptance remain separate gates.
+
 ## Remaining acceptance
 
 Source-renderer fidelity, installed Italic glyph proof, all-platform execution,
