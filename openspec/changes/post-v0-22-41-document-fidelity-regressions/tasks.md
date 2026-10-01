@@ -111,6 +111,10 @@
 
 ## 作業保全と整理（2026-10-01）
 
+- HEAD f9372efcの通常pushはexit1: Draft preflightの供給網検査が新規direct `ttf-parser 0.25.1`のRUSTSEC-2026-0192（保守終了）を拒否。remote HEADはe602456aのままであり、レビュー返信/resolve・公開を済扱いにしない。`skrifa`へ字体metadata解析とroot/screenshot lockを移行中。既存resolved0.44.0で通常 `just supply-chain` のadvisories/bans/licenses/sourcesはすべて成功、ignore/閾値変更なし。その後公式sparse indexで最新nonyanked0.47.0/MSRV1.85を確認し、ユーザーの全依存最新化方針に従って0.47.0を評価する。metadata用途に必要なstdだけを有効化し、不要なautohint_shapingは要求しない。最新版でのRust回帰・Clippy・供給網・通常push再試行は未完了。
+- 通常push終了後、active Rust/lefthook0とdry-run1688files/3.8GiBを確認し、公式 `cargo clean --frozen --profile dev -p katana-ui` により1683files/3.3GiBの再生成可能UI開発生成物のみ削除。空き1.7→4.4GiB。source/locks/履歴/evidence/承認待ちscreenshot-harness cacheを保持。KRR担当へheadroomを共有し、KRR通常pushを先行、こちらの重いRust buildは重ねない。
+- KRR通常push成功・headroom4.4GiB引継ぎ後、latest skrifa0.47.0で実font回帰24件PASS、strict test-inclusive UI/core Clippy PASS、AST23件PASS、format/diff PASS。最新graphの供給網4項目もPASS。self-reviewは対象移行をPASSとし、全coverage/通常push/公開依存採用/配布受入/リリースは未完了のまま維持する。詳細はevidence/self-review-maintained-font-parser-2026-10-01.md。
+
 - 追加修正を通常commitへ正式統合: 4c3f75ce(Windows worker path)、09f39b8a(Linux process/deadline通常gate)、2a89aa37(Workspace公開型互換)、736f8862(ロード済みfont名)。font24件、Explorer5件、外部literal1件、strict test-inclusive UI/core Clippy、AST23件、format/diffが成功。DEBUG=trueのdefault-font fixtureではadded4/659usを実記録、通常実行はログなし。通常push・fresh review reply/resolve・変更後全coverage/配布受入は別途未完了。詳細はevidence/self-review-font-workspace-ci-2026-10-01.md。
 
 - 検証再開の容量対策: core literal回帰のcompileで空き348MiBまで減ったため、容量エラー前に中断exit130。active Rust/debug processがないこととdry-run対象を確認し、公式`cargo clean --frozen --profile dev -p katana-ui`で当該packageの開発生成物2666files/5.9GiBだけ削除、空き5.4GiBへ回復。source/locks/履歴/証跡、承認待ちscreenshot-harness cacheは保持。検証範囲を下げず再build・対象回帰を再開する。生成物はCargoで再生成可能。

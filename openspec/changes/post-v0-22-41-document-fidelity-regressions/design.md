@@ -51,6 +51,21 @@ egui の既定フォントには Noto Emoji と emoji icon font が含まれる�
 
 読込済みregular faceを既存の初期化の最後でname-table familyへ登録する。借用byteとcollection indexを解析し、typographic familyを優先してName aliasを作る。payloadの再読込・複製、フレーム毎のOS探索、追加set_fontsは行わず、generic familyとCJK/emoji fallbackを維持する。filenameをfamily名と誤認しない回帰は実Ubuntu/Hack fontで検証する。この段階では未導入Office fontの解決と実Bold face選択を完了扱いせず、regularへbold/italic faceを誤登録しない。
 
+metadata parserは保守終了勧告RUSTSEC-2026-0192のあるttf-parserを新規direct依存にせず、既存graphにも含まれるskrifaを使用する。collection index、typographic family優先、English name優先、OS/2 weight/style、post固定幅属性を実font入力で維持する。既存の供給網設定やignoreは変更しない。
+
+#### Office実face対応の残実装方針
+
+KDVのgrid appearanceはfont family/bold/italicを保持しており、KatanAの`painter_grid_text`で通常galleyの二重描画へ落としている。この損失はホスト責務として修正する。OS scannerのfile stemはfamily/styleの根拠にしない。
+
+- workerのframe取得時に、そのframeが要求するfamily/weight/styleを重複排除して投影する。描画cell毎・通常frame毎のOS探索やfont bytes再読込はしない。
+- 実font metadataに基づくface選択と必要payloadの読込はUI thread外で行う。未導入Aptos/CalibriをArial等の「一致したface」と報告しない。既存fallbackを使った場合は未解決要求を型付き診断として区別する。
+- frameとfont結果のgenerationを照合してから反映し、終了・切替後に古いworkerの結果がfont registryやframeへ入らないことを契約テストにする。
+- egui Contextは複数PreviewPaneで共有されるため、単一surfaceが全font definitionsを置換・削除して他paneを壊さない。context単位でbase UI fontsと有効documentのface所有権を分離する。新face到着・解放時だけ変更をまとめて適用し、normal frameの`set_fonts`やfont map cloneを禁止する。
+- documentを閉じた時に文書専用payload/aliasの所有権を解放する。全OS font常駐や文書切替ごとの累積cacheは導入しない。10回切替のowned bytes/registry entriesと既存memoryゲートを維持する。
+- 実Arial regular/boldの異なるglyph advance/mesh、generic/CJK/emoji chainの維持、重複要求、未導入family、generation拒否、close後資源数を検証する。OS/2フラグだけを変更したfixtureはstyle分類の回帰であり、実Bold glyphの表示品質証明には流用しない。
+
+上記は残実装方針であり、ロード済みregular aliasの完了証拠や画面表示だけでこの実face対応を完了扱いしない。最終fidelity受入と起動・memoryゲートは公開依存採用後に再実行する。
+
 ### 7. 診断は `DEBUG=true` で構造化出力する
 
 通常リリースでは追加出力を行わない。`DEBUG=true` の時だけ source read、ZIP preflight、Office conversion、KDV open/frame、KRR parse/style/script/layout/paint、texture upload、session close の開始・終了・経過時間・主要 byte 数・generation を共通 helper から出力する。
