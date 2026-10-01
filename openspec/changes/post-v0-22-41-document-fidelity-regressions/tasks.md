@@ -111,6 +111,9 @@
 
 ## 作業保全と整理（2026-10-01）
 
+- 公開KDV0.5.8の実crate checksum/registry依存を検証後、固定採用。root/screenshot lockはKUC0.4.0、lazy_static1.5.1、glam0.33.12へ更新。完全なincompatible/pinned調査で追加direct更新なし、generic-array0.14.9はcrypto-commonのexact0.14.7制約で不採用。実JS packageのoutdated/typecheckも成功。罫線projectionを公開batch借用sliceの一回走査へ変更しO(n²)探索を除去。4096件/全四辺/順序/遅い不正入力を含む実worker文書surface68件、strict test-inclusive UI/core Clippy、供給網4分類が成功。変更後全coverage/platform/実配布受入は未完了のまま再実行する。
+- 冷キャッシュDMG P1はfa31119dへ通常commit/push成功。指摘4154032531へ返信4154124764後に個別resolveし、全8thread再取得でページ残/未resolve0を確認。fa311のRelease Readinessは成功、cloud全OS test/buildは実行中であり完了とは扱わない。
+
 - HEAD3b9389e7のRust source全coverageは通常 `just coverage` exit0。workspace UI919件/既存ignore2、main17件、UI parallel143件/既存ignore2、serial18件、core export13件等が成功。meaningful未実行0、strict document surface100%/uncovered0、閾値・除外を変更していない。最新reviewのP1 4154032531はmacOS冷キャッシュでtarget/release不在→find exit1を実shellでRED再現。探索前mkdirへtarget/releaseを追加し、cold/warm実FS2件と通常packaged-startup-contractがGREEN。新回帰は通常preflightへ接続。独立差分レビューで新P0/P1/P2なし。通常commit/push・当該thread個別reply/resolve・新HEAD CIは続けて実施する。
 - KDV公開更新: run36834399570はsuccess。v0.5.8 GitHub Release（draft=false、publishedAt2026-10-01T09:44:01Z）と公式crate sparse indexのnonyanked0.5.8/checksum d77723a4ae0fb4dfe267810a23c77ba558c2d7dd4293539228d1f62c5511b5c0をライブ確認。公開normal依存はKUC=0.4.0、KRR^0.4.20。公開crate自身とfresh registry consumerのprovenanceを確認し、KatanA固定採用・batch projection・全依存調査更新/全ゲートを続行する。これはKRR #95やKatanA最終配布受入の完了ではない。
 

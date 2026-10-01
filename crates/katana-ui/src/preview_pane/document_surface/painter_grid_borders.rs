@@ -67,15 +67,18 @@ impl std::fmt::Display for BorderPreparationError {
 pub(super) fn prepare(
     frame: &DocumentSurfaceFrame,
 ) -> Result<PreparedGridBorders, BorderPreparationError> {
-    let Some(grid) = frame.grid() else {
+    if frame.grid().is_none() {
         return Ok(PreparedGridBorders::default());
-    };
-    let mut cells = Vec::with_capacity(grid.cells.len());
-    for cell in &grid.cells {
-        cells.push(prepare_cell(
-            cell.coordinate,
-            frame.grid_cell_borders(cell.coordinate),
-        )?);
+    }
+    prepare_entries(frame.grid_cell_border_entries())
+}
+
+fn prepare_entries(
+    entries: &[(DocumentGridCoordinate, DocumentGridCellBorders)],
+) -> Result<PreparedGridBorders, BorderPreparationError> {
+    let mut cells = Vec::with_capacity(entries.len());
+    for (coordinate, borders) in entries {
+        cells.push(prepare_cell(*coordinate, Some(borders))?);
     }
     Ok(PreparedGridBorders { cells })
 }
@@ -138,3 +141,7 @@ fn prepare_side(
 #[cfg(test)]
 #[path = "painter_grid_borders_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "painter_grid_border_batch_tests.rs"]
+mod batch_tests;
