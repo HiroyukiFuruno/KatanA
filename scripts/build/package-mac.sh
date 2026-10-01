@@ -9,6 +9,8 @@ set -euo pipefail
 APP_NAME="KatanA Desktop"
 APP_BUNDLE="target/release/bundle/osx/${APP_NAME}.app"
 CONTENTS="${APP_BUNDLE}/Contents"
+MACOS_TARGETS=("aarch64-apple-darwin" "x86_64-apple-darwin")
+export MACOSX_DEPLOYMENT_TARGET="13.0"
 
 # ── Colours ──────────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'
@@ -31,7 +33,11 @@ fi
 info "Packaging macOS .app bundle (release)..."
 
 cargo bundle --release --format osx --package katana-ui --bin KatanA
-cargo build --release --package katana-ui --bin kdv-office-worker
+
+info "Building universal macOS executables..."
+for target in "${MACOS_TARGETS[@]}"; do
+    cargo build --release --target "$target" --package katana-ui --bin KatanA --bin kdv-office-worker
+done
 
 info "Overlaying project-specific Info.plist..."
 cp crates/katana-ui/Info.plist "${CONTENTS}/Info.plist"
@@ -44,8 +50,18 @@ mkdir -p "${CONTENTS}/Resources"
 cp assets/icon.icns "${CONTENTS}/Resources/icon.icns"
 
 info "Adding the isolated Office worker..."
-cp target/release/kdv-office-worker "${CONTENTS}/MacOS/kdv-office-worker"
+lipo -create \
+    target/aarch64-apple-darwin/release/KatanA \
+    target/x86_64-apple-darwin/release/KatanA \
+    -output "${CONTENTS}/MacOS/KatanA"
+lipo -create \
+    target/aarch64-apple-darwin/release/kdv-office-worker \
+    target/x86_64-apple-darwin/release/kdv-office-worker \
+    -output "${CONTENTS}/MacOS/kdv-office-worker"
+chmod 755 "${CONTENTS}/MacOS/KatanA"
 chmod 755 "${CONTENTS}/MacOS/kdv-office-worker"
+lipo -verify_arch arm64 x86_64 "${CONTENTS}/MacOS/KatanA"
+lipo -verify_arch arm64 x86_64 "${CONTENTS}/MacOS/kdv-office-worker"
 
 info "Applying Ad-hoc Code Signature (Required after modifying Info.plist to prevent 'damaged' Gatekeeper error)..."
 codesign --force --deep --sign - "${APP_BUNDLE}"
