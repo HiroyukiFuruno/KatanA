@@ -181,3 +181,7 @@ Biome2.5.15へtool pin/config schemaを同期した。公式migration previewに
 HEAD `438ea436`は通常pre-push hookを通過し、`release/v0.22.42`を公開branchへpushした。Draft [PR #346](https://github.com/HiroyukiFuruno/KatanA/pull/346)を作成して`@codex review`を依頼。Ready/merge/releaseは未実施。上記の旧Draft拒否結果は4.23の明示分類修正で解消したが、strict公開ゲートの未完了拒否は維持する。
 
 既存HTML driverへ原本SHA/実path/1280x900/#s15/60秒初期frameの事前照合を追加した。通常testとfixture targetから6回帰を実行し、変更原本・異なるsource/viewport/fragment・時間延長を拒否する。実原本53818bytesと指定requestの`--validate-input`も成功。実行時のrunner/worker/lock identityは保存する実装を追加したが、本描画実行はまだ行っていない。sticky/連続CPU/正常close/終了後process、公表registry依存による本受入は未完了で、事前照合をその代替としない。
+
+追加準備は`da890166`へ正式統合し、通常hookを通してpush済み。最新HEADのcloud reviewを依頼した。旧HEADへのP2「MathJax package欠落」は、[公式3.2.2 AllPackages](https://github.com/mathjax/MathJax-src/blob/3.2.2/ts/input/tex/AllPackages.ts#L91-L122)と現配列を実比較して双方30件、omitted/addedとも空を確認し、不採用根拠を返信・個別resolve。全threadを再取得して未解決0を確認したが、最新HEAD review完了とは扱わない。
+
+読み取り専用監査でもHTML driverの残件を確認した。現在の`frame_or_error`は成功frameと明示errorを区別せず、CPUは最大値のみ、`close=completed`はrunner終了を示すだけで通常closeとowned descendant不在を証明しない。後続では成功frame・typed failureを区別し、poll別CPUと終了後ownershipを同じ既存driverへ統合する。既存process identity/実子process回帰を再利用し、PIDのみの無検証killや新driver増殖は行わない。これらはKatanA側で進められる未完了の受入準備である。
