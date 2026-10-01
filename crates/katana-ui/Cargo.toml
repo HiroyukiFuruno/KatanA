@@ -46,6 +46,7 @@ uuid = { version = "1.26.1", features = ["v4"] }
 egui-file-dialog = "0.15.0"
 notify.workspace = true
 url.workspace = true
+ttf-parser = "0.25.1"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

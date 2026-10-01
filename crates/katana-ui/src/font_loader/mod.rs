@@ -1,6 +1,7 @@
 use egui::{Context, FontFamily};
 
 mod helpers;
+mod named_families;
 mod normalize;
 mod types;
 
@@ -145,7 +146,9 @@ impl SystemFontLoader {
             Self::inject_custom_font(&mut fonts, path, name);
         }
 
-        NormalizeFonts::new(fonts).normalize(proportional_candidates)
+        let mut normalized = NormalizeFonts::new(fonts).normalize(proportional_candidates);
+        named_families::NamedFontFamiliesOps::register(&mut normalized.fonts);
+        normalized
     }
 }
 
