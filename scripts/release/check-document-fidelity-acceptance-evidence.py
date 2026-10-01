@@ -199,7 +199,10 @@ def verify_packaged(value: object) -> None:
             fail(f"packaged evidence runner mode is invalid for {target}")
         if record.get("clean_machine") is not True or record.get("normal_close") is not True:
             fail(f"packaged evidence must be a clean-machine normal close for {target}")
-        require_positive_integer(record.get("pid"), f"{target}.pid")
+        pid = require_positive_integer(record.get("pid"), f"{target}.pid")
+        sidecar_pid = require_positive_integer(record.get("sidecar_pid"), f"{target}.sidecar_pid")
+        if sidecar_pid == pid:
+            fail(f"packaged main and sidecar PIDs must differ for {target}")
         before = require_positive_integer(record.get("heartbeat_frame_before"), f"{target}.heartbeat_frame_before")
         after = require_positive_integer(record.get("heartbeat_frame_after"), f"{target}.heartbeat_frame_after")
         if after <= before:
@@ -207,7 +210,12 @@ def verify_packaged(value: object) -> None:
         require_finite_number(record.get("cpu_percent"), f"{target}.cpu_percent")
         require_positive_finite_number(record.get("rss_bytes"), f"{target}.rss_bytes")
         require_canonical_path(record.get("main_path"), f"{target}.main_path")
-        require_canonical_path(record.get("sidecar_path"), f"{target}.sidecar_path")
+        sidecar_path = require_canonical_path(record.get("sidecar_path"), f"{target}.sidecar_path")
+        observed_sidecar_path = require_canonical_path(
+            record.get("observed_sidecar_path"), f"{target}.observed_sidecar_path"
+        )
+        if observed_sidecar_path != sidecar_path:
+            fail(f"packaged sidecar path mismatch for {target}")
         for artifact in ("main_sha256", "sidecar_sha256", "observed_main_sha256", "observed_sidecar_sha256"):
             require_sha256(record.get(artifact), f"{target}.{artifact}")
         if record["main_sha256"].lower() != record["observed_main_sha256"].lower():

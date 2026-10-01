@@ -74,12 +74,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                     "clean_machine": True,
                     "normal_close": True,
                     "pid": 100,
+                    "sidecar_pid": 101,
                     "heartbeat_frame_before": 1,
                     "heartbeat_frame_after": 2,
                     "cpu_percent": 50.0,
                     "rss_bytes": 100000,
                     "main_path": "/release/KatanA",
                     "sidecar_path": "/release/kdv-office-worker",
+                    "observed_sidecar_path": "/release/kdv-office-worker",
                     "main_sha256": "a" * 64,
                     "sidecar_sha256": "b" * 64,
                     "observed_main_sha256": "a" * 64,
@@ -174,6 +176,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
     def test_invalid_identity_type_fails(self) -> None:
         self.assert_rejected(
             lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(pid="100")
+        )
+
+    def test_sidecar_identity_fields_are_required(self) -> None:
+        self.assert_rejected(
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].pop("sidecar_pid")
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(sidecar_pid=0)
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(sidecar_pid=True)
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(sidecar_pid=100)
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(
+                observed_sidecar_path="/release/other-worker"
+            )
         )
 
     def test_source_tree_requires_git(self) -> None:
