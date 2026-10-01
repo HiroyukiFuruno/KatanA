@@ -58,7 +58,7 @@ class CiResourceContractTest(unittest.TestCase):
 
 def current_test_job():
     path = Path(__file__).resolve().parents[2] / ".github/workflows/test-and-build.yml"
-    return test_job_block(path.read_text())
+    return test_job_block(path.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

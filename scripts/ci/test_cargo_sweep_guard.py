@@ -14,10 +14,10 @@ import cargo_sweep_guard as guard
 class CargoSweepGuardTest(unittest.TestCase):
     def test_repository_sweep_entries_are_dry_run_and_contract_is_wired(self):
         repository = Path(__file__).resolve().parents[2]
-        maintenance = (repository / "just/maintenance.just").read_text()
-        tests = (repository / "just/tests.just").read_text()
-        linux = (repository / "platforms/linux/ci/Dockerfile").read_text()
-        windows = (repository / "platforms/windows/ci/Dockerfile").read_text()
+        maintenance = (repository / "just/maintenance.just").read_text(encoding="utf-8")
+        tests = (repository / "just/tests.just").read_text(encoding="utf-8")
+        linux = (repository / "platforms/linux/ci/Dockerfile").read_text(encoding="utf-8")
+        windows = (repository / "platforms/windows/ci/Dockerfile").read_text(encoding="utf-8")
         self.assertIn("scripts/ci/cargo_sweep_guard.py --dry-run", maintenance)
         self.assertRegex(tests, r"(?m)^test:.*test-cargo-sweep-contract")
         self.assertIn("test_cargo_sweep_guard.py", tests)

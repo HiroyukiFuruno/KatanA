@@ -32,6 +32,13 @@ The new cloud workflow must still complete on the next formal HEAD. Previous
 local full coverage and platform gates do not prove this new cloud result.
 No gate was disabled or weakened, and the PR remains Draft.
 
+Windows job `110344558517` subsequently failed before workspace tests because
+the new resource contract read the UTF-8 workflow with the Windows cp1252
+default. Repository readers in both new contract files now explicitly use
+UTF-8. All five focused contracts pass after this repair; a new Windows cloud
+run is still required. Missing acceptance artifacts in that failed job follow
+from this earlier failure, and are not evidence of an application regression.
+
 ## Conclusion
 
 PASS for the scoped resource-management changes and focused contracts;
