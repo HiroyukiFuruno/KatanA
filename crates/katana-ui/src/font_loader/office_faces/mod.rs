@@ -1,6 +1,7 @@
 mod font_file;
 mod font_metadata;
 mod resolver;
+mod resolver_debug;
 mod resolver_scan;
 mod resolver_selection;
 mod types;

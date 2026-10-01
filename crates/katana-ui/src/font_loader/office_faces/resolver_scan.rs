@@ -4,9 +4,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use skrifa::raw::FileRef;
 
-use super::font_file::read_candidate;
+use super::resolver_debug::{read_candidate, selected_match};
 use super::resolver_selection::{
-    PendingMatch, RequestKey, SelectedFace, all_exact_matches, append_matches, selected_match,
+    PendingMatch, RequestKey, SelectedFace, all_exact_matches, append_matches,
 };
 use super::types::{FontFaceRequest, FontFaceResolution, FontFaceResolutionDiagnostic};
 
@@ -153,9 +153,12 @@ fn collect_face(
     collection: &mut FaceCollection<'_>,
 ) {
     match parsed {
-        Ok(face) => collection
-            .matches
-            .extend(selected_match(&face, index, collection.requests)),
+        Ok(face) => collection.matches.extend(selected_match(
+            &face,
+            index,
+            collection.path,
+            collection.requests,
+        )),
         Err(_) => {
             *collection.incomplete = true;
             collection
