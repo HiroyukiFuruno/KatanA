@@ -11,7 +11,15 @@ type-check:
     {{CARGO}} check --workspace
 
 # Run impacted unit tests (local default)
-test: test-html-host-contract test-impacted
+test: test-cargo-sweep-contract test-ci-resource-contract test-html-host-contract test-impacted
+
+# デバッグ情報の容量対策で全test・coverage・受入を削減していないことを確認する。
+test-ci-resource-contract:
+    {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
+
+# 実Cargoのロック競合と不明なtarget構造で、cache整理が安全に停止することを確認する。
+test-cargo-sweep-contract:
+    {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_cargo_sweep_guard.py -v
 
 # 原本・viewport・fragmentの誤一致を、描画実行前に検出する。
 test-html-host-contract:
@@ -56,11 +64,11 @@ check-native-office-worker-contract:
 
 # Verify test execution in isolated Linux environment
 check-linux: check-linux-office-worker-contract
-    {{DOCKER}} compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="{{RUSTFLAGS}} -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "ulimit -c 0 && cargo sweep --time 7 && python3 scripts/ci/test_html_fixture_host_contract.py && python3 scripts/ci/test_html_host_process_group.py && cargo build --locked -p katana-ui --bin kdv-office-worker && KATANA_KDV_OFFICE_WORKER=/app/target/debug/kdv-office-worker cargo test --locked -q --workspace"
+    {{DOCKER}} compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="{{RUSTFLAGS}} -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "ulimit -c 0 && cargo sweep --time 7 --dry-run && python3 scripts/ci/test_html_fixture_host_contract.py && python3 scripts/ci/test_html_host_process_group.py && cargo build --locked -p katana-ui --bin kdv-office-worker && KATANA_KDV_OFFICE_WORKER=/app/target/debug/kdv-office-worker cargo test --locked -q --workspace"
 
 # Verify Windows cross-compilation without running tests
 check-windows:
-    {{DOCKER}} compose -f platforms/windows/ci/compose.yml run --rm windows-test bash -c "cargo sweep --time 7 && cargo xwin check -q --workspace --target x86_64-pc-windows-msvc --tests"
+    {{DOCKER}} compose -f platforms/windows/ci/compose.yml run --rm windows-test bash -c "cargo sweep --time 7 --dry-run && cargo xwin check -q --workspace --target x86_64-pc-windows-msvc --tests"
 
 # Verify test/compilation across all target platforms (Linux, Windows)
 check-platforms: check-linux check-windows

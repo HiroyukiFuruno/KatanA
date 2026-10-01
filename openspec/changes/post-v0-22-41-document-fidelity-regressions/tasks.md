@@ -111,6 +111,18 @@
 
 ## 作業保全と整理（2026-10-01）
 
+- HEAD7b5224d4/public KDV0.5.8のcontrols-off実capture再試行はexit0。geometry/full PNG/cropとsameframe1223・全controls/hover/selection0を確認。候補SHA256 c6b6326f76374ea2712ca634b877ece7162acf7ea949ec1c1c4ee23b0fc31577。KDV既存担当へ独立95点採点を依頼、sample.md全page exportも開始。reference上書き・採点成功・配布受入成功は未実施。詳細はevidence/canonical-public-kdv058-2026-10-01.md。
+- Ubuntuの実jobログは空き30MB警告直後のkatana-platform/katana-coreテストbinaryのlink SIGBUS/exit101を確認。全3OS matrix/check/workspace test/Office worker/headless/coverageを維持し、test jobのdev/test debug情報だけ0、strip=none、新cache namespaceへ変更。実workflow契約2件PASS・通常test/check-fullへ接続、最新cloud rerunは未実施。
+
+- ビルド中cache整理の再発対策を実装中。実Cargo buildのbarrierでprofile lock競合時のcleanup skipと、終了後の実cargo-sweep dry-runを確認（2件PASS）。既存profileのロックだけでは列挙後の新規profile生成を排他できないため、native/Linux/Windowsの自動build・test入口は削除なしのdry-runへ変更。target/llvm-cov-targetの曖昧構造でも実`just sweep`が安全にskipした。通常testへの回帰接続済み、正式commit・最新gateは未完了。過去capture失敗の個別ファイルがsweepで削除されたと断定はしない。
+- 最新cloud run36850959848のUbuntu Test and Buildはfailed、macOS/Windowsはpending、Lint3環境・供給網・Release Readinessはpass。ローカル通常push成功とは区別し、job110332509535の実ログを取得して原因修正を継続する。新HEADのreview指摘は8thread/全commentのページ残なし・未resolve0だが、7b5224d4の新review結果は未取得でReady化しない。
+
+- HEAD7b5224d4の通常push再試行はexit0、native通常品質検査・Linux locked全workspace・Windows test-inclusive cross-check・Draft preflightをhook省略なしで成功。remote一致/ahead-behind0/stash0を再確認。最新HEAD reviewはissuecomment5929754506で依頼、Draft維持。controls-off候補生成は通常gate終了後に再実行中。
+- HEAD7b5224d4の変更後全coverageは通常`just coverage` exit0。UI923件/既存ignore2、main17件、core215件、platform113件、parallel143件/既存ignore2、serial18件、実Mermaidを含むexport13件等が成功。meaningful未実行0、strict document surface100%/uncovered0、閾値・除外は変更なし。root/screenshotのfull locked metadataもKDV0.5.8/KUC0.4.0/KRR0.4.21/V8singleton152.2.0のregistry graphで成功。
+- 同HEADの初回通常pushはnative成功後、Linux linker Bus errorでexit1。実Docker診断で仮想disk148G使用/空き0、memory.events oom/oom_kill0を確認。active Docker0と公式dry-run336files/41.9GiBを確認し、当該KatanA UI packageのdev生成物だけ公式Cargo cleanで331files/39.8GiB削除、Docker空き31GiBへ回復。兄弟volume/source/履歴/承認待ちscreenshot cacheは保持。通常push再試行中でremote HEAD更新はまだ成功扱いしない。
+- DEBUG=trueの実worker filter回帰で投影19cells/1094us初回、その後同19cells/9us・7us、37cells/21us、owned1216→2368bytes、正常closeを記録。source intake19ms、debug engine open4328msで、罫線投影とengine初期化を区別する。デバッグ版測定を配布版性能や全fidelityの受入として扱わない。新公開graphのcontrols-off候補生成を開始、参照画像や95点基準は変更しない。
+- 上記候補生成のrelease worker buildはexit101で未完了。portable_atomic fingerprint/depinfoとzstd-sys outへの書込がNo such fileとなった。通常push再試行のsweepと重なった時間帯であり、生成物cleanup競合を独立readonly調査する。容量0のDocker SIGBUSとは別障害として区別し、実PNG/geometry/canonical score成功と扱わない。再captureは通常gate終了後に直列化する。
+
 - 公開KDV0.5.8の実crate checksum/registry依存を検証後、固定採用。root/screenshot lockはKUC0.4.0、lazy_static1.5.1、glam0.33.12へ更新。完全なincompatible/pinned調査で追加direct更新なし、generic-array0.14.9はcrypto-commonのexact0.14.7制約で不採用。実JS packageのoutdated/typecheckも成功。罫線projectionを公開batch借用sliceの一回走査へ変更しO(n²)探索を除去。4096件/全四辺/順序/遅い不正入力を含む実worker文書surface68件、strict test-inclusive UI/core Clippy、供給網4分類が成功。変更後全coverage/platform/実配布受入は未完了のまま再実行する。
 - 冷キャッシュDMG P1はfa31119dへ通常commit/push成功。指摘4154032531へ返信4154124764後に個別resolveし、全8thread再取得でページ残/未resolve0を確認。fa311のRelease Readinessは成功、cloud全OS test/buildは実行中であり完了とは扱わない。
 

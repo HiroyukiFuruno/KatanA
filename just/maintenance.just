@@ -2,9 +2,9 @@
 # Maintenance
 # ============================================================
 
-# Sweep old build artifacts locally (older than 7 days)
+# 新規profileの並行生成まで排他できないため、自動ビルドでは削除候補だけを確認する。
 sweep:
-    @{{CARGO}} sweep --time 7 || true
+    @{{RTK_CMD}}python3 scripts/ci/cargo_sweep_guard.py --dry-run
 
 # Remove build artifacts
 clean: sweep
@@ -45,5 +45,5 @@ lint-impacted:
     {{RTK_CMD}}scripts/runner/impacted.py clippy
 
 # Full verification (fmt + clippy + fixture IT + 100% coverage; ast-lint runs inside coverage)
-check-full: fmt-check lint test-integration coverage check-platforms supply-chain
+check-full: test-cargo-sweep-contract test-ci-resource-contract fmt-check lint test-integration coverage check-platforms supply-chain
     @echo "✅ All checks passed"
