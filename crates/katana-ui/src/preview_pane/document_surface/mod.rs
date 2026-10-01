@@ -1,6 +1,7 @@
 mod controls;
 mod controls_sheet_tabs;
 mod debug_log;
+mod local_intake;
 mod painter;
 mod painter_grid;
 mod painter_grid_conditional;
@@ -19,6 +20,7 @@ mod types;
 mod worker;
 mod worker_support;
 
+pub(crate) use local_intake::LocalDocumentIntake;
 pub(crate) use source::DocumentSurfaceSource;
 pub(crate) use types::{DocumentFailure, DocumentSurface};
 

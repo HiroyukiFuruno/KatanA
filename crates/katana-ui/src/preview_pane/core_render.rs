@@ -13,6 +13,7 @@ impl PreviewPane {
         diagram_concurrency: usize,
     ) {
         self.document_surface = None;
+        self.document_intake = None;
         self.document_failure = None;
         self.html_browser = None;
         let preserved_fullscreen = force.then(|| self.preservable_local_fullscreen()).flatten();

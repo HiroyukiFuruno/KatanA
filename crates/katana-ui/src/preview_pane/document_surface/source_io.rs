@@ -54,9 +54,22 @@ pub(super) fn read_bounded_with_limit(
     format: Option<BinaryDocumentFormat>,
     limit: usize,
 ) -> Result<Vec<u8>, DocumentFailure> {
+    let started_at = std::time::Instant::now();
     let file = std::fs::File::open(path)
         .map_err(|error| DocumentFailure::intake("read", path, format, error.to_string()))?;
-    read_limited(file, path, format, limit)
+    let opened_at = std::time::Instant::now();
+    let result = read_limited(file, path, format, limit);
+    super::debug_log::DebugLog::write(
+        "document_file_read",
+        format_args!(
+            "open_ms={} read_ms={} success={} path={}",
+            opened_at.duration_since(started_at).as_millis(),
+            opened_at.elapsed().as_millis(),
+            result.is_ok(),
+            path.display()
+        ),
+    );
+    result
 }
 
 fn read_limited(

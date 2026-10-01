@@ -56,6 +56,7 @@ pub struct PreviewPane {
     pub section_lifecycle: Vec<SectionLifecycle>,
     pub(crate) html_browser: Option<HtmlBrowserSurface>,
     pub(crate) document_surface: Option<DocumentSurface>,
+    pub(crate) document_intake: Option<super::document_surface::LocalDocumentIntake>,
     pub(crate) document_failure: Option<DocumentFailure>,
 }
 

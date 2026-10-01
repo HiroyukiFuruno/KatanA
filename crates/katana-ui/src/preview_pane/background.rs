@@ -87,7 +87,7 @@ impl PreviewPane {
                 self.finalize_disconnected_renders();
             }
         } else {
-            self.is_loading = false;
+            self.is_loading = self.document_intake.is_some();
         }
     }
 

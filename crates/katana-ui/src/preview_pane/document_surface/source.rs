@@ -23,6 +23,7 @@ impl DocumentSurfaceSource {
         let canonical = path.canonicalize().map_err(|error| {
             DocumentFailure::intake("canonicalize", path, None, error.to_string())
         })?;
+        let canonical_ms = started_at.elapsed().as_millis();
         let format = BinaryDocumentFormat::from_path(&canonical).ok_or_else(|| {
             DocumentFailure::intake(
                 "classify",
@@ -32,9 +33,11 @@ impl DocumentSurfaceSource {
             )
         })?;
         let bytes = read_bounded(&canonical, Some(format))?;
+        let read_ms = started_at.elapsed().as_millis();
         BinaryDocumentFormat::detect(&canonical, Some(format.mime()), &bytes).map_err(|error| {
             DocumentFailure::intake("validate", &canonical, Some(format), error.to_string())
         })?;
+        let validate_ms = started_at.elapsed().as_millis();
         let uri = file_url(&canonical, format)?;
         let source = Self {
             uri,
@@ -46,10 +49,13 @@ impl DocumentSurfaceSource {
         super::debug_log::DebugLog::write(
             "document_source_intake",
             format_args!(
-                "kind=local format={} bytes={} elapsed_ms={} uri={}",
+                "kind=local format={} bytes={} elapsed_ms={} canonical_ms={} read_ms={} validate_ms={} uri={}",
                 source.format.extension(),
                 source.bytes.len(),
                 started_at.elapsed().as_millis(),
+                canonical_ms,
+                read_ms.saturating_sub(canonical_ms),
+                validate_ms.saturating_sub(read_ms),
                 source.uri
             ),
         );
