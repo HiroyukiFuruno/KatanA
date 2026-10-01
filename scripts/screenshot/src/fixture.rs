@@ -121,21 +121,22 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
         String::new()
     };
 
+    let workspace_dir = workspace_dir.map(|dir| serde_json::json!(dir.to_string_lossy()));
     let workspace_block = match (workspace_dir, no_extension) {
         (Some(dir), true) => format!(
             r#",
   "workspace": {{
-    "last_workspace": "{}",
+    "last_workspace": {},
     "visible_extensions": ["md", "markdown", "txt", ""]
   }}"#,
-            dir.display()
+            dir
         ),
         (Some(dir), false) => format!(
             r#",
   "workspace": {{
-    "last_workspace": "{}"
+    "last_workspace": {}
   }}"#,
-            dir.display()
+            dir
         ),
         (None, true) => r#",
   "workspace": {
@@ -174,6 +175,34 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
 mod tests {
     use super::*;
     use katana_platform::{JsonFileRepository, SettingsRepository};
+
+    #[test]
+    fn screenshot_settings_preserve_escaped_workspace_paths() -> Result<()> {
+        for workspace in [
+            r"D:\a\KatanA\KatanA\target\workspace",
+            r"\\?\D:\a\KatanA\KatanA\target\workspace",
+            r"\\server\share\workspace",
+            "/tmp/日本語 workspace/\"quoted\"",
+            "/tmp/newline\nworkspace\ttab",
+        ] {
+            for no_extension in [false, true] {
+                let settings = FixtureSettings {
+                    no_extension: Some(no_extension),
+                    ..FixtureSettings::default()
+                };
+                let json = build_settings_json(&settings, Some(Path::new(workspace)));
+                let value: serde_json::Value = serde_json::from_str(&json)?;
+                assert_eq!(value["workspace"]["last_workspace"], workspace);
+                assert_eq!(
+                    value["workspace"].get("visible_extensions").is_some(),
+                    no_extension
+                );
+                assert_eq!(value["version"], katana_ui::about_info::APP_VERSION);
+                assert_eq!(value["updates"]["interval"], "Never");
+            }
+        }
+        Ok(())
+    }
 
     #[test]
     fn typography_font_setting_is_written_and_invalid_sizes_are_rejected() -> Result<()> {

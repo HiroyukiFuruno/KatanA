@@ -160,6 +160,8 @@
 
 ## 最新レビューと判断待ち
 
+- [/] e69bdfa6 Windows headlessはrequest読込後、fixture設定JSONの未escape Windows pathでinvalid escape/exit1。元cold font/通常testはsuccess、coverageはmacOS条件でWindows対象外。旧builder回帰RED(exit101)→pathのみserde_json文字列化で全runner42件GREEN、strict全target Clippy/format/diff/独立review成功。既存run.sh＋元multi-format requestはmacOS全38step/exit0。通常push/current review/修正後Windows実CIは継続。入力・期限・品質基準は不変。証跡: evidence/windows-settings-json-2026-10-02.md。
+- [ ] ハーネス独立audit候補: locale/theme/presetの手作業JSON補間とWorkspaceFile nameのworkspace containmentを別途検証し、必要なら限定回帰・修正する。Windows workspace JSONの修正で解消扱いにしない。
 - [x] e69bdfa6実CI/run36924444367/job110578178671でWindows cold実Arial Bold lookupと通常testのsuccessをライブ確認。元10秒期限/実字体/候補fallbackは不変。macOS/Linux全CI、3OS lint、supply-chain/CodeQL/Release Readinessもsuccess。Windows headless/coverageは実行中なので全Windows/最終HEAD完了扱いしない。未公開の文書証跡1commitは現CIを取消さないよう完了後に通常pushする。
 - [x] 共有空き1.6GiBでrootのCargo/rustc/lefthook/実runner0・clean treeを確認。inactive当該target/katana-ui dev生成物だけ公式Cargo clean、dry-run12614files/13.3GiB→実12609files/12.8GiB、空き12GiBへ回復。source SHA前後一致、tracked diff0、release/受入binary/coverageJSON/log/locks/履歴/提供入力/兄弟repoを保持。新worktree/stash/branchは作成しない。
 - [/] 新e69bdfa6 runnerをlocked release再build exit0、immutable binary e9ec4231を固定して元5Office request/SHA/DEBUG=false/196608KiB条件で実受入。5document frames・UI76→439、close後root fontを含むworkerとKDV8counter/全surface等0だが、RSS105024→422352KiB（増分317328）でexit1。計測欠落修正でmemory解消扱いしない。sidecarはbe0283a7を明記し旧8f919b20とのsource-only A/Bとはしない。原ログ・失敗を保全しKDV #59既存担当へ継続handoff、配布受入は別途未完了。
