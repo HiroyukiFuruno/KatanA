@@ -1208,6 +1208,136 @@ mod tests {
     }
 
     #[test]
+    fn hidden_rasterized_image_does_not_zoom_or_pan_from_pointer_gestures() {
+        let ctx = egui::Context::default();
+        let image = rasterized_test_image(vec![0, 0, 0, 255]);
+        let mut state = ViewerState::default();
+        render_test_rasterized_image(&ctx, &mut state, &image);
+        state.zoom = 1.25;
+        state.pan = egui::vec2(10.0, 20.0);
+
+        let render = |state: &mut ViewerState, events| {
+            crate::test_ui::TestUiOps::run(
+                &ctx,
+                egui::RawInput {
+                    screen_rect: Some(egui::Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(800.0, 600.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        ImageLogicOps::show_rasterized(
+                            ui,
+                            &image,
+                            "Mermaid diagram",
+                            0,
+                            super::image_raster::RasterizedInteraction::Hidden {
+                                state: Some(state),
+                            },
+                            |_, _, _| {},
+                        );
+                    });
+                },
+            );
+        };
+        let pointer_start = egui::pos2(40.0, 40.0);
+        let pointer_end = egui::pos2(90.0, 70.0);
+
+        render(
+            &mut state,
+            vec![
+                egui::Event::PointerMoved(pointer_start),
+                egui::Event::Zoom(1.5),
+            ],
+        );
+        render(
+            &mut state,
+            vec![egui::Event::PointerButton {
+                pos: pointer_start,
+                button: egui::PointerButton::Primary,
+                pressed: true,
+                modifiers: egui::Modifiers::NONE,
+            }],
+        );
+        render(&mut state, vec![egui::Event::PointerMoved(pointer_end)]);
+
+        assert_eq!(state.zoom, 1.25);
+        assert_eq!(state.pan, egui::vec2(10.0, 20.0));
+    }
+
+    #[test]
+    fn visible_rasterized_image_applies_pointer_zoom_and_drag() {
+        let ctx = egui::Context::default();
+        let image = rasterized_test_image(vec![0, 0, 0, 255]);
+        let mut state = ViewerState::default();
+        render_test_rasterized_image(&ctx, &mut state, &image);
+        state.zoom = 1.25;
+        state.pan = egui::vec2(10.0, 20.0);
+        let mut fullscreen_request = None;
+
+        let render = |state: &mut ViewerState, fullscreen_request: &mut Option<usize>, events| {
+            crate::test_ui::TestUiOps::run(
+                &ctx,
+                egui::RawInput {
+                    screen_rect: Some(egui::Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(800.0, 600.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        ImageLogicOps::show_rasterized(
+                            ui,
+                            &image,
+                            "Mermaid diagram",
+                            0,
+                            super::image_raster::RasterizedInteraction::Visible {
+                                state: Some(state),
+                                fullscreen_request: Some(fullscreen_request),
+                            },
+                            |_, _, _| {},
+                        );
+                    });
+                },
+            );
+        };
+        let pointer_start = egui::pos2(40.0, 40.0);
+        let pointer_end = egui::pos2(90.0, 70.0);
+
+        render(
+            &mut state,
+            &mut fullscreen_request,
+            vec![
+                egui::Event::PointerMoved(pointer_start),
+                egui::Event::Zoom(1.5),
+            ],
+        );
+        render(
+            &mut state,
+            &mut fullscreen_request,
+            vec![egui::Event::PointerButton {
+                pos: pointer_start,
+                button: egui::PointerButton::Primary,
+                pressed: true,
+                modifiers: egui::Modifiers::NONE,
+            }],
+        );
+        render(
+            &mut state,
+            &mut fullscreen_request,
+            vec![egui::Event::PointerMoved(pointer_end)],
+        );
+
+        assert_eq!(state.zoom, 1.875);
+        assert_eq!(state.pan, egui::vec2(60.0, 50.0));
+    }
+
+    #[test]
     fn preview_pane_viewer_states_default_empty() {
         let pane = PreviewPane::default();
         assert!(pane.viewer_states.is_empty());

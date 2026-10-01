@@ -89,8 +89,13 @@ impl ImageLogicOps {
         let base_scale = (max_w / display_width).min(1.0);
         let base_size = Vec2::new(display_width * base_scale, display_height * base_scale);
         let container_h = base_size.y.max(MIN_CONTAINER_HEIGHT);
+        let interaction_sense = if show_controls {
+            egui::Sense::click_and_drag()
+        } else {
+            egui::Sense::hover()
+        };
         let (container_rect, response) =
-            ui.allocate_exact_size(Vec2::new(max_w, container_h), egui::Sense::click_and_drag());
+            ui.allocate_exact_size(Vec2::new(max_w, container_h), interaction_sense);
         super::image_background::ImageBackgroundOps::paint(ui, container_rect);
         let preview_background = super::image_background::ImageBackgroundOps::preview_background(
             ui.ctx(),
@@ -101,7 +106,8 @@ impl ImageLogicOps {
             state.prepare_texture(ViewerTextureIdentity::rasterized(img), preview_background);
         }
 
-        if let Some(state) = state.as_mut()
+        if show_controls
+            && let Some(state) = state.as_mut()
             && response.hovered()
         {
             let zoom_delta = ui.input(|i| i.zoom_delta());
