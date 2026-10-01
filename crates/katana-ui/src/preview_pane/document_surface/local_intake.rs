@@ -1,4 +1,5 @@
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::sync::mpsc::{Receiver, TryRecvError};
 
 use eframe::egui;
@@ -6,47 +7,51 @@ use eframe::egui;
 use super::{DocumentFailure, DocumentSurfaceSource};
 use crate::preview_pane::PreviewPane;
 
+#[path = "local_intake_pool.rs"]
+mod pool;
+#[path = "local_intake_request.rs"]
+mod request;
+#[path = "local_intake_worker.rs"]
+mod worker;
+
 #[cfg(test)]
 #[path = "local_intake_tests.rs"]
 mod tests;
+
+#[cfg(all(test, unix))]
+#[path = "local_intake_resource_tests.rs"]
+mod resource_tests;
 
 const INTAKE_POLL_INTERVAL: std::time::Duration = std::time::Duration::from_millis(25);
 
 #[derive(Debug)]
 pub(crate) struct LocalDocumentIntake {
     path: PathBuf,
+    request: Arc<request::IntakeRequest>,
     result: Receiver<Result<DocumentSurfaceSource, DocumentFailure>>,
     force: bool,
     refresh_requested: bool,
 }
 
 impl LocalDocumentIntake {
-    fn start(path: PathBuf, force: bool, context: egui::Context) -> Result<Self, DocumentFailure> {
-        let worker_path = path.clone();
-        let (sender, result) = std::sync::mpsc::channel();
-        std::thread::Builder::new()
-            .name("katana-document-intake".to_owned())
-            .spawn(move || {
-                let source = DocumentSurfaceSource::local(&worker_path);
-                if sender.send(source).is_ok() {
-                    context.request_repaint();
-                }
-            })
-            .map_err(|error| {
-                DocumentFailure::new(
-                    super::types::DocumentFailureLayer::KatanaHost,
-                    "start intake",
-                    path.display().to_string(),
-                    katana_core::document_source::BinaryDocumentFormat::from_path(&path),
-                    error.to_string(),
-                )
-            })?;
+    fn start(path: PathBuf, force: bool) -> Result<Self, DocumentFailure> {
+        let (request, result) = request::IntakeRequest::new(path.clone());
+        pool::IntakePool::global()
+            .enqueue(&request)
+            .map_err(|cause| request.failure(cause))?;
         Ok(Self {
             path,
+            request,
             result,
             force,
             refresh_requested: false,
         })
+    }
+}
+
+impl Drop for LocalDocumentIntake {
+    fn drop(&mut self) {
+        self.request.cancel();
     }
 }
 
@@ -59,8 +64,8 @@ impl PreviewPane {
             pending.refresh_requested = true;
             return;
         }
-        let context = self.repaint_ctx.clone().unwrap_or_default();
-        let pending = match LocalDocumentIntake::start(path.to_path_buf(), force, context) {
+        self.document_intake = None;
+        let pending = match LocalDocumentIntake::start(path.to_path_buf(), force) {
             Ok(pending) => pending,
             Err(error) => {
                 self.full_render_document_failure(error);
@@ -80,6 +85,14 @@ impl PreviewPane {
         let Some(pending) = self.document_intake.take() else {
             return;
         };
+        if let Some(cause) = pool::IntakePool::global().failure_cause() {
+            self.full_render_document_failure(pending.request.failure(cause));
+            return;
+        }
+        self.poll_document_intake_result(pending, ctx);
+    }
+
+    fn poll_document_intake_result(&mut self, pending: LocalDocumentIntake, ctx: &egui::Context) {
         match pending.result.try_recv() {
             Ok(result) => {
                 self.is_loading = false;
@@ -92,8 +105,7 @@ impl PreviewPane {
                 }
             }
             Err(TryRecvError::Empty) => {
-                self.document_intake = Some(pending);
-                ctx.request_repaint_after(INTAKE_POLL_INTERVAL);
+                self.continue_document_intake(pending, ctx);
             }
             Err(TryRecvError::Disconnected) => {
                 self.full_render_document_failure(DocumentFailure::intake(
@@ -103,6 +115,15 @@ impl PreviewPane {
                     "document intake stopped before returning a result",
                 ));
             }
+        }
+    }
+
+    fn continue_document_intake(&mut self, pending: LocalDocumentIntake, ctx: &egui::Context) {
+        if let Some(cause) = pool::IntakePool::global().failure_cause() {
+            self.full_render_document_failure(pending.request.failure(cause));
+        } else {
+            self.document_intake = Some(pending);
+            ctx.request_repaint_after(INTAKE_POLL_INTERVAL);
         }
     }
 }
