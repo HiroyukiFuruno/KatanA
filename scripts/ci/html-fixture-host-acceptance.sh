@@ -67,8 +67,8 @@ EXPECTED_EXECUTABLE=$(packaged_canonical_path "$RUNNER")
 EXPECTED_SHA256=$(packaged_sha256 "$RUNNER")
 # 観測エラー時も、親子関係と実imageを確認できたrunnerだけを終了する。
 trap 'if [[ -n "${RUNNER_PID:-}" ]] && launcher_is_owned_child "$RUNNER_PID"; then terminate_verified_main; fi' EXIT
-started_epoch=$(date +%s)
-operation_started_epoch="$started_epoch"
+started_ns=$(python3 "$CONTRACT" --monotonic-ns)
+operation_started_ns="$started_ns"
 operation_step=0
 operation_name=startup
 operation_budget=60
@@ -76,11 +76,12 @@ max_cpu=0
 frame_or_error=0
 
 while kill -0 "$RUNNER_PID" 2>/dev/null; do
-    elapsed=$(( $(date +%s) - started_epoch ))
+    now_ns=$(python3 "$CONTRACT" --monotonic-ns)
+    elapsed=$(( (now_ns - started_ns) / 1000000000 ))
     observed=$(python3 "$CONTRACT" --observe-operation "$REQUEST" "$LOG")
     IFS=$'\t' read -r observed_step observed_name observed_budget <<<"$observed"
     if [[ "$observed_step" != "$operation_step" ]]; then
-        operation_started_epoch=$(date +%s)
+        operation_started_ns=$(python3 "$CONTRACT" --monotonic-ns)
         operation_step="$observed_step"
     fi
     operation_name="$observed_name"
@@ -94,13 +95,15 @@ while kill -0 "$RUNNER_PID" 2>/dev/null; do
     if rg -q 'HTML browser (first frame ready|did not produce an initial frame)|opening URL .* failed' "$LOG"; then
         frame_or_error=1
     fi
-    if (( $(date +%s) - operation_started_epoch >= operation_budget )); then
+    remaining_ns=$(python3 "$CONTRACT" --remaining-ns "$operation_started_ns" "$operation_budget")
+    if (( remaining_ns <= 0 )); then
         break
     fi
     sleep 1
 done
 
-elapsed=$(( $(date +%s) - started_epoch ))
+now_ns=$(python3 "$CONTRACT" --monotonic-ns)
+elapsed=$(( (now_ns - started_ns) / 1000000000 ))
 if kill -0 "$RUNNER_PID" 2>/dev/null; then
     printf 'result=operation_timeout\nstep=%s\noperation=%s\noperation_budget_seconds=%s\nelapsed_seconds=%s\nmax_cpu_percent=%s\n' \
         "$operation_step" "$operation_name" "$operation_budget" "$elapsed" "$max_cpu" >"$EVIDENCE"

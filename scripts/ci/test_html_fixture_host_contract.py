@@ -8,6 +8,21 @@ import html_fixture_host_contract as contract
 from html_fixture_host_contract import validate
 
 
+class OperationDeadlineTests(unittest.TestCase):
+    def test_close_receives_all_five_seconds_across_second_boundary(self):
+        started = 1_999_999_999
+        self.assertEqual(contract.remaining_nanoseconds(started, 6_000_000_000, 5), 999_999_999)
+        self.assertEqual(contract.remaining_nanoseconds(started, 6_999_999_998, 5), 1)
+        self.assertEqual(contract.remaining_nanoseconds(started, 6_999_999_999, 5), 0)
+
+    def test_navigation_receives_all_sixty_seconds(self):
+        self.assertEqual(contract.remaining_nanoseconds(999_999_999, 60_000_000_000, 60), 999_999_999)
+
+    def test_backwards_clock_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "monotonic"):
+            contract.remaining_nanoseconds(100, 99, 5)
+
+
 class HostContractTests(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()

@@ -4,10 +4,17 @@ import hashlib
 import json
 import re
 import sys
+import time
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 SOURCE_SHA256 = "c02d2d7a2420e4e15e3d98a044a310c67bc75fa858c95c4867b9c3f5d7aca012"
+
+
+def remaining_nanoseconds(started: int, observed: int, budget_seconds: int) -> int:
+    if started < 0 or observed < started or budget_seconds <= 0:
+        raise ValueError("invalid monotonic operation clock")
+    return budget_seconds * 1_000_000_000 - (observed - started)
 
 
 def observe_operation(payload: dict, log: str) -> tuple[int, str, int]:
@@ -104,7 +111,13 @@ def validate(source: Path, request: Path, expected_sha256: str) -> dict:
 
 if __name__ == "__main__":
     try:
-        if sys.argv[1] == "--observe-operation":
+        if sys.argv[1] == "--monotonic-ns":
+            print(time.monotonic_ns())
+            sys.exit(0)
+        elif sys.argv[1] == "--remaining-ns":
+            print(remaining_nanoseconds(int(sys.argv[2]), time.monotonic_ns(), int(sys.argv[3])))
+            sys.exit(0)
+        elif sys.argv[1] == "--observe-operation":
             operation = observe_operation(json.loads(Path(sys.argv[2]).read_text()), Path(sys.argv[3]).read_text())
             print("\t".join(str(value) for value in operation))
             sys.exit(0)
