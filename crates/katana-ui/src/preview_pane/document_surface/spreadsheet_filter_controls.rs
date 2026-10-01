@@ -2,6 +2,10 @@
 #[path = "spreadsheet_filter_controls_tests.rs"]
 mod tests;
 
+#[cfg(test)]
+#[path = "render_support_filter_worker_tests.rs"]
+mod queue_worker_tests;
+
 #[path = "spreadsheet_filter_controls_state.rs"]
 mod filter_state;
 

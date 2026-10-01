@@ -49,7 +49,7 @@ fn test_frame() -> DocumentFrame {
     }
 }
 
-fn idle_surface() -> (
+pub(super) fn idle_surface() -> (
     super::types::DocumentSurface,
     std::sync::mpsc::Receiver<DocumentWorkerCommand>,
     std::sync::mpsc::Sender<DocumentWorkerEvent>,
