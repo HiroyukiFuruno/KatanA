@@ -175,3 +175,9 @@ Biome2.5.15へtool pin/config schemaを同期した。公式migration previewに
 - 初回Termsのcompleted-frame回帰とworker source消費回帰の正式統合を確認し、4.16を完了へ更新。利用規約の承認状態は変更していない。Office実mainの表示・性能受入は4.23の外部環境依存として残す。
 - 最終集計: 最新罫線sourceのcoverage gateはexit0、meaningful uncovered0、strict document surface100%。計測付きUI906件/既存ignore2、parallel143件/既存ignore2、serial18件、main17件、core export13件が成功。Linux locked workspaceはUI890件/既存ignore2、core export14件、fixture8件、parallel141件/既存ignore2、serial18件を含み成功。Windows test-inclusive cross-checkも成功し、`just check-platforms`はexit0。
 - Draft bootstrap検査はexit1、未完了の4.23を正しく拒否。unknown task許容や受入基準緩和は行わず、利用規約の人間承認後に実アプリ計測を再開する。release/PRは未公開。
+
+# Draft PRとHTML再受入の事前準備
+
+HEAD `438ea436`は通常pre-push hookを通過し、`release/v0.22.42`を公開branchへpushした。Draft [PR #346](https://github.com/HiroyukiFuruno/KatanA/pull/346)を作成して`@codex review`を依頼。Ready/merge/releaseは未実施。上記の旧Draft拒否結果は4.23の明示分類修正で解消したが、strict公開ゲートの未完了拒否は維持する。
+
+既存HTML driverへ原本SHA/実path/1280x900/#s15/60秒初期frameの事前照合を追加した。通常testとfixture targetから6回帰を実行し、変更原本・異なるsource/viewport/fragment・時間延長を拒否する。実原本53818bytesと指定requestの`--validate-input`も成功。実行時のrunner/worker/lock identityは保存する実装を追加したが、本描画実行はまだ行っていない。sticky/連続CPU/正常close/終了後process、公表registry依存による本受入は未完了で、事前照合をその代替としない。

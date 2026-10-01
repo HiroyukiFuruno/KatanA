@@ -14,6 +14,17 @@ cd "$ROOT_DIR"
 }
 
 REQUEST="$ROOT_DIR/scripts/screenshot/examples/supplied-html-s15-host-acceptance.json"
+CONTRACT="$ROOT_DIR/scripts/ci/html_fixture_host_contract.py"
+if [[ "$#" -gt 1 || ( "$#" -eq 1 && "$1" != "--validate-input" ) ]]; then
+    echo "Usage: html-fixture-host-acceptance.sh [--validate-input]" >&2
+    exit 2
+fi
+if [[ "${1:-}" == "--validate-input" ]]; then
+    python3 "$CONTRACT" "$KATANA_HTML_FIXTURE" "$REQUEST"
+    exit
+fi
+# 別原本や異なるviewportを、同じ受入の証跡として記録しない。
+python3 "$CONTRACT" "$KATANA_HTML_FIXTURE" "$REQUEST" >/dev/null
 TARGET_DIR=${CARGO_TARGET_DIR:-"$ROOT_DIR/target"}
 if [[ "$TARGET_DIR" != /* ]]; then
     TARGET_DIR="$ROOT_DIR/$TARGET_DIR"
@@ -33,12 +44,18 @@ OUTPUT_DIR=${KATANA_HTML_ACCEPTANCE_OUTPUT_DIR:-"$(mktemp -d "${TMPDIR:-/tmp}/ka
 mkdir -p "$OUTPUT_DIR"
 LOG="$OUTPUT_DIR/runner.log"
 EVIDENCE="$OUTPUT_DIR/evidence.txt"
+source "$ROOT_DIR/scripts/release/packaged-process-identity.sh"
 
 # Build is deliberately outside the 60-second document contract.
 CARGO_TARGET_DIR="$TARGET_DIR" cargo build --locked --release -p katana-ui --bin kdv-office-worker
 CARGO_TARGET_DIR="$SCREENSHOT_TARGET_DIR" cargo build --locked --release --manifest-path "$ROOT_DIR/scripts/screenshot/Cargo.toml"
 [[ -x "$RUNNER" ]] || { echo "screenshot runner is not executable: $RUNNER" >&2; exit 1; }
 [[ -x "$OFFICE_WORKER" ]] || { echo "release office worker is not executable: $OFFICE_WORKER" >&2; exit 1; }
+python3 "$CONTRACT" "$KATANA_HTML_FIXTURE" "$REQUEST" >"$OUTPUT_DIR/input-identity.json"
+printf 'mode=in_process_host\nsource_head=%s\nrunner_path=%s\nrunner_sha256=%s\nworker_path=%s\nworker_sha256=%s\nlock_sha256=%s\n' \
+    "$(git rev-parse HEAD)" "$(packaged_canonical_path "$RUNNER")" "$(packaged_sha256 "$RUNNER")" \
+    "$(packaged_canonical_path "$OFFICE_WORKER")" "$(packaged_sha256 "$OFFICE_WORKER")" \
+    "$(packaged_sha256 "$ROOT_DIR/scripts/screenshot/Cargo.lock")" >"$OUTPUT_DIR/artifact-identity.txt"
 
 KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER" "$RUNNER" --request "$REQUEST" --output "$OUTPUT_DIR" >"$LOG" 2>&1 &
 RUNNER_PID=$!

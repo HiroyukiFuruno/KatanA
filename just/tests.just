@@ -11,7 +11,11 @@ type-check:
     {{CARGO}} check --workspace
 
 # Run impacted unit tests (local default)
-test: test-impacted
+test: test-html-host-contract test-impacted
+
+# 原本・viewport・fragmentの誤一致を、描画実行前に検出する。
+test-html-host-contract:
+    {{RTK_CMD}}python3 scripts/ci/test_html_fixture_host_contract.py
 
 # Run tests for katana-core only
 test-core:
@@ -22,7 +26,7 @@ test-ui:
     {{CARGO}} test -p katana-ui
 
 # Run the supplied Office and HTML fixtures through the explicit acceptance gate.
-test-document-fixtures:
+test-document-fixtures: test-html-host-contract
     scripts/ci/document-fixture-acceptance.sh
 
 # Execute paint-metrics coordinate extraction independently from Office/V8 integration checks.
