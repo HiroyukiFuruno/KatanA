@@ -108,3 +108,11 @@ v0.22.41 の汎用名 `KatanA-macOS.zip` 内の main binary と `kdv-office-work
 - 現在のフォルダにはZIPエラーが発生するDOCX実体がないため、KatanAの診断ログから対象entryを採取するか、該当DOCXをフィクスチャへ追加する必要がある。
 - Office fidelity の参照を Microsoft Office、LibreOffice、office2pdf本家のどれに固定するかは、既存の本家比較手順を確認して確定する。
 - macOS Intel を継続対応する場合は universal binary と architecture 別 asset のどちらを採用するか、公開済みの対応方針と利用端末を確認して確定する。
+
+## Windows MathJax実行スタック（2026-10-01）
+
+実Windows CIでsupported package回帰がSTATUS_STACK_OVERFLOWで停止した。QuickJSの8MiB上限は再帰の検出条件であり、呼び出し元のOSスレッドへ8MiBを確保しない。本番UIも同期APIを直接呼ぶため、テストスレッドだけの拡大やskipでは不具合を隠してしまう。
+
+MathJax APIが名前付き永続workerを遅延生成し、12MiBのOS stackと既存8MiBのQuickJS guardを同じworker内で管理する。Runtime/Contextはworker内のみで生成・使用し、送るのは所有String/display flag/返信channelだけとする。bounded job channelと個別Result返信を使い、初期化mutexを待機中に保持しない。spawn/送受信/JS初期化失敗を明示し、JS初期化失敗は次jobで再試行できるが、停止workerの自動再起動fallbackは追加しない。
+
+公開同期APIは維持し、本番UIの同期待機がなくなったとは主張しない。process lifetimeで一thread/一Contextを保持するため、callerごとのTLS複製はなくなる。静的senderを保持したままjoinする終了処理は設けない。並列直接APIは直列化され、channel往復とstack予約が増えるため、actual2MiB caller・全package・返信対応・数式状態非漏出・Windows cloudを検証する。12MiBの十分性とWindows成功は再実行まで未確定である。
