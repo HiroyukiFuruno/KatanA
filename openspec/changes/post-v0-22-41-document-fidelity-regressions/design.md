@@ -49,6 +49,8 @@ DOCX/XLSX/PPTX の data descriptor、local header と central directory の合�
 
 egui の既定フォントには Noto Emoji と emoji icon font が含まれるため、約 183 MiB の Apple Color Emoji を通常起動で追加読込しない。初期 `set_fonts` の直後に同じ family を再適用する経路も止める。CJK proportional/monospace と既定 emoji の描画契約は維持し、任意の custom font 選択だけを明示的な再構築理由にする。
 
+読込済みregular faceを既存の初期化の最後でname-table familyへ登録する。借用byteとcollection indexを解析し、typographic familyを優先してName aliasを作る。payloadの再読込・複製、フレーム毎のOS探索、追加set_fontsは行わず、generic familyとCJK/emoji fallbackを維持する。filenameをfamily名と誤認しない回帰は実Ubuntu/Hack fontで検証する。この段階では未導入Office fontの解決と実Bold face選択を完了扱いせず、regularへbold/italic faceを誤登録しない。
+
 ### 7. 診断は `DEBUG=true` で構造化出力する
 
 通常リリースでは追加出力を行わない。`DEBUG=true` の時だけ source read、ZIP preflight、Office conversion、KDV open/frame、KRR parse/style/script/layout/paint、texture upload、session close の開始・終了・経過時間・主要 byte 数・generation を共通 helper から出力する。
@@ -60,6 +62,8 @@ egui の既定フォントには Noto Emoji と emoji icon font が含まれる�
 ### 9. エクスプローラーは不変ツリーを借用し、表示行だけを処理する
 
 現行の `ExplorerContent::show_active_workspace` は毎フレーム `ws.tree.clone()` で再帰ツリー全体を複製する。Office/PDF を標準表示拡張子へ加えるとノード数が増え、文書 viewer が非アクティブでもフレーム時間と allocator 負荷が増える。ツリー revision が変わらないフレームでは不変データを借用し、検索 projection は revision 単位でキャッシュし、描画は viewport と展開状態に含まれる行へ限定する。
+
+revisionはUIの`WorkspaceState`が所有し、open/refresh/close/removeのデータ入替時に更新する。公開core `Workspace`は従来の`root`/`tree`によるstruct literal構築を維持し、private fieldを追加しない。同一rootの再走査でも検索cacheと表示projectionを無効化し、通常フレームではツリーを複製しない。
 
 ### 10. 配布契約は存在確認ではなく実行可能性を検査する
 
