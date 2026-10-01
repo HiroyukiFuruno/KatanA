@@ -52,5 +52,11 @@ All six focused contracts pass locally; setup passes `zsh -n`.
 The Windows branch and current cloud result remain unverified until CI runs;
 no application test, acceptance or coverage gate is skipped.
 
+The first three-OS e94e7376 cloud run failed in the new installation step:
+the pinned install-action does not support cargo-sweep with fallback disabled.
+This is an installation failure before application tests, not a passing gate.
+The workflow now uses `cargo install cargo-sweep --locked` followed by a version
+check, matching setup. The workflow contract requires these exact commands.
+
 PASS for the scoped resource-management changes and focused contracts;
 current-HEAD cloud / final document and distribution acceptance remain open.

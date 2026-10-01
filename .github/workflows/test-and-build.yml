@@ -101,10 +101,9 @@ jobs:
         run: python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
 
       - name: Install cargo-sweep
-        uses: taiki-e/install-action@5b4d68e2e660441203ab128a23676f1e4faf1532 # v2.86.3
-        with:
-          tool: cargo-sweep
-          fallback: none
+        run: |
+          cargo install cargo-sweep --locked
+          cargo sweep --version
 
       - name: Verify Cargo sweep safety contract
         run: python3 -B -m unittest discover -s scripts/ci -p test_cargo_sweep_guard.py -v
