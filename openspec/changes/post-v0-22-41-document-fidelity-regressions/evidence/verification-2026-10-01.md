@@ -185,3 +185,5 @@ HEAD `438ea436`は通常pre-push hookを通過し、`release/v0.22.42`を公開b
 追加準備は`da890166`へ正式統合し、通常hookを通してpush済み。最新HEADのcloud reviewを依頼した。旧HEADへのP2「MathJax package欠落」は、[公式3.2.2 AllPackages](https://github.com/mathjax/MathJax-src/blob/3.2.2/ts/input/tex/AllPackages.ts#L91-L122)と現配列を実比較して双方30件、omitted/addedとも空を確認し、不採用根拠を返信・個別resolve。全threadを再取得して未解決0を確認したが、最新HEAD review完了とは扱わない。
 
 読み取り専用監査でもHTML driverの残件を確認した。現在の`frame_or_error`は成功frameと明示errorを区別せず、CPUは最大値のみ、`close=completed`はrunner終了を示すだけで通常closeとowned descendant不在を証明しない。後続では成功frame・typed failureを区別し、poll別CPUと終了後ownershipを同じ既存driverへ統合する。既存process identity/実子process回帰を再利用し、PIDのみの無検証killや新driver増殖は行わない。これらはKatanA側で進められる未完了の受入準備である。
+
+監査後の独立修正: 既存requestに5秒以内の条件付きcloseとclosed-idle snapshotを追加し、close欠落/時間延長/snapshot欠落の3回帰をRED→GREENで確認。成功frame60秒以内と全7resource countゼロを要求し、明示failure/close欠落/遅いframe/残存frameを拒否するlog回帰も追加、全14件成功。旧実HTMLの60秒timeout生ログは新checkerでもexit1、frame/closeとも未確認として拒否。shell syntax、実原本preflight、JSON/JSゲートも成功。poll別CPUをTSVへ保存し、単なるrunner終了をnormal closeと表示する旧ラベルを廃止した。本原本での成功描画、sticky、kernel-level descendant不在、配布mainでの通常closeは未確認のまま維持する。

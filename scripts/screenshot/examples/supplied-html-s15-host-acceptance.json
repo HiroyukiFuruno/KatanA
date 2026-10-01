@@ -45,6 +45,11 @@
       "timeout_seconds": 60.0
     },
     { "type": "screenshot", "output_name": "s15" },
+    {
+      "type": "action",
+      "action": { "close_active_document": { "wait_seconds": 5.0 } }
+    },
+    { "type": "record_runtime_snapshot", "name": "closed_idle" },
     { "type": "quit" }
   ]
 }

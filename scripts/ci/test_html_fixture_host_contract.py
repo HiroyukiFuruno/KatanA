@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import html_fixture_host_contract as contract
 from html_fixture_host_contract import validate
 
 
@@ -22,6 +23,9 @@ class HostContractTests(unittest.TestCase):
                 {"type": "open_file", "file_name": self.source.name,
                  "wait_for_html_frame": True, "max_first_frame_seconds": 60},
                 {"type": "action", "action": {"open_url": {"url": self.source.as_uri() + "#s15"}}},
+                {"type": "action", "action": {"close_active_document": {"wait_seconds": 5.0}}},
+                {"type": "record_runtime_snapshot", "name": "closed_idle"},
+                {"type": "quit"},
             ],
         }
 
@@ -61,6 +65,50 @@ class HostContractTests(unittest.TestCase):
         self.payload["steps"][1]["max_first_frame_seconds"] = 120
         with self.assertRaisesRegex(ValueError, "60-second"):
             self.check()
+
+    def test_missing_resource_close_is_rejected(self):
+        del self.payload["steps"][3]
+        with self.assertRaisesRegex(ValueError, "resource close"):
+            self.check()
+
+    def test_resource_close_timeout_cannot_be_extended(self):
+        self.payload["steps"][3]["action"]["close_active_document"]["wait_seconds"] = 30
+        with self.assertRaisesRegex(ValueError, "resource close"):
+            self.check()
+
+    def test_missing_closed_idle_snapshot_is_rejected(self):
+        del self.payload["steps"][4]
+        with self.assertRaisesRegex(ValueError, "closed idle"):
+            self.check()
+
+
+class HostLogTests(unittest.TestCase):
+    CLOSED = ('  runtime snapshot "closed_idle": RuntimeSnapshot { previews: 0, html_surfaces: 0, '
+              'document_surfaces: 0, office_workers: 0, frames: 0, textures: 0, cache_entries: 0 }\n')
+
+    def test_success_requires_frame_and_close(self):
+        result = contract.summarize_log('HTML browser first frame ready in 35.125s\n' + self.CLOSED)
+        self.assertEqual(result["first_frame_seconds"], 35.125)
+        self.assertTrue(result["successful_frame_and_close"])
+
+    def test_typed_failure_is_not_a_successful_frame(self):
+        result = contract.summarize_log("HTML browser did not produce an initial frame within 60.00s")
+        self.assertTrue(result["typed_failure_observed"])
+        self.assertFalse(result["successful_frame_and_close"])
+
+    def test_frame_without_close_is_rejected(self):
+        result = contract.summarize_log("HTML browser first frame ready in 1.000s")
+        self.assertFalse(result["successful_frame_and_close"])
+
+    def test_late_frame_is_rejected(self):
+        result = contract.summarize_log('HTML browser first frame ready in 60.001s\n' + self.CLOSED)
+        self.assertFalse(result["successful_frame_and_close"])
+
+    def test_retained_resources_are_rejected(self):
+        result = contract.summarize_log(
+            'HTML browser first frame ready in 1.000s\n' + self.CLOSED.replace("frames: 0", "frames: 1")
+        )
+        self.assertFalse(result["successful_frame_and_close"])
 
 
 if __name__ == "__main__":

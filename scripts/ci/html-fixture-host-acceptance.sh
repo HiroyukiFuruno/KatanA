@@ -44,6 +44,8 @@ OUTPUT_DIR=${KATANA_HTML_ACCEPTANCE_OUTPUT_DIR:-"$(mktemp -d "${TMPDIR:-/tmp}/ka
 mkdir -p "$OUTPUT_DIR"
 LOG="$OUTPUT_DIR/runner.log"
 EVIDENCE="$OUTPUT_DIR/evidence.txt"
+CPU_SAMPLES="$OUTPUT_DIR/cpu-samples.tsv"
+printf 'elapsed_seconds\tcpu_percent\n' >"$CPU_SAMPLES"
 source "$ROOT_DIR/scripts/release/packaged-process-identity.sh"
 
 # Build is deliberately outside the 60-second document contract.
@@ -67,6 +69,7 @@ while kill -0 "$RUNNER_PID" 2>/dev/null; do
     elapsed=$(( $(date +%s) - started_epoch ))
     cpu=$(ps -o %cpu= -p "$RUNNER_PID" | tr -d ' ' || true)
     cpu=${cpu:-0}
+    printf '%s\t%s\n' "$elapsed" "$cpu" >>"$CPU_SAMPLES"
     if awk "BEGIN { exit !($cpu > $max_cpu) }"; then
         max_cpu="$cpu"
     fi
@@ -85,6 +88,7 @@ if kill -0 "$RUNNER_PID" 2>/dev/null; then
     kill -TERM "$RUNNER_PID"
     wait "$RUNNER_PID" || true
     printf 'close=terminated_after_timeout\n' >>"$EVIDENCE"
+    python3 "$CONTRACT" --parse-log "$LOG" >"$OUTPUT_DIR/frame-close.json" || true
     cat "$EVIDENCE" >&2
     exit 1
 fi
@@ -93,8 +97,10 @@ set +e
 wait "$RUNNER_PID"
 status=$?
 set -e
-printf 'result=runner_exited\nexit_status=%s\nelapsed_seconds=%s\nmax_cpu_percent=%s\nframe_or_error_observed=%s\nclose=completed\n' \
+printf 'result=runner_exited\nexit_status=%s\nelapsed_seconds=%s\nmax_cpu_percent=%s\nframe_or_error_observed=%s\nrunner_exit_observed=true\n' \
     "$status" "$elapsed" "$max_cpu" "$frame_or_error" >"$EVIDENCE"
 cat "$EVIDENCE"
 [[ "$frame_or_error" == 1 ]] || { echo "runner exited without a frame or typed error" >&2; exit 1; }
+python3 "$CONTRACT" --parse-log "$LOG" >"$OUTPUT_DIR/frame-close.json"
+printf 'close=idle_resources_verified\n' >>"$EVIDENCE"
 exit "$status"
