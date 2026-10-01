@@ -2,10 +2,14 @@
 
 ## Re-audit on 2026-10-01 (current graph)
 
+- Later heartbeat recheck: `cargo upgrade --dry-run --incompatible allow --pinned allow` exits0 and reports63 latest packages with no direct upgrade proposal. Root `bun outdated` discovered Biome2.5.15, but this worktree has no package.json: Bun's ancestor-package result is not a KatanA package/lock audit. The actual KatanA tooling pin is `Justfile`'s Biome2.4.13. Updated that pin and `biome.jsonc` to2.5.15 using the official migration preview; the promoted file-length rule moves from nursery to style with error/200-line limit unchanged, and function30/cognitive1 limits remain unchanged. Existing JS lint/JS format/50-file JSON format checks exit0. Logs: `tmp/dependency-direct-heartbeat-20261001.log`, `tmp/dependency-js-heartbeat-20261001.log`, `tmp/biome-2515-migrated-heartbeat-20261001.log`. Earlier root Bun zero-update observations below must not be treated as complete repository JavaScript dependency evidence.
+
 - `cargo update --dry-run --verbose`: zero compatible lock updates.
 - `cargo upgrade --dry-run --incompatible allow --pinned allow --verbose`: the only direct updates are the explicitly pinned egui family 0.36.1 to 0.36.2; no additional major migration was identified.
 - `bun outdated` and `bun outdated --json`: zero JavaScript updates. Bun 1.4.2, MathJax 4.1.3, TypeScript 7.0.2 and `@types/bun` 1.4.2 remain current.
 - Published siblings adopted in the current graph: KDV 0.5.7, KRR 0.4.21, KUC 0.3.17, KMM 0.2.3, katana-ast-lint 0.5.2 and KML 0.19.5. The graph contains one V8 version, 152.2.0. The historical KUC 0.3.3 and duplicate-V8 holds below no longer describe this graph.
+- Latest live check on 2026-10-01: KUC v0.4.0 GitHub Release was published at 02:59:22 UTC. Public KDV0.5.7 pins KUC exactly to0.3.17, so KatanA cannot independently replace that transitive dependency with0.4.0. KDV's existing owner was asked to evaluate the new registry version and unchanged gates during Issue56 delivery. Source inspection suggests additive consumer-artifact v2 APIs, not verified consumer compatibility; public KDV adoption and full downstream acceptance remain required. KRR's latest public release remains0.4.21; PR99 is Draft/Open/Blocked, not a public0.4.22.
+  - The public sparse registry index independently returns KUC0.4.0, `yanked=false`, Rust minimum1.95.0, checksum `9f2e0ae7eb5d0706dd289c3121058132c042be778f659c071c25cf4fa0a621d0`. The crates.io HTTP API returned403; registry publication is evidenced by the sparse index, not inferred from GitHub Release or that failed API request.
 - `cargo outdated` still fails because its temporary workspace omits the local `vendor/egui-winit` override. Its failed run is not an update result; the two Cargo dry runs use the real graph instead.
 - egui 0.36.2 migration is implemented after clean checkpoint `85017694`. The root, UI dev dependency, screenshot and paint-metrics pins/locks are synchronized. The input adapter matches official0.36.2 except the two retained JIS mappings; window settings and dropped-file sources match exactly. No sibling path/git dependency is introduced.
 - Full locked metadata succeeds for the root and screenshot graphs; both resolve egui/egui_kittest0.36.2. Native release all-workspace/all-target strict Clippy and the two paint-metrics tests pass. Post-migration whole coverage, input/capture acceptance and combined gates remain pending.
@@ -130,3 +134,8 @@ Task 4.7 remains open until actual input/capture, platform and combined gates
 pass after the verified egui migration.
 The older duplicate-V8 evidence in `v8-dependency-link-gate.md` is historical;
 the adopted KDV 0.5.7 / KRR 0.4.21 graph contains only V8 152.2.0.
+# MathJax JavaScript dependency scope confirmation
+
+- The actual repository package is `vendor/mathjax_svg/js/package.json`, not the ancestor workspace package selected by running Bun from the repository root.
+- Running `bun outdated` from that package exits0 with no outdated entries. Its current declarations are `@mathjax/src ^4.1.3`, `@types/bun ^1.4.2`, `bun ^1.4.2` and `typescript ^7.0.2`.
+- The Biome2.5.15 tooling update is committed separately in714bbe15. No dependency-update scope or release quality gate is reduced.

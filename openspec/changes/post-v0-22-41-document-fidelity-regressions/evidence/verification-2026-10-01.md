@@ -133,3 +133,42 @@ egui0.36.2移行を通常hookを通したcommit`886907a1`へ正式統合した�
 Linux UI全体検証後、実行中containerがないことを確認し、このrepoのLinux target volume内のcore/linter dev生成物のみCargo cleanで解放（285ファイル、26.0GiB）。Docker VM内部の再生成可能な領域であり、host APFS空き容量は約5.4GiBのまま増えていない。別repo、source、worktree、証跡、VM全体は削除していない。
 
 native `just check`再実行はworkspace testの依存ビルド中にhost空き119MiBとなり、OS error28で失敗した。終了したcargo/rustcを確認して、失敗したroot dev生成物のみCargo clean（21760ファイル、8.5GiB）し、host空き8.4GiBへ復帰した。Linux側で同じ最新sourceの全workspaceテストを実行して成功し、native Clippy/ASTも再実行成功。nativeの一括gateが成功したとは報告しない。
+
+## 実workerの検証前提と罫線追加後の再検証
+
+`4b11725d`へ実Office workerのビルド・絶対path・実行権を通常test入口の前提として統合した。Linux locked全workspaceは878 passed/2既存ignored、Windows test-inclusive cross-check、native実worker filter回帰1件、Office fixture integration8件が成功した。native全体はcoreの13 exportを含む検証後、新しい罫線コードのAST違反で停止。追加したpaint回帰もprivate helper参照でコンパイルに失敗したため、閾値や商用visibilityを緩めず責務・test配置を修正中。全native gate完了とは扱わない。
+
+nativeビルドはdebug symbolsのみ0、strip=none、incremental無効を使用し、debug assertions・最適化・test範囲・coverage閾値は変えない。再生成可能な終了済みrelease cacheを解放する前に、main/worker/runnerを`tmp/*-egui-0362-preserved`へ移動してSHA-256一致を確認した。これらは罫線追加前の候補であり、最新HEADの配布証拠ではない。
+
+## 上流のライブ確認と次の採用条件
+
+2026-10-01の確認でGitHub Release最新はKRR0.4.21、KDV0.5.7、KUC0.4.0。KRR PR99はDraft/OPEN/BLOCKEDで次版未公開。KDV担当はIssue56の借用slice罫線batch APIとKUC0.4.0採用を含む0.5.8を検証中で、公開済みとは扱わない。KatanAは公開版のregistry exact pinのみ採用し、現在のKDV0.5.7が要求するKUC0.3.17を無断で置換しない。master clean、stash0、作業branchはorigin/masterに対してahead18/behind0を確認した。
+
+## 初回source読込のdataless状態
+
+原本`libre-chat_vs_loom.pptx`（40,852,621bytes）と`shopchannel_analysis.xlsx`（27,857bytes）の`ls -lO`はともに`compressed,dataless`だった。XLSXの属性列挙は待機後に終了し、再度のflagsは`-`へ変化した。PPTXを`/usr/bin/time -l shasum -a 256`で読むと初回real2.47s/user0.12s/sys0.02s、直後の再読はreal0.13s/user0.12s/sys0.00s、flagsも`-`へ変化。両読込のSHA-256は`34f462ac1c38e581f8b286f549aaf54fe55cd45c6d28a16cfbf1ebb163b3af57`で一致した。原本の内容は編集していないが、読込によりOSが実体化するため以後の測定はcold状態ではない。
+
+[AppleのFile Provider仕様](https://developer.apple.com/documentation/FileProvider/synchronizing-the-file-provider-extension)ではdatalessはmetadataのみ、materializedは内容もローカルにある状態。[WWDC21の説明](https://developer-mdn.apple.com/videos/play/wwdc2021/10182/)ではdatalessへのread syscallは内容取得中に待機する。この観測は過去の約13s初回readをOS実体化待ちとする仮説を支持するが、その13sと同一条件の再現・provider内部traceはない。変換/renderのロジック遅延とは分け、背景intakeのUI進行回帰を維持する。
+
+## Office native診断の未達記録
+
+新ハーネスのparser/ownership回帰は成功したが、実候補main/workerでの代表XLSX restoreはexit1（worker identity未観測）。`tmp/smoke-office-restore.Gq0gM4/evidence/`へlog/config/heartbeat/samplesを保存。source intake成功、UI frame175まで進行した一方でworker handoff/frame記録がない。自然復元設定からpreview経路へ到達していない可能性を調査中。Terms承認やUI操作を迂回せず、このrunをOffice表示・性能受入成功とは扱わない。所有プロセスのcleanup後残存は検査が拒否せず、旧interactiveアプリは対象外。
+
+現行lockの`just supply-chain`はexit0でadvisories/bans/licenses/sources全てok。既存duplicate warningは残り、他の全gate成功を意味しない。生ログは`tmp/supply-chain-heartbeat-20261001.log`。
+
+native文書surface focused再実行は58 passed/38 suites/4.93s/exit0。style14種の幅、実paintの四辺・色・double gap・clip、実XLSX merged-cell frame/cache座標、stale generationでframe/cache双方の保持、実worker filter/frame cacheを検査した。生ログは`tmp/native-border-fourth-compile-20261001.log`。AST再実行は22 passed/1 failedでprojection file201行を検出したため、style責務分割を継続する。ASTや全native検証を完了扱いしない。
+
+Office native未達の原因はsource確認でTerms未承認と確定した。新settingsは`terms_accepted_version:null`、旧成功runは同version承認済み。`main_panels.rs`は未承認時にTermsModalのみを描画して戻り、`shell_ui/mod.rs`はheartbeatを継続するためframe175はOffice進行証拠ではない。ユーザーへ画面承認を依頼し、値の書換えや自動承認は行わない。
+
+style責務分割後にmodule登録漏れを実コンパイルで検出し、rootがsibling module登録/importを修正した。`tmp/native-border-full-test-repaired-20261001.log`の通常`just test`はexit0、core export13件238.63s、AST23件、UI903件/2既存ignored、UI parallel143件/2既存ignored、serial18件、main17件が成功した。`just fmt-check`とworkspace厳格Clippyもexit0。最後にchild testへ移設済みdouble定数の不要な公開visibilityを除去し、focusedコンパイルを再確認する。罫線追加後のcoverage/platform/packaged受入は未達のまま。
+
+Biome2.5.15へtool pin/config schemaを同期した。公式migration previewに従いfile-length規則をnurseryからstyleへ移動、error/max200/skipBlankLinesは保持し、function30/cognitive1等の閾値も変更しない。50 JSONのformat検査とJS設定対象のlint/format検査が成功し、Rust全体のformat/Clippyにも問題がない。Cargo直接依存dry-runは63 latest/no upgrade proposal。rootにはpackage.jsonがなく、rootでのBun outdatedはancestor packageを参照するため、過去のroot Bun零件をrepo全JS依存証明と扱わない。
+# 最新の正式統合と再検証
+
+- `714bbe15`: Biome2.5.15と既存ルールを保ったschema移行。
+- `dbc52b6a`: Office復元診断のevent identity、UI進行、poll別subtree resource、実子プロセスcleanup回帰。
+- `43d7043e`: セル四辺の罫線をworkerで型付き準備し、frameと同じgenerationで受信して描画。正式commit前の通常hookも成功。
+- 通常native全テストexit0、追加罫線を含むfocused62件、AST23件、format/diff検査成功。追加後の計測付きUI906件/main17件も成功。coverage集計とLinux/Windowsゲートは実行中なので完了としない。
+- 初回Termsのcompleted-frame回帰とworker source消費回帰の正式統合を確認し、4.16を完了へ更新。利用規約の承認状態は変更していない。Office実mainの表示・性能受入は4.23の外部環境依存として残す。
+- 最終集計: 最新罫線sourceのcoverage gateはexit0、meaningful uncovered0、strict document surface100%。計測付きUI906件/既存ignore2、parallel143件/既存ignore2、serial18件、main17件、core export13件が成功。Linux locked workspaceはUI890件/既存ignore2、core export14件、fixture8件、parallel141件/既存ignore2、serial18件を含み成功。Windows test-inclusive cross-checkも成功し、`just check-platforms`はexit0。
+- Draft bootstrap検査はexit1、未完了の4.23を正しく拒否。unknown task許容や受入基準緩和は行わず、利用規約の人間承認後に実アプリ計測を再開する。release/PRは未公開。
