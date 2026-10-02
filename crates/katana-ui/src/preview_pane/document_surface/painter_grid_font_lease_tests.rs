@@ -42,6 +42,27 @@ fn regular_face_does_not_suppress_faux_italic_or_bold() {
 }
 
 #[test]
+fn regular_face_is_used_for_styled_faux_fallback() {
+    let (family, path, _) = crate::font_loader::office_faces::installed_regular_bold_pair();
+    let face = resolve_face(&family, &path, false, false);
+    let context = crate::test_ui::Context::default();
+    let lease = font_lease(&context, &[face]);
+    let regular_family = lease
+        .family_for(&family, false, false)
+        .expect("leased regular face");
+    let cell = styled_cell(&family, true, true);
+    let (galleys, meshes) = paint_and_capture(&context, &cell, &lease);
+
+    assert_eq!(galleys.len(), 2, "missing styles retain faux drawing");
+    assert_eq!(
+        galleys[0].job.sections[0].format.font_id.family, regular_family,
+        "faux styles should use the leased regular face"
+    );
+    assert!(galleys[0].job.sections[0].format.italics);
+    assert!(meshes > 0, "fallback glyphs tessellate to a mesh");
+}
+
+#[test]
 fn same_frame_face_registration_falls_back_until_next_frame() {
     let (family, _, path) = crate::font_loader::office_faces::installed_regular_bold_pair();
     let face = resolve_face(&family, &path, true, false);
@@ -51,6 +72,39 @@ fn same_frame_face_registration_falls_back_until_next_frame() {
     frame.cells[0] = styled_cell(&family, true, false);
     assert_same_frame_fallback(&context, &mut lease, &face, &frame);
     assert_next_frame_bold(&context, &lease, &family, &frame);
+}
+
+#[test]
+fn mixed_style_uses_real_bold_before_regular_and_synthesizes_only_italic() {
+    let (family, regular_path, bold_path) =
+        crate::font_loader::office_faces::installed_regular_bold_pair();
+    let regular = resolve_face(&family, &regular_path, false, false);
+    let bold = resolve_face(&family, &bold_path, true, false);
+    let context = crate::test_ui::Context::default();
+    let lease = font_lease(&context, &[regular, bold]);
+    let expected = lease.family_for(&family, true, false).expect("bold lease");
+    let (galleys, meshes) = paint_and_capture(&context, &styled_cell(&family, true, true), &lease);
+    assert_eq!(galleys.len(), 1, "real bold must not use faux bold");
+    assert_eq!(galleys[0].job.sections[0].format.font_id.family, expected);
+    assert!(galleys[0].job.sections[0].format.italics);
+    assert!(meshes > 0);
+}
+
+#[test]
+fn mixed_style_uses_real_italic_and_synthesizes_only_bold() {
+    let (family, italic_path) = crate::font_loader::office_faces::installed_italic_face();
+    let italic = resolve_face(&family, &italic_path, false, true);
+    assert!(!italic.bold && italic.italic);
+    let context = crate::test_ui::Context::default();
+    let lease = font_lease(&context, &[italic]);
+    let expected = lease
+        .family_for(&family, false, true)
+        .expect("italic lease");
+    let (galleys, meshes) = paint_and_capture(&context, &styled_cell(&family, true, true), &lease);
+    assert_eq!(galleys.len(), 2, "missing bold uses faux bold");
+    assert_eq!(galleys[0].job.sections[0].format.font_id.family, expected);
+    assert!(!galleys[0].job.sections[0].format.italics);
+    assert!(meshes > 0);
 }
 
 fn assert_same_frame_fallback(

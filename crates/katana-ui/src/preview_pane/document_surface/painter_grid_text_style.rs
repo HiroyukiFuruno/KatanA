@@ -49,11 +49,18 @@ fn fallback_style(
     let italic_face = italic
         .then(|| available_family(ui, fonts, requested, false, true))
         .flatten();
-    let faux_italic = italic && italic_face.is_none();
+    if italic_face.is_some() {
+        return CellFontStyle {
+            family: italic_face,
+            faux_bold: bold,
+            faux_italic: false,
+        };
+    }
+    let regular_face = available_family(ui, fonts, requested, false, false);
     CellFontStyle {
-        family: italic_face,
+        family: regular_face,
         faux_bold: bold,
-        faux_italic,
+        faux_italic: italic,
     }
 }
 
