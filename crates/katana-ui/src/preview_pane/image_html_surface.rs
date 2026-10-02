@@ -25,6 +25,8 @@ mod keyboard;
 mod navigation;
 #[path = "image_html_surface_pane.rs"]
 mod pane;
+#[path = "image_html_surface_polling.rs"]
+mod polling;
 #[path = "image_html_surface_state.rs"]
 mod state;
 #[path = "image_html_surface_view.rs"]
@@ -106,13 +108,16 @@ impl HtmlBrowserSurface {
             self.apply_update(ctx, update);
         }
 
-        if self
-            .frame_update_deadline
-            .is_some_and(|deadline| std::time::Instant::now() < deadline)
-        {
-            ctx.request_repaint_after(FRAME_UPDATE_POLL_INTERVAL);
-        } else {
-            self.frame_update_deadline = None;
+        let worker_busy = self
+            .adapter
+            .as_ref()
+            .is_some_and(|adapter| !adapter.is_idle());
+        if let Some(delay) = polling::next_poll_delay(
+            &mut self.frame_update_deadline,
+            worker_busy,
+            std::time::Instant::now(),
+        ) {
+            ctx.request_repaint_after(delay);
         }
     }
 

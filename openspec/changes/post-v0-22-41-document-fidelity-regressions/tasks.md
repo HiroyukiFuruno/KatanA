@@ -160,6 +160,7 @@
 
 ## 最新レビューと判断待ち
 
+- [/] KatanA独立性能監査: 同一viewport Resizeは既に抑止。一方HTML pollの2秒後のrepaint停止を、商用polling policyの決定的3回帰で旧RED→新GREEN確認。実adapter非idle中の16ms予約継続とidle移行時の最終取得を実装し、2秒window/受入期限は変更しない。独立レビューP0/P1無し。locked release UI追加3件と実adapterを含む既存HTML surface29件、strict all-target release Clippy/fmt/diff-check成功。遅い実原本/callback受入と全gate/正式統合は未完了。KRR実layout遅延/原本正常close失敗の解消とは分離する。証跡: evidence/html-repaint-polling-2026-10-02.md。
 - [x] 検証済み独立差分を通常pre-commit付きで正式統合: fixture安全生成89b6f987、全タブclose契約/実失敗証跡d58f3a7a、公開registry KRR0.4.22/calloop0.14.5依存b2cea5cc。runner全47件/strict全target release Clippy/format/host契約24+process7/metadata/供給網の成功を確認し、stash/保全branchを作らず履歴へ取り込んだ。通常push/current HEAD CI・review・元HTML/Office/配布/公開の完了とは別。
 - [ ] ユーザーFB「未完了なのになぜ止まる」: 上流待ちと独立した残作業がある限り、進捗通知だけで実行を終了しない。今回残したWorkspaceFile containment、検証済みharness差分の正式統合、変更後gateを順に実行する。アンチパターン: 一件修正してheartbeat通知で停止。正: 局所検証→残作業へ続行→正式履歴/通常push、停止は具体的な外部依存または必要判断だけ。検索語: independent work before waiting, progress is not completion。
 - [/] KDV #59 comment5944871888をライブ確認。KDV/KRR/KUC無しのhayro0.7.1単体でも全drop後RSS2496→227584KiB、malloc in-use12928byteはcoldへ復帰。大型PDFで約50.7MBの割当/解放2件を実測し、KDVだけのlive object leakという説明を否定する証跡。KDV原本寿命36〜42MiB差は別に残り、製品修正・元Office RSS基準達成・公開は未完了。KRR0.4.22公開は変わらず#95 open、KatanA f3d6dadb CI全successだがローカル変更後のgateとは別。
