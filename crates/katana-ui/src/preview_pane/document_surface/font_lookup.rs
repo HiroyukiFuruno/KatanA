@@ -17,7 +17,10 @@ pub(super) struct DocumentFontLookup {
     lease: Option<DocumentFontLease>,
     diagnostics: Vec<FontFaceResolutionDiagnostic>,
     failure: Option<FontLookupFailure>,
+    retry_pending: bool,
 }
+
+const FONT_LOOKUP_RETRY_INTERVAL: std::time::Duration = std::time::Duration::from_millis(25);
 
 impl DocumentFontLookup {
     pub(super) fn update(
@@ -55,6 +58,9 @@ impl DocumentFontLookup {
             ctx,
         ) {
             Ok(job) => self.pending = Some(job),
+            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                self.retry_pending = true;
+            }
             Err(error) => self.fail(FontLookupFailure::WorkerSpawn(error.kind())),
         }
     }
@@ -75,19 +81,26 @@ impl DocumentFontLookup {
         self.lease.as_ref()
     }
 
-    pub(super) fn poll(&mut self, surface_generation: u64) {
-        let Some(job) = &self.pending else {
-            return;
-        };
-        match job.results.try_recv() {
-            Ok(result) => {
-                self.accept(surface_generation, result);
-                self.pending.take();
+    pub(super) fn poll(&mut self, surface_generation: u64, ctx: &egui::Context) {
+        if let Some(job) = &self.pending {
+            match job.results.try_recv() {
+                Ok(result) => {
+                    self.accept(surface_generation, result);
+                    self.pending.take();
+                    self.retry_pending = false;
+                }
+                Err(TryRecvError::Empty) => {}
+                Err(TryRecvError::Disconnected) => {
+                    self.pending.take();
+                    self.fail(FontLookupFailure::WorkerDisconnected);
+                }
             }
-            Err(TryRecvError::Empty) => {}
-            Err(TryRecvError::Disconnected) => {
-                self.pending.take();
-                self.fail(FontLookupFailure::WorkerDisconnected);
+        }
+        if self.pending.is_none() && self.retry_pending {
+            self.retry_pending = false;
+            self.start_pending(ctx);
+            if self.retry_pending {
+                ctx.request_repaint_after(FONT_LOOKUP_RETRY_INTERVAL);
             }
         }
     }
@@ -137,6 +150,7 @@ impl DocumentFontLookup {
     }
 
     pub(super) fn cancel(&mut self) {
+        self.retry_pending = false;
         if let Some(job) = self.pending.take() {
             job.cancelled.store(true, Ordering::Release);
         }

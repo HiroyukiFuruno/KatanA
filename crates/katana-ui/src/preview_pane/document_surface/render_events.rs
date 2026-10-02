@@ -20,7 +20,7 @@ impl DocumentSurface {
                 }
             }
         }
-        self.fonts.poll(self.generation);
+        self.fonts.poll(self.generation, ctx);
         if !self.command_in_flight
             && let Some(command) = self.pending_commands.take_next()
         {

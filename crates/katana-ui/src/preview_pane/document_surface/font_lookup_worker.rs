@@ -11,7 +11,17 @@ use crate::font_loader::office_faces::{FontFaceRequest, FontFaceResolver};
 
 pub(super) struct FontLookupWorker;
 
+#[path = "font_lookup_scheduler.rs"]
+mod scheduler;
+
 impl FontLookupWorker {
+    pub(super) fn enqueue(
+        cancelled: Arc<AtomicBool>,
+        run: Box<dyn FnOnce() + Send + 'static>,
+    ) -> std::io::Result<()> {
+        scheduler::FontLookupScheduler::enqueue(cancelled, run)
+    }
+
     pub(super) fn start(
         surface_generation: u64,
         lookup_generation: u64,
@@ -22,9 +32,9 @@ impl FontLookupWorker {
         let worker_cancelled = Arc::clone(&cancelled);
         let (events, results) = mpsc::channel();
         let repaint = ctx.clone();
-        Self::spawn(
-            format!("katana-font-{surface_generation}-{lookup_generation}"),
-            move || {
+        Self::enqueue(
+            Arc::clone(&cancelled),
+            Box::new(move || {
                 Self::resolve(
                     surface_generation,
                     lookup_generation,
@@ -33,7 +43,7 @@ impl FontLookupWorker {
                     events,
                     repaint,
                 );
-            },
+            }),
         )?;
         Ok(FontLookupJob { cancelled, results })
     }

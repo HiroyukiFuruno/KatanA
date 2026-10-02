@@ -12,6 +12,12 @@ use crate::font_loader::office_font_leases::DocumentFontLeaseManager;
 const SURFACE_GENERATION: u64 = 41;
 const LOOKUP_GENERATION: u64 = 3;
 const RESULT_DEADLINE: std::time::Duration = std::time::Duration::from_secs(10);
+const RETRY_CHILD: &str = "KATANA_FONT_LOOKUP_RETRY_CHILD";
+const RETRY_RECEIPT: &str = "font-lookup-retry-verified";
+const RETRY_QUEUE_CAPACITY: usize = 8;
+
+#[path = "font_lookup_retry_tests.rs"]
+mod retry_tests;
 
 #[cfg(test)]
 fn installed_context() -> egui::Context {
@@ -51,6 +57,7 @@ fn stale_surface_and_lookup_generations_do_not_install_fonts() {
         pending: None,
         diagnostics: Vec::new(),
         failure: None,
+        retry_pending: false,
     };
     assert!(!lookup.accept(
         SURFACE_GENERATION,
@@ -97,6 +104,7 @@ fn close_and_empty_request_cancel_pending_jobs_without_joining() {
         lease: None,
         diagnostics: Vec::new(),
         failure: None,
+        retry_pending: true,
         pending: Some(FontLookupJob {
             cancelled: cancelled.clone(),
             results,
@@ -104,6 +112,7 @@ fn close_and_empty_request_cancel_pending_jobs_without_joining() {
     };
     lookup.update(SURFACE_GENERATION, Vec::new(), &ctx);
     assert!(cancelled.load(Ordering::Acquire));
+    assert!(!lookup.retry_pending);
     assert!(lookup.pending.is_none());
     assert!(lookup.lease().is_none());
     let close_cancelled = Arc::new(AtomicBool::new(false));
@@ -128,13 +137,14 @@ fn disconnected_job_is_typed_and_does_not_block_the_ui() {
         requests: Vec::new(),
         diagnostics: Vec::new(),
         failure: None,
+        retry_pending: false,
         lease: Some(manager.lease(&ctx)),
         pending: Some(FontLookupJob {
             cancelled: Arc::new(AtomicBool::new(false)),
             results,
         }),
     };
-    lookup.poll(SURFACE_GENERATION);
+    lookup.poll(SURFACE_GENERATION, &ctx);
     assert!(matches!(
         lookup.failure,
         Some(super::super::font_lookup_types::FontLookupFailure::WorkerDisconnected)
@@ -151,6 +161,26 @@ fn disconnected_job_is_typed_and_does_not_block_the_ui() {
     });
     assert!(!output.shapes.is_empty());
     output.textures_delta.clear();
+}
+
+#[test]
+fn request_change_to_empty_clears_retry_and_lease() {
+    let ctx = installed_context();
+    let manager = DocumentFontLeaseManager::from_context(&ctx).expect("registry");
+    let mut lookup = DocumentFontLookup {
+        surface_generation: SURFACE_GENERATION,
+        lookup_generation: LOOKUP_GENERATION,
+        requests: vec![request()],
+        pending: None,
+        lease: Some(manager.lease(&ctx)),
+        diagnostics: Vec::new(),
+        failure: None,
+        retry_pending: true,
+    };
+    lookup.update(SURFACE_GENERATION + 1, Vec::new(), &ctx);
+    assert!(!lookup.retry_pending);
+    assert!(lookup.pending.is_none());
+    assert!(lookup.lease().is_none());
 }
 
 #[test]
