@@ -160,6 +160,8 @@
 
 ## 最新レビューと判断待ち
 
+- [x] 046ff6e6の通常push exit0、remote HEAD一致、release/master clean・stash0・release ahead/behind0/0を確認。今回の図修正e64bce6eとfont修正ce07cd81は公開履歴へ統合済み。font4163002793へreply4163362085→個別resolve→全20thread再取得（paginationなし）でresolvedを確認。図のreview body5388464434へ5946714184で修正/RED→GREEN/全gate証跡を返信しcurrent HEAD reviewを再依頼。未解決threadはmanual target policy4155352623だけ。新HEAD cloud/review完了、原本HTML正常close/Office cold RSS/全配布受入・公開は未完了。全review取得: tmp/046ff6e6-current-review.json、通常push: tmp/046ff6e6-normal-push.log。
+
 - [/] 図のhidden transformはe64bce6e、font有界共有workerとWouldBlock retryはce07cd81へ通常pre-commit hookを通して関心事別に正式統合。下記の試作時未実施記録は経緯として保持し、最終sourceの全coverage/AST/strict Clippy/formatは成功済み。master clean/stash0、新worktree無し。通常push/current HEAD cloud/review reply-resolveはこれから継続する。
 
 - [/] 今回のfont bounded/retry・hidden transform最終凍結sourceで通常just coverage exit0。UI1005/parallel143/serial18成功、strict document100%/uncovered0、全meaningful行gate成功、既存ignore/除外/閾値は不変。5商用source SHA前後一致、AST23/strict全target Clippy/format/diffも成功。独立レビュー修正を関心事別に正式commitし、通常push/current review reply-resolveへ継続する。元HTML close/Office RSS/全配布受入と公開は未完了。
@@ -168,10 +170,10 @@
 
 - [x] 2026-10-02 HEAD cadfb871を通常push完了。native/Linux全テストとWindows test-inclusive cross-check、全coverageがexit0。strict document surface100%/未実行0、HTML polling44/44行。release worktree clean、ahead/behind0/0、stash0を確認。PRはDraftで最新cloud CIの3OS test/buildは実行中、Release Readiness/3OS lint/supply-chain/CodeQLはsuccess。製品受入・公開は未完了。
 - [x] cadfb871のOffice証跡P1/P2へreply4162978367/4162978502、個別resolve後に全reviewThreads再取得。旧基準15000ms/196608KiBを維持し、合成unit fixtureを実配布受入へ流用していない。
-- [ ] 最新cadfb871 reviewの追加P2: フォントlookup取消後も旧thread終了前に新threadを起動するため、置換要求の同時実行を有界化する（4163002793）。独立KatanA修正を開始し、実worker寿命/取消/新要求/close回帰を追加する。
-- [ ] 最新cadfb871 reviewの追加P2: controls hiddenでもsaved zoom/panを消費する図の表示をneutralにし、textureと保存済み操作状態は保持する。実描画mesh座標の旧RED→新GREENで検証する。
+- [/] 最新cadfb871 reviewの追加P2: フォントlookup取消後も旧thread終了前に新threadを起動する問題（4163002793）はce07cd81の共有有界workerで修正。実worker寿命/取消/新要求/close回帰、全coverage/通常push、reply/resolve/再取得まで完了。製品RSS受入は別途未完了。
+- [/] 最新cadfb871 reviewの追加P2: controls hiddenでもsaved zoom/panを消費する図はe64bce6eでneutral描画へ修正。texture/保存済み操作状態を保持し実mesh座標RED→GREEN、全coverage/通常push、review body返信まで完了。最新HEAD cloud/reviewは継続。
 - [/] 図のhidden transform修正は実mesh座標の旧RED(exit101)→新GREEN(3件)、texture ID/保存zoom-pan/visible操作保持を確認。証跡evidence/hidden-diagram-transform-2026-10-02.md。最終lint/coverage/正式統合/公開は未完了。
-- [ ] 新font bounded-worker差分の独立レビューP1: queue満杯時WouldBlockが同generation/requestの永久字体失敗へ固定される。transient backpressureの再試行をlease/取消/実repaintと接続し、DocumentFontLookup経由の満杯→解放→同一要求完了を実thread回帰で検証する。試作のworker数上限だけで製品回復完了へ代用しない。panic/正常idle handoff/別pane保持/取消payloadの回帰と完全ゲートも未実施。
+- [/] 新font bounded-worker差分の独立レビューP1: queue満杯時WouldBlockの永久字体失敗はce07cd81でlease保持/取消/実repaintのretryへ修正。DocumentFontLookupの満杯→解放→同一要求実字体登録、panic/正常idle handoff/別pane保持/取消payload、全coverage/通常pushを完了。元Office RSS/配布受入の代用にはしない。
 - [/] 上記font P1/P2を有界共有resolver1本/pending8件/取消掃除/lease保持retry/25ms repaintで修正。実childの満杯→同要求実Bold登録、取消payload drop、panic cleanup/再要求、request変更/closeでretry解除を確認。旧WouldBlock終端RED、無制限spawn負対照でworker3!=1のRED後に正確に復元。責務分割後font10件/AST23/strict全target Clippy/format/diff成功。商用source SHAを凍結して通常全coverage実行中(session19567、tmp/font-scheduler-full-coverage.log)。正式統合/通常push/current review reply-resolve、元Office RSS/原本HTML/配布/公開は未完了。証跡evidence/font-lookup-backpressure-2026-10-02.md。
 - [ ] 元HTML正常close5秒、Office cold RSS196608KiB、canonical fidelity、全packaged CPU/OS/clean-machine受入は未達。KRR #95候補の性能測定は公開0.4.23の代用にしない。2026-10-02ライブ公開は0.4.22のまま。KDV #59の製品RSS修正も未完了。manual target policy P2の全OS統一可否とfresh設定Terms画面承認はユーザー判断/外部環境依存として維持する。
 
