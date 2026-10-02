@@ -280,6 +280,10 @@
 
 ### 2026-10-02 current HEAD 8460bd91 review 回帰
 
+- [/] 2026-10-03: KDV0.5.9のGitHub Release/non-yanked registry checksum6e0ad33a740afd7a98a62aa3adbf6379eea530db53764305b7488a207602d9c0をライブ確認し、既存release/v0.22.42でexact採用。本体/runner両lockはKUC0.4.1/office2pdf0.8.0へ更新、KRRは公開0.4.22を維持。全依存compatible/major/pinned調査とsupply-chain成功。変更後全gate、独立score、正常HTML close、配布受入、正式commit/push・公開は未完了。新worktree/stash/master編集/兄弟repo編集無し。
+- [x] 2026-10-03: 元5件Office requestを変更せずrelease workerでexit0、初回15秒/close5秒/cold RSS196608KiBを維持しRSS差165856KiB。代表PPTX/XLSXと原本large PPTXの各cold1+warm10 mixed反復もexit0、warm差8848/35168/-6432KiB、最終resource全0。公式canonical producer/export2回/actual interaction contractも成功、既存reference非変更。独立95点・元要件HTML・配布main受入を成功扱いしない。証跡: evidence/public-kdv059-2026-10-03.md。
+- [x] 2026-10-03: 変更後公開graphの通常`JOBS=2 just coverage`がexit0。UI1017/既存ignore2、parallel143/既存ignore2、serial18など全指定test成功、strict document surface100%/uncovered0、meaningful gate成功。manifest/root lock/runner lockのSHAは検査前後一致、基準・除外不変。ログは`tmp/kdv059-full-coverage-2026-10-03.log`。PR346の過去b82c0476のCIを新依存の成功へ流用せず、正式commit/通常pushと新HEADレビューへ継続。manual対象OS公開方針P2一件は判断待ちを維持。
+
 - [/] P2 4163417357: 同一familyのexact→bold→italic→regularを重複なくleaseへ投影、実paintもRegularを利用しfaux styleを保持。旧projection/paintの実RED→GREEN、実bold/italic2追加回帰もGREEN。per-cell Vecなし。正式commit/push、thread reply/resolve再取得は未完了。
 - [/] P2 4163417363: Office/HTMLのSplit/CodePreviewに登録commandと直接dispatchの双方でTools可用性を適用。旧2件RED→変更後4件GREEN（PDF/Markdown互換性含む）。正式commit/push、thread reply/resolve再取得は未完了。
 - [/] P2 4163417371: modal入口で非対応docへのtab切替を検査し、slideshow終了と元fullscreen復元を実装。旧RED→GREEN、next/prev・4形式・元fullscreen2状態・active path・Markdownへ戻った再開を実egui viewport commandで検証。正式commit/push、thread reply/resolve再取得は未完了。
