@@ -135,8 +135,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                     "first_frame_ms": 1000,
                     "item_count": 1,
                     "release_worker": True,
+                    "packaged_target": "linux-x86_64",
+                    "packaged_run": {
+                        "run_id": f"synthetic-office-run-{index}",
+                        "fixture_sha256": input_sha,
+                        "status": "passed",
+                        "runner_mode": "packaged_main",
+                        "clean_machine": True,
+                        "normal_close": True,
+                        "pid": 200 + index * 2,
+                        "sidecar_pid": 201 + index * 2,
+                        "heartbeat_frame_before": 10,
+                        "heartbeat_frame_after": 11,
+                        "cpu_percent": 50.0,
+                        "rss_bytes": 200_000_001,
+                        "main_path": "/release/KatanA",
+                        "sidecar_path": "/release/kdv-office-worker",
+                        "observed_sidecar_path": "/release/kdv-office-worker",
+                        "main_sha256": digest,
+                        "sidecar_sha256": "b" * 64,
+                        "observed_main_sha256": digest,
+                        "observed_sidecar_sha256": "b" * 64,
+                        "cold_rss_bytes": 200_000_000,
+                        "after_close_rss_bytes": 200_000_001,
+                    },
                 }
-                for input_sha, format_name in EVIDENCE.SUPPLIED_OFFICE_FIXTURES.items()
+                for index, (input_sha, format_name) in enumerate(EVIDENCE.SUPPLIED_OFFICE_FIXTURES.items())
             ],
         }
         evidence_path = (

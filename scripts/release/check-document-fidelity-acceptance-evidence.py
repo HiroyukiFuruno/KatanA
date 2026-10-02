@@ -193,40 +193,45 @@ def verify_packaged(value: object) -> None:
     if not isinstance(value, dict) or set(value) != SUPPORTED_TARGETS:
         fail("packaged evidence must cover every declared target")
     for target, record in value.items():
-        if not isinstance(record, dict) or record.get("status") != "passed":
-            fail(f"packaged evidence is not passed for {target}")
-        if record.get("runner_mode") != "packaged_main":
-            fail(f"packaged evidence runner mode is invalid for {target}")
-        if record.get("clean_machine") is not True or record.get("normal_close") is not True:
-            fail(f"packaged evidence must be a clean-machine normal close for {target}")
-        pid = require_positive_integer(record.get("pid"), f"{target}.pid")
-        sidecar_pid = require_positive_integer(record.get("sidecar_pid"), f"{target}.sidecar_pid")
-        if sidecar_pid == pid:
-            fail(f"packaged main and sidecar PIDs must differ for {target}")
-        before = require_positive_integer(record.get("heartbeat_frame_before"), f"{target}.heartbeat_frame_before")
-        after = require_positive_integer(record.get("heartbeat_frame_after"), f"{target}.heartbeat_frame_after")
-        if after <= before:
-            fail(f"packaged heartbeat did not advance for {target}")
-        require_finite_number(record.get("cpu_percent"), f"{target}.cpu_percent")
-        require_positive_finite_number(record.get("rss_bytes"), f"{target}.rss_bytes")
-        require_canonical_path(record.get("main_path"), f"{target}.main_path")
-        sidecar_path = require_canonical_path(record.get("sidecar_path"), f"{target}.sidecar_path")
-        observed_sidecar_path = require_canonical_path(
-            record.get("observed_sidecar_path"), f"{target}.observed_sidecar_path"
-        )
-        if observed_sidecar_path != sidecar_path:
-            fail(f"packaged sidecar path mismatch for {target}")
-        for artifact in ("main_sha256", "sidecar_sha256", "observed_main_sha256", "observed_sidecar_sha256"):
-            require_sha256(record.get(artifact), f"{target}.{artifact}")
-        if record["main_sha256"].lower() != record["observed_main_sha256"].lower():
-            fail(f"packaged main identity mismatch for {target}")
-        if record["sidecar_sha256"].lower() != record["observed_sidecar_sha256"].lower():
-            fail(f"packaged sidecar identity mismatch for {target}")
+        verify_packaged_record(target, record)
 
 
-def verify_office(value: object) -> None:
+def verify_packaged_record(target: str, record: object) -> None:
+    if not isinstance(record, dict) or record.get("status") != "passed":
+        fail(f"packaged evidence is not passed for {target}")
+    if record.get("runner_mode") != "packaged_main":
+        fail(f"packaged evidence runner mode is invalid for {target}")
+    if record.get("clean_machine") is not True or record.get("normal_close") is not True:
+        fail(f"packaged evidence must be a clean-machine normal close for {target}")
+    pid = require_positive_integer(record.get("pid"), f"{target}.pid")
+    sidecar_pid = require_positive_integer(record.get("sidecar_pid"), f"{target}.sidecar_pid")
+    if sidecar_pid == pid:
+        fail(f"packaged main and sidecar PIDs must differ for {target}")
+    before = require_positive_integer(record.get("heartbeat_frame_before"), f"{target}.heartbeat_frame_before")
+    after = require_positive_integer(record.get("heartbeat_frame_after"), f"{target}.heartbeat_frame_after")
+    if after <= before:
+        fail(f"packaged heartbeat did not advance for {target}")
+    require_finite_number(record.get("cpu_percent"), f"{target}.cpu_percent")
+    require_positive_finite_number(record.get("rss_bytes"), f"{target}.rss_bytes")
+    require_canonical_path(record.get("main_path"), f"{target}.main_path")
+    sidecar_path = require_canonical_path(record.get("sidecar_path"), f"{target}.sidecar_path")
+    observed_sidecar_path = require_canonical_path(
+        record.get("observed_sidecar_path"), f"{target}.observed_sidecar_path"
+    )
+    if observed_sidecar_path != sidecar_path:
+        fail(f"packaged sidecar path mismatch for {target}")
+    for artifact in ("main_sha256", "sidecar_sha256", "observed_main_sha256", "observed_sidecar_sha256"):
+        require_sha256(record.get(artifact), f"{target}.{artifact}")
+    if record["main_sha256"].lower() != record["observed_main_sha256"].lower():
+        fail(f"packaged main identity mismatch for {target}")
+    if record["sidecar_sha256"].lower() != record["observed_sidecar_sha256"].lower():
+        fail(f"packaged sidecar identity mismatch for {target}")
+
+
+def verify_office(value: object, packaged_targets: dict[str, Any]) -> None:
     if not isinstance(value, list) or len(value) < len(SUPPLIED_OFFICE_FIXTURES):
         fail("Office evidence must contain all six fixture results")
+    run_ids: set[str] = set()
     for index, record in enumerate(value):
         if not isinstance(record, dict) or record.get("status") != "passed":
             fail(f"Office fixture {index} is not passed")
@@ -234,10 +239,34 @@ def verify_office(value: object) -> None:
         if format_name not in {"docx", "xlsx", "pptx"}:
             fail(f"Office fixture {index} has an invalid format")
         input_sha = require_sha256(record.get("input_sha256"), f"Office fixture {index}.input_sha256")
-        require_positive_finite_number(record.get("first_frame_ms"), f"Office fixture {index}.first_frame_ms")
+        first_frame = require_positive_finite_number(record.get("first_frame_ms"), f"Office fixture {index}.first_frame_ms")
+        if first_frame > 15000:
+            fail(f"Office fixture {index} first frame must be within 15000 ms")
         require_positive_integer(record.get("item_count"), f"Office fixture {index}.item_count")
         if record.get("release_worker") is not True:
             fail(f"Office fixture {index} must use the release worker")
+        target = record.get("packaged_target")
+        if not isinstance(target, str) or target not in SUPPORTED_TARGETS:
+            fail(f"Office fixture {index} must identify its packaged target")
+        run = record.get("packaged_run")
+        verify_packaged_record(target, run)
+        run_id = run.get("run_id")
+        if not isinstance(run_id, str) or not run_id or run_id != run_id.strip() or run_id in run_ids:
+            fail(f"Office fixture {index} must have a distinct packaged run ID")
+        run_ids.add(run_id)
+        if require_sha256(run.get("fixture_sha256"), f"Office fixture {index}.packaged_run.fixture_sha256") != input_sha:
+            fail(f"Office fixture {index} packaged run input does not match")
+        artifact = packaged_targets[target]
+        for field in ("main_path", "sidecar_path"):
+            if run[field] != artifact[field]:
+                fail(f"Office fixture {index} packaged {field} does not match its target")
+        for field in ("main_sha256", "sidecar_sha256"):
+            if run[field].lower() != artifact[field].lower():
+                fail(f"Office fixture {index} packaged {field} does not match its target")
+        cold_rss = require_positive_integer(run.get("cold_rss_bytes"), f"Office fixture {index}.cold_rss_bytes")
+        after_close_rss = require_positive_integer(run.get("after_close_rss_bytes"), f"Office fixture {index}.after_close_rss_bytes")
+        if after_close_rss - cold_rss > 196608 * 1024:
+            fail(f"Office fixture {index} close RSS increase exceeds 196608 KiB")
         if input_sha in SUPPLIED_OFFICE_FIXTURES and format_name != SUPPLIED_OFFICE_FIXTURES[input_sha]:
             fail(f"Office fixture {index} format does not match its supplied input hash")
     input_hashes = [record["input_sha256"].lower() for record in value]
@@ -286,7 +315,7 @@ def verify(root: Path, evidence_path: Path | None = None) -> None:
             fail(f"published dependency evidence does not match Cargo.lock for {name}")
     verify_html(evidence.get("html"))
     verify_packaged(evidence.get("packaged_targets"))
-    verify_office(evidence.get("office_fixtures"))
+    verify_office(evidence.get("office_fixtures"), evidence["packaged_targets"])
 
 
 def main() -> int:

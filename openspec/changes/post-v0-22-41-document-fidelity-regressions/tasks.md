@@ -160,6 +160,10 @@
 
 ## 最新レビューと判断待ち
 
+- [/] PR #346 / P1 comment4162738590、threadPRRT_kwDORm09y86oOQPs: 各Office入力のfull packaged runを必須化し、実行identity/heartbeat/正常closeと入力SHA・一意run ID・同一配布target artifactを照合。cold RSS増分196608KiBを維持。旧17条件RED→新validator26件/strict gate15件GREEN、独立レビューP0/P1無し。実配布受入の証跡は作らず、製品受入とは分離。正式commit/pushとthread reply/resolve/再取得は未完了。証跡: evidence/office-packaged-evidence-contract-2026-10-02.md。
+- [/] PR #346 / P2 comment4162738593、threadPRRT_kwDORm09y86oOQPv: 既存15000ms上限を検証し、境界15000許可/15000.001拒否の回帰GREEN。正式統合/thread対応は未完了。
+- [x] HTML polling独立修正を422a2009へ通常hook付きcommit。既存HTML surface29件/strict release Clippyに加え、通常hookのnative Clippy/AST23件を通過。初回hookの新規コメント規約違反は説明を証跡文書へ集約して修正した。通常pushゲート実行中、最新HEAD cloud/全coverage/遅い原本の実main再受入は別途未完了。
+
 - [/] KatanA独立性能監査: 同一viewport Resizeは既に抑止。一方HTML pollの2秒後のrepaint停止を、商用polling policyの決定的3回帰で旧RED→新GREEN確認。実adapter非idle中の16ms予約継続とidle移行時の最終取得を実装し、2秒window/受入期限は変更しない。独立レビューP0/P1無し。locked release UI追加3件と実adapterを含む既存HTML surface29件、strict all-target release Clippy/fmt/diff-check成功。遅い実原本/callback受入と全gate/正式統合は未完了。KRR実layout遅延/原本正常close失敗の解消とは分離する。証跡: evidence/html-repaint-polling-2026-10-02.md。
 - [x] 検証済み独立差分を通常pre-commit付きで正式統合: fixture安全生成89b6f987、全タブclose契約/実失敗証跡d58f3a7a、公開registry KRR0.4.22/calloop0.14.5依存b2cea5cc。runner全47件/strict全target release Clippy/format/host契約24+process7/metadata/供給網の成功を確認し、stash/保全branchを作らず履歴へ取り込んだ。通常push/current HEAD CI・review・元HTML/Office/配布/公開の完了とは別。
 - [ ] ユーザーFB「未完了なのになぜ止まる」: 上流待ちと独立した残作業がある限り、進捗通知だけで実行を終了しない。今回残したWorkspaceFile containment、検証済みharness差分の正式統合、変更後gateを順に実行する。アンチパターン: 一件修正してheartbeat通知で停止。正: 局所検証→残作業へ続行→正式履歴/通常push、停止は具体的な外部依存または必要判断だけ。検索語: independent work before waiting, progress is not completion。

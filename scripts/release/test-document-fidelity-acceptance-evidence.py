@@ -97,8 +97,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                     "first_frame_ms": 1000,
                     "item_count": 1,
                     "release_worker": True,
+                    "packaged_target": "linux-x86_64",
+                    "packaged_run": {
+                        "run_id": f"synthetic-office-run-{index}",
+                        "fixture_sha256": input_sha,
+                        "status": "passed",
+                        "runner_mode": "packaged_main",
+                        "clean_machine": True,
+                        "normal_close": True,
+                        "pid": 200 + index * 2,
+                        "sidecar_pid": 201 + index * 2,
+                        "heartbeat_frame_before": 10,
+                        "heartbeat_frame_after": 11,
+                        "cpu_percent": 50.0,
+                        "rss_bytes": 200_000_001,
+                        "main_path": "/release/KatanA",
+                        "sidecar_path": "/release/kdv-office-worker",
+                        "observed_sidecar_path": "/release/kdv-office-worker",
+                        "main_sha256": "a" * 64,
+                        "sidecar_sha256": "b" * 64,
+                        "observed_main_sha256": "a" * 64,
+                        "observed_sidecar_sha256": "b" * 64,
+                        "cold_rss_bytes": 200_000_000,
+                        "after_close_rss_bytes": 200_000_001,
+                    },
                 }
-                for input_sha, format_name in MODULE.SUPPLIED_OFFICE_FIXTURES.items()
+                for index, (input_sha, format_name) in enumerate(MODULE.SUPPLIED_OFFICE_FIXTURES.items())
             ],
         }
 
@@ -266,6 +290,86 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
         )
         self.assert_rejected(
             lambda evidence: evidence["office_fixtures"][0].update(item_count=0)
+        )
+
+    def test_office_requires_packaged_run_instead_of_boolean_worker_claim(self) -> None:
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0].pop("packaged_run")
+        )
+
+    def test_office_packaged_run_requires_passed_packaged_main_identity(self) -> None:
+        mutations = (
+            ("in_process", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(runner_mode="in_process")),
+            ("normal_close_false", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(normal_close=False)),
+            ("clean_machine_false", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(clean_machine=False)),
+            ("heartbeat_stalled", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(heartbeat_frame_after=10)),
+            ("main_hash_mismatch", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(main_sha256="c" * 64)),
+            ("different_main_artifact", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(main_sha256="c" * 64, observed_main_sha256="c" * 64)),
+            ("different_sidecar_artifact", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(sidecar_sha256="c" * 64, observed_sidecar_sha256="c" * 64)),
+            ("different_main_path", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(main_path="/another/KatanA")),
+            ("different_sidecar_path", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(sidecar_path="/another/kdv-office-worker", observed_sidecar_path="/another/kdv-office-worker")),
+            ("fixture_hash_mismatch", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(fixture_sha256="c" * 64)),
+            ("missing_target", lambda evidence: evidence["office_fixtures"][0].pop("packaged_target")),
+            ("unknown_target", lambda evidence: evidence["office_fixtures"][0].update(packaged_target="unknown-target")),
+        )
+        for case, mutation in mutations:
+            with self.subTest(case=case):
+                self.assert_rejected(mutation)
+
+    def test_office_packaged_run_ids_are_required_and_unique(self) -> None:
+        cases = (
+            ("missing", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].pop("run_id")),
+            ("empty", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(run_id=" ")),
+            ("surrounding_whitespace", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(run_id=" run-1 ")),
+            (
+                "duplicate",
+                lambda evidence: evidence["office_fixtures"][1]["packaged_run"].update(
+                    run_id=evidence["office_fixtures"][0]["packaged_run"]["run_id"]
+                ),
+            ),
+        )
+        for case, mutation in cases:
+            with self.subTest(case=case):
+                self.assert_rejected(mutation)
+
+    def test_office_packaged_run_requires_positive_rss_measurements(self) -> None:
+        for field in ("cold_rss_bytes", "after_close_rss_bytes"):
+            with self.subTest(field=field, case="missing"):
+                self.assert_rejected(
+                    lambda evidence, field=field: evidence["office_fixtures"][0]["packaged_run"].pop(field)
+                )
+            with self.subTest(field=field, case="zero"):
+                self.assert_rejected(
+                    lambda evidence, field=field: evidence["office_fixtures"][0]["packaged_run"].update({field: 0})
+                )
+
+    def test_office_cold_rss_delta_keeps_existing_budget(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            evidence["office_fixtures"][0]["packaged_run"].update(
+                cold_rss_bytes=100_000_000,
+                after_close_rss_bytes=100_000_000 + 196_608 * 1024,
+            )
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(
+                cold_rss_bytes=100_000_000,
+                after_close_rss_bytes=100_000_000 + 196_608 * 1024 + 1,
+            )
+        )
+
+    def test_office_first_frame_has_15000_ms_inclusive_limit(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            evidence["office_fixtures"][0]["first_frame_ms"] = 15000
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
+
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0].update(first_frame_ms=15000.001)
         )
 
     def test_assets_are_in_source_tree_hash(self) -> None:
