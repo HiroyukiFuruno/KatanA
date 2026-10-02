@@ -37,3 +37,9 @@ Normal-hook commits: `77ea5d26` (font fallback), `2b55ae76` (display shortcuts),
 The original Office cold RSS result remains a failure (317,328 KiB increase, limit 196,608 KiB). Original HTML normal close still failed the 5-second condition. Packaged/clean-machine fidelity and memory acceptance remain unmet. KDV #59 and KRR #95 remain open; their required published fixes are not yet available. PR remains Draft, with manual target-publication policy requiring a user decision. The successful 3-OS CI for `8460bd91` does not validate these new changes or replace real-file acceptance.
 
 KUC `0.4.1` is now public (GitHub Release and non-yanked sparse registry entry verified). KDV `0.5.8` pins KUC `=0.4.0`; KatanA has no direct KUC dependency. The existing KDV owner was asked to adopt the new KUC in its next published fix; no sibling repository was edited.
+
+## Push and review reconciliation
+
+Normal push completed with exit 0; PR #346 and the remote branch now point to `2910029bbdb055b3a312023004794050f6ec5294`, ahead/behind 0/0. Native, Linux workspace tests, Windows cross-check and PR readiness ran through the existing pre-push hook, without bypass. Log: `tmp/review-three-regressions-normal-push.log`. All 9 source hashes still match the final coverage receipt.
+
+Individual replies: `4164324356` (font), `4164324599` (commands), `4164324839` (slideshow). Each corresponding thread was resolved, then all 23 threads were freshly queried (no next page); these 3 are resolved. Only existing target-publication policy comment `4155352623` remains unresolved, pending the user decision. PR is still Draft. This reconciliation does not waive the performance, packaged acceptance, upstream publication, current cloud review/CI, or release requirements above.

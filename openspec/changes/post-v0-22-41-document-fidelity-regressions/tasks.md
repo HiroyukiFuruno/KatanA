@@ -287,3 +287,5 @@
 - 最終全coverage100%/uncovered0・meaningful gate exit0、SHA9ファイル前後一致。UI1017/既存ignore2、parallel143/既存ignore2、serial18成功。独立review指摘を実テストで補強し、再review P0/P1/P2なし、追加3回帰・最終strict全target Clippy/fmt成功。基準/除外不変、正式push/review/公開は未完了。証跡evidence/current-review-regressions-2026-10-02.md。
 - KUC0.4.1のRelease/registry non-yankedをライブ確認。KDV0.5.8のKUC=0.4.0固定は下流単独で更新不可のため既存KDV担当へ更新・再検証依頼済み。KRR0.4.22/KDV0.5.8が現在の公開最新版、#95/#59はOpenで必要な製品修正版は未公開。sibling編集は行わない。
 - 上記3件は通常hook付き77ea5d26/2b55ae76/183cd30cで正式履歴へ統合した。最終source SHA9件は全gate前後・commit後一致。通常pushとreview各thread reply/resolve・再取得、current cloud、元性能/配布受入、公開は未完了のまま継続する。
+- [x] 上記3件と証跡の通常push exit0。GitHub PR #346/remote HEAD=2910029bbdb055b3a312023004794050f6ec5294、ahead/behind=0/0。native/Linux全workspace test/Windows cross-check/PR readinessを既存hookで実行、source SHA9件一致。
+- [/] 各指摘へ4164324356/4164324599/4164324839で返信してresolve。全threadを再取得（次ページなし）し3件resolvedを確認。未解決は既存manual target公開方針P2 4155352623のみ。最新HEADのcloud review/CI、元性能/配布受入、上流修正版、公開は未完了。Draftを維持する。
