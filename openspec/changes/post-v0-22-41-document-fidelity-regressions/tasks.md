@@ -160,9 +160,24 @@
 
 ## 最新レビューと判断待ち
 
-- [/] PR #346 / P1 comment4162738590、threadPRRT_kwDORm09y86oOQPs: 各Office入力のfull packaged runを必須化し、実行identity/heartbeat/正常closeと入力SHA・一意run ID・同一配布target artifactを照合。cold RSS増分196608KiBを維持。旧17条件RED→新validator26件/strict gate15件GREEN、独立レビューP0/P1無し。実配布受入の証跡は作らず、製品受入とは分離。正式commit/pushとthread reply/resolve/再取得は未完了。証跡: evidence/office-packaged-evidence-contract-2026-10-02.md。
-- [/] PR #346 / P2 comment4162738593、threadPRRT_kwDORm09y86oOQPv: 既存15000ms上限を検証し、境界15000許可/15000.001拒否の回帰GREEN。正式統合/thread対応は未完了。
-- [x] HTML polling独立修正を422a2009へ通常hook付きcommit。既存HTML surface29件/strict release Clippyに加え、通常hookのnative Clippy/AST23件を通過。初回hookの新規コメント規約違反は説明を証跡文書へ集約して修正した。通常pushゲート実行中、最新HEAD cloud/全coverage/遅い原本の実main再受入は別途未完了。
+- [/] 図のhidden transformはe64bce6e、font有界共有workerとWouldBlock retryはce07cd81へ通常pre-commit hookを通して関心事別に正式統合。下記の試作時未実施記録は経緯として保持し、最終sourceの全coverage/AST/strict Clippy/formatは成功済み。master clean/stash0、新worktree無し。通常push/current HEAD cloud/review reply-resolveはこれから継続する。
+
+- [/] 今回のfont bounded/retry・hidden transform最終凍結sourceで通常just coverage exit0。UI1005/parallel143/serial18成功、strict document100%/uncovered0、全meaningful行gate成功、既存ignore/除外/閾値は不変。5商用source SHA前後一致、AST23/strict全target Clippy/format/diffも成功。独立レビュー修正を関心事別に正式commitし、通常push/current review reply-resolveへ継続する。元HTML close/Office RSS/全配布受入と公開は未完了。
+
+- [x] branch-hygieneで既存primaryのGit操作失敗を確認: `.git`/master HEAD/index/内容は通常checkoutかつcleanだがcore.bare=trueで通常stash操作が失敗。local metadataのみcore.bare=falseへ復元し、通常git statusでmaster clean、stash0、両branch origin比較0/0、既存2checkout認識を再取得。source/index編集、新branch/worktree/stash作成・remote削除無し。release側の今回差分/検証は継続。証跡evidence/git-checkout-state-2026-10-02.md。
+
+- [x] 2026-10-02 HEAD cadfb871を通常push完了。native/Linux全テストとWindows test-inclusive cross-check、全coverageがexit0。strict document surface100%/未実行0、HTML polling44/44行。release worktree clean、ahead/behind0/0、stash0を確認。PRはDraftで最新cloud CIの3OS test/buildは実行中、Release Readiness/3OS lint/supply-chain/CodeQLはsuccess。製品受入・公開は未完了。
+- [x] cadfb871のOffice証跡P1/P2へreply4162978367/4162978502、個別resolve後に全reviewThreads再取得。旧基準15000ms/196608KiBを維持し、合成unit fixtureを実配布受入へ流用していない。
+- [ ] 最新cadfb871 reviewの追加P2: フォントlookup取消後も旧thread終了前に新threadを起動するため、置換要求の同時実行を有界化する（4163002793）。独立KatanA修正を開始し、実worker寿命/取消/新要求/close回帰を追加する。
+- [ ] 最新cadfb871 reviewの追加P2: controls hiddenでもsaved zoom/panを消費する図の表示をneutralにし、textureと保存済み操作状態は保持する。実描画mesh座標の旧RED→新GREENで検証する。
+- [/] 図のhidden transform修正は実mesh座標の旧RED(exit101)→新GREEN(3件)、texture ID/保存zoom-pan/visible操作保持を確認。証跡evidence/hidden-diagram-transform-2026-10-02.md。最終lint/coverage/正式統合/公開は未完了。
+- [ ] 新font bounded-worker差分の独立レビューP1: queue満杯時WouldBlockが同generation/requestの永久字体失敗へ固定される。transient backpressureの再試行をlease/取消/実repaintと接続し、DocumentFontLookup経由の満杯→解放→同一要求完了を実thread回帰で検証する。試作のworker数上限だけで製品回復完了へ代用しない。panic/正常idle handoff/別pane保持/取消payloadの回帰と完全ゲートも未実施。
+- [/] 上記font P1/P2を有界共有resolver1本/pending8件/取消掃除/lease保持retry/25ms repaintで修正。実childの満杯→同要求実Bold登録、取消payload drop、panic cleanup/再要求、request変更/closeでretry解除を確認。旧WouldBlock終端RED、無制限spawn負対照でworker3!=1のRED後に正確に復元。責務分割後font10件/AST23/strict全target Clippy/format/diff成功。商用source SHAを凍結して通常全coverage実行中(session19567、tmp/font-scheduler-full-coverage.log)。正式統合/通常push/current review reply-resolve、元Office RSS/原本HTML/配布/公開は未完了。証跡evidence/font-lookup-backpressure-2026-10-02.md。
+- [ ] 元HTML正常close5秒、Office cold RSS196608KiB、canonical fidelity、全packaged CPU/OS/clean-machine受入は未達。KRR #95候補の性能測定は公開0.4.23の代用にしない。2026-10-02ライブ公開は0.4.22のまま。KDV #59の製品RSS修正も未完了。manual target policy P2の全OS統一可否とfresh設定Terms画面承認はユーザー判断/外部環境依存として維持する。
+
+- [x] PR #346 / P1 comment4162738590、threadPRRT_kwDORm09y86oOQPs: 各Office入力のfull packaged runを必須化し、実行identity/heartbeat/正常closeと入力SHA・一意run ID・同一配布target artifactを照合。cold RSS増分196608KiBを維持。旧17条件RED→新validator26件/strict gate15件GREEN、独立レビューP0/P1無し。cadfb871へ正式統合/通常push、reply/resolve/再取得成功。実配布受入の証跡は作らず、製品受入とは分離。証跡: evidence/office-packaged-evidence-contract-2026-10-02.md。
+- [x] PR #346 / P2 comment4162738593、threadPRRT_kwDORm09y86oOQPv: 既存15000ms上限を検証し、境界15000許可/15000.001拒否の回帰GREEN。cadfb871へ正式統合/通常push、reply/resolve/再取得成功。
+- [x] HTML polling独立修正を422a2009へ通常hook付きcommit。既存HTML surface29件/strict release Clippyに加え、通常hookのnative Clippy/AST23件を通過。初回hookの新規コメント規約違反は説明を証跡文書へ集約して修正した。cadfb871の通常pushゲート/全coverage成功。最新HEAD cloud/遅い原本の実main再受入は別途未完了。
 
 - [/] KatanA独立性能監査: 同一viewport Resizeは既に抑止。一方HTML pollの2秒後のrepaint停止を、商用polling policyの決定的3回帰で旧RED→新GREEN確認。実adapter非idle中の16ms予約継続とidle移行時の最終取得を実装し、2秒window/受入期限は変更しない。独立レビューP0/P1無し。locked release UI追加3件と実adapterを含む既存HTML surface29件、strict all-target release Clippy/fmt/diff-check成功。遅い実原本/callback受入と全gate/正式統合は未完了。KRR実layout遅延/原本正常close失敗の解消とは分離する。証跡: evidence/html-repaint-polling-2026-10-02.md。
 - [x] 検証済み独立差分を通常pre-commit付きで正式統合: fixture安全生成89b6f987、全タブclose契約/実失敗証跡d58f3a7a、公開registry KRR0.4.22/calloop0.14.5依存b2cea5cc。runner全47件/strict全target release Clippy/format/host契約24+process7/metadata/供給網の成功を確認し、stash/保全branchを作らず履歴へ取り込んだ。通常push/current HEAD CI・review・元HTML/Office/配布/公開の完了とは別。
