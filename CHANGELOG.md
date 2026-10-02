@@ -17,6 +17,9 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Document memory usage**: Removed an extra copy of document input data retained throughout a viewer session.
 - **Preview image stability**: Diagram and image textures remain available when image controls are hidden.
 - **Excel sheet tabs**: Bottom tabs remain visible and clickable without overlapping document diagnostics.
+- **Excel font styles**: Bold and italic cells retain the requested font family when only a regular or partially matching style is installed.
+- **Unsupported display shortcuts**: HTML and Office documents cannot be switched into unsupported split or code-only views using keyboard shortcuts.
+- **Slideshow tab switching**: Switching to an HTML or Office tab exits the slideshow and restores the previous fullscreen state.
 
 ## [0.22.41] - 2026-08-26 06:32:56 (UTC)
 

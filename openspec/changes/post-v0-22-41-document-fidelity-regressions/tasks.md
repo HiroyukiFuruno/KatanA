@@ -277,3 +277,13 @@
 - 正式統合: `7e4fb367` Office実書体/lease、`4d4a6a94` filterのP2 2件、`0e9a94a6` MathJax workerを通常hook付きcommitで履歴へ取り込んだ。最新strict locked test-inclusive UI Clippy、fmt、AST23、MathJax9件、変更後全coverageは成功。通常push、新HEADのcloud/全review reply-resolve、配布受入、公開は未完了。
 - 通常push `05685207` はnative標準テスト再buildのlinkでNo space left on deviceとなりexit1、remote未更新。active Cargo/rustc/lefthook0、公式dry-run15620files/18.7GiBを確認し、当該worktreeのkatana-ui/core dev生成物だけ公式Cargo cleanで15609files/17.9GiB削除、空き16GiBへ回復した。source、履歴、release成果物、llvm-cov結果、兄弟repoは保持。再生成可能な開発生成物のみ削除であり、通常pushはCIと同じdev/test debug=0・strip=none、並列2で再試行する。機能test・lint・coverage・platform・reviewゲートは省略しない。
 - 旧HEAD cloudはUbuntu全Test and Build成功、Windowsは上記stack障害、macOSはheadless前のV8取得HTTP504で失敗。正確な公開artifact URLは再確認でHTTP200。新HEADの実cloud確認を継続し、artifact取得失敗を描画受入成功/失敗へすり替えない。
+
+### 2026-10-02 current HEAD 8460bd91 review 回帰
+
+- [/] P2 4163417357: 同一familyのexact→bold→italic→regularを重複なくleaseへ投影、実paintもRegularを利用しfaux styleを保持。旧projection/paintの実RED→GREEN、実bold/italic2追加回帰もGREEN。per-cell Vecなし。正式commit/push、thread reply/resolve再取得は未完了。
+- [/] P2 4163417363: Office/HTMLのSplit/CodePreviewに登録commandと直接dispatchの双方でTools可用性を適用。旧2件RED→変更後4件GREEN（PDF/Markdown互換性含む）。正式commit/push、thread reply/resolve再取得は未完了。
+- [/] P2 4163417371: modal入口で非対応docへのtab切替を検査し、slideshow終了と元fullscreen復元を実装。旧RED→GREEN、next/prev・4形式・元fullscreen2状態・active path・Markdownへ戻った再開を実egui viewport commandで検証。正式commit/push、thread reply/resolve再取得は未完了。
+- current 8460bd91は全3OS Test and Build/全lint/CodeQL/supply-chain/Readiness成功。上記新差分やclean-machine受入、原本HTML正常close、Office cold RSSの成功とは扱わない。
+- 最終全coverage100%/uncovered0・meaningful gate exit0、SHA9ファイル前後一致。UI1017/既存ignore2、parallel143/既存ignore2、serial18成功。独立review指摘を実テストで補強し、再review P0/P1/P2なし、追加3回帰・最終strict全target Clippy/fmt成功。基準/除外不変、正式push/review/公開は未完了。証跡evidence/current-review-regressions-2026-10-02.md。
+- KUC0.4.1のRelease/registry non-yankedをライブ確認。KDV0.5.8のKUC=0.4.0固定は下流単独で更新不可のため既存KDV担当へ更新・再検証依頼済み。KRR0.4.22/KDV0.5.8が現在の公開最新版、#95/#59はOpenで必要な製品修正版は未公開。sibling編集は行わない。
+- 上記3件は通常hook付き77ea5d26/2b55ae76/183cd30cで正式履歴へ統合した。最終source SHA9件は全gate前後・commit後一致。通常pushとreview各thread reply/resolve・再取得、current cloud、元性能/配布受入、公開は未完了のまま継続する。
