@@ -1208,6 +1208,50 @@ mod tests {
     }
 
     #[test]
+    fn hidden_rasterized_image_ignores_saved_transform_and_reuses_texture() {
+        let ctx = crate::test_ui::Context::default();
+        let image = rasterized_test_image(vec![0, 0, 0, 255]);
+        let mut state = ViewerState::default();
+        let original = hidden_image_mesh_positions(&ctx, &mut state, &image);
+        let texture_id = state.texture.as_ref().unwrap().id();
+        state.zoom = 3.0;
+        state.pan = egui::vec2(100.0, 200.0);
+        let transformed = hidden_image_mesh_positions(&ctx, &mut state, &image);
+        assert!(!original.is_empty());
+        assert_eq!(transformed, original);
+        assert_eq!(state.texture.as_ref().unwrap().id(), texture_id);
+        assert_eq!(state.zoom, 3.0);
+        assert_eq!(state.pan, egui::vec2(100.0, 200.0));
+    }
+
+    fn hidden_image_mesh_positions(
+        ctx: &crate::test_ui::Context,
+        state: &mut ViewerState,
+        image: &katana_core::markdown::svg_rasterize::RasterizedSvg,
+    ) -> Vec<egui::Pos2> {
+        let output = ctx.run_ui(egui::RawInput::default(), |ui| {
+            ImageLogicOps::show_rasterized(
+                ui,
+                image,
+                "Mermaid diagram",
+                0,
+                super::image_raster::RasterizedInteraction::Hidden { state: Some(state) },
+                |_, _, _| {},
+            );
+        });
+        let texture_id = state.texture.as_ref().unwrap().id();
+        output
+            .shapes
+            .iter()
+            .filter_map(|shape| match &shape.shape {
+                egui::epaint::Shape::Mesh(mesh) if mesh.texture_id == texture_id => Some(mesh),
+                _ => None,
+            })
+            .flat_map(|mesh| mesh.vertices.iter().map(|vertex| vertex.pos))
+            .collect()
+    }
+
+    #[test]
     fn hidden_rasterized_image_does_not_zoom_or_pan_from_pointer_gestures() {
         let ctx = egui::Context::default();
         let image = rasterized_test_image(vec![0, 0, 0, 255]);

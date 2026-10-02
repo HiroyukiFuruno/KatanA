@@ -119,8 +119,9 @@ impl ImageLogicOps {
             }
         }
 
-        let zoom = state.as_ref().map_or(1.0, |s| s.zoom);
-        let pan = state.as_ref().map_or(egui::Vec2::ZERO, |s| s.pan);
+        let transform = state.as_ref().filter(|_| show_controls);
+        let zoom = transform.map_or(1.0, |s| s.zoom);
+        let pan = transform.map_or(egui::Vec2::ZERO, |s| s.pan);
         let zoomed_size = base_size * zoom;
 
         let texture_handle = if let Some(state) = state.as_mut() {
