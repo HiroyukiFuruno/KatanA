@@ -491,6 +491,57 @@ mod tests {
         assert!(!app.state.layout.show_slideshow);
     }
 
+    fn slideshow_app_for_tab_switch(path: &str, was_fullscreen: bool) -> KatanaApp {
+        let mut app = make_app();
+        for document_path in ["slides.md", path] {
+            app.state.document.open_documents.push(
+                katana_core::document::Document::new_empty(document_path),
+            );
+        }
+        app.state.document.active_doc_idx = Some(0);
+        app.tab_previews.push(TabPreviewCache {
+            path: path.into(),
+            pane: PreviewPane::default(),
+            hash: 0,
+        });
+        app.state.layout.show_slideshow = true;
+        app.state.layout.was_os_fullscreen_before_slideshow = was_fullscreen;
+        app
+    }
+
+    fn assert_slideshow_tab_switch(path: &str, action: AppAction, was_fullscreen: bool) {
+        let mut app = slideshow_app_for_tab_switch(path, was_fullscreen);
+        let ctx = egui::Context::default();
+        let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
+            app.process_action(ui.ctx(), action.clone());
+            app.show_system_modals(ui.ctx());
+        });
+        output.textures_delta.clear();
+        assert_eq!(app.state.active_document().expect("active tab").path, PathBuf::from(path));
+        assert!(!app.state.layout.show_slideshow, "{path} {action:?}");
+        let exits_fullscreen = output.viewport_output.values().any(|viewport| {
+            viewport.commands.iter().any(|command| {
+                matches!(command, egui::ViewportCommand::Fullscreen(false))
+            })
+        });
+        assert_eq!(exits_fullscreen, !was_fullscreen, "{path} {action:?}");
+        app.process_action(&ctx, AppAction::SelectPrevTab);
+        assert_eq!(app.state.active_document().expect("Markdown tab").path, PathBuf::from("slides.md"));
+        app.process_action(&ctx, AppAction::ToggleSlideshow);
+        assert!(app.state.layout.show_slideshow, "supported slideshow can restart");
+    }
+
+    #[test]
+    fn tab_switch_from_slideshow_to_unsupported_document_restores_fullscreen() {
+        for path in ["report.html", "report.docx", "book.xlsx", "deck.pptx"] {
+            for action in [AppAction::SelectNextTab, AppAction::SelectPrevTab] {
+                for was_fullscreen in [false, true] {
+                    assert_slideshow_tab_switch(path, action.clone(), was_fullscreen);
+                }
+            }
+        }
+    }
+
     #[test]
     fn process_action_toggle_settings_toggles_flag() {
         let mut app = make_app();
