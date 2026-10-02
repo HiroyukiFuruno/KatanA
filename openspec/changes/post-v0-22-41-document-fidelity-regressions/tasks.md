@@ -289,3 +289,5 @@
 - 上記3件は通常hook付き77ea5d26/2b55ae76/183cd30cで正式履歴へ統合した。最終source SHA9件は全gate前後・commit後一致。通常pushとreview各thread reply/resolve・再取得、current cloud、元性能/配布受入、公開は未完了のまま継続する。
 - [x] 上記3件と証跡の通常push exit0。GitHub PR #346/remote HEAD=2910029bbdb055b3a312023004794050f6ec5294、ahead/behind=0/0。native/Linux全workspace test/Windows cross-check/PR readinessを既存hookで実行、source SHA9件一致。
 - [/] 各指摘へ4164324356/4164324599/4164324839で返信してresolve。全threadを再取得（次ページなし）し3件resolvedを確認。未解決は既存manual target公開方針P2 4155352623のみ。最新HEADのcloud review/CI、元性能/配布受入、上流修正版、公開は未完了。Draftを維持する。
+- [ ] 通常push後のcore.bare=true再発を解消する。preflightの受入fixture git initがhook由来GIT_DIRを継承しcaller metadataへ書くことをtemp separate-git-dirの実Gitで再現（旧source_paths fatal work tree、独立fixture不在）。実repoの設定はfalseへ復旧・master clean/stash0を確認。Git local環境をfixture initとsource列挙で除去する修正・回帰GREEN・通常hook再実行後config bytes不変確認まで継続する。製品性能修正とは別のハーネス不具合。
+- [/] 上記Git隔離修正を実装し、実Git caller config bytes/status不変・fixture独立metadata/source列挙の回帰GREEN、gate全16/evidence全27成功。Git native local-env-varsとindexed config overrideを除去、非Git環境/PATHを保持。既存preflightに含まれるgate回帰で再発検知。通常commit/push後の実shared config bytes不変確認・最新reviewは未完了。

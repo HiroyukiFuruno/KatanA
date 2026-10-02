@@ -7,9 +7,11 @@ import contextlib
 import io
 import importlib.util
 import json
+import os
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import importlib.util
@@ -28,6 +30,78 @@ EVIDENCE_SPEC.loader.exec_module(EVIDENCE)
 
 
 class DocumentFidelityReleaseGateTests(unittest.TestCase):
+    def test_git_fixture_init_isolated_from_inherited_git_environment(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            clean_environment = {
+                key: value for key, value in os.environ.items() if not key.startswith("GIT_")
+            }
+            for index, inherited_vars in enumerate((
+                ("GIT_DIR",),
+                ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR"),
+            )):
+                with self.subTest(inherited=inherited_vars):
+                    caller = root / f"caller-{index}"
+                    caller.mkdir()
+                    metadata = root / f"caller-metadata-{index}"
+                    subprocess.run(
+                        ["git", "init", "--separate-git-dir", str(metadata), "-q", str(caller)],
+                        check=True,
+                        env=clean_environment,
+                    )
+                    inherited = {"GIT_DIR": str(metadata)}
+                    if len(inherited_vars) > 1:
+                        inherited.update(
+                            {
+                                "GIT_WORK_TREE": str(caller),
+                                "GIT_COMMON_DIR": str(metadata),
+                            }
+                        )
+                    config = metadata / "config"
+                    before_config = config.read_bytes()
+                    before_status = subprocess.run(
+                        [
+                            "git",
+                            "--git-dir",
+                            str(metadata),
+                            "--work-tree",
+                            str(caller),
+                            "status",
+                            "--porcelain=v1",
+                        ],
+                        check=True,
+                        capture_output=True,
+                        env=clean_environment,
+                    ).stdout
+                    error = None
+                    try:
+                        with mock.patch.dict(os.environ, {**clean_environment, **inherited}, clear=True):
+                            with self.repository(
+                                self.completed_required_tasks(), with_evidence=True
+                            ) as fixture_dir:
+                                fixture = Path(fixture_dir)
+                                self.assertTrue((fixture / ".git").is_dir())
+                    except Exception as caught:
+                        error = caught
+                    after_status = subprocess.run(
+                        [
+                            "git",
+                            "--git-dir",
+                            str(metadata),
+                            "--work-tree",
+                            str(caller),
+                            "status",
+                            "--porcelain=v1",
+                        ],
+                        check=True,
+                        capture_output=True,
+                        env=clean_environment,
+                    ).stdout
+                    self.assertEqual(config.read_bytes(), before_config)
+                    self.assertEqual(after_status, before_status)
+                    if error is not None:
+                        raise error
+
     def completed_required_tasks(self) -> str:
         return "".join(f"- [x] {task_id} complete\n" for task_id in sorted(MODULE.CRITICAL_REQUIRED))
 
@@ -79,7 +153,11 @@ version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 """
         (root / "Cargo.lock").write_text(lock, encoding="utf-8")
-        subprocess.run(["git", "-C", str(root), "init", "-q"], check=True)
+        subprocess.run(
+            ["git", "-C", str(root), "init", "-q"],
+            check=True,
+            env=EVIDENCE.git_environment(),
+        )
         digest = "a" * 64
         evidence = {
             "schema_version": 1,

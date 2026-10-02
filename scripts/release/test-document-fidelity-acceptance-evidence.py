@@ -6,9 +6,11 @@ from __future__ import annotations
 import importlib.util
 import json
 import math
+import os
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -20,6 +22,58 @@ SPEC.loader.exec_module(MODULE)
 
 
 class AcceptanceEvidenceTests(unittest.TestCase):
+    def test_source_paths_use_fixture_git_metadata_not_inherited_caller(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            caller = root / "caller"
+            caller.mkdir()
+            metadata = root / "caller-metadata"
+            clean_environment = {
+                key: value for key, value in os.environ.items() if not key.startswith("GIT_")
+            }
+            subprocess.run(
+                ["git", "init", "--separate-git-dir", str(metadata), "-q", str(caller)],
+                check=True,
+                env=clean_environment,
+            )
+            caller_source = caller / "crates" / "caller.rs"
+            caller_source.parent.mkdir()
+            caller_source.write_text("pub fn caller() {}\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "-C", str(caller), "add", "crates/caller.rs"],
+                check=True,
+                env=clean_environment,
+            )
+            config = metadata / "config"
+            before_config = config.read_bytes()
+            before_status = subprocess.run(
+                ["git", "-C", str(caller), "status", "--porcelain=v1"],
+                check=True,
+                capture_output=True,
+                env=clean_environment,
+            ).stdout
+            inherited = {
+                "GIT_DIR": str(metadata),
+                "GIT_WORK_TREE": str(caller),
+                "GIT_COMMON_DIR": str(metadata),
+            }
+            with mock.patch.dict(os.environ, {**clean_environment, **inherited}, clear=True):
+                with self.repository() as fixture_dir:
+                    fixture = Path(fixture_dir)
+                    fixture_source = fixture / "crates" / "source.rs"
+                    enumerated = MODULE.source_paths(fixture)
+            after_status = subprocess.run(
+                ["git", "-C", str(caller), "status", "--porcelain=v1"],
+                check=True,
+                capture_output=True,
+                env=clean_environment,
+            ).stdout
+            self.assertEqual(config.read_bytes(), before_config)
+            self.assertEqual(after_status, before_status)
+            self.assertIn(fixture_source, enumerated)
+            self.assertTrue(all(path.is_relative_to(fixture) for path in enumerated))
+            self.assertNotIn(caller_source, enumerated)
+
     def repository(self) -> tempfile.TemporaryDirectory[str]:
         directory = tempfile.TemporaryDirectory()
         root = Path(directory.name)
@@ -42,7 +96,11 @@ version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 """
         (root / "Cargo.lock").write_text(lock, encoding="utf-8")
-        subprocess.run(["git", "-C", str(root), "init", "-q"], check=True)
+        subprocess.run(
+            ["git", "-C", str(root), "init", "-q"],
+            check=True,
+            env=MODULE.git_environment(),
+        )
         return directory
 
     def valid_evidence(self, root: Path) -> dict[str, object]:

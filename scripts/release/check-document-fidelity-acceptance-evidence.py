@@ -8,6 +8,7 @@ import hashlib
 import json
 import math
 import ntpath
+import os
 import re
 import subprocess
 import sys
@@ -80,6 +81,21 @@ def require_sha256(value: object, name: str) -> str:
     return value.lower()
 
 
+def git_environment() -> dict[str, str]:
+    local_names = subprocess.run(
+        ["git", "rev-parse", "--local-env-vars"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+    return {
+        key: value
+        for key, value in os.environ.items()
+        if key not in local_names
+        and not key.startswith(("GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_"))
+    }
+
+
 def source_paths(root: Path) -> list[Path]:
     relative_paths: list[str] = []
     try:
@@ -87,6 +103,7 @@ def source_paths(root: Path) -> list[Path]:
             ["git", "-C", str(root), "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", *SOURCE_ROOTS],
             check=False,
             capture_output=True,
+            env=git_environment(),
         )
     except OSError as error:
         fail(f"cannot enumerate source tree with git: {error}")
