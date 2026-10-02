@@ -413,6 +413,9 @@ pub enum UiAction {
     CloseActiveDocument {
         wait_seconds: f64,
     },
+    CloseAllDocuments {
+        wait_seconds: f64,
+    },
     /// Open HTML and Office documents alternately, closing each generation before continuing.
     RunMixedDocumentCycles {
         html_file_name: String,
@@ -654,6 +657,14 @@ pub fn load(path: &std::path::Path) -> anyhow::Result<Request> {
 #[cfg(test)]
 mod tests {
     use super::{Request, ScrollDirection, Step, UiAction};
+
+    #[test]
+    fn close_all_documents_preserves_the_shared_deadline() {
+        let action: UiAction =
+            serde_json::from_str(r#"{"close_all_documents":{"wait_seconds":5.0}}"#)
+                .expect("close-all action must deserialize");
+        assert_eq!(action, UiAction::CloseAllDocuments { wait_seconds: 5.0 });
+    }
 
     #[test]
     fn typography_fixture_requires_heading_measurements_and_explicit_font_size() {

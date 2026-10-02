@@ -53,6 +53,8 @@ def observe_operation(payload: dict, log: str) -> tuple[int, str, int]:
         budget = int(step["action"]["open_url"]["timeout_seconds"])
     elif label == "action" and "close_active_document" in step["action"]:
         budget = int(step["action"]["close_active_document"]["wait_seconds"])
+    elif label == "action" and "close_all_documents" in step["action"]:
+        budget = int(step["action"]["close_all_documents"]["wait_seconds"])
     return (index, label, budget)
 
 
@@ -75,9 +77,9 @@ def summarize_log(log: str, payload: dict | None = None) -> dict:
 
 
 def _validate_close(steps: list[dict]) -> None:
-    closes = [(index, step["action"]["close_active_document"])
+    closes = [(index, step["action"]["close_all_documents"])
               for index, step in enumerate(steps)
-              if step["type"] == "action" and "close_active_document" in step.get("action", {})]
+              if step["type"] == "action" and "close_all_documents" in step.get("action", {})]
     navigations = [index for index, step in enumerate(steps)
                    if step["type"] == "action" and "open_url" in step.get("action", {})]
     if len(closes) != 1 or closes[0][1] != {"wait_seconds": 5.0} or closes[0][0] <= max(navigations):

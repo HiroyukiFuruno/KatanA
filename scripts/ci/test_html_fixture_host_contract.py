@@ -44,7 +44,7 @@ class HostContractTests(unittest.TestCase):
                 {"type": "open_file", "file_name": self.source.name,
                  "wait_for_html_frame": True, "max_first_frame_seconds": 60},
                 {"type": "action", "action": {"open_url": {"url": self.source.as_uri() + "#s15", "timeout_seconds": 60}}},
-                {"type": "action", "action": {"close_active_document": {"wait_seconds": 5.0}}},
+                {"type": "action", "action": {"close_all_documents": {"wait_seconds": 5.0}}},
                 {"type": "record_runtime_snapshot", "name": "closed_idle"},
                 {"type": "quit"},
             ],
@@ -92,8 +92,13 @@ class HostContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "resource close"):
             self.check()
 
+    def test_resource_close_must_include_copy_and_original_tabs(self):
+        self.payload["steps"][3]["action"] = {"close_active_document": {"wait_seconds": 5.0}}
+        with self.assertRaisesRegex(ValueError, "resource close"):
+            self.check()
+
     def test_resource_close_timeout_cannot_be_extended(self):
-        self.payload["steps"][3]["action"]["close_active_document"]["wait_seconds"] = 30
+        self.payload["steps"][3]["action"]["close_all_documents"]["wait_seconds"] = 30
         with self.assertRaisesRegex(ValueError, "resource close"):
             self.check()
 

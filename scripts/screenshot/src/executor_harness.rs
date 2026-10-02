@@ -1311,6 +1311,13 @@ pub fn run(
                             "close_active_document",
                         )?;
                     }
+                    UiAction::CloseAllDocuments { wait_seconds } => {
+                        close_all_documents_and_wait_for_idle(
+                            &mut harness,
+                            recording.as_mut(),
+                            *wait_seconds,
+                        )?;
+                    }
                     UiAction::RunMixedDocumentCycles {
                         html_file_name,
                         document_file_name,
@@ -1653,6 +1660,7 @@ pub fn run(
                             | UiAction::CloseSearchModal
                             | UiAction::CloseDocSearch
                             | UiAction::CloseActiveDocument { .. }
+                            | UiAction::CloseAllDocuments { .. }
                             | UiAction::RunMixedDocumentCycles { .. }
                             | UiAction::RefreshDiagnostics
                             | UiAction::DocumentNext { .. }
@@ -1702,6 +1710,58 @@ pub fn run(
     }
 
     Ok(())
+}
+
+fn close_all_documents_and_wait_for_idle(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    timeout_seconds: f64,
+) -> Result<()> {
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    println!("  closing all documents: count={}", document_count(harness));
+    close_extra_documents(harness, recording.as_deref_mut(), deadline)?;
+    close_active_document_and_wait_for_idle(
+        harness,
+        recording,
+        deadline
+            .saturating_duration_since(Instant::now())
+            .as_secs_f64(),
+        "close_all_documents",
+    )
+}
+
+fn close_extra_documents(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    deadline: Instant,
+) -> Result<()> {
+    while document_count(harness) > 1 {
+        let active_index = harness
+            .state_mut()
+            .app_state_for_test()
+            .document
+            .active_doc_idx
+            .context("close_all_documents requires an active document")?;
+        harness
+            .state_mut()
+            .trigger_action(AppAction::ForceCloseDocument(active_index));
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        ensure!(
+            Instant::now() < deadline,
+            "close_all_documents exceeded its shared close budget"
+        );
+    }
+    Ok(())
+}
+
+fn document_count(harness: &mut Harness<'_, KatanaApp>) -> usize {
+    harness
+        .state_mut()
+        .app_state_for_test()
+        .document
+        .open_documents
+        .len()
 }
 
 fn close_active_document_and_wait_for_idle(
