@@ -35,9 +35,21 @@ point on macOS: all38 steps succeeded with exit0, including Excel Notes tab
 selection, frame assertions and changed-pixel assertions. Logs:
 `tmp/windows-settings-json-clippy-2026-10-02.log` and
 `tmp/windows-settings-json-native-acceptance-2026-10-02.log`.
-Normal commit/push, fresh current review and repaired Windows cloud execution
-remain required.
-String round-trip tests on macOS do not establish Windows filesystem acceptance.
+The repair was committed as `66994fb7`; the CI regression integration as
+`e15ccd0f`. Normal push exited0, and current review was requested in comment
+5942522678. CI run36939860682 at public HEAD `e15ccd0f` completed successfully
+on macOS, Windows and Linux. All three separate-workspace test suites and
+unchanged multi-format headless steps succeeded; Windows original cold real-font
+lookup also succeeded. macOS coverage, all three lint jobs, supply chain,
+CodeQL and Release Readiness succeeded. Windows/Linux coverage remains skipped
+by the existing macOS-only condition, not claimed as a new coverage result.
+
+Uploaded nonexpired evidence artifacts are nonempty: Windows2395826bytes,
+Linux2548731bytes, macOS2718400bytes. These are headless artifacts, not published
+KatanA distribution assets. Fresh review-thread retrieval found only the existing
+manual-target policy P2 unresolved, no P0/P1, and no pagination remaining.
+The PR stays Draft while the unchanged Office memory, upstream, fidelity and
+packaged acceptance criteria remain unmet.
 
 The screenshot workspace is separate from root `cargo test --workspace`.
 CI now runs its entire locked release test suite in its existing isolated target
