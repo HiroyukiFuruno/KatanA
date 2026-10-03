@@ -179,6 +179,163 @@ def require_positive_integer(value: object, name: str) -> int:
     return value
 
 
+def require_viewport(value: object, name: str) -> dict[str, float]:
+    if not isinstance(value, dict) or set(value) != {"width", "height"}:
+        fail(f"{name} must declare width and height")
+    width = require_positive_finite_number(value.get("width"), f"{name}.width")
+    height = require_positive_finite_number(value.get("height"), f"{name}.height")
+    return {"width": width, "height": height}
+
+
+def require_rect(value: object, name: str) -> dict[str, float]:
+    if not isinstance(value, dict) or set(value) != {"x", "y", "width", "height"}:
+        fail(f"{name} must contain x, y, width, and height")
+    rect = {}
+    for field in ("x", "y"):
+        coordinate = value.get(field)
+        if not isinstance(coordinate, (int, float)) or isinstance(coordinate, bool) or not math.isfinite(coordinate):
+            fail(f"{name}.{field} must be a finite number")
+        rect[field] = float(coordinate)
+    for field in ("width", "height"):
+        rect[field] = require_positive_finite_number(value.get(field), f"{name}.{field}")
+    if rect["width"] <= 0 or rect["height"] <= 0:
+        fail(f"{name}.width and height must be positive")
+    return rect
+
+
+def require_same_rect(actual: dict[str, float], expected: dict[str, float], name: str) -> None:
+    if actual != expected:
+        fail(f"{name} does not match the contract reference rectangle")
+
+
+def require_tracked_contract(root: Path, path: Path, name: str) -> None:
+    current = root
+    for part in path.parts:
+        current = current / part
+        if current.is_symlink():
+            fail(f"{name}.contract must not use symbolic links")
+    result = subprocess.run(
+        ["git", "-C", str(root), "ls-files", "--error-unmatch", "--", path.as_posix()],
+        check=False,
+        capture_output=True,
+        env=git_environment(),
+    )
+    if result.returncode != 0:
+        fail(f"{name}.contract must be a versioned reference contract")
+
+
+def load_contract(root: Path, value: object, name: str) -> dict[str, Any]:
+    if not isinstance(value, str) or not value:
+        fail(f"{name}.contract must be a relative contract path")
+    contract_path = Path(value)
+    if contract_path.is_absolute() or ".." in contract_path.parts or contract_path.suffix != ".json":
+        fail(f"{name}.contract must be a normalized JSON path without traversal")
+    contracts_root = (root / "scripts" / "release" / "document-fidelity-contracts").resolve()
+    if not contracts_root.is_relative_to(root.resolve()):
+        fail("contract directory escapes the repository root")
+    path = root / contract_path
+    try:
+        resolved = path.resolve(strict=True)
+    except OSError as error:
+        fail(f"{name}.contract cannot be read: {error}")
+    if not resolved.is_relative_to(contracts_root):
+        fail(f"{name}.contract must stay inside the contract directory")
+    require_tracked_contract(root, contract_path, name)
+    try:
+        raw = resolved.read_bytes()
+        contract = json.loads(raw)
+    except (OSError, ValueError) as error:
+        fail(f"{name}.contract is invalid: {error}")
+    if not isinstance(contract, dict):
+        fail(f"{name}.contract must contain an object")
+    contract["_raw_sha256"] = sha256_bytes(raw)
+    return contract
+
+
+def verify_contract_identity(contract: dict[str, Any], comparison: dict[str, Any], name: str, input_sha: str, renderer: str) -> dict[str, float]:
+    if require_sha256(comparison.get("contract_sha256"), f"{name}.contract_sha256") != contract["_raw_sha256"]:
+        fail(f"{name} contract SHA-256 is stale")
+    if require_sha256(contract.get("input_sha256"), f"{name}.contract.input_sha256") != input_sha:
+        fail(f"{name} contract input identity does not match the fixture")
+    if contract.get("reference_renderer") != renderer:
+        fail(f"{name} contract renderer is invalid")
+    if require_sha256(comparison.get("reference_sha256"), f"{name}.reference_sha256") != require_sha256(contract.get("reference_sha256"), f"{name}.contract.reference_sha256"):
+        fail(f"{name} reference identity does not match the contract")
+    require_sha256(comparison.get("measured_sha256"), f"{name}.measured_sha256")
+    if comparison.get("producer_mode") != "packaged_main":
+        fail(f"{name} measured receipt must come from packaged_main")
+    viewports = comparison.get("viewports")
+    if not isinstance(viewports, dict) or set(viewports) != {"reference", "measured"}:
+        fail(f"{name}.viewports must contain reference and measured")
+    expected_viewport = require_viewport(contract.get("viewport"), f"{name}.contract.viewport")
+    for side in ("reference", "measured"):
+        if require_viewport(viewports.get(side), f"{name}.viewports.{side}") != expected_viewport:
+            fail(f"{name}.viewports.{side} does not match the contract")
+    return expected_viewport
+
+
+def verify_comparison_geometry(comparison: dict[str, Any], contract: dict[str, Any], names: set[str], name: str) -> None:
+    geometry = comparison.get("geometry")
+    contract_geometry = contract.get("geometry")
+    if not isinstance(geometry, dict) or set(geometry) != names:
+        fail(f"{name}.geometry must contain every required target exactly once")
+    if not isinstance(contract_geometry, dict) or not contract_geometry or set(contract_geometry) != names:
+        fail(f"{name}.contract.geometry must contain every required target exactly once")
+    for target in names:
+        receipt = geometry[target]
+        expected = contract_geometry[target]
+        if not isinstance(receipt, dict) or set(receipt) != {"reference", "measured"}:
+            fail(f"{name}.geometry.{target} must contain reference and measured only")
+        if not isinstance(expected, dict) or set(expected) != {"reference", "tolerance"}:
+            fail(f"{name}.contract.geometry.{target} is invalid")
+        reference = require_rect(receipt["reference"], f"{name}.geometry.{target}.reference")
+        measured = require_rect(receipt["measured"], f"{name}.geometry.{target}.measured")
+        contract_reference = require_rect(expected["reference"], f"{name}.contract.geometry.{target}.reference")
+        require_same_rect(reference, contract_reference, f"{name}.geometry.{target}.reference")
+        tolerance = require_finite_number(expected["tolerance"], f"{name}.contract.geometry.{target}.tolerance")
+        delta = max(abs(measured[field] - reference[field]) for field in ("x", "y", "width", "height"))
+        if delta > tolerance:
+            fail(f"{name}.geometry.{target} exceeds the contract tolerance")
+
+
+def verify_html_comparison(root: Path, value: dict[str, Any]) -> None:
+    input_sha = require_sha256(value.get("fixture_sha256"), "HTML.fixture_sha256")
+    comparison = value.get("comparison")
+    if not isinstance(comparison, dict):
+        fail("HTML comparison is missing")
+    verify_html_navigation(comparison.get("navigation"))
+    contract = load_contract(root, comparison.get("contract"), "HTML")
+    viewport = verify_contract_identity(contract, comparison, "HTML", input_sha, "chromeHTML")
+    if viewport != {"width": 1280, "height": 900}:
+        fail("HTML comparison must use the agreed 1280x900 viewport")
+    input_record = comparison.get("input")
+    if not isinstance(input_record, dict) or input_record.get("anchor") != "#s15":
+        fail("HTML.comparison.input must bind the #s15 anchor")
+    if require_sha256(input_record.get("fixture_sha256"), "HTML.comparison.input.fixture_sha256") != input_sha:
+        fail("HTML.comparison input fixture identity does not match HTML fixture")
+    verify_comparison_geometry(comparison, contract, {"sticky_toc", "main", "visible_section"}, "HTML")
+    for field in ("active_toc", "visible_section_state"):
+        state = comparison.get(field)
+        if (not isinstance(state, dict) or set(state) != {"reference", "measured"}
+                or not isinstance(state["reference"], str) or not state["reference"]
+                or not isinstance(state["measured"], str) or not state["measured"]
+                or state["reference"] != state["measured"] or state["reference"] != "#s15"):
+            fail(f"HTML.comparison.{field} must match the reference state")
+
+
+def verify_html_navigation(value: object) -> None:
+    if not isinstance(value, dict) or set(value) != {
+        "from_fragment", "to_fragment", "frame_before", "frame_after"
+    }:
+        fail("HTML comparison must record an actual anchor navigation")
+    if value["from_fragment"] != "" or value["to_fragment"] != "#s15":
+        fail("HTML comparison must navigate from the initial document to #s15")
+    before = require_positive_integer(value["frame_before"], "HTML navigation frame_before")
+    after = require_positive_integer(value["frame_after"], "HTML navigation frame_after")
+    if after <= before:
+        fail("HTML navigation must advance the rendered frame")
+
+
 def require_canonical_path(value: object, name: str) -> str:
     if not isinstance(value, str) or not value:
         fail(f"{name} must be a canonical executable path")
@@ -197,7 +354,7 @@ def verify_normal_close_duration(record: dict[str, Any], name: str) -> None:
         fail(f"{name} normal close must be within {MAX_NORMAL_CLOSE_MS} ms")
 
 
-def verify_html(value: object) -> None:
+def verify_html(root: Path, value: object) -> None:
     if not isinstance(value, dict):
         fail("HTML acceptance evidence is missing")
     if value.get("fixture_sha256") != ORIGINAL_HTML_SHA256:
@@ -212,6 +369,37 @@ def verify_html(value: object) -> None:
         fail("HTML first frame must be within 60000 ms")
     require_finite_number(value.get("cpu_percent"), "HTML cpu_percent")
     require_positive_finite_number(value.get("rss_bytes"), "HTML rss_bytes")
+    verify_html_comparison(root, value)
+
+
+def verify_office_fidelity(root: Path, record: dict[str, Any], index: int, input_sha: str) -> None:
+    fidelity = record.get("fidelity")
+    name = f"Office fixture {index}.fidelity"
+    if not isinstance(fidelity, dict):
+        fail(f"{name} comparison is missing")
+    contract = load_contract(root, fidelity.get("contract"), name)
+    verify_contract_identity(contract, fidelity, name, input_sha, "sourceOffice")
+    packaged_run = record.get("packaged_run")
+    if not isinstance(packaged_run, dict) or fidelity.get("run_id") != packaged_run.get("run_id"):
+        fail(f"{name}.run_id must bind the packaged run")
+    missing = fidelity.get("missing_elements")
+    if not isinstance(missing, dict) or set(missing) != {"count"}:
+        fail(f"{name}.missing_elements must contain count only")
+    count = missing.get("count")
+    if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+        fail(f"{name}.missing_elements.count must be a non-negative integer")
+    tolerance_value = contract.get("missing_elements_tolerance")
+    if not isinstance(tolerance_value, int) or isinstance(tolerance_value, bool) or tolerance_value < 0:
+        fail(f"{name}.contract.missing_elements_tolerance must be a non-negative integer")
+    if count > tolerance_value:
+        fail(f"{name} missing element count exceeds the contract tolerance")
+    geometry = contract.get("geometry")
+    if not isinstance(geometry, dict) or not geometry:
+        fail(f"{name}.contract.geometry must contain named reference elements")
+    if any(not key or key != key.strip() for key in geometry):
+        fail(f"{name}.contract.geometry names must be non-empty and normalized")
+    geometry_names = set(geometry)
+    verify_comparison_geometry(fidelity, contract, geometry_names, name)
 
 
 def verify_packaged(value: object) -> None:
@@ -254,7 +442,7 @@ def verify_packaged_record(target: str, record: object) -> None:
         fail(f"packaged sidecar identity mismatch for {target}")
 
 
-def verify_office(value: object, packaged_targets: dict[str, Any]) -> None:
+def verify_office(root: Path, value: object, packaged_targets: dict[str, Any]) -> None:
     if not isinstance(value, list) or len(value) < len(SUPPLIED_OFFICE_FIXTURES):
         fail("Office evidence must contain all six fixture results")
     run_ids: set[str] = set()
@@ -295,6 +483,7 @@ def verify_office(value: object, packaged_targets: dict[str, Any]) -> None:
             fail(f"Office fixture {index} close RSS increase exceeds 196608 KiB")
         if input_sha in SUPPLIED_OFFICE_FIXTURES and format_name != SUPPLIED_OFFICE_FIXTURES[input_sha]:
             fail(f"Office fixture {index} format does not match its supplied input hash")
+        verify_office_fidelity(root, record, index, input_sha)
     input_hashes = [record["input_sha256"].lower() for record in value]
     if len(set(input_hashes)) != len(input_hashes):
         fail("Office evidence must contain distinct input fixture hashes")
@@ -339,9 +528,9 @@ def verify(root: Path, evidence_path: Path | None = None) -> None:
         record = declared[name]
         if not isinstance(record, dict) or record.get("version") != package["version"] or record.get("source") != CRATES_IO_SOURCE:
             fail(f"published dependency evidence does not match Cargo.lock for {name}")
-    verify_html(evidence.get("html"))
+    verify_html(root, evidence.get("html"))
     verify_packaged(evidence.get("packaged_targets"))
-    verify_office(evidence.get("office_fixtures"), evidence["packaged_targets"])
+    verify_office(root, evidence.get("office_fixtures"), evidence["packaged_targets"])
 
 
 def main() -> int:

@@ -101,10 +101,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             check=True,
             env=MODULE.git_environment(),
         )
+        contracts = root / "scripts/release/document-fidelity-contracts"
+        contracts.mkdir(parents=True)
+        (contracts / "html-v0.22.42.json").write_text(json.dumps({
+            "input_sha256": MODULE.ORIGINAL_HTML_SHA256,
+            "reference_sha256": "c" * 64,
+            "reference_renderer": "chromeHTML",
+            "viewport": {"width": 1280, "height": 900},
+            "geometry": {target: {"reference": rect, "tolerance": 1} for target, rect in {
+                "sticky_toc": {"x": 0, "y": 0, "width": 240, "height": 900},
+                "main": {"x": 240, "y": 0, "width": 1040, "height": 900},
+                "visible_section": {"x": 240, "y": 0, "width": 1040, "height": 900},
+            }.items()},
+        }), encoding="utf-8")
+        for index, input_sha in enumerate(MODULE.SUPPLIED_OFFICE_FIXTURES):
+            (contracts / f"office-v0.22.42-{index}.json").write_text(json.dumps({
+                "input_sha256": input_sha, "reference_sha256": "c" * 64,
+                "reference_renderer": "sourceOffice", "viewport": {"width": 1280, "height": 900},
+                "missing_elements_tolerance": 0,
+                "geometry": {"synthetic-element": {"reference": {"x": 0, "y": 0, "width": 10, "height": 10}, "tolerance": 1}},
+            }), encoding="utf-8")
+        subprocess.run(["git", "-C", str(root), "add", "-f", str(contracts)], check=True, env=MODULE.git_environment())
         return directory
 
     def valid_evidence(self, root: Path) -> dict[str, object]:
-        return {
+        evidence = {
             "schema_version": 1,
             "target": "v0.22.42",
             "runner_mode": "packaged_main",
@@ -125,6 +146,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                 "rss_bytes": 100000,
                 "normal_close": True,
                 "close_ms": 100,
+                "comparison": {
+                    "contract": "scripts/release/document-fidelity-contracts/html-v0.22.42.json",
+                    "reference_sha256": "c" * 64,
+                    "measured_sha256": "d" * 64,
+                    "producer_mode": "packaged_main",
+                    "viewports": {"reference": {"width": 1280, "height": 900}, "measured": {"width": 1280, "height": 900}},
+                    "input": {"fixture_sha256": MODULE.ORIGINAL_HTML_SHA256, "anchor": "#s15"},
+                    "navigation": {"from_fragment": "", "to_fragment": "#s15", "frame_before": 1, "frame_after": 2},
+                    "geometry": {
+                      "sticky_toc": {
+                        "reference": {"x": 0, "y": 0, "width": 240, "height": 900},
+                        "measured": {"x": 0, "y": 0, "width": 240, "height": 900},
+                      },
+                      "main": {
+                        "reference": {"x": 240, "y": 0, "width": 1040, "height": 900},
+                        "measured": {"x": 240, "y": 0, "width": 1040, "height": 900},
+                      },
+                      "visible_section": {
+                        "reference": {"x": 240, "y": 0, "width": 1040, "height": 900},
+                        "measured": {"x": 240, "y": 0, "width": 1040, "height": 900},
+                      },
+                    },
+                    "active_toc": {"reference": "#s15", "measured": "#s15"},
+                    "visible_section_state": {"reference": "#s15", "measured": "#s15"},
+                },
             },
             "packaged_targets": {
                 target: {
@@ -156,6 +202,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                     "input_sha256": input_sha,
                     "first_frame_ms": 1000,
                     "item_count": 1,
+                    "fidelity": {
+                        "contract": f"scripts/release/document-fidelity-contracts/office-v0.22.42-{index}.json",
+                        "run_id": f"synthetic-office-run-{index}",
+                        "reference_sha256": "c" * 64,
+                        "measured_sha256": "d" * 64,
+                        "input_sha256": input_sha,
+                        "producer_mode": "packaged_main",
+                        "viewports": {"reference": {"width": 1280, "height": 900}, "measured": {"width": 1280, "height": 900}},
+                        "missing_elements": {"count": 0},
+                        "geometry": {"synthetic-element": {"reference": {"x": 0, "y": 0, "width": 10, "height": 10}, "measured": {"x": 0, "y": 0, "width": 10, "height": 10}}},
+                    },
                     "release_worker": True,
                     "packaged_target": "linux-x86_64",
                     "packaged_run": {
@@ -186,6 +243,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                 for index, (input_sha, format_name) in enumerate(MODULE.SUPPLIED_OFFICE_FIXTURES.items())
             ],
         }
+        evidence["html"]["comparison"]["contract_sha256"] = MODULE.sha256_bytes((root / "scripts/release/document-fidelity-contracts/html-v0.22.42.json").read_bytes())
+        for index, record in enumerate(evidence["office_fixtures"]):
+            record["fidelity"]["contract_sha256"] = MODULE.sha256_bytes((root / f"scripts/release/document-fidelity-contracts/office-v0.22.42-{index}.json").read_bytes())
+        return evidence
 
     def write_evidence(self, root: Path, evidence: dict[str, object]) -> None:
         path = root / MODULE.EVIDENCE_RELATIVE
@@ -292,6 +353,92 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
     def test_html_measurements_must_be_positive(self) -> None:
         for field in ("first_frame_ms", "rss_bytes"):
             self.assert_rejected(lambda evidence, field=field: evidence["html"].update({field: 0}))
+
+    def test_html_static_pass_does_not_replace_differential_comparison(self) -> None:
+        self.assert_rejected(lambda evidence: evidence["html"].pop("comparison"))
+        self.assert_rejected(
+            lambda evidence: evidence["html"]["comparison"].update(
+                input={"fixture_sha256": MODULE.ORIGINAL_HTML_SHA256, "anchor": "#other"}
+            )
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["html"]["comparison"]["geometry"]["sticky_toc"]["measured"].update(x=2)
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["html"]["comparison"].update(
+                active_toc={"reference": "#s15", "measured": "#s14"}
+            )
+        )
+
+    def test_office_item_count_does_not_replace_fidelity_comparison(self) -> None:
+        self.assert_rejected(lambda evidence: evidence["office_fixtures"][0].pop("fidelity"))
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0]["fidelity"].update(
+                missing_elements={"count": 1}
+            )
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0]["fidelity"].update(
+                geometry={"synthetic-element": {"reference": {"x": 0, "y": 0, "width": 10, "height": 10}, "measured": {"x": 2, "y": 0, "width": 10, "height": 10}}}
+            )
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0]["fidelity"].update(
+                contract_sha256="a" * 64
+            )
+        )
+
+    def test_comparison_contract_edges_fail_closed_and_signed_coordinates_are_valid(self) -> None:
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"].update(contract="/tmp/contract.json"))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"].update(contract="scripts/release/document-fidelity-contracts/../x.json"))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"].pop("producer_mode"))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"]["navigation"].update(to_fragment="#other"))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"]["navigation"].update(frame_after=1))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"]["navigation"].update(frame_before=True))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"]["viewports"].update(measured={"width": 1, "height": 1}))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"].update(active_toc={"reference": None, "measured": None}))
+        self.assert_rejected(lambda evidence: evidence["office_fixtures"][0]["fidelity"].update(geometry={}))
+        self.assert_rejected(lambda evidence: evidence["office_fixtures"][0]["fidelity"].update(missing_elements={"count": -1}))
+        self.assert_rejected(lambda evidence: evidence["office_fixtures"][0]["fidelity"].update(geometry={"synthetic-element": {"reference": {"x": 0, "y": 0, "width": 10, "height": 10}, "measured": {"x": 0, "y": 0, "width": 10, "height": 10}, "delta": 999}}))
+
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            evidence["html"]["comparison"]["geometry"]["sticky_toc"]["measured"]["x"] = -0.5
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
+
+    def test_contract_files_are_versioned_bound_and_not_excluded_from_source_hash(self) -> None:
+        for mutation in ("changed", "untracked", "symlink"):
+            with self.subTest(mutation=mutation), self.repository() as directory:
+                root = Path(directory)
+                evidence = self.valid_evidence(root)
+                contract = root / evidence["html"]["comparison"]["contract"]
+                if mutation == "changed":
+                    previous_hash = MODULE.source_tree_sha256(root)
+                    contract.write_text(contract.read_text() + "\n", encoding="utf-8")
+                    self.assertNotEqual(previous_hash, MODULE.source_tree_sha256(root))
+                elif mutation == "untracked":
+                    subprocess.run(["git", "-C", str(root), "rm", "--cached", "--", str(contract)], check=True, capture_output=True, env=MODULE.git_environment())
+                else:
+                    target = contract.with_name("replacement.json")
+                    contract.rename(target)
+                    contract.symlink_to(target.name)
+                self.write_evidence(root, evidence)
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify(root)
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify_html_comparison(root, evidence["html"])
+
+    def test_missing_contract_hash_is_not_repaired_and_identical_render_hashes_are_valid(self) -> None:
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"].pop("contract_sha256"))
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            comparison = evidence["html"]["comparison"]
+            comparison["measured_sha256"] = comparison["reference_sha256"]
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
 
     def test_normal_close_requires_measured_duration_for_every_run_kind(self) -> None:
         selectors = (
