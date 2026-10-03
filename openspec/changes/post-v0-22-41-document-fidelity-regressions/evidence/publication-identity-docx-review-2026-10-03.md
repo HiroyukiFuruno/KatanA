@@ -26,4 +26,6 @@ legal data-descriptor DOCX SHA `a1b7e22021218d314bc2d90c526d6d682981828b67cef6e6
 
 同原本HTML DEBUG=true診断の初回はDOM1.537ms、JS21.585ms、CSS投影45.001ms、layout_svg28509.727ms、raster957.461ms、frame29517.876ms。再sessionでも初回layout_svg26009.805ms、再frameでは約26–27ms。JSではなく初回layout/SVG生成が遅延の大部分という実ログを既存KRR #95担当へ送った。正常close5秒は失敗のまま、強制終了を正常close扱いしない。KRR0.4.23公開は再確認404、公開KDV経由の取り込みと再受入は残る。
 
-DOCX修正は0435368、配布identity修正はa54940ddへ関心事を分けて署名付き正式commitした。通常push・各thread reply/resolve・current全review再取得は後続。P2 manual target公開方針はユーザー判断待ちを維持する。独立95 fidelity、packaged Office/HTML、全CPU/OS、Actions配布、公開、Issue/OpenSpec後処理は未完了。
+DOCX修正は0435368、配布identity修正はa54940ddへ関心事を分けて署名付き正式commitし、証跡a578f293まで通常push exit0。機械的Draft preflightもexit0、新回帰8件を含む全ゲートは基準変更なし。実MSIに受入SHAの不一致を与える追加負例も拒否した。
+
+個別reply4173661744/4173661820後に両P1 threadをresolveし、`tmp/current-review-p1-resolved-all-2026-10-04.json`へ全thread/commentsを再取得（外側・内側ともhasNextPage=false）。両resolvedを確認、未解決は既存P2 manual target公開方針4155352623のみ。current HEAD再レビュー5970424458を依頼して結果待ち。P2はユーザー判断待ちを維持する。独立95 fidelity、packaged Office/HTML、全CPU/OS、Actions配布、公開、Issue/OpenSpec後処理は未完了。
