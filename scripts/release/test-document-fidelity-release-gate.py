@@ -182,6 +182,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                 "cpu_percent": 50,
                 "rss_bytes": 100000,
                 "normal_close": True,
+                "close_ms": 100,
             },
             "packaged_targets": {
                 target: {
@@ -189,6 +190,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                     "runner_mode": "packaged_main",
                     "clean_machine": True,
                     "normal_close": True,
+                    "close_ms": 100,
                     "pid": 100,
                     "sidecar_pid": 101,
                     "heartbeat_frame_before": 1,
@@ -221,6 +223,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                         "runner_mode": "packaged_main",
                         "clean_machine": True,
                         "normal_close": True,
+                        "close_ms": 100,
                         "pid": 200 + index * 2,
                         "sidecar_pid": 201 + index * 2,
                         "heartbeat_frame_before": 10,

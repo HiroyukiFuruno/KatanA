@@ -124,6 +124,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                 "cpu_percent": 50.0,
                 "rss_bytes": 100000,
                 "normal_close": True,
+                "close_ms": 100,
             },
             "packaged_targets": {
                 target: {
@@ -131,6 +132,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                     "runner_mode": "packaged_main",
                     "clean_machine": True,
                     "normal_close": True,
+                    "close_ms": 100,
                     "pid": 100,
                     "sidecar_pid": 101,
                     "heartbeat_frame_before": 1,
@@ -163,6 +165,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                         "runner_mode": "packaged_main",
                         "clean_machine": True,
                         "normal_close": True,
+                        "close_ms": 100,
                         "pid": 200 + index * 2,
                         "sidecar_pid": 201 + index * 2,
                         "heartbeat_frame_before": 10,
@@ -289,6 +292,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
     def test_html_measurements_must_be_positive(self) -> None:
         for field in ("first_frame_ms", "rss_bytes"):
             self.assert_rejected(lambda evidence, field=field: evidence["html"].update({field: 0}))
+
+    def test_normal_close_requires_measured_duration_for_every_run_kind(self) -> None:
+        selectors = (
+            lambda evidence: evidence["html"],
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"],
+            lambda evidence: evidence["office_fixtures"][0]["packaged_run"],
+        )
+        for select in selectors:
+            self.assert_rejected(lambda evidence: select(evidence).pop("close_ms"))
+            for duration in (5000.1, -1, True, "100", None, math.nan, math.inf):
+                with self.subTest(select=select, duration=duration):
+                    self.assert_rejected(
+                        lambda evidence: select(evidence).update(close_ms=duration)
+                    )
+
+    def test_normal_close_accepts_exact_deadline_for_every_run_kind(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            evidence["html"]["close_ms"] = 5000
+            for record in evidence["packaged_targets"].values():
+                record["close_ms"] = 5000
+            for record in evidence["office_fixtures"]:
+                record["packaged_run"]["close_ms"] = 5000
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
 
     def test_packaged_target_contract_fields_are_required(self) -> None:
         mutations = (

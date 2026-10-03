@@ -36,6 +36,7 @@ SUPPORTED_TARGETS = {
 }
 ORIGINAL_HTML_SHA256 = "c02d2d7a2420e4e15e3d98a044a310c67bc75fa858c95c4867b9c3f5d7aca012"
 SHA256 = 64
+MAX_NORMAL_CLOSE_MS = 5000
 SHA256_PATTERN = re.compile(r"[0-9a-fA-F]{64}")
 SOURCE_ROOTS = (
     "Cargo.toml",
@@ -190,6 +191,12 @@ def require_canonical_path(value: object, name: str) -> str:
     return value
 
 
+def verify_normal_close_duration(record: dict[str, Any], name: str) -> None:
+    duration = require_finite_number(record.get("close_ms"), f"{name}.close_ms")
+    if duration > MAX_NORMAL_CLOSE_MS:
+        fail(f"{name} normal close must be within {MAX_NORMAL_CLOSE_MS} ms")
+
+
 def verify_html(value: object) -> None:
     if not isinstance(value, dict):
         fail("HTML acceptance evidence is missing")
@@ -199,6 +206,7 @@ def verify_html(value: object) -> None:
         fail("HTML evidence must come from packaged_main, not in_process")
     if value.get("status") != "passed" or value.get("normal_close") is not True:
         fail("HTML evidence must record a passed run with normal close")
+    verify_normal_close_duration(value, "HTML")
     first_frame = require_positive_finite_number(value.get("first_frame_ms"), "HTML first_frame_ms")
     if first_frame > 60000:
         fail("HTML first frame must be within 60000 ms")
@@ -220,6 +228,7 @@ def verify_packaged_record(target: str, record: object) -> None:
         fail(f"packaged evidence runner mode is invalid for {target}")
     if record.get("clean_machine") is not True or record.get("normal_close") is not True:
         fail(f"packaged evidence must be a clean-machine normal close for {target}")
+    verify_normal_close_duration(record, target)
     pid = require_positive_integer(record.get("pid"), f"{target}.pid")
     sidecar_pid = require_positive_integer(record.get("sidecar_pid"), f"{target}.sidecar_pid")
     if sidecar_pid == pid:
