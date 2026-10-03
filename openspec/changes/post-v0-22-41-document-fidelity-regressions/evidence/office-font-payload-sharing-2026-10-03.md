@@ -23,7 +23,16 @@
 - AST23件成功: `tmp/font-sharing-ast-final.log`。初稿のコメント形式・digest長リテラル違反は規則を無効化せず修正した。
 - `just JOBS=2 check-full`はexit0: `tmp/font-sharing-check-full.log`。native lint、実Office worker fixture8件、UI1021件（既存ignore2）、parallel143件（既存ignore2）、serial18件、AST、全coverage（意味のある未実行行0、strict document surface100%）が成功。Linux locked workspaceはUI1005件（既存ignore2）・実fixture8件・parallel141件（既存ignore2）・serial18件を含め成功。Windows workspace test-inclusive cross-check、supply-chainのadvisories/bans/licenses/sourcesも成功。閾値・除外・skip・依存graphは変更していない。
 - 長時間のMermaid exportもnative13件334.70s、Linux14件340.71sで成功。途中の1秒CPU sample（`tmp/font-sharing-export-cpu.sample.txt`）では435 samples中410がKDVのpaste_rgba_resized配下だった。これは当該debug検査の限定診断であり、配布性能やKRR#95の原因証明ではない。既存KDV担当へ診断を引き継いだ。
-- 自己レビューPASS: hash計算の唯一の商用callerは背景font_lookup_worker、UI lock内の全bytes走査なし。accept後にresolution.facesを保持する別ownerなし。内容/index/style/tweakの非共有とduplicate/canonical Weakの解放を実データで確認。既存base/他pane/世代/取消の契約は変更しない。formatter・MD lint・diff check成功。正式commit/push、review reply/resolveは続行する。
+- 自己レビューPASS: hash計算の唯一の商用callerは背景font_lookup_worker、UI lock内の全bytes走査なし。accept後にresolution.facesを保持する別ownerなし。内容/index/style/tweakの非共有とduplicate/canonical Weakの解放を実データで確認。既存base/他pane/世代/取消の契約は変更しない。formatter・MD lint・diff check成功。
+
+## 正式統合・配布候補の検証
+
+- `3fa9dd5b7bcd2c35581db4b11eef8f74bc74b4b1`へ通常commit/push exit0、live remote SHA一致を確認。通常pushの全checkも成功。指摘へreply4171851068、個別resolve後、全ページ再取得`tmp/review-all-3fa9dd5.json`で該当threadのresolvedを確認した。
+- current再review5965965636は依頼済み、実レビュー結果待ち。current commitにあるHiroyukiFurunoの空COMMENTEDレビュー5399187743は返信に伴う記録であり、外部Codexレビューの完了証跡にしない。PRはDraftを維持し、手動target公開方針P2は未解決のままユーザー判断を依頼している。
+- `just VERSION=0.22.42 package-mac` exit0（`tmp/font-sharing-package-mac.log`）。main/worker双方の`lipo -archs`はx86_64/arm64、`codesign --verify --deep --strict --verbose=2`もexit0。
+- 配布候補main SHA256: `3c5521fafaa1c9170f91c18fa1585f60f73943bf187c1a4b33b336963dc8942d`。worker SHA256: `fa94e940756729ca0baef0cc8363f2d91670d51ff1fe426af2a127a2a8a59483`。
+- 既存`smoke-launch-packaged-app.sh macos-arm64` exit0（`tmp/font-sharing-packaged-startup.log`）。実main PID98868と上記SHAを照合し、継続UI、peak subtree RSS242672KiB、font27093388bytes、空workspace Office worker0を確認した。fresh config/ログは`tmp/trash/2026-10-03-143551-startup.JHGA1g`へ保持した。利用規約の自動承諾はしていない。
+- このホストのarm64起動成功は、x86_64実起動、他OS clean-machine、原本Office入力/通常close、全fidelity、KRR#95修正版の公開・再受入を証明しない。公開v0.22.42の配布成果物でもない。
 
 ## 未完了の製品受入
 
