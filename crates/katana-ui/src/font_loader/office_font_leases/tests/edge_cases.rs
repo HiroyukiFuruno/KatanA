@@ -1,9 +1,109 @@
 use super::*;
-use egui::{FontDefinitions, FontFamily};
+use egui::{FontDefinitions, FontFamily, FontTweak};
 use std::sync::{
     Arc,
     atomic::{AtomicUsize, Ordering},
 };
+
+#[test]
+fn duplicate_owned_payloads_release_weak_entries_after_external_faces_drop() {
+    let (context, manager, base) = installed_context();
+    let mut first = manager.lease(&context);
+    let mut second = manager.lease(&context);
+
+    let (canonical_weak, duplicate_weak) = {
+        let first_payload = super::owned_ubuntu_payload(&base);
+        let second_payload = super::owned_ubuntu_payload(&base);
+        let canonical_weak = Arc::downgrade(&first_payload);
+        let duplicate_weak = Arc::downgrade(&second_payload);
+        first.replace_faces(&[face(&first_payload, false)]);
+        second.replace_faces(&[face(&second_payload, false)]);
+        (canonical_weak, duplicate_weak)
+    };
+    assert!(duplicate_weak.upgrade().is_none());
+    assert!(canonical_weak.upgrade().is_some());
+
+    let first_alias = first
+        .family_for("Office Sans", false, false)
+        .expect("first alias");
+    let second_alias = second
+        .family_for("Office Sans", false, false)
+        .expect("second alias");
+    assert_eq!(first_alias, second_alias);
+
+    let alias = alias_key(&first, false);
+    let definitions = context_definitions(&context);
+    let context_payload = &definitions.font_data[&alias];
+    let state = manager.state.lock().expect("lease state");
+    assert_eq!(state.shared.len(), 1);
+    let shared = state.shared.values().next().expect("shared face");
+    assert_eq!(shared.references, 2);
+    assert!(Arc::ptr_eq(context_payload, &shared.payload));
+    assert!(state.leases.values().all(|lease| {
+        lease
+            .faces
+            .iter()
+            .all(|face| Arc::ptr_eq(&face.payload, &shared.payload))
+    }));
+    drop(state);
+    drop(definitions);
+
+    first.close();
+    assert_eq!(manager.state.lock().expect("lease state").shared.len(), 1);
+    second.close();
+    assert!(manager.state.lock().expect("lease state").shared.is_empty());
+    assert_same_definitions(&context, &base);
+    assert!(canonical_weak.upgrade().is_none());
+}
+
+#[test]
+fn different_payload_index_style_and_tweak_do_not_share() {
+    let (context, manager, base) = installed_context();
+    let bytes = base.font_data["Ubuntu-Light"].font.to_vec();
+
+    let changed_payload = Arc::new(egui::FontData::from_owned(
+        base.font_data["Hack"].font.to_vec(),
+    ));
+
+    let mut indexed = egui::FontData::from_owned(bytes.clone());
+    indexed.index = 1;
+    let indexed_payload = Arc::new(indexed);
+
+    let tweaked_payload = Arc::new(egui::FontData::from_owned(bytes).tweak(FontTweak {
+        scale: 1.1,
+        ..Default::default()
+    }));
+    let canonical_payload = super::owned_ubuntu_payload(&base);
+    let regular = face(&canonical_payload, false);
+    assert_ne!(
+        super::super::definitions::identity(&regular),
+        super::super::definitions::identity(&face(&indexed_payload, false))
+    );
+    let mut indexed_face = regular.clone();
+    indexed_face.face_index = 1;
+    assert_ne!(
+        super::super::definitions::identity(&regular),
+        super::super::definitions::identity(&indexed_face)
+    );
+
+    let mut lease = manager.lease(&context);
+    lease.replace_faces(&[
+        face(&canonical_payload, false),
+        face(&changed_payload, false),
+        face(&canonical_payload, true),
+        face(&tweaked_payload, false),
+    ]);
+
+    let state = manager.state.lock().expect("lease state");
+    assert_eq!(state.shared.len(), 4);
+    assert!(state.shared.values().all(|shared| shared.references == 1));
+    drop(state);
+
+    assert_ne!(alias_key(&lease, false), alias_key(&lease, true));
+    drop(lease);
+    assert!(manager.state.lock().expect("lease state").shared.is_empty());
+    assert_same_definitions(&context, &base);
+}
 
 #[test]
 fn missing_family_and_style_are_not_resolved() {

@@ -1,9 +1,37 @@
 use super::*;
+use egui::FontData;
 use std::sync::Arc;
 use support::*;
 
 mod edge_cases;
 mod support;
+
+fn owned_ubuntu_payload(base: &egui::FontDefinitions) -> Arc<FontData> {
+    Arc::new(FontData::from_owned(
+        base.font_data["Ubuntu-Light"].font.to_vec(),
+    ))
+}
+
+#[test]
+fn independently_owned_equal_payloads_share_alias_and_epoch() {
+    let (context, manager, base) = installed_context();
+    let first_payload = owned_ubuntu_payload(&base);
+    let second_payload = owned_ubuntu_payload(&base);
+    assert!(!Arc::ptr_eq(&first_payload, &second_payload));
+    assert_eq!(first_payload.font, second_payload.font);
+
+    let mut first = manager.lease(&context);
+    let mut second = manager.lease(&context);
+    first.replace_faces(&[face(&first_payload, false)]);
+    let first_epoch = epoch(&manager);
+    second.replace_faces(&[face(&second_payload, false)]);
+
+    assert_eq!(epoch(&manager), first_epoch);
+    assert_eq!(
+        first.family_for("Office Sans", false, false),
+        second.family_for("Office Sans", false, false)
+    );
+}
 
 #[test]
 fn shared_payload_alias_survives_until_last_lease_drops() {

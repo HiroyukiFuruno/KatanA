@@ -13,6 +13,46 @@ use super::resolver::FontFaceResolver;
 use super::types::FontFaceRequest;
 
 #[test]
+fn independent_installed_font_resolvers_share_document_payload() {
+    let (family, path, _) = installed_regular_bold_pair();
+    let requests = [FontFaceRequest {
+        family,
+        bold: false,
+        italic: false,
+    }];
+    let candidates = [("unused stem".into(), path.to_string_lossy().into_owned())];
+    let first = FontFaceResolver::resolve(&candidates, &requests, &AtomicBool::new(false));
+    let second = FontFaceResolver::resolve(&candidates, &requests, &AtomicBool::new(false));
+    assert!(first.diagnostics.is_empty() && second.diagnostics.is_empty());
+    assert_eq!(first.faces.len(), 1);
+    assert_eq!(second.faces.len(), 1);
+    assert!(!std::sync::Arc::ptr_eq(
+        &first.faces[0].payload,
+        &second.faces[0].payload
+    ));
+    assert_eq!(
+        first.faces[0].payload_digest,
+        second.faces[0].payload_digest
+    );
+    let duplicate = std::sync::Arc::downgrade(&second.faces[0].payload);
+    let context = egui::Context::default();
+    let manager = crate::font_loader::office_font_leases::DocumentFontLeaseManager::install_base(
+        &context,
+        std::sync::Arc::new(egui::FontDefinitions::default()),
+    );
+    let mut first_lease = manager.lease(&context);
+    let mut second_lease = manager.lease(&context);
+    first_lease.replace_faces(&first.faces);
+    second_lease.replace_faces(&second.faces);
+    assert_eq!(
+        first_lease.family_for(&requests[0].family, false, false),
+        second_lease.family_for(&requests[0].family, false, false),
+    );
+    drop(second);
+    assert!(duplicate.upgrade().is_none());
+}
+
+#[test]
 fn installed_italic_helper_returns_named_italic_face_with_usable_glyph() {
     let (family, path) = installed_italic_face();
     let bytes = fs::read(path).expect("read installed italic font");

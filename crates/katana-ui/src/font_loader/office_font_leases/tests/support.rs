@@ -39,6 +39,7 @@ pub(super) fn face_with(
         path: "fixture/ubuntu.ttf".into(),
         face_index: 0,
         payload: payload.clone(),
+        payload_digest: ResolvedFontFace::digest_payload(payload),
     }
 }
 

@@ -15,6 +15,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 ### 🐛 Bug Fixes
 
 - **Document memory usage**: Removed an extra copy of document input data retained throughout a viewer session.
+- **Office tabs and memory**: Documents using the same installed font share its data across tabs instead of retaining an extra copy for every tab.
 - **Preview image stability**: Diagram and image textures remain available when image controls are hidden.
 - **Excel sheet tabs**: Bottom tabs remain visible and clickable without overlapping document diagnostics.
 - **Excel font styles**: Bold and italic cells retain the requested font family when only a regular or partially matching style is installed.

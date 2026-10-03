@@ -1,17 +1,7 @@
 use super::super::office_faces::ResolvedFontFace;
+pub(super) use super::face_identity::{FaceIdentity, identity};
 use egui::{FontDefinitions, FontFamily};
 use std::{collections::BTreeMap, sync::Arc};
-
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub(super) struct FaceIdentity {
-    payload: usize,
-    face_index: u32,
-    family: String,
-    weight: u16,
-    bold: bool,
-    italic: bool,
-    monospaced: bool,
-}
 
 pub(super) struct SharedFace {
     pub(super) key: String,
@@ -40,11 +30,11 @@ pub(super) type SharedSnapshot = BTreeMap<FaceIdentity, String>;
 pub(super) fn add_lease(
     state: &mut ManagerState,
     id: u64,
-    faces: Vec<ResolvedFontFace>,
+    mut faces: Vec<ResolvedFontFace>,
 ) -> LeaseFaces {
     let mut identities = Vec::with_capacity(faces.len());
     let mut families = Vec::with_capacity(faces.len());
-    for (index, face) in faces.iter().enumerate() {
+    for (index, face) in faces.iter_mut().enumerate() {
         let identity = identity(face);
         families.push(register_shared(state, id, index, face, &identity));
         identities.push(identity);
@@ -60,11 +50,12 @@ fn register_shared(
     state: &mut ManagerState,
     id: u64,
     index: usize,
-    face: &ResolvedFontFace,
+    face: &mut ResolvedFontFace,
     identity: &FaceIdentity,
 ) -> FontFamily {
     if let Some(shared) = state.shared.get_mut(identity) {
         shared.references += 1;
+        face.payload = shared.payload.clone();
         return shared.family.clone();
     }
     let key = unique_alias(state, id, index, face);
@@ -124,18 +115,6 @@ pub(super) fn remove_references(state: &mut ManagerState, lease: &LeaseFaces) ->
     removed
 }
 
-pub(super) fn identity(face: &ResolvedFontFace) -> FaceIdentity {
-    FaceIdentity {
-        payload: Arc::as_ptr(&face.payload) as usize,
-        face_index: face.face_index,
-        family: face.family.to_lowercase(),
-        weight: face.weight,
-        bold: face.bold,
-        italic: face.italic,
-        monospaced: face.monospaced,
-    }
-}
-
 pub(super) fn same_base(left: &FontDefinitions, right: &FontDefinitions) -> bool {
     left.families == right.families
         && left.font_data.len() == right.font_data.len()
@@ -163,7 +142,9 @@ fn same_face(left: &ResolvedFontFace, right: &ResolvedFontFace) -> bool {
         && left.italic == right.italic
         && left.monospaced == right.monospaced
         && left.face_index == right.face_index
-        && Arc::ptr_eq(&left.payload, &right.payload)
+        && left.payload_digest == right.payload_digest
+        && left.payload.index == right.payload.index
+        && left.payload.tweak == right.payload.tweak
 }
 
 pub(super) fn compose(state: &ManagerState) -> FontDefinitions {

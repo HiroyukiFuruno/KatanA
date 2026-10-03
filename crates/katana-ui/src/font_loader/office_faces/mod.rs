@@ -20,7 +20,8 @@ mod installed_font_tests;
 
 pub(crate) use resolver::FontFaceResolver;
 pub(crate) use types::{
-    FontFaceRequest, FontFaceResolution, FontFaceResolutionDiagnostic, ResolvedFontFace,
+    FontFaceRequest, FontFaceResolution, FontFaceResolutionDiagnostic, FontPayloadDigest,
+    ResolvedFontFace,
 };
 
 #[cfg(test)]

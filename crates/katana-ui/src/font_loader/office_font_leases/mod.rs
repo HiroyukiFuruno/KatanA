@@ -1,4 +1,5 @@
 mod definitions;
+mod face_identity;
 mod manager;
 
 #[cfg(test)]

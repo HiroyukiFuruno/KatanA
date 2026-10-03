@@ -26,6 +26,7 @@ pub(super) fn all_exact_matches(
 
 impl SelectedFace {
     pub(super) fn into_resolved(self, request: FontFaceRequest) -> ResolvedFontFace {
+        let payload_digest = ResolvedFontFace::digest_payload(&self.payload);
         ResolvedFontFace {
             request,
             family: self.metadata.family,
@@ -36,6 +37,7 @@ impl SelectedFace {
             path: self.path,
             face_index: self.index,
             payload: self.payload,
+            payload_digest,
         }
     }
 }

@@ -1,7 +1,10 @@
+use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 use std::sync::Arc;
 
 pub(super) const MAX_FONT_PAYLOAD_BYTES: u64 = 32 * 1024 * 1024;
+const FONT_PAYLOAD_DIGEST_BYTES: usize = 32;
+pub(crate) type FontPayloadDigest = [u8; FONT_PAYLOAD_DIGEST_BYTES];
 pub(super) const FONT_READ_CHUNK_BYTES: usize = 64 * 1024;
 pub(super) const REGULAR_WEIGHT: u16 = 400;
 pub(super) const BOLD_WEIGHT: u16 = 700;
@@ -32,6 +35,13 @@ pub(crate) struct ResolvedFontFace {
     pub(crate) path: PathBuf,
     pub(crate) face_index: u32,
     pub(crate) payload: Arc<egui::FontData>,
+    pub(crate) payload_digest: FontPayloadDigest,
+}
+
+impl ResolvedFontFace {
+    pub(crate) fn digest_payload(payload: &egui::FontData) -> FontPayloadDigest {
+        Sha256::digest(payload.font.as_ref()).into()
+    }
 }
 
 #[derive(Clone, Debug)]
