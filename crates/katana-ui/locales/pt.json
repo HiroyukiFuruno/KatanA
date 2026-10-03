@@ -124,6 +124,18 @@
     "highlight_hover": "Destacar ao Passar o Mouse",
     "show_diagram_controls": "Controles do Diagrama",
     "toggle_slideshow": "Alternar Apresentação de Slides",
+    "spreadsheet_filter": {
+      "open": "Abrir filtro",
+      "title": "Filtrar valores",
+      "loading": "A carregar valores…",
+      "apply": "Aplicar",
+      "clear": "Limpar",
+      "select_all": "Selecionar tudo",
+      "blank": "Em branco",
+      "non_blank": "Não vazio",
+      "no_values": "Não há valores disponíveis",
+      "truncated": "Apenas os primeiros valores são apresentados; a aplicação está desativada"
+    },
     "document_controller": {
       "previous": "Página, folha ou slide anterior",
       "next": "Página, folha ou slide seguinte",

@@ -5,8 +5,8 @@ use crate::request::{
     AssertHtmlBrowserOriginStep, ClickButton, Fixture, ScrollDirection, Step, UiAction,
     VideoFormat,
 };
-use anyhow::{bail, ensure, Context, Result};
-use egui_kittest::{kittest::Queryable, Harness};
+use anyhow::{Context, Result, bail, ensure};
+use egui_kittest::{Harness, kittest::Queryable};
 use katana_core::markdown::ExporterTrait;
 use katana_core::system::ProcessService;
 use katana_core::workspace::TreeEntry;
@@ -19,12 +19,17 @@ use katana_ui::state::command_palette::{
 use katana_ui::state::command_palette_providers::{
     AppCommandProvider, MarkdownContentProvider, WorkspaceFileProvider,
 };
+use std::collections::HashMap;
 use std::path::{Component, Path, PathBuf};
 use std::time::{Duration, Instant};
 use tempfile::TempDir;
 
 const HARNESS_PIXELS_PER_POINT: f32 = 2.0;
 const DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS: f64 = 30.0;
+
+#[cfg(test)]
+#[path = "executor_lifecycle_tests.rs"]
+mod lifecycle_tests;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct HtmlBrowserFrameIdentity {
@@ -40,6 +45,28 @@ struct DocumentFrameIdentity {
     active_index: usize,
     item_count: usize,
     node_kind: String,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+struct ObservedFrameProgress {
+    html: u64,
+    document: u64,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct RuntimeSnapshot {
+    rss_kib: u64,
+    ui_frame: u64,
+    observed: ObservedFrameProgress,
+    previews: usize,
+    html_surfaces: usize,
+    document_surfaces: usize,
+    office_workers: usize,
+    document_workers: usize,
+    kdv_resources: katana_ui::shell::DocumentResourceSnapshotForTest,
+    frames: usize,
+    textures: usize,
+    cache_entries: usize,
 }
 
 struct ActiveRecording {
@@ -108,17 +135,22 @@ pub fn run(
     workspace_dir: Option<&Path>,
     output_dir: &Path,
 ) -> Result<()> {
-    let (width, height) = steps
-        .iter()
-        .find_map(|s| {
-            if let Step::Launch(ls) = s {
-                ls.viewport.map(|v| (v.width as f32, v.height as f32))
-            } else {
-                None
-            }
-        })
-        .unwrap_or((1728.0, 1117.0));
+    let launch = steps.iter().find_map(|s| {
+        if let Step::Launch(ls) = s {
+            Some(ls)
+        } else {
+            None
+        }
+    });
+    let (width, height) = match launch {
+        Some(launch) => launch.viewport_size()?,
+        None => (1728.0, 1117.0),
+    };
 
+    ensure!(
+        width.is_finite() && height.is_finite() && width > 0.0 && height > 0.0,
+        "logical viewport dimensions must be positive and finite"
+    );
     let locale = fixture.settings.locale.as_deref().unwrap_or("en");
     katana_ui::i18n::I18nOps::set_language(locale);
     let auto_select_first_file = !steps.iter().any(step_opens_document);
@@ -193,6 +225,8 @@ pub fn run(
         });
     }
     let mut recording: Option<ActiveRecording> = None;
+    let mut observed_frames = ObservedFrameProgress::default();
+    let mut runtime_snapshots = HashMap::<String, RuntimeSnapshot>::new();
 
     for (i, step) in steps.iter().enumerate() {
         let label = match step {
@@ -208,6 +242,7 @@ pub fn run(
             Step::OpenFile(_) => "open_file",
             Step::OpenWorkspace(_) => "open_workspace",
             Step::AssertActiveDocument(_) => "assert_active_document",
+            Step::AssertDocumentFrame(_) => "assert_document_frame",
             Step::AssertHtmlBrowserOrigin(_) => "assert_html_browser_origin",
             Step::AssertHtmlBrowserFrameContainsRgb(_) => "assert_html_browser_frame_contains_rgb",
             Step::AssertHtmlBrowserViewportMatchesDisplayRect => {
@@ -219,11 +254,16 @@ pub fn run(
             Step::AssertHttpRequests(_) => "assert_http_requests",
             Step::AssertUrlHistory(_) => "assert_url_history",
             Step::AssertDiffReview(_) => "assert_diff_review",
+            Step::RecordRuntimeSnapshot(_) => "record_runtime_snapshot",
+            Step::RecordPreviewGeometry(_) => "record_preview_geometry",
+            Step::RecordTypography(_) => "record_typography",
+            Step::AssertRuntimeSnapshot(_) => "assert_runtime_snapshot",
             Step::Action(_) => "action",
             Step::Drag(_) => "drag",
             Step::Quit => "quit",
         };
         println!("step {}/{}: {label}", i + 1, steps.len());
+        let operation_started = Instant::now();
 
         match step {
             Step::Launch(s) => {
@@ -433,13 +473,8 @@ pub fn run(
                     .app_state_mut()
                     .active_document()
                     .map(|d| (d.buffer.clone(), d.path.clone()));
-                let (source, doc_path) = match doc_info {
-                    Some(info) => info,
-                    None => {
-                        println!("  WARNING: no active document for export_png, skipping");
-                        continue;
-                    }
-                };
+                let (source, doc_path) =
+                    doc_info.context("export_png requires an active document")?;
                 let preset =
                     katana_core::markdown::color_preset::DiagramColorPreset::current().clone();
                 let out = output_dir.join(format!("{}.png", s.output_name));
@@ -494,6 +529,7 @@ pub fn run(
                                 elapsed,
                                 s.max_first_frame_seconds,
                             )?;
+                            observed_frames.html = observed_frames.html.saturating_add(1);
                         } else if s.wait_for_document_frame {
                             let (elapsed, frame) = wait_for_document_frame(
                                 &mut harness,
@@ -513,6 +549,7 @@ pub fn run(
                                 s.expected_document_node_kind.as_deref(),
                                 &frame,
                             )?;
+                            observed_frames.document = observed_frames.document.saturating_add(1);
                         } else {
                             let fps = recording.as_ref().map(|r| r.fps as f64).unwrap_or(60.0);
                             let frames = ((s.wait_seconds * fps) as usize).max(30);
@@ -550,6 +587,45 @@ pub fn run(
             }
             Step::AssertActiveDocument(s) => {
                 assert_active_document(&mut harness, s)?;
+            }
+            Step::AssertDocumentFrame(s) => {
+                let deadline = async_assert_deadline(s.timeout_seconds)?;
+                loop {
+                    let frame = document_frame_identity(&mut harness);
+                    if frame
+                        .as_ref()
+                        .is_some_and(|frame| frame.active_index == s.active_index)
+                    {
+                        break;
+                    }
+                    ensure!(
+                        Instant::now() < deadline,
+                        "document frame did not reach active index {}: {:?}",
+                        s.active_index,
+                        frame
+                    );
+                    ensure!(
+                        harness.state_mut().document_failure_for_test().is_none(),
+                        "document failed while waiting for selected sheet"
+                    );
+                    harness.step();
+                    maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
+                    sleep_frame(60.0);
+                }
+                let frame = document_frame_identity(&mut harness)
+                    .context("expected an active document frame")?;
+                assert_document_frame(
+                    Some(&s.format),
+                    Some(s.item_count),
+                    Some(&s.node_kind),
+                    &frame,
+                )?;
+                ensure!(
+                    frame.active_index == s.active_index,
+                    "document active index mismatch: expected {}, got {}",
+                    s.active_index,
+                    frame.active_index
+                );
             }
             Step::AssertHtmlBrowserOrigin(s) => {
                 assert_html_browser_origin(&mut harness, recording.as_mut(), s)?;
@@ -623,6 +699,277 @@ pub fn run(
             }
             Step::AssertDiffReview(s) => {
                 assert_diff_review(&mut harness, s)?;
+            }
+            Step::RecordRuntimeSnapshot(s) => {
+                ensure!(
+                    !s.name.is_empty(),
+                    "runtime snapshot name must not be empty"
+                );
+                let snapshot = capture_runtime_snapshot(&mut harness, observed_frames)?;
+                println!("  runtime snapshot {:?}: {snapshot:?}", s.name);
+                runtime_snapshots.insert(s.name.clone(), snapshot);
+            }
+            Step::RecordPreviewGeometry(s) => {
+                ensure!(
+                    !s.output_name.is_empty()
+                        && Path::new(&s.output_name).components().count() == 1
+                        && matches!(
+                            Path::new(&s.output_name).components().next(),
+                            Some(Component::Normal(_))
+                        ),
+                    "preview geometry output_name must be a single file stem"
+                );
+                harness.run();
+                wait_for_document_surface_idle(
+                    &mut harness,
+                    recording.as_mut(),
+                    DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS,
+                    "preview geometry frame",
+                )?;
+                katana_ui::preview_pane::screenshot_test_hooks::PreviewOverlayInspectionOps::reset(
+                    &harness.ctx,
+                );
+                // `render()` only rasterizes the latest output, so run exactly one explicit UI pass
+                // and capture its overlay counter and state as the same frame.
+                harness.step();
+                let ui_pass_frame_nr = harness.ctx.cumulative_frame_nr();
+                katana_ui::preview_pane::screenshot_test_hooks::PreviewOverlayInspectionOps::complete(
+                    &harness.ctx,
+                    ui_pass_frame_nr,
+                );
+                let image = harness
+                    .render()
+                    .map_err(|error| anyhow::anyhow!("preview geometry render failed: {error}"))?;
+                if let Some(output_name) = &s.full_screenshot_output_name {
+                    ensure!(
+                        !output_name.is_empty()
+                            && Path::new(output_name).components().count() == 1
+                            && matches!(
+                                Path::new(output_name).components().next(),
+                                Some(Component::Normal(_))
+                            ),
+                        "preview geometry full_screenshot_output_name must be a single file stem"
+                    );
+                    let path = output_dir.join(format!("{output_name}.png"));
+                    image.save(&path).with_context(|| {
+                        format!(
+                            "failed to write preview geometry screenshot {}",
+                            path.display()
+                        )
+                    })?;
+                    println!("  preview geometry screenshot: {}", path.display());
+                }
+                let (viewport, scroll_y, content_top_y) = harness
+                    .state()
+                    .preview_geometry_for_test()
+                    .context("preview geometry requires rendered Markdown geometry")?;
+                let physical = physical_png_bounds(
+                    viewport,
+                    image.width(),
+                    image.height(),
+                    HARNESS_PIXELS_PER_POINT,
+                )
+                .context("preview geometry is outside the screenshot")?;
+                let expected_physical_width =
+                    (s.expected_content_viewport.width as f32 * HARNESS_PIXELS_PER_POINT) as u32;
+                let expected_physical_height =
+                    (s.expected_content_viewport.height as f32 * HARNESS_PIXELS_PER_POINT) as u32;
+                ensure!(
+                    physical.width == expected_physical_width
+                        && physical.height == expected_physical_height,
+                    "preview geometry physical crop is clipped or scaled: actual={}x{}, expected={}x{}",
+                    physical.width,
+                    physical.height,
+                    expected_physical_width,
+                    expected_physical_height
+                );
+                let pointer_position = harness.ctx.input(|input| input.pointer.hover_pos());
+                let app_state = harness.state().app_state_for_test();
+                let active_editor_line = app_state.scroll.active_editor_line;
+                let hovered_preview_line_count = app_state.scroll.hovered_preview_lines.len();
+                let overlays = katana_ui::preview_pane::screenshot_test_hooks::PreviewOverlayInspectionOps::snapshot(&harness.ctx)
+                    .context("preview overlay inspection was not enabled for the captured UI pass")?;
+                let pointer_inside_content =
+                    pointer_position.is_some_and(|position| viewport.contains(position));
+                let interaction_state = serde_json::json!({
+                    "pointer_position": pointer_position.map(|position| serde_json::json!({ "x": position.x, "y": position.y })),
+                    "pointer_inside_content": pointer_inside_content,
+                    "active_editor_line": active_editor_line,
+                    "hovered_preview_line_count": hovered_preview_line_count,
+                    "diagram_control_renders": overlays.diagram_control_renders,
+                    "image_control_renders": overlays.image_control_renders,
+                    "code_copy_control_renders": overlays.code_copy_control_renders,
+                    "active_markdown_ranges": overlays.active_markdown_ranges,
+                    "hovered_markdown_spans": overlays.hovered_markdown_spans,
+                    "image_hover_background_renders": overlays.image_hover_background_renders,
+                    "local_image_hover_background_renders": overlays.local_image_hover_background_renders,
+                    "code_selection_renders": overlays.code_selection_renders
+                    ,"markdown_section_renders": overlays.markdown_section_renders
+                    ,"completed_ui_frame_nr": overlays.completed_ui_frame_nr
+                });
+                if s.require_clean_interaction_state {
+                    ensure!(
+                        !pointer_inside_content
+                            && active_editor_line.is_none()
+                            && hovered_preview_line_count == 0
+                            && overlays.diagram_control_renders == 0
+                            && overlays.image_control_renders == 0
+                            && overlays.code_copy_control_renders == 0
+                            && overlays.active_markdown_ranges == 0
+                            && overlays.hovered_markdown_spans == 0
+                            && overlays.image_hover_background_renders == 0
+                            && overlays.local_image_hover_background_renders == 0
+                            && overlays.code_selection_renders == 0
+                            && overlays.markdown_section_renders > 0
+                            && overlays.completed_ui_frame_nr == Some(ui_pass_frame_nr),
+                        "preview geometry capture contains interaction overlay state: {interaction_state}"
+                    );
+                }
+                let snapshot = serde_json::json!({
+                    "schema_version": 1,
+                    "pixels_per_point": HARNESS_PIXELS_PER_POINT,
+                    "configured_font_size": harness.state().app_state_for_test().config.settings.settings().font.size,
+                    "require_clean_interaction_state": s.require_clean_interaction_state,
+                    "ui_pass_frame_nr": ui_pass_frame_nr,
+                    "interaction_state": interaction_state,
+                    "preview_geometry": {
+                        "viewport": { "x": viewport.left(), "y": viewport.top(), "width": viewport.width(), "height": viewport.height() },
+                        "scroll_y": scroll_y,
+                        "content_top_y": content_top_y,
+                        "physical_crop": { "x": physical.x, "y": physical.y, "width": physical.width, "height": physical.height },
+                        "full_screenshot": {
+                            "output_name": s.full_screenshot_output_name,
+                            "width": image.width(),
+                            "height": image.height()
+                        }
+                    }
+                });
+                let path = output_dir.join(format!("{}.json", s.output_name));
+                std::fs::write(&path, serde_json::to_vec_pretty(&snapshot)?).with_context(
+                    || {
+                        format!(
+                            "failed to write preview geometry snapshot {}",
+                            path.display()
+                        )
+                    },
+                )?;
+                println!("  preview geometry snapshot: {}", path.display());
+                ensure!(
+                    (viewport.width() - s.expected_content_viewport.width as f32).abs() <= 0.01
+                        && (viewport.height() - s.expected_content_viewport.height as f32).abs()
+                            <= 0.01,
+                    "preview geometry content viewport mismatch: actual={:?}, expected={}x{}",
+                    viewport.size(),
+                    s.expected_content_viewport.width,
+                    s.expected_content_viewport.height
+                );
+                ensure!(
+                    (scroll_y - s.expected_scroll_y).abs() <= 0.01,
+                    "preview geometry scroll mismatch: actual={scroll_y}, expected={}",
+                    s.expected_scroll_y
+                );
+            }
+            Step::RecordTypography(s) => {
+                ensure!(
+                    !s.output_name.is_empty()
+                        && Path::new(&s.output_name).components().count() == 1
+                        && matches!(
+                            Path::new(&s.output_name).components().next(),
+                            Some(Component::Normal(_))
+                        ),
+                    "typography output_name must be a single file stem"
+                );
+                harness.run();
+                wait_for_document_surface_idle(
+                    &mut harness,
+                    recording.as_mut(),
+                    DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS,
+                    "typography frame",
+                )?;
+                harness
+                    .render()
+                    .map_err(|error| anyhow::anyhow!("typography render failed: {error}"))?;
+                let mut snapshot = katana_paint_metrics::capture(harness.output());
+                let texts = snapshot["text_shapes"]
+                    .as_array()
+                    .context("missing painted text shapes")?;
+                for required in &s.required_text {
+                    ensure!(
+                        texts.iter().any(|text| text["text"]
+                            .as_str()
+                            .is_some_and(|text| text.contains(required))),
+                        "required typography text was not painted: {required:?}"
+                    );
+                }
+                let anchors = harness
+                    .state()
+                    .preview_anchors_for_test()
+                    .context("typography capture requires an active preview")?;
+                snapshot["source_anchors"] = serde_json::json!(anchors.iter().map(|(kind, lines, rect)| {
+                    serde_json::json!({
+                        "kind": kind,
+                        "source_anchor_range_zero_based": [lines.start, lines.end],
+                        "rect": { "x": rect.left(), "y": rect.top(), "width": rect.width(), "height": rect.height() }
+                    })
+                }).collect::<Vec<_>>());
+                snapshot["configured_font_size"] = serde_json::json!(
+                    harness
+                        .state()
+                        .app_state_for_test()
+                        .config
+                        .settings
+                        .settings()
+                        .font
+                        .size
+                );
+                snapshot["schema_version"] = serde_json::json!(1);
+                snapshot["accessibility_label_rects"] = serde_json::json!(s.required_text.iter().map(|label| {
+                    let rects = harness.query_all_by_label(label).map(|node| {
+                        // egui_kittest::Node::rect is already expressed in logical points.
+                        let rect = node.rect();
+                        serde_json::json!({ "x": rect.left(), "y": rect.top(), "width": rect.width(), "height": rect.height() })
+                    }).collect::<Vec<_>>();
+                    serde_json::json!({ "label": label, "rects": rects })
+                }).collect::<Vec<_>>());
+                let (viewport, scroll_y, content_top_y) = harness
+                    .state()
+                    .preview_geometry_for_test()
+                    .context("typography requires rendered Markdown geometry")?;
+                snapshot["preview_geometry"] = serde_json::json!({
+                    "viewport": { "x": viewport.left(), "y": viewport.top(), "width": viewport.width(), "height": viewport.height() },
+                    "scroll_y": scroll_y,
+                    "content_top_y": content_top_y
+                });
+                let path = output_dir.join(format!("{}.json", s.output_name));
+                std::fs::write(&path, serde_json::to_vec_pretty(&snapshot)?).with_context(
+                    || format!("failed to write typography snapshot {}", path.display()),
+                )?;
+                println!("  typography snapshot: {}", path.display());
+                ensure!(
+                    (viewport.width() - s.expected_content_viewport.width as f32).abs() <= 0.01
+                        && (viewport.height() - s.expected_content_viewport.height as f32).abs()
+                            <= 0.01,
+                    "typography content viewport mismatch: actual={:?}, expected={}x{}",
+                    viewport.size(),
+                    s.expected_content_viewport.width,
+                    s.expected_content_viewport.height
+                );
+                ensure!(
+                    (scroll_y - s.expected_scroll_y).abs() <= 0.01,
+                    "typography scroll mismatch: actual={scroll_y}, expected={}",
+                    s.expected_scroll_y
+                );
+            }
+            Step::AssertRuntimeSnapshot(s) => {
+                let baseline = runtime_snapshots.get(&s.baseline).with_context(|| {
+                    format!("runtime snapshot {:?} was not recorded", s.baseline)
+                })?;
+                let current = capture_runtime_snapshot(&mut harness, observed_frames)?;
+                assert_runtime_snapshot(baseline, &current, s)?;
+                println!(
+                    "  runtime snapshot matched {:?}: current={current:?}",
+                    s.baseline
+                );
             }
             Step::Action(a) => {
                 match &a.action {
@@ -956,6 +1303,105 @@ pub fn run(
                         harness.state_mut().app_state_mut().search.doc_search_open = false;
                         step_for_seconds(&mut harness, recording.as_mut(), 0.5)?;
                     }
+                    UiAction::CloseActiveDocument { wait_seconds } => {
+                        close_active_document_and_wait_for_idle(
+                            &mut harness,
+                            recording.as_mut(),
+                            *wait_seconds,
+                            "close_active_document",
+                        )?;
+                    }
+                    UiAction::CloseAllDocuments { wait_seconds } => {
+                        close_all_documents_and_wait_for_idle(
+                            &mut harness,
+                            recording.as_mut(),
+                            *wait_seconds,
+                        )?;
+                    }
+                    UiAction::RunMixedDocumentCycles {
+                        html_file_name,
+                        document_file_name,
+                        cycles,
+                        html_timeout_seconds,
+                        document_timeout_seconds,
+                        close_timeout_seconds,
+                        expected_document_format,
+                        expected_document_item_count,
+                        expected_document_node_kind,
+                    } => {
+                        ensure!(*cycles > 0, "mixed document cycle count must be positive");
+                        let (html_path, document_path) = {
+                            let state = harness.state_mut().app_state_mut();
+                            let workspace = state
+                                .workspace
+                                .data
+                                .as_ref()
+                                .context("mixed document cycles require an open workspace")?;
+                            let html_path = find_workspace_file(
+                                &workspace.tree,
+                                workspace_dir_for_lookup.as_deref(),
+                                html_file_name,
+                            )
+                            .with_context(|| {
+                                format!("HTML cycle file {html_file_name:?} was not found")
+                            })?;
+                            let document_path = find_workspace_file(
+                                &workspace.tree,
+                                workspace_dir_for_lookup.as_deref(),
+                                document_file_name,
+                            )
+                            .with_context(|| {
+                                format!("document cycle file {document_file_name:?} was not found")
+                            })?;
+                            (html_path, document_path)
+                        };
+                        for cycle in 1..=*cycles {
+                            let previous_html = html_browser_frame_identity(&mut harness);
+                            harness
+                                .state_mut()
+                                .trigger_action(AppAction::SelectDocument(html_path.clone()));
+                            wait_for_html_browser_frame(
+                                &mut harness,
+                                recording.as_mut(),
+                                previous_html,
+                                *html_timeout_seconds,
+                            )?;
+                            observed_frames.html = observed_frames.html.saturating_add(1);
+                            close_active_document_and_wait_for_idle(
+                                &mut harness,
+                                recording.as_mut(),
+                                *close_timeout_seconds,
+                                &format!("mixed cycle {cycle} HTML close"),
+                            )?;
+
+                            let previous_document = document_frame_identity(&mut harness);
+                            let previous_failure = harness.state_mut().document_failure_for_test();
+                            harness
+                                .state_mut()
+                                .trigger_action(AppAction::SelectDocument(document_path.clone()));
+                            let (_, frame) = wait_for_document_frame(
+                                &mut harness,
+                                recording.as_mut(),
+                                previous_document,
+                                previous_failure,
+                                *document_timeout_seconds,
+                            )?;
+                            assert_document_frame(
+                                Some(expected_document_format),
+                                Some(*expected_document_item_count),
+                                Some(expected_document_node_kind),
+                                &frame,
+                            )?;
+                            observed_frames.document = observed_frames.document.saturating_add(1);
+                            close_active_document_and_wait_for_idle(
+                                &mut harness,
+                                recording.as_mut(),
+                                *close_timeout_seconds,
+                                &format!("mixed cycle {cycle} document close"),
+                            )?;
+                            println!("  mixed document cycle {cycle}/{cycles} completed");
+                        }
+                    }
                     UiAction::RefreshDiagnostics => {
                         harness
                             .state_mut()
@@ -976,7 +1422,12 @@ pub fn run(
                         label,
                         button,
                         wait_seconds,
+                        expected_bounds,
                     } => {
+                        if let Some(bounds) = expected_bounds {
+                            let rect = harness.get_by_label(label).rect();
+                            assert_node_bounds(rect, harness.ctx.viewport_rect(), *bounds)?;
+                        }
                         click_node(&mut harness, label, *button);
                         step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
                     }
@@ -1208,6 +1659,9 @@ pub fn run(
                             | UiAction::OpenProblemsPanel
                             | UiAction::CloseSearchModal
                             | UiAction::CloseDocSearch
+                            | UiAction::CloseActiveDocument { .. }
+                            | UiAction::CloseAllDocuments { .. }
+                            | UiAction::RunMixedDocumentCycles { .. }
                             | UiAction::RefreshDiagnostics
                             | UiAction::DocumentNext { .. }
                             | UiAction::ApplyLintFixesForActiveFile
@@ -1244,12 +1698,247 @@ pub fn run(
             }
             Step::Quit => {}
         }
+        println!(
+            "completed step {}/{} elapsed_ns={}",
+            i + 1,
+            steps.len(),
+            operation_started.elapsed().as_nanos()
+        );
     }
     if recording.is_some() {
         bail!("record_start was called but record_stop was not reached");
     }
 
     Ok(())
+}
+
+fn close_all_documents_and_wait_for_idle(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    timeout_seconds: f64,
+) -> Result<()> {
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    println!("  closing all documents: count={}", document_count(harness));
+    close_extra_documents(harness, recording.as_deref_mut(), deadline)?;
+    close_active_document_and_wait_for_idle(
+        harness,
+        recording,
+        deadline
+            .saturating_duration_since(Instant::now())
+            .as_secs_f64(),
+        "close_all_documents",
+    )
+}
+
+fn close_extra_documents(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    deadline: Instant,
+) -> Result<()> {
+    while document_count(harness) > 1 {
+        let active_index = harness
+            .state_mut()
+            .app_state_for_test()
+            .document
+            .active_doc_idx
+            .context("close_all_documents requires an active document")?;
+        harness
+            .state_mut()
+            .trigger_action(AppAction::ForceCloseDocument(active_index));
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        ensure!(
+            Instant::now() < deadline,
+            "close_all_documents exceeded its shared close budget"
+        );
+    }
+    Ok(())
+}
+
+fn document_count(harness: &mut Harness<'_, KatanaApp>) -> usize {
+    harness
+        .state_mut()
+        .app_state_for_test()
+        .document
+        .open_documents
+        .len()
+}
+
+fn close_active_document_and_wait_for_idle(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    timeout_seconds: f64,
+    operation: &str,
+) -> Result<()> {
+    let active_index = harness
+        .state_mut()
+        .app_state_for_test()
+        .document
+        .active_doc_idx
+        .with_context(|| format!("{operation} requires an active document"))?;
+    harness
+        .state_mut()
+        .trigger_action(AppAction::ForceCloseDocument(active_index));
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    loop {
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        let open_documents = harness
+            .state_mut()
+            .app_state_for_test()
+            .document
+            .open_documents
+            .len();
+        let resources = harness.state_mut().preview_resource_counts_for_test();
+        let (document_workers, kdv_resources) =
+            harness.state_mut().document_lifecycle_resources_for_test();
+        let office_workers = current_office_worker_count()?;
+        if open_documents == 0
+            && resources == (0, 0, 0, 0, 0, 0)
+            && office_workers == 0
+            && document_workers == 0
+            && kdv_resources == Default::default()
+        {
+            return Ok(());
+        }
+        if Instant::now() >= deadline {
+            bail!(
+                "{operation} did not release resources within {timeout_seconds:.2}s: open_documents={open_documents}, resources={resources:?}, office_workers={office_workers}, document_workers={document_workers}, kdv_resources={kdv_resources:?}"
+            );
+        }
+        sleep_frame(60.0);
+    }
+}
+
+fn capture_runtime_snapshot(
+    harness: &mut Harness<'_, KatanaApp>,
+    observed: ObservedFrameProgress,
+) -> Result<RuntimeSnapshot> {
+    let (previews, html_surfaces, document_surfaces, frames, textures, cache_entries) =
+        harness.state_mut().preview_resource_counts_for_test();
+    let (document_workers, kdv_resources) =
+        harness.state_mut().document_lifecycle_resources_for_test();
+    Ok(RuntimeSnapshot {
+        rss_kib: current_process_rss_kib()?,
+        ui_frame: harness.ctx.cumulative_frame_nr(),
+        observed,
+        previews,
+        html_surfaces,
+        document_surfaces,
+        office_workers: current_office_worker_count()?,
+        document_workers,
+        kdv_resources,
+        frames,
+        textures,
+        cache_entries,
+    })
+}
+
+fn assert_runtime_snapshot(
+    baseline: &RuntimeSnapshot,
+    current: &RuntimeSnapshot,
+    expected: &crate::request::AssertRuntimeSnapshotStep,
+) -> Result<()> {
+    let rss_delta_kib = current.rss_kib.saturating_sub(baseline.rss_kib);
+    let ui_frame_delta = current.ui_frame.saturating_sub(baseline.ui_frame);
+    let html_frame_delta = current.observed.html.saturating_sub(baseline.observed.html);
+    let document_frame_delta = current
+        .observed
+        .document
+        .saturating_sub(baseline.observed.document);
+    ensure!(
+        rss_delta_kib <= expected.max_rss_delta_kib,
+        "RSS delta exceeded runtime budget: {rss_delta_kib} KiB > {} KiB; baseline={baseline:?}, current={current:?}",
+        expected.max_rss_delta_kib
+    );
+    ensure!(
+        ui_frame_delta >= expected.min_ui_frame_delta,
+        "UI heartbeat did not make enough progress: {ui_frame_delta} < {}; baseline={baseline:?}, current={current:?}",
+        expected.min_ui_frame_delta
+    );
+    ensure!(
+        html_frame_delta >= expected.min_html_frames_observed,
+        "HTML generation progress is incomplete: {html_frame_delta} < {}; baseline={baseline:?}, current={current:?}",
+        expected.min_html_frames_observed
+    );
+    ensure!(
+        document_frame_delta >= expected.min_document_frames_observed,
+        "document generation progress is incomplete: {document_frame_delta} < {}; baseline={baseline:?}, current={current:?}",
+        expected.min_document_frames_observed
+    );
+    if expected.max_document_surfaces == 0 {
+        ensure!(
+            current.document_workers == 0 && current.kdv_resources == Default::default(),
+            "document lifecycle resources remain after preview removal: current={current:?}"
+        );
+    }
+    ensure!(
+        current.previews <= expected.max_previews
+            && current.html_surfaces <= expected.max_html_surfaces
+            && current.document_surfaces <= expected.max_document_surfaces
+            && current.office_workers <= expected.max_office_workers
+            && current.frames <= expected.max_frames
+            && current.textures <= expected.max_textures
+            && current.cache_entries <= expected.max_cache_entries,
+        "preview resources did not return to the configured bound: current={current:?}, limits=(previews={}, html_surfaces={}, document_surfaces={}, office_workers={}, frames={}, textures={}, cache_entries={})",
+        expected.max_previews,
+        expected.max_html_surfaces,
+        expected.max_document_surfaces,
+        expected.max_office_workers,
+        expected.max_frames,
+        expected.max_textures,
+        expected.max_cache_entries
+    );
+    Ok(())
+}
+
+#[cfg(unix)]
+fn current_process_rss_kib() -> Result<u64> {
+    let process_id = std::process::id().to_string();
+    let mut command = ProcessService::create_command("ps");
+    command.args(["-o", "rss=", "-p", process_id.as_str()]);
+    let output =
+        ProcessService::output(command).context("failed to sample screenshot-runner RSS")?;
+    ensure!(output.status.success(), "ps failed while sampling RSS");
+    String::from_utf8(output.stdout)
+        .context("ps RSS output was not UTF-8")?
+        .trim()
+        .parse::<u64>()
+        .context("ps RSS output was not an integer KiB value")
+}
+
+#[cfg(not(unix))]
+fn current_process_rss_kib() -> Result<u64> {
+    bail!("runtime RSS snapshots are currently supported on Unix targets")
+}
+
+#[cfg(unix)]
+fn current_office_worker_count() -> Result<usize> {
+    let process_id = std::process::id();
+    let mut command = ProcessService::create_command("ps");
+    command.args(["-axo", "ppid=,comm="]);
+    let output =
+        ProcessService::output(command).context("failed to enumerate Office worker processes")?;
+    ensure!(
+        output.status.success(),
+        "ps failed while enumerating Office workers"
+    );
+    let stdout = String::from_utf8(output.stdout).context("ps worker output was not UTF-8")?;
+    Ok(stdout
+        .lines()
+        .filter_map(|line| {
+            let mut fields = line.split_whitespace();
+            let parent = fields.next()?.parse::<u32>().ok()?;
+            let command = fields.next()?;
+            Some(parent == process_id && command.contains("kdv-office-worker"))
+        })
+        .filter(|matches| *matches)
+        .count())
+}
+
+#[cfg(not(unix))]
+fn current_office_worker_count() -> Result<usize> {
+    bail!("Office worker process snapshots are currently supported on Unix targets")
 }
 
 fn physical_png_bounds(
@@ -1863,18 +2552,29 @@ fn navigate_slideshow(
     Ok(())
 }
 
-fn click_node(harness: &mut Harness<'_, KatanaApp>, label: &str, button: ClickButton) {
-    let viewport = harness.ctx.viewport_rect();
-    let physical_viewport = egui::Rect::from_min_max(
-        egui::pos2(
-            viewport.min.x * HARNESS_PIXELS_PER_POINT,
-            viewport.min.y * HARNESS_PIXELS_PER_POINT,
-        ),
-        egui::pos2(
-            viewport.max.x * HARNESS_PIXELS_PER_POINT,
-            viewport.max.y * HARNESS_PIXELS_PER_POINT,
-        ),
+fn assert_node_bounds(rect: egui::Rect, viewport: egui::Rect, bounds: [f32; 4]) -> Result<()> {
+    ensure!(
+        bounds.iter().all(|value| value.is_finite()),
+        "node bounds must be finite"
     );
+    let region = egui::Rect::from_min_max(
+        egui::pos2(bounds[0], bounds[1]),
+        egui::pos2(bounds[2], bounds[3]),
+    );
+    ensure!(
+        region.is_positive() && viewport.contains_rect(region),
+        "expected node region must be positive and inside viewport: {region:?}"
+    );
+    ensure!(
+        rect.is_finite() && rect.is_positive() && region.contains_rect(rect),
+        "node escaped expected region: rect={rect:?}, region={region:?}"
+    );
+    println!("  node bounds verified: {rect:?} inside {region:?}");
+    Ok(())
+}
+
+fn click_node<State>(harness: &mut Harness<'_, State>, label: &str, button: ClickButton) {
+    let viewport = harness.ctx.viewport_rect();
     let all_rects: Vec<_> = harness
         .get_all_by_label(label)
         .map(|node| node.rect())
@@ -1882,19 +2582,17 @@ fn click_node(harness: &mut Harness<'_, KatanaApp>, label: &str, button: ClickBu
     let visible_rects: Vec<_> = all_rects
         .iter()
         .copied()
-        .filter(|rect| physical_viewport.intersects(*rect))
+        .filter(|rect| viewport.intersects(*rect))
         .collect();
-    let [physical_rect] = visible_rects.as_slice() else {
+    let [logical_rect] = visible_rects.as_slice() else {
         panic!(
             "expected exactly one visible accessibility node {label:?}, found {}: {visible_rects:?}; all: {all_rects:?}",
             visible_rects.len()
         );
     };
-    let logical_pos = egui::pos2(
-        physical_rect.center().x / HARNESS_PIXELS_PER_POINT,
-        physical_rect.center().y / HARNESS_PIXELS_PER_POINT,
-    );
-    println!("  click accessibility node {label:?}: {physical_rect:?} -> {logical_pos:?}");
+    // Node::rect uses logical coordinates, so reapplying the scale would shift the click target.
+    let logical_pos = logical_rect.center();
+    println!("  click accessibility node {label:?}: {logical_rect:?} -> {logical_pos:?}");
     click_at(harness, logical_pos, button);
 }
 
@@ -1935,13 +2633,13 @@ fn apply_lint_fixes_for_active_file(
     Ok(())
 }
 
-fn click_at(harness: &mut Harness<'_, KatanaApp>, pos: egui::Pos2, button: ClickButton) {
+fn click_at<State>(harness: &mut Harness<'_, State>, pos: egui::Pos2, button: ClickButton) {
     move_pointer(harness, pos);
     send_pointer_button_state(harness, pos, button, true);
     send_pointer_button_state(harness, pos, button, false);
 }
 
-fn move_pointer(harness: &mut Harness<'_, KatanaApp>, pos: egui::Pos2) {
+fn move_pointer<State>(harness: &mut Harness<'_, State>, pos: egui::Pos2) {
     harness
         .input_mut()
         .events
@@ -1949,8 +2647,8 @@ fn move_pointer(harness: &mut Harness<'_, KatanaApp>, pos: egui::Pos2) {
     harness.step();
 }
 
-fn send_pointer_button_state(
-    harness: &mut Harness<'_, KatanaApp>,
+fn send_pointer_button_state<State>(
+    harness: &mut Harness<'_, State>,
     pos: egui::Pos2,
     button: ClickButton,
     pressed: bool,
@@ -2703,10 +3401,66 @@ fn normalize_relative_path(path: &Path) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn node_region_rejects_displaced_clipped_and_invalid_bounds() {
+        let viewport = egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1280.0, 900.0));
+        let tab = egui::Rect::from_min_max(egui::pos2(349.7, 839.0), egui::pos2(398.5, 862.0));
+        let bounds = [250.0, 828.0, 1250.0, 872.0];
+        assert!(super::assert_node_bounds(tab, viewport, bounds).is_ok());
+        assert!(
+            super::assert_node_bounds(tab.translate(egui::vec2(0.0, -100.0)), viewport, bounds)
+                .is_err()
+        );
+        assert!(
+            super::assert_node_bounds(tab.translate(egui::vec2(0.0, 20.0)), viewport, bounds)
+                .is_err()
+        );
+        for invalid in [
+            [250.0, 828.0, 250.0, 872.0],
+            [1250.0, 828.0, 250.0, 872.0],
+            [0.0, 0.0, 1281.0, 900.0],
+            [f32::NAN, 828.0, 1250.0, 872.0],
+        ] {
+            assert!(super::assert_node_bounds(tab, viewport, invalid).is_err());
+        }
+    }
+    #[test]
+    fn accessibility_click_uses_logical_coordinates_at_high_dpi() {
+        for scale in [1.0, 2.0] {
+            let mut harness = egui_kittest::Harness::builder()
+                .with_size(egui::vec2(400.0, 240.0))
+                .with_pixels_per_point(scale)
+                .build_ui_state(
+                    |ui, clicked| {
+                        let response = ui.put(
+                            egui::Rect::from_min_size(
+                                egui::pos2(160.0, 100.0),
+                                egui::vec2(120.0, 32.0),
+                            ),
+                            egui::Button::new("Coordinate target"),
+                        );
+                        if response.clicked() {
+                            *clicked = true;
+                        }
+                    },
+                    false,
+                );
+            harness.run();
+            super::click_node(
+                &mut harness,
+                "Coordinate target",
+                crate::request::ClickButton::Primary,
+            );
+            assert!(
+                *harness.state(),
+                "click missed the real button at scale {scale}"
+            );
+        }
+    }
     use super::{
-        assert_first_frame_latency, click_staging_position, document_failure_advanced,
-        find_workspace_file, html_browser_frame_advanced, normalize_relative_path,
-        opened_url_frame_ready, physical_png_bounds, scroll_delta, HtmlBrowserFrameIdentity,
+        HtmlBrowserFrameIdentity, assert_first_frame_latency, click_staging_position,
+        document_failure_advanced, find_workspace_file, html_browser_frame_advanced,
+        normalize_relative_path, opened_url_frame_ready, physical_png_bounds, scroll_delta,
     };
     use crate::capture::PngBounds;
     use crate::request::ScrollDirection;

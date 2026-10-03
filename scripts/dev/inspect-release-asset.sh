@@ -29,6 +29,8 @@ set -euo pipefail
 REPO="${KATANA_RELEASE_REPO:-HiroyukiFuruno/KatanA}"
 TAG="${1:-}"
 FILTER="${2:-all}"
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+ARCHITECTURE_VERIFIER="${SCRIPT_DIR}/../release/verify-binary-architecture.py"
 
 if [[ -z "$TAG" ]]; then
     echo "Usage: $0 <tag> [linux|windows|macos|all]" >&2
@@ -153,6 +155,7 @@ inspect_tar_gz() {
     else
         fail "Asset contract VIOLATION: top-level 'kdv-office-worker' NOT found"
     fi
+    inspect_architecture linux "$name"
 }
 
 inspect_zip() {
@@ -178,6 +181,20 @@ inspect_zip() {
         ok "Asset contract OK: '$expected_sidecar' present"
     else
         fail "Asset contract VIOLATION: '$expected_sidecar' NOT found"
+    fi
+    case "$name" in
+        KatanA-windows*.zip) inspect_architecture windows "$name" ;;
+        KatanA-macOS*.zip) inspect_architecture macos "$name" ;;
+    esac
+}
+
+inspect_architecture() {
+    local platform="$1"
+    local name="$2"
+    if python3 "$ARCHITECTURE_VERIFIER" "$platform" "$name"; then
+        ok "Binary architecture contract satisfied"
+    else
+        fail "Binary architecture contract VIOLATION"
     fi
 }
 

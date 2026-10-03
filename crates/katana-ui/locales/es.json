@@ -124,6 +124,18 @@
     "highlight_hover": "Resaltado al pasar el ratón",
     "show_diagram_controls": "Controles del diagrama",
     "toggle_slideshow": "Alternar presentación de diapositivas",
+    "spreadsheet_filter": {
+      "open": "Abrir filtro",
+      "title": "Filtrar valores",
+      "loading": "Cargando valores…",
+      "apply": "Aplicar",
+      "clear": "Borrar",
+      "select_all": "Seleccionar todo",
+      "blank": "En blanco",
+      "non_blank": "No vacío",
+      "no_values": "No hay valores disponibles",
+      "truncated": "Solo se muestran los primeros valores; aplicar está desactivado"
+    },
     "document_controller": {
       "previous": "Página, hoja o diapositiva anterior",
       "next": "Página, hoja o diapositiva siguiente",

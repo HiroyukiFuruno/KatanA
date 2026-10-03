@@ -18,6 +18,20 @@ fn parse_img_tag() {
 }
 
 #[test]
+fn parse_img_tag_with_gt_inside_quoted_data_uri() {
+    let src = r#"data:image/svg+xml,%3Csvg xmlns=%22<http://www.w3.org/2000/svg%22> width=%22128%22%3E%3C/svg%3E"#;
+    let nodes = parser().parse(&format!(r#"<img src="{src}" width="128" alt="icon">"#));
+
+    assert_eq!(
+        nodes,
+        vec![HtmlNode::Image {
+            src: src.into(),
+            alt: "icon".into(),
+        }]
+    );
+}
+
+#[test]
 fn parse_br_tag() {
     let nodes = parser().parse("<br>");
     assert_eq!(nodes, vec![HtmlNode::LineBreak]);

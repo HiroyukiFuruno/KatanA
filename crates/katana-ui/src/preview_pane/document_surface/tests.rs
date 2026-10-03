@@ -4,6 +4,8 @@ use katana_core::document_source::BinaryDocumentFormat;
 use katana_document_viewer::{
     DocumentGridCommand, DocumentSurfaceCommand, DocumentViewerCommand, DocumentViewport,
 };
+#[cfg(feature = "external-fixture-acceptance")]
+use katana_document_viewer::{DocumentSession, DocumentSessionConfig, OfficeWorkerConfig};
 
 #[test]
 fn remote_source_keeps_final_url_and_validated_format() {
@@ -109,6 +111,89 @@ fn remote_source_rejects_metadata_and_signature_mismatches() {
     assert_eq!(uri, failure.expect_err("signature mismatch").document);
 }
 
+#[cfg(feature = "external-fixture-acceptance")]
+#[test]
+fn external_document_fixture_dir_reports_typed_first_frame_results() {
+    let Some(directory) =
+        std::env::var_os("KATANA_DOCUMENT_FIXTURE_DIR").map(std::path::PathBuf::from)
+    else {
+        return;
+    };
+    let mut paths = std::fs::read_dir(&directory)
+        .expect("external fixture directory")
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| BinaryDocumentFormat::from_path(path).is_some())
+        .collect::<Vec<_>>();
+    paths.sort();
+    assert!(!paths.is_empty(), "no supported document fixtures found");
+
+    let worker = std::env::var_os("KATANA_KDV_OFFICE_WORKER")
+        .map(std::path::PathBuf::from)
+        .expect("external acceptance must name the packaged release office worker");
+    assert!(
+        worker.is_file(),
+        "external acceptance office worker is missing: {}",
+        worker.display()
+    );
+    let mut failures = Vec::new();
+    for path in paths {
+        match external_fixture_first_frame(&path, &worker) {
+            Ok(result) => eprintln!("KATANA_DOCUMENT_ACCEPTANCE result=ok {result}"),
+            Err(error) => {
+                eprintln!(
+                    "KATANA_DOCUMENT_ACCEPTANCE result=error path={} cause={error}",
+                    path.display()
+                );
+                failures.push(format!("{}: {error}", path.display()));
+            }
+        }
+    }
+    assert!(
+        failures.is_empty(),
+        "external document failures:\n{}",
+        failures.join("\n")
+    );
+}
+
+#[cfg(feature = "external-fixture-acceptance")]
+fn external_fixture_first_frame(
+    path: &std::path::Path,
+    worker: &std::path::Path,
+) -> Result<String, String> {
+    const VIEWPORT_WIDTH: u32 = 1_280;
+    const VIEWPORT_HEIGHT: u32 = 900;
+
+    let started_at = std::time::Instant::now();
+    let mut source = DocumentSurfaceSource::local(path).map_err(|error| error.details())?;
+    let format = source.format;
+    let viewer_source = source
+        .take_viewer_source()
+        .map_err(|error| error.details())?;
+    let viewport = DocumentViewport::new(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+    let mut config = DocumentSessionConfig::new(viewport);
+    if format != BinaryDocumentFormat::Pdf {
+        config = config.office_worker(OfficeWorkerConfig::new(worker.to_path_buf()));
+    }
+    let mut session = DocumentSession::open(viewer_source, config).map_err(|error| {
+        format!("layer=KDV worker operation=open format={format:?} cause={error}")
+    })?;
+    let frame = session.frame().map_err(|error| {
+        format!("layer=KDV surface operation=frame format={format:?} cause={error}")
+    })?;
+    let result = format!(
+        "path={} format={:?} item_count={} active_index={} surface={:?} first_frame_ms={}",
+        path.display(),
+        frame.format,
+        frame.state.item_count,
+        frame.state.active_index,
+        frame.surface.kind(),
+        started_at.elapsed().as_millis()
+    );
+    session.close();
+    Ok(result)
+}
+
 #[test]
 fn bounded_queue_preserves_navigation_and_coalesces_continuous_state() {
     let mut pending = super::render_support::PendingDocumentCommands::default();
@@ -117,16 +202,16 @@ fn bounded_queue_preserves_navigation_and_coalesces_continuous_state() {
     let resize = DocumentWorkerCommand::Surface(DocumentSurfaceCommand::Resize(
         DocumentViewport::new(800, 600),
     ));
-    pending.push(navigation);
-    pending.push(resize);
-    pending.push(previous);
-    assert_eq!(Some(navigation), pending.take_next());
+    pending.push(navigation.clone());
+    pending.push(resize.clone());
+    pending.push(previous.clone());
+    assert_eq!(Some(navigation.clone()), pending.take_next());
     assert_eq!(Some(previous), pending.take_next());
 
     let latest_resize = DocumentWorkerCommand::Surface(DocumentSurfaceCommand::Resize(
         DocumentViewport::new(1_280, 720),
     ));
-    pending.push(latest_resize);
+    pending.push(latest_resize.clone());
     assert_eq!(Some(latest_resize), pending.take_next());
 
     let first_scroll = DocumentWorkerCommand::Surface(DocumentSurfaceCommand::Grid(
@@ -136,13 +221,13 @@ fn bounded_queue_preserves_navigation_and_coalesces_continuous_state() {
         DocumentGridCommand::ScrollTo { x: 30, y: 40 },
     ));
     pending.push(first_scroll);
-    pending.push(latest_scroll);
+    pending.push(latest_scroll.clone());
     assert_eq!(Some(latest_scroll), pending.take_next());
 
     let first_zoom = DocumentWorkerCommand::Viewer(DocumentViewerCommand::SetZoom(1.25));
     let latest_zoom = DocumentWorkerCommand::Viewer(DocumentViewerCommand::SetZoom(1.5));
     pending.push(first_zoom);
-    pending.push(latest_zoom);
+    pending.push(latest_zoom.clone());
     assert_eq!(Some(latest_zoom), pending.take_next());
 
     let fit_page = DocumentWorkerCommand::Viewer(DocumentViewerCommand::Fit(
@@ -152,7 +237,7 @@ fn bounded_queue_preserves_navigation_and_coalesces_continuous_state() {
         katana_document_viewer::DocumentFitMode::Width,
     ));
     pending.push(fit_page);
-    pending.push(fit_width);
+    pending.push(fit_width.clone());
     assert_eq!(Some(fit_width), pending.take_next());
     assert!(pending.is_empty());
 

@@ -1,0 +1,93 @@
+{
+  "schema_version": "1",
+  "name": "document-pptx-resource-cycle",
+  "fixture": {
+    "settings": {
+      "theme": "light",
+      "locale": "en",
+      "explorer_visible": true,
+      "linter_enabled": false,
+      "auto_refresh": false
+    },
+    "workspace_files": [
+      { "name": "baseline.md", "content": "# Resource lifecycle baseline" },
+      {
+        "name": "representative.html",
+        "content": "<!doctype html><meta charset=\"utf-8\"><style>body{font:16px sans-serif}nav{position:sticky;top:0;background:#0f172a;color:white;padding:16px}</style><nav>Lifecycle fixture</nav><main><button id=\"action\">Action</button><p id=\"status\">ready</p></main><script>document.querySelector('#action').addEventListener('click',()=>document.querySelector('#status').textContent='clicked')</script>"
+      },
+      {
+        "name": "representative.pptx",
+        "source": "scripts/screenshot/fixtures/v0-22-38-multi-format/representative.pptx"
+      }
+    ]
+  },
+  "steps": [
+    { "type": "launch", "viewport": { "width": 1280, "height": 900 }, "wait_seconds": 0.5 },
+    { "type": "action", "action": { "close_active_document": { "wait_seconds": 5.0 } } },
+    { "type": "record_runtime_snapshot", "name": "cold_idle" },
+    {
+      "type": "action",
+      "action": {
+        "run_mixed_document_cycles": {
+          "html_file_name": "representative.html",
+          "document_file_name": "representative.pptx",
+          "cycles": 1,
+          "html_timeout_seconds": 10.0,
+          "document_timeout_seconds": 15.0,
+          "close_timeout_seconds": 5.0,
+          "expected_document_format": "pptx",
+          "expected_document_item_count": 2,
+          "expected_document_node_kind": "Page"
+        }
+      }
+    },
+    {
+      "type": "assert_runtime_snapshot",
+      "baseline": "cold_idle",
+      "max_rss_delta_kib": 196608,
+      "min_ui_frame_delta": 2,
+      "min_html_frames_observed": 1,
+      "min_document_frames_observed": 1,
+      "max_previews": 0,
+      "max_html_surfaces": 0,
+      "max_document_surfaces": 0,
+      "max_office_workers": 0,
+      "max_frames": 0,
+      "max_textures": 0,
+      "max_cache_entries": 0
+    },
+    { "type": "record_runtime_snapshot", "name": "warm_idle" },
+    {
+      "type": "action",
+      "action": {
+        "run_mixed_document_cycles": {
+          "html_file_name": "representative.html",
+          "document_file_name": "representative.pptx",
+          "cycles": 10,
+          "html_timeout_seconds": 10.0,
+          "document_timeout_seconds": 15.0,
+          "close_timeout_seconds": 5.0,
+          "expected_document_format": "pptx",
+          "expected_document_item_count": 2,
+          "expected_document_node_kind": "Page"
+        }
+      }
+    },
+    {
+      "type": "assert_runtime_snapshot",
+      "baseline": "warm_idle",
+      "max_rss_delta_kib": 65536,
+      "min_ui_frame_delta": 20,
+      "min_html_frames_observed": 10,
+      "min_document_frames_observed": 10,
+      "max_previews": 0,
+      "max_html_surfaces": 0,
+      "max_document_surfaces": 0,
+      "max_office_workers": 0,
+      "max_frames": 0,
+      "max_textures": 0,
+      "max_cache_entries": 0
+    },
+    { "type": "quit" }
+  ]
+}

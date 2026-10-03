@@ -1,0 +1,42 @@
+{
+  "schema_version": "1",
+  "name": "docx-data-descriptor-regression",
+  "fixture": {
+    "settings": {
+      "theme": "light",
+      "locale": "en",
+      "explorer_visible": true,
+      "linter_enabled": false,
+      "auto_refresh": false
+    },
+    "workspace_files": [
+      {
+        "name": "data-descriptor.docx",
+        "source": "scripts/screenshot/fixtures/v0-22-38-multi-format/data-descriptor.docx"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1280, "height": 900 },
+      "wait_seconds": 0.5
+    },
+    {
+      "type": "open_file",
+      "file_name": "data-descriptor.docx",
+      "wait_seconds": 30.0,
+      "wait_for_document_frame": true,
+      "max_first_frame_seconds": 15.0,
+      "expected_document_format": "docx",
+      "expected_document_item_count": 2,
+      "expected_document_node_kind": "Page"
+    },
+    { "type": "screenshot", "output_name": "docx-data-descriptor-page-1" },
+    {
+      "type": "action",
+      "action": { "close_active_document": { "wait_seconds": 5.0 } }
+    },
+    { "type": "quit" }
+  ]
+}

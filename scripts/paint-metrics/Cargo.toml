@@ -1,0 +1,11 @@
+[workspace]
+
+[package]
+name = "katana-paint-metrics"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+egui = "=0.36.2"
+serde_json = "1"

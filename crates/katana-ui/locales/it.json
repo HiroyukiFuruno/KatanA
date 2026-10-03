@@ -124,6 +124,18 @@
     "highlight_hover": "Evidenzia al Passaggio",
     "show_diagram_controls": "Controlli Diagramma",
     "toggle_slideshow": "Attiva/Disattiva Presentazione",
+    "spreadsheet_filter": {
+      "open": "Apri filtro",
+      "title": "Filtra valori",
+      "loading": "Caricamento valori…",
+      "apply": "Applica",
+      "clear": "Cancella",
+      "select_all": "Seleziona tutto",
+      "blank": "Vuoto",
+      "non_blank": "Non vuoto",
+      "no_values": "Nessun valore disponibile",
+      "truncated": "Vengono mostrati solo i primi valori; l'applicazione è disattivata"
+    },
     "document_controller": {
       "previous": "Pagina, foglio o diapositiva precedente",
       "next": "Pagina, foglio o diapositiva successiva",

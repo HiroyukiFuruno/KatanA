@@ -392,6 +392,19 @@ else
 fi
 
 # =============================================================================
+# 8c. cargo-sweep
+# =============================================================================
+header "cargo-sweep"
+
+if cargo sweep --version &>/dev/null; then
+  success "cargo-sweep is already installed ($(cargo sweep --version))"
+else
+  info "Installing cargo-sweep..."
+  cargo install cargo-sweep --locked
+  success "cargo-sweep installed"
+fi
+
+# =============================================================================
 # 8d. git-cliff
 # =============================================================================
 header "git-cliff"
@@ -533,6 +546,7 @@ echo "  clippy       $(cargo clippy --version)"
 echo "  rustfmt      $(rustfmt --version)"
 echo "  llvm-cov     $(cargo llvm-cov --version)"
 echo "  cargo-watch  $(cargo watch --version)"
+echo "  cargo-sweep  $(cargo sweep --version)"
 echo "  tokei        $(tokei --version)"
 echo "  lefthook     $(lefthook version)"
 echo "  openspec     $(openspec --version)"

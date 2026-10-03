@@ -2,6 +2,26 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.42] - 2026-09-30 21:49:09 (UTC)
+
+### ✨ Improvements
+
+- **Workspace explorer responsiveness**: Large workspaces reuse their file-list projection and draw visible rows without copying the entire tree on every frame.
+- **Relevant document tools**: HTML and Office previews disable unsupported download, slideshow, display, and table-of-contents tools.
+- **Excel filters**: Column headers provide value filters, blank-value selection, and filter clearing.
+- **Office loading responsiveness**: Initial file reads run in the background so a slow disk read does not stop the interface.
+- **Repeated large-document reads**: Reduced excess memory allocation while reading large files repeatedly; other document-memory regressions remain under investigation.
+
+### 🐛 Bug Fixes
+
+- **Document memory usage**: Removed an extra copy of document input data retained throughout a viewer session.
+- **Office tabs and memory**: Documents using the same installed font share its data across tabs instead of retaining an extra copy for every tab.
+- **Preview image stability**: Diagram and image textures remain available when image controls are hidden.
+- **Excel sheet tabs**: Bottom tabs remain visible and clickable without overlapping document diagnostics.
+- **Excel font styles**: Bold and italic cells retain the requested font family when only a regular or partially matching style is installed.
+- **Unsupported display shortcuts**: HTML and Office documents cannot be switched into unsupported split or code-only views using keyboard shortcuts.
+- **Slideshow tab switching**: Switching to an HTML or Office tab exits the slideshow and restores the previous fullscreen state.
+
 ## [0.22.41] - 2026-08-26 06:32:56 (UTC)
 
 ### 🚀 Features

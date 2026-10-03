@@ -4,6 +4,15 @@ use crate::shell::*;
 
 impl KatanaApp {
     pub(super) fn handle_action_toggle_slideshow(&mut self, ctx: &egui::Context) {
+        if !crate::views::panels::preview::PreviewMenuAvailability::for_path(
+            self.state
+                .active_document()
+                .map(|document| document.path.as_path()),
+            crate::views::panels::preview::PreviewMenu::Slideshow,
+        ) {
+            self.state.layout.show_slideshow = false;
+            return;
+        }
         self.state.layout.show_slideshow = !self.state.layout.show_slideshow;
         if self.state.layout.show_slideshow {
             self.state.layout.slideshow_page = 0;

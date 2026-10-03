@@ -122,7 +122,21 @@
     { "type": "screenshot", "output_name": "05-xlsx-sheet-1" },
     {
       "type": "action",
-      "action": { "document_next": { "timeout_seconds": 10.0 } }
+      "action": {
+        "click_node": {
+          "label": "Notes",
+          "button": "primary",
+          "expected_bounds": [250.0, 828.0, 1250.0, 872.0],
+          "wait_seconds": 0.0
+        }
+      }
+    },
+    {
+      "type": "assert_document_frame",
+      "format": "xlsx",
+      "item_count": 2,
+      "node_kind": "Grid",
+      "active_index": 1
     },
     { "type": "screenshot", "output_name": "06-xlsx-sheet-2" },
     {

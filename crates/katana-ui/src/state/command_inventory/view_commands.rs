@@ -1,9 +1,18 @@
 use super::{CommandGroup, CommandInventoryItem};
-use crate::app_state::AppAction;
+use crate::app_state::{AppAction, AppState};
 use crate::i18n::I18nOps;
 use crate::state::shortcut_context::ShortcutContext;
 
 pub struct ViewCommands;
+
+fn tools_available(state: &AppState) -> bool {
+    crate::views::panels::preview::PreviewMenuAvailability::for_path(
+        state
+            .active_document()
+            .map(|document| document.path.as_path()),
+        crate::views::panels::preview::PreviewMenu::Tools,
+    )
+}
 
 impl ViewCommands {
     pub fn get() -> Vec<CommandInventoryItem> {
@@ -125,7 +134,7 @@ impl ViewCommands {
                 group: CommandGroup::Behavior,
                 context: ShortcutContext::Global,
                 label: || I18nOps::get().search.command_toggle_split.clone(),
-                is_available: |_| true,
+                is_available: tools_available,
                 default_shortcuts: &["primary+Shift+\\"],
             },
             CommandInventoryItem {
@@ -134,7 +143,7 @@ impl ViewCommands {
                 group: CommandGroup::Behavior,
                 context: ShortcutContext::Global,
                 label: || I18nOps::get().search.command_toggle_code_preview.clone(),
-                is_available: |_| true,
+                is_available: tools_available,
                 default_shortcuts: &["primary+\\"],
             },
             CommandInventoryItem {
@@ -161,9 +170,20 @@ impl ViewCommands {
                 group: CommandGroup::Behavior,
                 context: ShortcutContext::Global,
                 label: || I18nOps::get().preview.toggle_slideshow.clone(),
-                is_available: |_| true,
+                is_available: |state| {
+                    crate::views::panels::preview::PreviewMenuAvailability::for_path(
+                        state
+                            .active_document()
+                            .map(|document| document.path.as_path()),
+                        crate::views::panels::preview::PreviewMenu::Slideshow,
+                    )
+                },
                 default_shortcuts: &["primary+alt+Enter", "F5"],
             },
         ]
     }
 }
+
+#[cfg(test)]
+#[path = "view_commands_tests.rs"]
+mod tests;

@@ -62,7 +62,7 @@ impl WorkspaceOpenHandlersOps {
             ),
             crate::app_state::StatusType::Success,
         ));
-        app.state.workspace.data = Some(ws);
+        app.state.workspace.set_data(Some(ws));
         app.state.document.open_documents.clear();
         app.state.document.active_doc_idx = None;
         app.state.document.tab_groups.clear();

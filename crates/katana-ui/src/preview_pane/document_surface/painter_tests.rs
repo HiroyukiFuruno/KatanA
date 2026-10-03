@@ -83,7 +83,7 @@ fn fixture(name: &str) -> PathBuf {
         .join(name)
 }
 
-fn office_worker() -> PathBuf {
+pub(super) fn office_worker() -> PathBuf {
     if let Some(path) = std::env::var_os("KATANA_KDV_OFFICE_WORKER") {
         return PathBuf::from(path);
     }
@@ -99,7 +99,7 @@ fn office_worker() -> PathBuf {
         })
 }
 
-fn frame(name: &str) -> DocumentFrame {
+pub(super) fn frame(name: &str) -> DocumentFrame {
     let mut source = DocumentSurfaceSource::local(&fixture(name)).expect("document fixture");
     let viewer_source = source.take_viewer_source().expect("KDV viewer source");
     let viewport = DocumentViewport::new(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
@@ -116,8 +116,10 @@ fn frame(name: &str) -> DocumentFrame {
 fn paint(frame: &DocumentFrame, painter: &mut DocumentFramePainter) -> Vec<DocumentSurfaceCommand> {
     let context = crate::test_ui::Context::default();
     let mut commands = Vec::new();
+    let borders = super::painter_grid_borders::prepare(&frame.surface).expect("border cache");
     let output = context.run_ui(input(), |ui| {
-        commands = paint_document_frame(painter, ui, &frame.surface, TEST_SURFACE_ID);
+        commands = paint_document_frame(painter, ui, &frame.surface, TEST_SURFACE_ID, &borders)
+            .expect("frame paint");
     });
     assert!(!output.shapes.is_empty());
     commands
@@ -140,8 +142,9 @@ fn page_frame_is_projected_without_owning_pdf_layout() {
     let second = paint(&frame, &mut painter);
     let context = crate::test_ui::Context::default();
     let mut fallback = Vec::new();
+    let borders = Default::default();
     context.run_ui(input(), |ui| {
-        fallback = super::painter_grid::paint(ui, &frame.surface);
+        fallback = super::painter_grid::paint(ui, &frame.surface, &borders).expect("grid paint");
     });
 
     assert!(matches!(

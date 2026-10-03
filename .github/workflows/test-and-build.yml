@@ -29,6 +29,12 @@ env:
 jobs:
   test:
     name: Test and Build
+    # 全テストを維持し、巨大なOffice/V8依存のデバッグ情報だけでrunnerを満杯にしない。
+    env:
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_PROFILE_TEST_DEBUG: 0
+      CARGO_PROFILE_DEV_STRIP: none
+      CARGO_PROFILE_TEST_STRIP: none
     strategy:
       fail-fast: false
       matrix:
@@ -71,9 +77,9 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/git/db
             target
-          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-test-no-debug-info-v1-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-test-
+            ${{ runner.os }}-cargo-test-no-debug-info-v1-
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
@@ -91,8 +97,36 @@ jobs:
       - name: Check types
         run: cargo check --workspace
 
+      - name: Verify CI resource contract
+        run: python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
+
+      - name: Install cargo-sweep
+        run: |
+          cargo install cargo-sweep --locked
+          cargo sweep --version
+
+      - name: Verify Cargo sweep safety contract
+        run: python3 -B -m unittest discover -s scripts/ci -p test_cargo_sweep_guard.py -v
+
+      - name: Measure cold real-font lookup (Windows)
+        if: runner.os == 'Windows'
+        env:
+          DEBUG: 'true'
+        run: >-
+          cargo test --locked -p katana-ui --lib
+          preview_pane::document_surface::font_lookup::tests::real_background_worker_returns_result_with_identity_while_ui_paints
+          -- --exact --nocapture
+
       - name: Run tests
-        run: cargo test --workspace
+        shell: bash
+        run: bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
+
+      - name: Test screenshot harness contracts
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        shell: bash
+        env:
+          CARGO_TARGET_DIR: target/screenshot-harness
+        run: cargo test --locked --release --manifest-path scripts/screenshot/Cargo.toml
 
       - name: Run multi-format headless acceptance
         if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')

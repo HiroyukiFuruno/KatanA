@@ -7,6 +7,8 @@ impl PreviewPane {
         html_file_path: &std::path::Path,
     ) {
         self.document_surface = None;
+        self.document_intake = None;
+        self.is_loading = false;
         self.document_failure = None;
         let current_origin = self.html_browser_origin();
         self.md_file_path = html_file_path.to_path_buf();
@@ -23,6 +25,7 @@ impl PreviewPane {
         force: bool,
     ) {
         self.document_surface = None;
+        self.document_intake = None;
         self.document_failure = None;
         let current_origin = self.html_browser_origin();
         if force {
@@ -73,6 +76,7 @@ impl PreviewPane {
         force: bool,
     ) {
         self.document_surface = None;
+        self.document_intake = None;
         self.document_failure = None;
         if force {
             self.viewer_states.clear();

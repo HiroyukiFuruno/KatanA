@@ -82,8 +82,7 @@ mod tests {
                         image,
                         "Mermaid diagram",
                         0,
-                        Some(state),
-                        None,
+                        super::image_raster::RasterizedInteraction::Hidden { state: Some(state) },
                         |_, _, _| {},
                     );
                 });
@@ -1172,6 +1171,214 @@ mod tests {
         assert!(state.texture.is_some());
         assert_eq!(state.zoom, 1.0);
         assert_eq!(state.pan, egui::Vec2::ZERO);
+    }
+
+    #[test]
+    fn show_rasterized_keeps_texture_when_controls_are_hidden() {
+        let ctx = egui::Context::default();
+        let image = rasterized_test_image(vec![0, 0, 0, 255]);
+        let mut state = ViewerState::default();
+
+        crate::test_ui::TestUiOps::run(
+            &ctx,
+            egui::RawInput {
+                screen_rect: Some(egui::Rect::from_min_size(
+                    egui::pos2(0.0, 0.0),
+                    egui::vec2(800.0, 600.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    ImageLogicOps::show_rasterized(
+                        ui,
+                        &image,
+                        "Mermaid diagram",
+                        0,
+                        super::image_raster::RasterizedInteraction::Hidden {
+                            state: Some(&mut state),
+                        },
+                        |_, _, _| {},
+                    );
+                });
+            },
+        );
+
+        assert!(state.texture.is_some());
+    }
+
+    #[test]
+    fn hidden_rasterized_image_ignores_saved_transform_and_reuses_texture() {
+        let ctx = crate::test_ui::Context::default();
+        let image = rasterized_test_image(vec![0, 0, 0, 255]);
+        let mut state = ViewerState::default();
+        let original = hidden_image_mesh_positions(&ctx, &mut state, &image);
+        let texture_id = state.texture.as_ref().unwrap().id();
+        state.zoom = 3.0;
+        state.pan = egui::vec2(100.0, 200.0);
+        let transformed = hidden_image_mesh_positions(&ctx, &mut state, &image);
+        assert!(!original.is_empty());
+        assert_eq!(transformed, original);
+        assert_eq!(state.texture.as_ref().unwrap().id(), texture_id);
+        assert_eq!(state.zoom, 3.0);
+        assert_eq!(state.pan, egui::vec2(100.0, 200.0));
+    }
+
+    fn hidden_image_mesh_positions(
+        ctx: &crate::test_ui::Context,
+        state: &mut ViewerState,
+        image: &katana_core::markdown::svg_rasterize::RasterizedSvg,
+    ) -> Vec<egui::Pos2> {
+        let output = ctx.run_ui(egui::RawInput::default(), |ui| {
+            ImageLogicOps::show_rasterized(
+                ui,
+                image,
+                "Mermaid diagram",
+                0,
+                super::image_raster::RasterizedInteraction::Hidden { state: Some(state) },
+                |_, _, _| {},
+            );
+        });
+        let texture_id = state.texture.as_ref().unwrap().id();
+        output
+            .shapes
+            .iter()
+            .filter_map(|shape| match &shape.shape {
+                egui::epaint::Shape::Mesh(mesh) if mesh.texture_id == texture_id => Some(mesh),
+                _ => None,
+            })
+            .flat_map(|mesh| mesh.vertices.iter().map(|vertex| vertex.pos))
+            .collect()
+    }
+
+    #[test]
+    fn hidden_rasterized_image_does_not_zoom_or_pan_from_pointer_gestures() {
+        let ctx = egui::Context::default();
+        let image = rasterized_test_image(vec![0, 0, 0, 255]);
+        let mut state = ViewerState::default();
+        render_test_rasterized_image(&ctx, &mut state, &image);
+        state.zoom = 1.25;
+        state.pan = egui::vec2(10.0, 20.0);
+
+        let render = |state: &mut ViewerState, events| {
+            crate::test_ui::TestUiOps::run(
+                &ctx,
+                egui::RawInput {
+                    screen_rect: Some(egui::Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(800.0, 600.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        ImageLogicOps::show_rasterized(
+                            ui,
+                            &image,
+                            "Mermaid diagram",
+                            0,
+                            super::image_raster::RasterizedInteraction::Hidden {
+                                state: Some(state),
+                            },
+                            |_, _, _| {},
+                        );
+                    });
+                },
+            );
+        };
+        let pointer_start = egui::pos2(40.0, 40.0);
+        let pointer_end = egui::pos2(90.0, 70.0);
+
+        render(
+            &mut state,
+            vec![
+                egui::Event::PointerMoved(pointer_start),
+                egui::Event::Zoom(1.5),
+            ],
+        );
+        render(
+            &mut state,
+            vec![egui::Event::PointerButton {
+                pos: pointer_start,
+                button: egui::PointerButton::Primary,
+                pressed: true,
+                modifiers: egui::Modifiers::NONE,
+            }],
+        );
+        render(&mut state, vec![egui::Event::PointerMoved(pointer_end)]);
+
+        assert_eq!(state.zoom, 1.25);
+        assert_eq!(state.pan, egui::vec2(10.0, 20.0));
+    }
+
+    #[test]
+    fn visible_rasterized_image_applies_pointer_zoom_and_drag() {
+        let ctx = egui::Context::default();
+        let image = rasterized_test_image(vec![0, 0, 0, 255]);
+        let mut state = ViewerState::default();
+        render_test_rasterized_image(&ctx, &mut state, &image);
+        state.zoom = 1.25;
+        state.pan = egui::vec2(10.0, 20.0);
+        let mut fullscreen_request = None;
+
+        let render = |state: &mut ViewerState, fullscreen_request: &mut Option<usize>, events| {
+            crate::test_ui::TestUiOps::run(
+                &ctx,
+                egui::RawInput {
+                    screen_rect: Some(egui::Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(800.0, 600.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        ImageLogicOps::show_rasterized(
+                            ui,
+                            &image,
+                            "Mermaid diagram",
+                            0,
+                            super::image_raster::RasterizedInteraction::Visible {
+                                state: Some(state),
+                                fullscreen_request: Some(fullscreen_request),
+                            },
+                            |_, _, _| {},
+                        );
+                    });
+                },
+            );
+        };
+        let pointer_start = egui::pos2(40.0, 40.0);
+        let pointer_end = egui::pos2(90.0, 70.0);
+
+        render(
+            &mut state,
+            &mut fullscreen_request,
+            vec![
+                egui::Event::PointerMoved(pointer_start),
+                egui::Event::Zoom(1.5),
+            ],
+        );
+        render(
+            &mut state,
+            &mut fullscreen_request,
+            vec![egui::Event::PointerButton {
+                pos: pointer_start,
+                button: egui::PointerButton::Primary,
+                pressed: true,
+                modifiers: egui::Modifiers::NONE,
+            }],
+        );
+        render(
+            &mut state,
+            &mut fullscreen_request,
+            vec![egui::Event::PointerMoved(pointer_end)],
+        );
+
+        assert_eq!(state.zoom, 1.875);
+        assert_eq!(state.pan, egui::vec2(60.0, 50.0));
     }
 
     #[test]

@@ -6,10 +6,11 @@ To install dependencies:
 bun install
 ```
 
-To run:
+To verify and rebuild the committed bundle:
 
 ```bash
-bun run index.ts
+bun run typecheck
+bun run build
 ```
 
-This project was created using `bun init` in bun v1.0.7. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+The committed `out/index.mjs` bundle is generated from the locked dependencies with Bun.

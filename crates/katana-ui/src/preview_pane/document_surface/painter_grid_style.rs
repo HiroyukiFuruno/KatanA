@@ -1,3 +1,4 @@
+use crate::font_loader::office_font_leases::DocumentFontLease;
 use eframe::egui;
 use katana_document_viewer::{DocumentGridCell, DocumentGridSurfaceFrame, DocumentRect};
 
@@ -5,11 +6,16 @@ const ACTIVE_SELECTION_OPACITY: f32 = 0.45;
 const SELECTION_OPACITY: f32 = 0.25;
 const GRID_LINE_WIDTH: f32 = 1.0;
 
-pub(super) fn paint_grid(ui: &egui::Ui, viewport: egui::Rect, frame: &DocumentGridSurfaceFrame) {
+pub(super) fn paint_grid(
+    ui: &egui::Ui,
+    viewport: egui::Rect,
+    frame: &DocumentGridSurfaceFrame,
+    fonts: Option<&DocumentFontLease>,
+) {
     let painter = ui.painter().with_clip_rect(viewport);
     painter.rect_filled(viewport, 0.0, ui.visuals().extreme_bg_color);
     for cell in &frame.cells {
-        paint_cell(ui, &painter, viewport, cell, frame.show_grid_lines);
+        paint_cell(ui, &painter, viewport, cell, frame.show_grid_lines, fonts);
     }
 }
 
@@ -19,6 +25,7 @@ fn paint_cell(
     viewport: egui::Rect,
     cell: &DocumentGridCell,
     show_grid_lines: bool,
+    fonts: Option<&DocumentFontLease>,
 ) {
     let rect = translated(viewport.min, cell.bounds);
     let clip = translated(viewport.min, cell.clipped_bounds).intersect(viewport);
@@ -30,7 +37,7 @@ fn paint_cell(
     let indicator_width = super::painter_grid_conditional::paint(&painter, rect, clip, cell, ui);
     paint_selection(ui, &painter, rect, cell);
     paint_grid_line(ui, &painter, rect, show_grid_lines);
-    super::painter_grid_text::paint(&painter, rect, cell, ui, indicator_width);
+    super::painter_grid_text::paint_with_fonts(&painter, rect, cell, ui, indicator_width, fonts);
 }
 
 fn fill_color(ui: &egui::Ui, cell: &DocumentGridCell) -> egui::Color32 {

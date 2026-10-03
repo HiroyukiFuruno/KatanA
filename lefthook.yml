@@ -6,6 +6,8 @@ output:
 pre-commit:
   parallel: false
   commands:
+    release-branch-policy:
+      run: scripts/release/assert-release-work-branch.sh
     formatting:
       run: just fmt
     biome-js-lint:

@@ -124,6 +124,18 @@
     "highlight_hover": "懸停高亮",
     "show_diagram_controls": "圖表控制項",
     "toggle_slideshow": "切換投影片",
+    "spreadsheet_filter": {
+      "open": "開啟篩選器",
+      "title": "篩選值",
+      "loading": "正在載入值…",
+      "apply": "套用",
+      "clear": "清除",
+      "select_all": "全選",
+      "blank": "空白",
+      "non_blank": "非空白",
+      "no_values": "沒有可用的值",
+      "truncated": "僅顯示前面的值，無法套用篩選"
+    },
     "document_controller": {
       "previous": "上一頁、工作表或投影片",
       "next": "下一頁、工作表或投影片",

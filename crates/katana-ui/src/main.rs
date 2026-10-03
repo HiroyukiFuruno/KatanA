@@ -336,11 +336,13 @@ mod tests {
     }
 
     #[test]
-    fn test_emoji_font_is_not_in_proportional_family() {
+    fn test_emoji_font_size_limit_is_respected_in_proportional_family() {
         init_tracing();
-        if GuiSetupOps::load_first_font(EMOJI_CANDIDATES).is_none() {
+        let Some((emoji_name, emoji_data)) = GuiSetupOps::load_first_font(EMOJI_CANDIDATES) else {
             return;
-        }
+        };
+        let expected_present = emoji_data.len() <= 32 * 1024 * 1024;
+        drop(emoji_data);
         let fonts =
             GuiSetupOps::build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, EMOJI_CANDIDATES);
         let proportional = fonts
@@ -348,19 +350,21 @@ mod tests {
             .families
             .get(&egui::FontFamily::Proportional)
             .expect("Proportional family missing");
-        let emoji_name = GuiSetupOps::load_first_font(EMOJI_CANDIDATES).unwrap().0;
-        assert!(
+        assert_eq!(
             proportional.contains(&emoji_name),
-            "Preview emoji should be included as UI fallback fonts in Proportional family"
+            expected_present,
+            "emoji font presence must follow the 32 MiB size limit"
         );
     }
 
     #[test]
-    fn test_emoji_font_is_not_in_monospace_family() {
+    fn test_emoji_font_size_limit_is_respected_in_monospace_family() {
         init_tracing();
-        if GuiSetupOps::load_first_font(EMOJI_CANDIDATES).is_none() {
+        let Some((emoji_name, emoji_data)) = GuiSetupOps::load_first_font(EMOJI_CANDIDATES) else {
             return;
-        }
+        };
+        let expected_present = emoji_data.len() <= 32 * 1024 * 1024;
+        drop(emoji_data);
         let fonts =
             GuiSetupOps::build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, EMOJI_CANDIDATES);
         let monospace = fonts
@@ -368,10 +372,10 @@ mod tests {
             .families
             .get(&egui::FontFamily::Monospace)
             .expect("Monospace family missing");
-        let emoji_name = GuiSetupOps::load_first_font(EMOJI_CANDIDATES).unwrap().0;
-        assert!(
+        assert_eq!(
             monospace.contains(&emoji_name),
-            "Preview emoji should be included as UI fallback fonts in Monospace family"
+            expected_present,
+            "emoji font presence must follow the 32 MiB size limit"
         );
     }
 

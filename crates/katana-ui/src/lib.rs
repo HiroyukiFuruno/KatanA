@@ -41,6 +41,7 @@ pub(crate) mod markdown_formatting_bridge;
 mod markdown_formatting_bridge_tests;
 pub use icon::*;
 pub mod changelog;
+pub(crate) mod debug_log;
 pub mod diagram_controller;
 pub(crate) mod diff_review;
 pub(crate) mod editor_undo;
@@ -51,6 +52,7 @@ pub mod settings;
 pub mod shell;
 pub mod shell_logic;
 pub mod shell_ui;
+pub(crate) mod startup_heartbeat;
 pub mod svg_loader;
 #[cfg(test)]
 pub(crate) mod test_render_env;

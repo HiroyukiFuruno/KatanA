@@ -2,6 +2,9 @@
 
 use katana_platform::FilesystemService;
 
+#[doc(hidden)]
+pub use katana_document_viewer::DocumentResourceSnapshot as DocumentResourceSnapshotForTest;
+
 use crate::{
     app_state::{AppAction, AppState},
     preview_pane::PreviewPane,

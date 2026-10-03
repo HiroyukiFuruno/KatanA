@@ -1,0 +1,84 @@
+{
+  "schema_version": "1",
+  "name": "supplied-html-interaction-regression",
+  "fixture": {
+    "settings": {
+      "theme": "light",
+      "locale": "ja",
+      "explorer_visible": true,
+      "linter_enabled": false,
+      "auto_refresh": false
+    },
+    "workspace_files": [
+      {
+        "name": "要件定義書_v1.0.html",
+        "source": "/Users/hiroyuki_furuno/Desktop/KatanA-不具合/要件定義書_v1.0.html"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1440, "height": 900 },
+      "wait_seconds": 0.5
+    },
+    {
+      "type": "open_file",
+      "file_name": "要件定義書_v1.0.html",
+      "wait_seconds": 15.0,
+      "wait_for_html_frame": true,
+      "max_first_frame_seconds": 10.0
+    },
+    { "type": "assert_html_browser_viewport_matches_display_rect" },
+    { "type": "screenshot", "output_name": "01-html-top" },
+    {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 1200.0,
+      "duration_seconds": 0.5
+    },
+    { "type": "screenshot", "output_name": "02-html-wheel-scrolled" },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "01-html-top",
+      "current": "02-html-wheel-scrolled",
+      "min_changed_pixels": 20000
+    },
+    {
+      "type": "scroll",
+      "direction": "up",
+      "pixels": 1200.0,
+      "duration_seconds": 0.5
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_html_viewport_fraction": {
+          "x_fraction": 0.08,
+          "y_fraction": 0.3,
+          "button": "primary",
+          "wait_seconds": 5.0,
+          "wait_for_html_frame": true
+        }
+      }
+    },
+    { "type": "screenshot", "output_name": "03-html-toc-action" },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "01-html-top",
+      "current": "03-html-toc-action",
+      "min_changed_pixels": 20000
+    },
+    {
+      "type": "action",
+      "action": {
+        "open_url": {
+          "url": "file:///Users/hiroyuki_furuno/Desktop/KatanA-%E4%B8%8D%E5%85%B7%E5%90%88/%E8%A6%81%E4%BB%B6%E5%AE%9A%E7%BE%A9%E6%9B%B8_v1.0.html#s15",
+          "timeout_seconds": 30.0
+        }
+      }
+    },
+    { "type": "screenshot", "output_name": "04-html-direct-s15" },
+    { "type": "quit" }
+  ]
+}

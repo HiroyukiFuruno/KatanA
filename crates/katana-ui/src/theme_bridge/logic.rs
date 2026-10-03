@@ -10,6 +10,7 @@ const STROKE_BOLD: f32 = 2.0;
 const HEADING_SIZE_RATIO: f32 = 1.5;
 const SMALL_SIZE_RATIO: f32 = 0.75;
 const STRONG_BLEND_RATIO: f32 = 0.3;
+const CUSTOM_FONT_INSTALLED_KEY: &str = "katana_custom_font_installed";
 
 impl ThemeBridgeOps {
     pub fn visuals_from_theme(colors: &ThemeColors) -> egui::Visuals {
@@ -143,7 +144,24 @@ impl ThemeBridgeOps {
             }
         }
 
-        crate::font_loader::SystemFontLoader::setup_fonts(ctx, preset, custom_path, custom_name);
+        let custom_font_id = egui::Id::new(CUSTOM_FONT_INSTALLED_KEY);
+        let custom_font_was_installed =
+            ctx.data(|data| data.get_temp::<bool>(custom_font_id).unwrap_or(false));
+
+        /* WHY: The standard families are already installed during GUI setup. Reinstalling them
+         * on the first settings poll duplicated every owned font payload. */
+        if custom_path.is_some() {
+            crate::font_loader::SystemFontLoader::setup_fonts(
+                ctx,
+                preset,
+                custom_path,
+                custom_name,
+            );
+            ctx.data_mut(|data| data.insert_temp(custom_font_id, true));
+        } else if custom_font_was_installed {
+            crate::font_loader::SystemFontLoader::setup_fonts(ctx, preset, None, None);
+            ctx.data_mut(|data| data.remove_temp::<bool>(custom_font_id));
+        }
         tracing::debug!("apply_font_family: End ({family_name})");
 
         ctx.global_style_mut(|style| {
@@ -180,6 +198,67 @@ fn strengthen_color(base: egui::Color32, dark: bool) -> egui::Color32 {
 mod tests {
     use super::*;
     use katana_platform::theme::{ThemeMode, ThemePreset};
+
+    #[test]
+    fn apply_font_family_tracks_real_custom_font_and_restores_standard_fonts() {
+        let (custom_name, custom_path) = katana_platform::os_fonts::OsFontScanner::cached_fonts()
+            .iter()
+            .find(|(name, _)| name != "Proportional" && name != "Monospace")
+            .cloned()
+            .expect("an installed OS font is required for this regression");
+        let ctx = egui::Context::default();
+        let preset = DiagramColorPreset::current();
+        let finish_font_frame = || {
+            let mut output = ctx.run_ui(Default::default(), |_| {});
+            output.textures_delta.clear();
+        };
+        crate::font_loader::SystemFontLoader::setup_fonts(&ctx, preset, None, None);
+        finish_font_frame();
+        let standard_fonts = ctx.fonts(|fonts| fonts.definitions().clone());
+
+        ThemeBridgeOps::apply_font_family(&ctx, "Proportional");
+        finish_font_frame();
+        assert_eq!(
+            ctx.fonts(|fonts| fonts.definitions().clone()),
+            standard_fonts,
+            "initial standard selection must not reinstall fonts"
+        );
+        assert!(
+            ctx.data(|data| { data.get_temp::<bool>(egui::Id::new(CUSTOM_FONT_INSTALLED_KEY)) })
+                .is_none()
+        );
+
+        ThemeBridgeOps::apply_font_family(&ctx, &custom_name);
+        finish_font_frame();
+        assert_eq!(
+            ctx.fonts(|fonts| {
+                fonts
+                    .definitions()
+                    .families
+                    .get(&egui::FontFamily::Proportional)
+                    .and_then(|family| family.first())
+                    .cloned()
+            }),
+            Some(custom_name.clone())
+        );
+        assert_eq!(
+            ctx.data(|data| { data.get_temp::<bool>(egui::Id::new(CUSTOM_FONT_INSTALLED_KEY)) }),
+            Some(true)
+        );
+
+        ThemeBridgeOps::apply_font_family(&ctx, "Proportional");
+        finish_font_frame();
+        assert_eq!(
+            ctx.fonts(|fonts| fonts.definitions().clone()),
+            standard_fonts,
+            "custom-to-standard transition must restore the installed defaults"
+        );
+        assert!(
+            ctx.data(|data| { data.get_temp::<bool>(egui::Id::new(CUSTOM_FONT_INSTALLED_KEY)) })
+                .is_none()
+        );
+        assert!(std::path::Path::new(&custom_path).is_file());
+    }
 
     #[test]
     fn test_apply_font_family_proportional() {

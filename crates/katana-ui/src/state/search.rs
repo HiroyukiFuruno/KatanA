@@ -19,6 +19,7 @@ pub struct SearchState {
     pub filter_enabled: bool,
     pub filter: SearchParams,
     pub filter_cache: Option<(SearchParams, HashSet<PathBuf>)>,
+    pub filter_cache_workspace_revision: Option<u64>,
 
     /* WHY: UI state */
     pub active_tab: SearchTab,
@@ -63,6 +64,7 @@ impl SearchState {
                 use_regex: false,
             },
             filter_cache: None,
+            filter_cache_workspace_revision: None,
 
             active_tab: SearchTab::FileName,
             focus_requested: false,
@@ -89,6 +91,7 @@ impl SearchState {
 
     pub fn clear_workspace_scoped_results(&mut self) {
         self.filter_cache = None;
+        self.filter_cache_workspace_revision = None;
         self.last_params = None;
         self.results.clear();
         self.md_last_params = None;

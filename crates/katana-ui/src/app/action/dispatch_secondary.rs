@@ -121,9 +121,25 @@ impl KatanaApp {
                 }
             }
             AppAction::ToggleSplitMode => {
+                if !crate::views::panels::preview::PreviewMenuAvailability::for_path(
+                    self.state
+                        .active_document()
+                        .map(|document| document.path.as_path()),
+                    crate::views::panels::preview::PreviewMenu::Tools,
+                ) {
+                    return;
+                }
                 self.state.set_active_view_mode(ViewMode::Split);
             }
             AppAction::ToggleCodePreview => {
+                if !crate::views::panels::preview::PreviewMenuAvailability::for_path(
+                    self.state
+                        .active_document()
+                        .map(|document| document.path.as_path()),
+                    crate::views::panels::preview::PreviewMenu::Tools,
+                ) {
+                    return;
+                }
                 let next_mode = match self.state.active_view_mode() {
                     ViewMode::Split => ViewMode::PreviewOnly,
                     ViewMode::PreviewOnly => ViewMode::CodeOnly,
@@ -150,3 +166,7 @@ impl KatanaApp {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "dispatch_secondary_tests.rs"]
+mod tests;

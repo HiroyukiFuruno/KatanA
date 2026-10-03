@@ -10,12 +10,27 @@ pub struct PreviewMessages {
     pub highlight_hover: String,
     pub show_diagram_controls: String,
     pub toggle_slideshow: String,
+    pub spreadsheet_filter: SpreadsheetFilterMessages,
     pub document_controller: DocumentControllerMessages,
     #[serde(default = "default_missing_image_text")]
     pub missing_image: String,
     #[serde(default = "default_remote_image_text")]
     pub remote_image: String,
     pub diagram_controller: DiagramControllerMessages,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SpreadsheetFilterMessages {
+    pub open: String,
+    pub title: String,
+    pub loading: String,
+    pub apply: String,
+    pub clear: String,
+    pub select_all: String,
+    pub blank: String,
+    pub non_blank: String,
+    pub no_values: String,
+    pub truncated: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -1,11 +1,17 @@
 use eframe::egui;
-use katana_document_viewer::{DocumentGridCommand, DocumentSurfaceCommand, DocumentViewerCommand};
+use katana_document_viewer::{
+    DocumentGridCommand, DocumentSurfaceCommand, DocumentViewerCommand, SpreadsheetFilterCommand,
+};
 use std::collections::VecDeque;
 
 use super::types::DocumentFailure;
 use super::worker::DocumentWorkerCommand;
 
 const MAX_PENDING_USER_COMMANDS: usize = 16;
+
+#[cfg(test)]
+#[path = "render_support_queue_tests.rs"]
+mod queue_tests;
 
 #[derive(Debug, Default)]
 pub(super) struct PendingDocumentCommands {
@@ -19,18 +25,35 @@ impl PendingDocumentCommands {
             DocumentWorkerCommand::Surface(DocumentSurfaceCommand::Resize(_)) => {
                 self.resize = Some(command);
             }
-            _ => {
-                if let Some(last) = self.user.back_mut()
-                    && coalesces(last, &command)
-                {
-                    *last = command;
-                    return;
-                }
-                if self.user.len() == MAX_PENDING_USER_COMMANDS {
-                    self.user.pop_front();
-                }
-                self.user.push_back(command);
+            _ => self.push_user(command),
+        }
+    }
+
+    fn push_user(&mut self, command: DocumentWorkerCommand) {
+        if is_candidates(&command) {
+            self.user.retain(|pending| !is_candidates(pending));
+        } else {
+            if let Some(last) = self.user.back_mut()
+                && coalesces(last, &command)
+            {
+                *last = command;
+                return;
             }
+            self.evict_oldest_user_if_full();
+        }
+        self.user.push_back(command);
+    }
+
+    fn evict_oldest_user_if_full(&mut self) {
+        let user_count = self
+            .user
+            .iter()
+            .filter(|pending| !is_candidates(pending))
+            .count();
+        if user_count == MAX_PENDING_USER_COMMANDS
+            && let Some(index) = self.user.iter().position(|pending| !is_candidates(pending))
+        {
+            self.user.remove(index);
         }
     }
 
@@ -46,6 +69,13 @@ impl PendingDocumentCommands {
         self.user.clear();
         self.resize = None;
     }
+}
+
+fn is_candidates(command: &DocumentWorkerCommand) -> bool {
+    matches!(
+        command,
+        DocumentWorkerCommand::SpreadsheetFilter(SpreadsheetFilterCommand::Candidates { .. })
+    )
 }
 
 fn coalesces(previous: &DocumentWorkerCommand, next: &DocumentWorkerCommand) -> bool {

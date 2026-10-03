@@ -143,6 +143,13 @@ impl ImageLogicOps {
         );
 
         if let Some(state) = viewer_state {
+            #[cfg(feature = "screenshot-test-hooks")]
+            crate::preview_pane::overlay_inspection::PreviewOverlayInspectionOps::increment(
+                ui.ctx(),
+                |inspection| {
+                    inspection.image_control_renders += 1;
+                },
+            );
             if crate::diagram_controller::DiagramControllerOps::draw_fullscreen_button(
                 ui,
                 container_rect,

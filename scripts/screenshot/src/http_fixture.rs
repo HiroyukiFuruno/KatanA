@@ -1,5 +1,5 @@
 use crate::request::HttpServerFixture;
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use std::io::{Read, Write};
 use std::net::{Shutdown, SocketAddr, TcpListener, TcpStream};
 use std::path::{Component, Path, PathBuf};
@@ -275,7 +275,7 @@ fn write_response(
 
 #[cfg(test)]
 mod tests {
-    use super::{content_type, resolve_file, FixtureHttpServer};
+    use super::{FixtureHttpServer, content_type, resolve_file};
     use crate::request::HttpServerFixture;
     use std::collections::HashMap;
     use std::io::{Read, Write};
@@ -319,8 +319,8 @@ mod tests {
     }
 
     #[test]
-    fn disconnected_client_does_not_stop_following_fixture_requests(
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn disconnected_client_does_not_stop_following_fixture_requests()
+    -> Result<(), Box<dyn std::error::Error>> {
         let root = tempfile::tempdir()?;
         std::fs::write(root.path().join("index.html"), "<!doctype html>")?;
         let server = FixtureHttpServer::start(
@@ -344,8 +344,8 @@ mod tests {
     }
 
     #[test]
-    fn fixture_server_can_declare_an_oversized_body_without_allocating_it(
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn fixture_server_can_declare_an_oversized_body_without_allocating_it()
+    -> Result<(), Box<dyn std::error::Error>> {
         let root = tempfile::tempdir()?;
         let server = FixtureHttpServer::start(
             root.path(),

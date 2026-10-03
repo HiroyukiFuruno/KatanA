@@ -11,19 +11,13 @@ use std::path::PathBuf;
 #[derive(Parser)]
 #[command(
     name = "katana-screenshot",
-    about = "Generic screenshot runner for KatanA"
+    about = "In-process KatanA UI screenshot runner (not packaged-app acceptance)"
 )]
 struct Cli {
     #[arg(long, value_name = "FILE", help = "Path to request JSON file")]
     request: PathBuf,
     #[arg(long, value_name = "DIR", help = "Output directory for PNG files")]
     output: PathBuf,
-    #[arg(
-        long = "binary",
-        value_name = "PATH",
-        help = "Ignored (kept for backward compatibility)"
-    )]
-    _binary: Option<PathBuf>,
 }
 
 fn main() -> Result<()> {
@@ -36,6 +30,7 @@ fn main() -> Result<()> {
         )
         .try_init();
     let cli = Cli::parse();
+    println!("[katana-screenshot] execution_mode=in_process; packaged_binary_tested=false");
 
     let request_path = cli
         .request
@@ -67,4 +62,45 @@ fn main() -> Result<()> {
 
     println!("[katana-screenshot] done");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Cli;
+    use clap::{Parser, error::ErrorKind};
+
+    #[test]
+    fn rejects_packaged_binary_instead_of_silently_testing_in_process() {
+        for option in [
+            vec!["--binary", "/tmp/KatanA"],
+            vec!["--binary=/tmp/KatanA"],
+        ] {
+            let mut args = vec![
+                "katana-screenshot",
+                "--request",
+                "input.json",
+                "--output",
+                "out",
+            ];
+            args.extend(option);
+            let error = Cli::try_parse_from(args)
+                .err()
+                .expect("unsupported binary must fail");
+            assert_eq!(error.kind(), ErrorKind::UnknownArgument);
+        }
+    }
+
+    #[test]
+    fn accepts_in_process_request_without_binary() {
+        assert!(
+            Cli::try_parse_from([
+                "katana-screenshot",
+                "--request",
+                "input.json",
+                "--output",
+                "out"
+            ])
+            .is_ok()
+        );
+    }
 }
