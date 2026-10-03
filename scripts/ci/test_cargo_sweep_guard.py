@@ -103,6 +103,54 @@ class CargoSweepGuardTest(unittest.TestCase):
             self.assertFalse((target / "debug").exists())
             self.assertFalse((target / "release").exists())
 
+    def test_coverage_target_profiles_are_discovered_and_locked(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            manifest = create_crate(root)
+            target = root / "target"
+            coverage = target / "llvm-cov-target"
+            profiles = [target / "debug", coverage / "debug",
+                        coverage / "x86_64-unknown-linux-gnu" / "release"]
+            for profile in profiles:
+                (profile / ".fingerprint").mkdir(parents=True)
+            (coverage / "tmp").mkdir()
+            self.assertEqual(sorted(profiles), guard.profile_directories(target))
+            if guard.fcntl is not None and os.name == "posix":
+                descriptors = guard.acquire_profile_locks([coverage / "debug"])
+                try:
+                    result = run_guard(manifest, {**os.environ, "CARGO_TARGET_DIR": str(target)})
+                    self.assertEqual(0, result.returncode, result.stderr)
+                    self.assertIn("profile lock unavailable", result.stdout)
+                    self.assertNotIn("Running cargo-sweep", result.stdout)
+                finally:
+                    guard.release_profile_locks(descriptors)
+                descriptors = guard.acquire_profile_locks(guard.profile_directories(target))
+                try:
+                    self.assertEqual(len(profiles), len(descriptors))
+                finally:
+                    guard.release_profile_locks(descriptors)
+
+    def test_coverage_target_keeps_unknown_and_unsafe_paths_fail_closed(self):
+        for mutation in ("unknown", "profile_file", "fingerprint_file", "symlink"):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
+                target = Path(directory) / "target"
+                coverage = target / "llvm-cov-target"
+                coverage.mkdir(parents=True)
+                if mutation == "unknown":
+                    (coverage / "ci").mkdir()
+                elif mutation == "profile_file":
+                    (coverage / "debug").write_text("not a profile")
+                elif mutation == "fingerprint_file":
+                    (coverage / "debug").mkdir()
+                    (coverage / "debug" / ".fingerprint").write_text("not a directory")
+                elif os.name == "posix":
+                    coverage.rmdir()
+                    coverage.symlink_to(Path(directory))
+                else:
+                    (coverage / "ci").mkdir()
+                with self.assertRaises(guard.CleanupUnavailable):
+                    guard.profile_directories(target)
+
 
 def create_crate(root):
     (root / "src").mkdir()

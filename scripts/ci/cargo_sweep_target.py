@@ -45,6 +45,9 @@ def _profiles_below_target_entry(entry: os.DirEntry) -> set[Path]:
         return set()
     if entry.name in ROOT_ARTIFACTS:
         return set()
+    if entry.name == "llvm-cov-target":
+        # coverageの別targetも除外せず検査し、全profileを同じ排他対象に含める。
+        return set(profile_directories(path))
     if not TRIPLE.fullmatch(entry.name):
         raise CleanupUnavailable(f"unknown directory in Cargo target: {path}")
     with os.scandir(path) as entries:
