@@ -26,5 +26,10 @@
 
 - 4aee907eの通常pushはexit0。pre-pushのjust check（native通常test、Linux実worker付きworkspace、Windows test-inclusive cross-check）を通過した。追加supply-chainもadvisories/bans/licenses/sourcesが全て成功。
 - 別途all-target Clippyを再実行し、test fixtureの剰余判定にmanual_is_multiple_ofを1件検出（exit101）。標準is_multiple_ofへ置換後、全target Clippy・format・focused23件がexit0。focused linkでは既存debug __eh_frame警告が出たため、配布版の検証を代替する結果とはしない。失敗・中断を成功として扱わない。
+- 補正8a3ab0afは署名Gで正式commit、通常pushもexit0。native通常test、Linux実worker付き全workspace、Windows test-inclusive cross-check、native fixture8件、全coverage（UI1030/既存ignore2・parallel143/既存ignore2・serial18、strict document surface100%/未実行0）が成功。
+- raw coverageの新face_payload.rsは40/40行・4/4関数。regionは105/106で、64bit対象で到達しないusize→u64変換失敗closureは実行済みと主張しない。既存除外・閾値は変更していない。
+- comment4173709245へreply4174093967後、当該threadを個別resolve。全review/commentsを再取得してresolvedを確認し、残る未解決はmanual target policyのみ。8a3ab0afのcurrent再reviewはissuecomment5971694812で依頼、結果未確認。
+- 8a3ab0afのmacOS universal main/workerを再生成し、両architectureとstrict ad-hoc codesign検証に成功。main SHA256は561c26f5b4b07070382231a01b75e18836e5a6e583abf68297da0192f52eed4d、workerはba2d89aa47f7188b04f0b466a908471d099c5018ba2484f242147a816b380650。
+- fresh configのarm64 startup smokeは実kernel image/SHA一致・継続UI・peak RSS242512KiB・font27093388bytes・Office worker0でexit0。証跡tmp/trash/2026-10-04-023302-startup.M7prNf。Termsは自動承認せず、原本Office/HTMLのclean-machine受入や全OS実機成功とは区別する。
 
-現sourceの全target lint/test/coverage/supply-chain/packaging、正式履歴/通常push、comment4173709245へのreply/resolveと全review再取得。HTML正常close・Office fidelity・全OS clean-machine受入・公開は引き続き未完了。
+current HEADのcloud/review結果、HTML正常close・Office fidelity・全OS clean-machine原本受入・全配布成果物・公開は引き続き未完了。KRR公開修正版→既存KDV担当の公開版→KatanA固定registry採用の順序を維持する。
