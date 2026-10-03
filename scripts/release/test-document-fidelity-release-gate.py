@@ -448,10 +448,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
     def test_preflight_runs_self_test_and_binding_before_version_glob(self) -> None:
         preflight = SCRIPT.parents[2] / "scripts" / "release" / "preflight.sh"
         source = preflight.read_text(encoding="utf-8")
-        self_test = "python3 scripts/release/test-document-fidelity-release-gate.py"
-        gate = 'python3 scripts/release/check-document-fidelity-release-gate.py "$VERSION" "$TASK_GATE_MODE"'
+        install = '"$EVIDENCE_PYTHON_ENV/bin/python" -m pip install --disable-pip-version-check --only-binary=:all: -r scripts/release/evidence-requirements.txt'
+        self_test = '"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-release-gate.py'
+        gate = '"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/check-document-fidelity-release-gate.py "$VERSION" "$TASK_GATE_MODE"'
+        self.assertIn(install, source)
         self.assertIn(self_test, source)
         self.assertIn(gate, source)
+        self.assertLess(source.index(install), source.index(self_test))
         self.assertLess(source.index(self_test), source.index("for CHANGE_DIR in"))
         self.assertLess(source.index(gate), source.index("for CHANGE_DIR in"))
 

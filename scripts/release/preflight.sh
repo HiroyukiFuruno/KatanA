@@ -119,8 +119,13 @@ scripts/release/check-linuxbrew-formula-contract.sh
 # 12. OpenSpec Validation
 info "13/13 Validating OpenSpec task completion..."
 # WHY（日本語）: v0.22.42のdocument-fidelityはpost-変更名のため、版番号globだけでは公開前必須受入を見落とす。
-python3 scripts/release/test-document-fidelity-release-gate.py
-python3 scripts/release/check-document-fidelity-release-gate.py "$VERSION" "$TASK_GATE_MODE"
+EVIDENCE_PYTHON_ENV="target/release-evidence-python"
+if [[ ! -x "$EVIDENCE_PYTHON_ENV/bin/python" ]]; then
+    python3 -m venv "$EVIDENCE_PYTHON_ENV"
+fi
+"$EVIDENCE_PYTHON_ENV/bin/python" -m pip install --disable-pip-version-check --only-binary=:all: -r scripts/release/evidence-requirements.txt
+"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-release-gate.py
+"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/check-document-fidelity-release-gate.py "$VERSION" "$TASK_GATE_MODE"
 VERSION_DASHED=$(echo "$VERSION" | tr '.' '-')
 for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
     if [[ -d "$CHANGE_DIR" ]]; then

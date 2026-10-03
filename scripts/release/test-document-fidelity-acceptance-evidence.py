@@ -10,6 +10,7 @@ import os
 import subprocess
 import tempfile
 import unittest
+import zlib
 from unittest import mock
 from pathlib import Path
 
@@ -489,6 +490,61 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                     self.write_evidence(root, evidence)
                     with self.assertRaises(MODULE.AcceptanceEvidenceError):
                         MODULE.verify(root)
+
+    def test_structurally_invalid_pngs_are_rejected_with_all_digests_synced(self) -> None:
+        def corrupt_png(raw: bytes, mutation: str) -> bytes:
+            if mutation == "header_only":
+                return raw[:33]
+            if mutation == "truncated":
+                payload_end = 41 + int.from_bytes(raw[33:37], "big")
+                return raw[:payload_end - 1]
+            if mutation == "missing_iend":
+                return raw[:-12]
+            corrupted = bytearray(raw)
+            if mutation == "bad_crc":
+                corrupted[29] ^= 0x01
+                return bytes(corrupted)
+            if mutation == "invalid_deflate":
+                payload_start = 41
+                payload_end = payload_start + int.from_bytes(corrupted[33:37], "big")
+                corrupted[payload_start] ^= 0xFF
+                crc = zlib.crc32(b"IDAT" + corrupted[payload_start:payload_end])
+                corrupted[payload_end:payload_end + 4] = crc.to_bytes(4, "big")
+                return bytes(corrupted)
+            raise AssertionError(f"unknown PNG mutation: {mutation}")
+
+        for record_kind in ("html", "office"):
+            for side in ("reference", "measured"):
+                for mutation in ("header_only", "truncated", "missing_iend", "bad_crc", "invalid_deflate"):
+                    with self.subTest(kind=record_kind, side=side, mutation=mutation), self.repository() as directory:
+                        root = Path(directory)
+                        evidence = self.valid_evidence(root)
+                        record = evidence["html"] if record_kind == "html" else evidence["office_fixtures"][0]
+                        comparison = record["comparison"] if record_kind == "html" else record["fidelity"]
+                        manifest_path = root / comparison[f"{side}_artifact"]
+                        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                        render_path = root / manifest["render"]["path"]
+                        render_path.write_bytes(corrupt_png(render_path.read_bytes(), mutation))
+                        manifest["render"]["sha256"] = MODULE.sha256_bytes(render_path.read_bytes())
+                        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+                        manifest_digest = MODULE.sha256_bytes(manifest_path.read_bytes())
+                        comparison[f"{side}_sha256"] = manifest_digest
+                        if side == "reference":
+                            contract_path = root / comparison["contract"]
+                            contract = json.loads(contract_path.read_text(encoding="utf-8"))
+                            contract["reference_sha256"] = manifest_digest
+                            contract_path.write_text(json.dumps(contract), encoding="utf-8")
+                            comparison["contract_sha256"] = MODULE.sha256_bytes(contract_path.read_bytes())
+                            evidence["source_tree_sha256"] = MODULE.source_tree_sha256(root)
+                        else:
+                            record["packaged_run"]["render_output"].update(
+                                manifest["render"],
+                                metrics_path=comparison["measured_artifact"],
+                                metrics_sha256=manifest_digest,
+                            )
+                        self.write_evidence(root, evidence)
+                        with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                            MODULE.verify(root)
 
     def test_packaged_render_output_and_metrics_cannot_be_forged(self) -> None:
         for record_kind in ("html", "office"):

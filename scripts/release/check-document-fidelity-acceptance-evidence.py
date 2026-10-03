@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
 import math
 import ntpath
@@ -13,6 +14,7 @@ import re
 import subprocess
 import sys
 import tomllib
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -301,9 +303,30 @@ def verify_render_artifact(root: Path, manifest: dict[str, Any], name: str) -> N
     dimensions = (math.ceil(viewport["width"] * ratio), math.ceil(viewport["height"] * ratio))
     if (int.from_bytes(raw[16:20], "big"), int.from_bytes(raw[20:24], "big")) != dimensions:
         fail(f"{name}.render dimensions do not match the measured viewport")
+    verify_png_decode(raw, dimensions, name)
     digest = require_sha256(render["sha256"], f"{name}.render.sha256")
     if sha256_bytes(raw) != digest:
         fail(f"{name}.render SHA-256 is stale or forged")
+
+
+def verify_png_decode(raw: bytes, dimensions: tuple[int, int], name: str) -> None:
+    if not raw.endswith(b"\x00\x00\x00\x00IEND\xae\x42\x60\x82"):
+        fail(f"{name}.render must end with a complete PNG IEND chunk")
+    try:
+        from PIL import Image
+    except ImportError:
+        fail("PNG evidence verification requires scripts/release/evidence-requirements.txt")
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            with Image.open(io.BytesIO(raw)) as image:
+                if image.format != "PNG" or image.size != dimensions:
+                    fail(f"{name}.render is not the expected PNG")
+                image.verify()
+            with Image.open(io.BytesIO(raw)) as image:
+                image.load()
+    except (OSError, SyntaxError, ValueError, Image.DecompressionBombWarning, Image.DecompressionBombError) as error:
+        fail(f"{name}.render cannot be decoded as a complete PNG: {error}")
 
 
 def verify_render_run(manifest: dict[str, Any], comparison: dict[str, Any], run: dict[str, Any], target: str, name: str) -> None:
