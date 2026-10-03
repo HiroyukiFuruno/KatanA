@@ -39,3 +39,15 @@ valid logical/DPI render fixtures still pass, and ordinary preflight supplies
 the decoder to the same Python executable used by its subprocess gate.
 Original HTML normal-close/performance, Office fidelity and packaged acceptance,
 all clean-machine targets, current review/CI, and public release remain open.
+
+## Formal integration
+
+Commit `bcaece3ac40915e0421d683a49fde15a6b51bfd7` completed normal commit/push
+with exit 0. Reply 4171534389 documents this specific repair; thread
+`PRRT_kwDORm09y86ojMi4` was individually resolved and the complete re-fetch
+confirmed it resolved. The existing manual-target publication P2 remains open.
+Current-HEAD review was requested via issue comment 5965101754.
+Shared Git config SHA remained
+`bcf708315eb9ae84c706129108d49862ef47e24a0d13a615f0b3bd58e0fb3c29`.
+Master is clean, stash count is zero and release origin alignment is 0/0.
+This checkpoint does not mark product acceptance or publication complete.
