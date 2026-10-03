@@ -252,16 +252,93 @@ def load_contract(root: Path, value: object, name: str) -> dict[str, Any]:
     return contract
 
 
-def verify_contract_identity(contract: dict[str, Any], comparison: dict[str, Any], name: str, input_sha: str, renderer: str) -> dict[str, float]:
+def load_artifact_bytes(root: Path, value: object, name: str) -> bytes:
+    if not isinstance(value, str) or not value:
+        fail(f"{name} artifact path is required")
+    path = Path(value)
+    if path.is_absolute() or ntpath.isabs(value) or ".." in path.parts or path.as_posix() != value:
+        fail(f"{name} artifact path must be relative without traversal")
+    try:
+        resolved = (root / path).resolve(strict=True)
+    except (OSError, RuntimeError) as error:
+        fail(f"{name} artifact cannot be read: {error}")
+    if not resolved.is_relative_to(root.resolve()):
+        fail(f"{name} artifact path escapes the repository")
+    if not resolved.is_file():
+        fail(f"{name} artifact must be a regular file")
+    current = root
+    for part in path.parts:
+        current /= part
+        if current.is_symlink():
+            fail(f"{name} artifact path must not use symbolic links")
+    try:
+        raw = resolved.read_bytes()
+    except OSError as error:
+        fail(f"{name} artifact cannot be read: {error}")
+    return raw
+
+
+def load_artifact(root: Path, value: object, name: str) -> tuple[bytes, dict[str, Any]]:
+    raw = load_artifact_bytes(root, value, name)
+    try:
+        artifact = json.loads(raw)
+    except ValueError as error:
+        fail(f"{name} artifact is not valid JSON: {error}")
+    if not isinstance(artifact, dict):
+        fail(f"{name} artifact must contain an object")
+    return raw, artifact
+
+
+def verify_render_artifact(root: Path, manifest: dict[str, Any], name: str) -> None:
+    render = manifest.get("render")
+    if not isinstance(render, dict) or set(render) != {"path", "sha256", "pixel_ratio"}:
+        fail(f"{name}.render must bind a real PNG output")
+    raw = load_artifact_bytes(root, render["path"], f"{name}.render")
+    if not raw.startswith(b"\x89PNG\r\n\x1a\n") or len(raw) < 33 or raw[12:16] != b"IHDR":
+        fail(f"{name}.render must be a PNG, not a metrics JSON")
+    viewport = require_viewport(manifest.get("viewport"), f"{name}.viewport")
+    ratio = require_positive_finite_number(render["pixel_ratio"], f"{name}.render.pixel_ratio")
+    dimensions = (math.ceil(viewport["width"] * ratio), math.ceil(viewport["height"] * ratio))
+    if (int.from_bytes(raw[16:20], "big"), int.from_bytes(raw[20:24], "big")) != dimensions:
+        fail(f"{name}.render dimensions do not match the measured viewport")
+    digest = require_sha256(render["sha256"], f"{name}.render.sha256")
+    if sha256_bytes(raw) != digest:
+        fail(f"{name}.render SHA-256 is stale or forged")
+
+
+def verify_render_run(manifest: dict[str, Any], comparison: dict[str, Any], run: dict[str, Any], target: str, name: str) -> None:
+    identity = manifest.get("run_identity")
+    expected = {field: run.get(field) for field in ("run_id", "main_sha256", "sidecar_sha256", "fixture_sha256")}
+    expected["target"] = target
+    if not isinstance(expected["run_id"], str) or not expected["run_id"] or identity != expected:
+        fail(f"{name} measured artifact must bind its packaged run identity")
+    output = run.get("render_output")
+    expected_output = dict(manifest["render"], metrics_path=comparison.get("measured_artifact"), metrics_sha256=comparison.get("measured_sha256"))
+    if output != expected_output:
+        fail(f"{name} packaged run output does not match the measured artifact")
+
+
+def verify_contract_identity(root: Path, contract: dict[str, Any], comparison: dict[str, Any], name: str, input_sha: str, renderer: str, run: dict[str, Any], target: str) -> tuple[dict[str, float], dict[str, Any], dict[str, Any]]:
     if require_sha256(comparison.get("contract_sha256"), f"{name}.contract_sha256") != contract["_raw_sha256"]:
         fail(f"{name} contract SHA-256 is stale")
     if require_sha256(contract.get("input_sha256"), f"{name}.contract.input_sha256") != input_sha:
         fail(f"{name} contract input identity does not match the fixture")
     if contract.get("reference_renderer") != renderer:
         fail(f"{name} contract renderer is invalid")
-    if require_sha256(comparison.get("reference_sha256"), f"{name}.reference_sha256") != require_sha256(contract.get("reference_sha256"), f"{name}.contract.reference_sha256"):
+    reference_raw, reference_artifact = load_artifact(root, contract.get("reference_artifact"), f"{name}.reference")
+    reference_sha = sha256_bytes(reference_raw)
+    if reference_sha != require_sha256(contract.get("reference_sha256"), f"{name}.contract.reference_sha256"):
+        fail(f"{name} reference artifact SHA-256 does not match the contract")
+    if require_sha256(comparison.get("reference_sha256"), f"{name}.reference_sha256") != reference_sha:
         fail(f"{name} reference identity does not match the contract")
-    require_sha256(comparison.get("measured_sha256"), f"{name}.measured_sha256")
+    measured_raw, measured_artifact = load_artifact(root, comparison.get("measured_artifact"), f"{name}.measured")
+    if require_sha256(comparison.get("measured_sha256"), f"{name}.measured_sha256") != sha256_bytes(measured_raw):
+        fail(f"{name} measured artifact SHA-256 is stale or forged")
+    verify_render_artifact(root, reference_artifact, f"{name}.reference")
+    verify_render_artifact(root, measured_artifact, f"{name}.measured")
+    if reference_artifact.get("producer_mode") != renderer or measured_artifact.get("producer_mode") != "packaged_main":
+        fail(f"{name} artifact producers do not match the independent reference and packaged main")
+    verify_render_run(measured_artifact, comparison, run, target, name)
     if comparison.get("producer_mode") != "packaged_main":
         fail(f"{name} measured receipt must come from packaged_main")
     viewports = comparison.get("viewports")
@@ -271,10 +348,15 @@ def verify_contract_identity(contract: dict[str, Any], comparison: dict[str, Any
     for side in ("reference", "measured"):
         if require_viewport(viewports.get(side), f"{name}.viewports.{side}") != expected_viewport:
             fail(f"{name}.viewports.{side} does not match the contract")
-    return expected_viewport
+    for artifact in (reference_artifact, measured_artifact):
+        if require_viewport(artifact.get("viewport"), f"{name}.artifact.viewport") != expected_viewport:
+            fail(f"{name} artifact viewport does not match the contract")
+    if reference_artifact.get("input_sha256") != input_sha or measured_artifact.get("input_sha256") != input_sha:
+        fail(f"{name} artifact input identity does not match the fixture")
+    return expected_viewport, reference_artifact, measured_artifact
 
 
-def verify_comparison_geometry(comparison: dict[str, Any], contract: dict[str, Any], names: set[str], name: str) -> None:
+def verify_comparison_geometry(comparison: dict[str, Any], contract: dict[str, Any], names: set[str], name: str, reference_artifact: dict[str, Any], measured_artifact: dict[str, Any]) -> None:
     geometry = comparison.get("geometry")
     contract_geometry = contract.get("geometry")
     if not isinstance(geometry, dict) or set(geometry) != names:
@@ -292,6 +374,14 @@ def verify_comparison_geometry(comparison: dict[str, Any], contract: dict[str, A
         measured = require_rect(receipt["measured"], f"{name}.geometry.{target}.measured")
         contract_reference = require_rect(expected["reference"], f"{name}.contract.geometry.{target}.reference")
         require_same_rect(reference, contract_reference, f"{name}.geometry.{target}.reference")
+        reference_geometry = reference_artifact.get("geometry")
+        measured_geometry = measured_artifact.get("geometry")
+        if not isinstance(reference_geometry, dict) or not isinstance(measured_geometry, dict):
+            fail(f"{name} artifact geometry must be an object")
+        artifact_reference = reference_geometry.get(target)
+        artifact_measured = measured_geometry.get(target)
+        require_same_rect(reference, require_rect(artifact_reference, f"{name}.reference_artifact.geometry.{target}"), f"{name}.geometry.{target}.reference")
+        require_same_rect(measured, require_rect(artifact_measured, f"{name}.measured_artifact.geometry.{target}"), f"{name}.geometry.{target}.measured")
         tolerance = require_finite_number(expected["tolerance"], f"{name}.contract.geometry.{target}.tolerance")
         delta = max(abs(measured[field] - reference[field]) for field in ("x", "y", "width", "height"))
         if delta > tolerance:
@@ -305,7 +395,14 @@ def verify_html_comparison(root: Path, value: dict[str, Any]) -> None:
         fail("HTML comparison is missing")
     verify_html_navigation(comparison.get("navigation"))
     contract = load_contract(root, comparison.get("contract"), "HTML")
-    viewport = verify_contract_identity(contract, comparison, "HTML", input_sha, "chromeHTML")
+    target = value.get("packaged_target")
+    if not isinstance(target, str) or target not in SUPPORTED_TARGETS:
+        fail("HTML must identify its packaged target")
+    run = value.get("packaged_run")
+    verify_packaged_record(target, run)
+    if run.get("fixture_sha256") != input_sha:
+        fail("HTML packaged run input does not match")
+    viewport, reference_artifact, measured_artifact = verify_contract_identity(root, contract, comparison, "HTML", input_sha, "chromeHTML", run, target)
     if viewport != {"width": 1280, "height": 900}:
         fail("HTML comparison must use the agreed 1280x900 viewport")
     input_record = comparison.get("input")
@@ -313,7 +410,9 @@ def verify_html_comparison(root: Path, value: dict[str, Any]) -> None:
         fail("HTML.comparison.input must bind the #s15 anchor")
     if require_sha256(input_record.get("fixture_sha256"), "HTML.comparison.input.fixture_sha256") != input_sha:
         fail("HTML.comparison input fixture identity does not match HTML fixture")
-    verify_comparison_geometry(comparison, contract, {"sticky_toc", "main", "visible_section"}, "HTML")
+    verify_comparison_geometry(comparison, contract, {"sticky_toc", "main", "visible_section"}, "HTML", reference_artifact, measured_artifact)
+    if measured_artifact.get("navigation") != comparison.get("navigation"):
+        fail("HTML navigation does not match the measured artifact")
     for field in ("active_toc", "visible_section_state"):
         state = comparison.get(field)
         if (not isinstance(state, dict) or set(state) != {"reference", "measured"}
@@ -321,6 +420,8 @@ def verify_html_comparison(root: Path, value: dict[str, Any]) -> None:
                 or not isinstance(state["measured"], str) or not state["measured"]
                 or state["reference"] != state["measured"] or state["reference"] != "#s15"):
             fail(f"HTML.comparison.{field} must match the reference state")
+        if reference_artifact.get(field) != state["reference"] or measured_artifact.get(field) != state["measured"]:
+            fail(f"HTML.comparison.{field} does not match the render measurements")
 
 
 def verify_html_navigation(value: object) -> None:
@@ -354,7 +455,7 @@ def verify_normal_close_duration(record: dict[str, Any], name: str) -> None:
         fail(f"{name} normal close must be within {MAX_NORMAL_CLOSE_MS} ms")
 
 
-def verify_html(root: Path, value: object) -> None:
+def verify_html(root: Path, value: object, packaged_targets: dict[str, Any]) -> None:
     if not isinstance(value, dict):
         fail("HTML acceptance evidence is missing")
     if value.get("fixture_sha256") != ORIGINAL_HTML_SHA256:
@@ -370,6 +471,10 @@ def verify_html(root: Path, value: object) -> None:
     require_finite_number(value.get("cpu_percent"), "HTML cpu_percent")
     require_positive_finite_number(value.get("rss_bytes"), "HTML rss_bytes")
     verify_html_comparison(root, value)
+    target_artifact = packaged_targets[value["packaged_target"]]
+    for field in ("main_path", "sidecar_path", "main_sha256", "sidecar_sha256"):
+        if value["packaged_run"][field] != target_artifact[field]:
+            fail(f"HTML packaged {field} does not match its target")
 
 
 def verify_office_fidelity(root: Path, record: dict[str, Any], index: int, input_sha: str) -> None:
@@ -378,10 +483,10 @@ def verify_office_fidelity(root: Path, record: dict[str, Any], index: int, input
     if not isinstance(fidelity, dict):
         fail(f"{name} comparison is missing")
     contract = load_contract(root, fidelity.get("contract"), name)
-    verify_contract_identity(contract, fidelity, name, input_sha, "sourceOffice")
     packaged_run = record.get("packaged_run")
     if not isinstance(packaged_run, dict) or fidelity.get("run_id") != packaged_run.get("run_id"):
         fail(f"{name}.run_id must bind the packaged run")
+    _, reference_artifact, measured_artifact = verify_contract_identity(root, contract, fidelity, name, input_sha, "sourceOffice", packaged_run, record["packaged_target"])
     missing = fidelity.get("missing_elements")
     if not isinstance(missing, dict) or set(missing) != {"count"}:
         fail(f"{name}.missing_elements must contain count only")
@@ -393,13 +498,15 @@ def verify_office_fidelity(root: Path, record: dict[str, Any], index: int, input
         fail(f"{name}.contract.missing_elements_tolerance must be a non-negative integer")
     if count > tolerance_value:
         fail(f"{name} missing element count exceeds the contract tolerance")
+    if measured_artifact.get("missing_elements") != missing:
+        fail(f"{name} missing elements do not match the measured artifact")
     geometry = contract.get("geometry")
     if not isinstance(geometry, dict) or not geometry:
         fail(f"{name}.contract.geometry must contain named reference elements")
     if any(not key or key != key.strip() for key in geometry):
         fail(f"{name}.contract.geometry names must be non-empty and normalized")
     geometry_names = set(geometry)
-    verify_comparison_geometry(fidelity, contract, geometry_names, name)
+    verify_comparison_geometry(fidelity, contract, geometry_names, name, reference_artifact, measured_artifact)
 
 
 def verify_packaged(value: object) -> None:
@@ -528,8 +635,8 @@ def verify(root: Path, evidence_path: Path | None = None) -> None:
         record = declared[name]
         if not isinstance(record, dict) or record.get("version") != package["version"] or record.get("source") != CRATES_IO_SOURCE:
             fail(f"published dependency evidence does not match Cargo.lock for {name}")
-    verify_html(root, evidence.get("html"))
     verify_packaged(evidence.get("packaged_targets"))
+    verify_html(root, evidence.get("html"), evidence["packaged_targets"])
     verify_office(root, evidence.get("office_fixtures"), evidence["packaged_targets"])
 
 

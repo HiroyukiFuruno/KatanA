@@ -15,6 +15,12 @@ from pathlib import Path
 
 
 SCRIPT = Path(__file__).with_name("check-document-fidelity-acceptance-evidence.py")
+HELPER_SPEC = importlib.util.spec_from_file_location("document_fidelity_test_artifacts", SCRIPT.with_name("document_fidelity_test_artifacts.py"))
+assert HELPER_SPEC is not None and HELPER_SPEC.loader is not None
+HELPER = importlib.util.module_from_spec(HELPER_SPEC)
+HELPER_SPEC.loader.exec_module(HELPER)
+bind_render_artifacts = HELPER.bind_render_artifacts
+png_bytes = HELPER.png_bytes
 SPEC = importlib.util.spec_from_file_location("document_acceptance_evidence", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 MODULE = importlib.util.module_from_spec(SPEC)
@@ -103,21 +109,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
         )
         contracts = root / "scripts/release/document-fidelity-contracts"
         contracts.mkdir(parents=True)
+        artifacts = root / "evidence-artifacts"
+        artifacts.mkdir()
+        html_geometry = {"sticky_toc": {"x": 0, "y": 0, "width": 240, "height": 900}, "main": {"x": 240, "y": 0, "width": 1040, "height": 900}, "visible_section": {"x": 240, "y": 0, "width": 1040, "height": 900}}
+        for filename in ("html-reference.json", "html-measured.json"):
+            (artifacts / filename).write_text(json.dumps({"input_sha256": MODULE.ORIGINAL_HTML_SHA256, "geometry": html_geometry}), encoding="utf-8")
         (contracts / "html-v0.22.42.json").write_text(json.dumps({
             "input_sha256": MODULE.ORIGINAL_HTML_SHA256,
-            "reference_sha256": "c" * 64,
+            "reference_sha256": MODULE.sha256_bytes((artifacts / "html-reference.json").read_bytes()),
             "reference_renderer": "chromeHTML",
             "viewport": {"width": 1280, "height": 900},
-            "geometry": {target: {"reference": rect, "tolerance": 1} for target, rect in {
+            "reference_artifact": "evidence-artifacts/html-reference.json", "geometry": {target: {"reference": rect, "tolerance": 1} for target, rect in {
                 "sticky_toc": {"x": 0, "y": 0, "width": 240, "height": 900},
                 "main": {"x": 240, "y": 0, "width": 1040, "height": 900},
                 "visible_section": {"x": 240, "y": 0, "width": 1040, "height": 900},
             }.items()},
         }), encoding="utf-8")
         for index, input_sha in enumerate(MODULE.SUPPLIED_OFFICE_FIXTURES):
+            for filename in (f"office-{index}-reference.json", f"office-{index}-measured.json"):
+                (artifacts / filename).write_text(json.dumps({"input_sha256": input_sha, "geometry": {"synthetic-element": {"x": 0, "y": 0, "width": 10, "height": 10}}}), encoding="utf-8")
             (contracts / f"office-v0.22.42-{index}.json").write_text(json.dumps({
-                "input_sha256": input_sha, "reference_sha256": "c" * 64,
+                "input_sha256": input_sha, "reference_sha256": MODULE.sha256_bytes((artifacts / f"office-{index}-reference.json").read_bytes()),
                 "reference_renderer": "sourceOffice", "viewport": {"width": 1280, "height": 900},
+                "reference_artifact": f"evidence-artifacts/office-{index}-reference.json",
                 "missing_elements_tolerance": 0,
                 "geometry": {"synthetic-element": {"reference": {"x": 0, "y": 0, "width": 10, "height": 10}, "tolerance": 1}},
             }), encoding="utf-8")
@@ -244,13 +258,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             ],
         }
         evidence["html"]["comparison"]["contract_sha256"] = MODULE.sha256_bytes((root / "scripts/release/document-fidelity-contracts/html-v0.22.42.json").read_bytes())
+        evidence["html"]["comparison"]["reference_artifact"] = "evidence-artifacts/html-reference.json"
+        evidence["html"]["comparison"]["measured_artifact"] = "evidence-artifacts/html-measured.json"
+        evidence["html"]["comparison"]["reference_sha256"] = MODULE.sha256_bytes((root / "evidence-artifacts/html-reference.json").read_bytes())
+        evidence["html"]["comparison"]["measured_sha256"] = MODULE.sha256_bytes((root / "evidence-artifacts/html-measured.json").read_bytes())
         for index, record in enumerate(evidence["office_fixtures"]):
             record["fidelity"]["contract_sha256"] = MODULE.sha256_bytes((root / f"scripts/release/document-fidelity-contracts/office-v0.22.42-{index}.json").read_bytes())
+            record["fidelity"]["reference_artifact"] = f"evidence-artifacts/office-{index}-reference.json"
+            record["fidelity"]["measured_artifact"] = f"evidence-artifacts/office-{index}-measured.json"
+            record["fidelity"]["reference_sha256"] = MODULE.sha256_bytes((root / record["fidelity"]["reference_artifact"]).read_bytes())
+            record["fidelity"]["measured_sha256"] = MODULE.sha256_bytes((root / record["fidelity"]["measured_artifact"]).read_bytes())
+        bind_render_artifacts(root, evidence, MODULE)
         return evidence
 
     def write_evidence(self, root: Path, evidence: dict[str, object]) -> None:
         path = root / MODULE.EVIDENCE_RELATIVE
-        path.parent.mkdir(parents=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(evidence), encoding="utf-8")
 
     def assert_rejected(self, mutate) -> None:
@@ -405,6 +428,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             root = Path(directory)
             evidence = self.valid_evidence(root)
             evidence["html"]["comparison"]["geometry"]["sticky_toc"]["measured"]["x"] = -0.5
+            measured_path = root / "evidence-artifacts/html-measured.json"
+            measured = json.loads(measured_path.read_text(encoding="utf-8"))
+            measured["geometry"]["sticky_toc"]["x"] = -0.5
+            measured_path.write_text(json.dumps(measured), encoding="utf-8")
+            evidence["html"]["comparison"]["measured_sha256"] = MODULE.sha256_bytes(measured_path.read_bytes())
+            evidence["html"]["packaged_run"]["render_output"]["metrics_sha256"] = evidence["html"]["comparison"]["measured_sha256"]
             self.write_evidence(root, evidence)
             MODULE.verify(root)
 
@@ -436,9 +465,98 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             root = Path(directory)
             evidence = self.valid_evidence(root)
             comparison = evidence["html"]["comparison"]
-            comparison["measured_sha256"] = comparison["reference_sha256"]
+            self.assertEqual(evidence["html"]["packaged_run"]["render_output"]["sha256"], json.loads((root / comparison["reference_artifact"]).read_text())["render"]["sha256"])
             self.write_evidence(root, evidence)
             MODULE.verify(root)
+
+    def test_real_render_bytes_are_required_and_hash_bound(self) -> None:
+        for side in ("reference", "measured"):
+            for mutation in ("missing", "tampered", "json_instead_of_png", "symlink"):
+                with self.subTest(side=side, mutation=mutation), self.repository() as directory:
+                    root = Path(directory)
+                    evidence = self.valid_evidence(root)
+                    path = root / f"evidence-artifacts/html-{side}.png"
+                    if mutation == "missing":
+                        path.unlink()
+                    elif mutation == "tampered":
+                        path.write_bytes(path.read_bytes() + b"tampered")
+                    elif mutation == "json_instead_of_png":
+                        path.write_text("{}")
+                    else:
+                        target = path.with_suffix(".other.png")
+                        path.rename(target)
+                        path.symlink_to(target.name)
+                    self.write_evidence(root, evidence)
+                    with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                        MODULE.verify(root)
+
+    def test_packaged_render_output_and_metrics_cannot_be_forged(self) -> None:
+        for record_kind in ("html", "office"):
+            for mutation in ("run", "target", "geometry", "state", "viewport", "producer"):
+                with self.subTest(kind=record_kind, mutation=mutation), self.repository() as directory:
+                    root = Path(directory)
+                    evidence = self.valid_evidence(root)
+                    record = evidence["html"] if record_kind == "html" else evidence["office_fixtures"][0]
+                    comparison = record["comparison"] if record_kind == "html" else record["fidelity"]
+                    path = root / comparison["measured_artifact"]
+                    manifest = json.loads(path.read_text())
+                    if mutation == "run":
+                        manifest["run_identity"]["run_id"] = "foreign-run"
+                    elif mutation == "target":
+                        manifest["run_identity"]["target"] = "foreign-target"
+                    elif mutation == "geometry":
+                        manifest["geometry"][next(iter(manifest["geometry"]))]["x"] = 1
+                    elif mutation == "state":
+                        manifest["active_toc"] = "#s14"
+                        manifest["missing_elements"] = {"count": 1}
+                    elif mutation == "viewport":
+                        manifest["viewport"]["width"] = 1
+                    else:
+                        manifest["producer_mode"] = "in_process"
+                    path.write_text(json.dumps(manifest))
+                    digest = MODULE.sha256_bytes(path.read_bytes())
+                    comparison["measured_sha256"] = digest
+                    record["packaged_run"]["render_output"]["metrics_sha256"] = digest
+                    self.write_evidence(root, evidence)
+                    with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                        MODULE.verify(root)
+
+    def test_recorded_run_output_binding_and_receipt_immutability(self) -> None:
+        self.assert_rejected(lambda evidence: evidence["html"]["packaged_run"].pop("render_output"))
+        self.assert_rejected(lambda evidence: evidence["office_fixtures"][0]["packaged_run"]["render_output"].update(sha256="a" * 64))
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            original = json.dumps(evidence, sort_keys=True)
+            MODULE.verify_html_comparison(root, evidence["html"])
+            for index, record in enumerate(evidence["office_fixtures"]):
+                MODULE.verify_office_fidelity(root, record, index, record["input_sha256"])
+            self.assertEqual(json.dumps(evidence, sort_keys=True), original)
+
+    def test_render_dimensions_preserve_logical_viewport_at_double_pixel_ratio(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            html = evidence["html"]
+            path = root / html["comparison"]["measured_artifact"]
+            manifest = json.loads(path.read_text())
+            render = manifest["render"]
+            (root / render["path"]).write_bytes(png_bytes(2560, 1800))
+            render.update(pixel_ratio=2, sha256=MODULE.sha256_bytes((root / render["path"]).read_bytes()))
+            path.write_text(json.dumps(manifest))
+            digest = MODULE.sha256_bytes(path.read_bytes())
+            html["comparison"]["measured_sha256"] = digest
+            html["packaged_run"]["render_output"] = dict(render, metrics_path=html["comparison"]["measured_artifact"], metrics_sha256=digest)
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
+            manifest["render"]["pixel_ratio"] = 1
+            path.write_text(json.dumps(manifest))
+            digest = MODULE.sha256_bytes(path.read_bytes())
+            html["comparison"]["measured_sha256"] = digest
+            html["packaged_run"]["render_output"].update(pixel_ratio=1, metrics_sha256=digest)
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root)
 
     def test_normal_close_requires_measured_duration_for_every_run_kind(self) -> None:
         selectors = (

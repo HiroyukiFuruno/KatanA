@@ -14,10 +14,12 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
-import importlib.util
-
-
 SCRIPT = Path(__file__).with_name("check-document-fidelity-release-gate.py")
+HELPER_SPEC = importlib.util.spec_from_file_location("document_fidelity_test_artifacts", SCRIPT.with_name("document_fidelity_test_artifacts.py"))
+assert HELPER_SPEC is not None and HELPER_SPEC.loader is not None
+HELPER = importlib.util.module_from_spec(HELPER_SPEC)
+HELPER_SPEC.loader.exec_module(HELPER)
+bind_render_artifacts = HELPER.bind_render_artifacts
 SPEC = importlib.util.spec_from_file_location("document_fidelity_gate", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 MODULE = importlib.util.module_from_spec(SPEC)
@@ -284,14 +286,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
         ) / "evidence" / "document-acceptance-v0.22.42.json"
         contracts = root / "scripts/release/document-fidelity-contracts"
         contracts.mkdir(parents=True)
-        html_contract = {"input_sha256": EVIDENCE.ORIGINAL_HTML_SHA256, "reference_sha256": "c" * 64, "reference_renderer": "chromeHTML", "viewport": {"width": 1280, "height": 900}, "geometry": {target: {"reference": rect, "tolerance": 1} for target, rect in {"sticky_toc": {"x": 0, "y": 0, "width": 240, "height": 900}, "main": {"x": 240, "y": 0, "width": 1040, "height": 900}, "visible_section": {"x": 240, "y": 0, "width": 1040, "height": 900}}.items()}}
+        artifacts = root / "evidence-artifacts"
+        artifacts.mkdir()
+        html_geometry = {"sticky_toc": {"x": 0, "y": 0, "width": 240, "height": 900}, "main": {"x": 240, "y": 0, "width": 1040, "height": 900}, "visible_section": {"x": 240, "y": 0, "width": 1040, "height": 900}}
+        for filename in ("html-reference.json", "html-measured.json"):
+            (artifacts / filename).write_text(json.dumps({"input_sha256": EVIDENCE.ORIGINAL_HTML_SHA256, "geometry": html_geometry}), encoding="utf-8")
+        html_contract = {"input_sha256": EVIDENCE.ORIGINAL_HTML_SHA256, "reference_sha256": EVIDENCE.sha256_bytes((artifacts / "html-reference.json").read_bytes()), "reference_renderer": "chromeHTML", "viewport": {"width": 1280, "height": 900}, "reference_artifact": "evidence-artifacts/html-reference.json", "geometry": {target: {"reference": rect, "tolerance": 1} for target, rect in {"sticky_toc": {"x": 0, "y": 0, "width": 240, "height": 900}, "main": {"x": 240, "y": 0, "width": 1040, "height": 900}, "visible_section": {"x": 240, "y": 0, "width": 1040, "height": 900}}.items()}}
         (contracts / "html-v0.22.42.json").write_text(json.dumps(html_contract), encoding="utf-8")
         evidence["html"]["comparison"]["contract_sha256"] = EVIDENCE.sha256_bytes((contracts / "html-v0.22.42.json").read_bytes())
+        evidence["html"]["comparison"]["reference_artifact"] = "evidence-artifacts/html-reference.json"
+        evidence["html"]["comparison"]["measured_artifact"] = "evidence-artifacts/html-measured.json"
+        evidence["html"]["comparison"]["reference_sha256"] = EVIDENCE.sha256_bytes((artifacts / "html-reference.json").read_bytes())
+        evidence["html"]["comparison"]["measured_sha256"] = EVIDENCE.sha256_bytes((artifacts / "html-measured.json").read_bytes())
         for index, record in enumerate(evidence["office_fixtures"]):
-            contract = {"input_sha256": record["input_sha256"], "reference_sha256": "c" * 64, "reference_renderer": "sourceOffice", "viewport": {"width": 1280, "height": 900}, "missing_elements_tolerance": 0, "geometry": {"synthetic-element": {"reference": {"x": 0, "y": 0, "width": 10, "height": 10}, "tolerance": 1}}}
+            for suffix in ("reference", "measured"):
+                (artifacts / f"office-{index}-{suffix}.json").write_text(json.dumps({"input_sha256": record["input_sha256"], "geometry": {"synthetic-element": {"x": 0, "y": 0, "width": 10, "height": 10}}}), encoding="utf-8")
+            contract = {"input_sha256": record["input_sha256"], "reference_sha256": EVIDENCE.sha256_bytes((artifacts / f"office-{index}-reference.json").read_bytes()), "reference_renderer": "sourceOffice", "viewport": {"width": 1280, "height": 900}, "reference_artifact": f"evidence-artifacts/office-{index}-reference.json", "missing_elements_tolerance": 0, "geometry": {"synthetic-element": {"reference": {"x": 0, "y": 0, "width": 10, "height": 10}, "tolerance": 1}}}
             contract_path = contracts / f"office-v0.22.42-{index}.json"
             contract_path.write_text(json.dumps(contract), encoding="utf-8")
             record["fidelity"]["contract_sha256"] = EVIDENCE.sha256_bytes(contract_path.read_bytes())
+            record["fidelity"]["reference_artifact"] = f"evidence-artifacts/office-{index}-reference.json"
+            record["fidelity"]["measured_artifact"] = f"evidence-artifacts/office-{index}-measured.json"
+            record["fidelity"]["reference_sha256"] = EVIDENCE.sha256_bytes((artifacts / f"office-{index}-reference.json").read_bytes())
+            record["fidelity"]["measured_sha256"] = EVIDENCE.sha256_bytes((artifacts / f"office-{index}-measured.json").read_bytes())
+        bind_render_artifacts(root, evidence, EVIDENCE)
         subprocess.run(["git", "-C", str(root), "add", "-f", str(contracts)], check=True, env=EVIDENCE.git_environment())
         evidence["source_tree_sha256"] = EVIDENCE.source_tree_sha256(root)
         evidence_path.parent.mkdir(parents=True)
