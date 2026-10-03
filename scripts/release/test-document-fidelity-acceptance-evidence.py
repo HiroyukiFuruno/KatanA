@@ -669,6 +669,33 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             lambda evidence: [record.update(format="docx") for record in evidence["office_fixtures"]]
         )
 
+    def test_office_requires_the_supplied_docx_in_addition_to_original_six(self) -> None:
+        def remove_docx(evidence: dict[str, object]) -> None:
+            evidence["office_fixtures"][:] = [
+                record for record in evidence["office_fixtures"] if record["format"] != "docx"
+            ]
+
+        self.assert_rejected(remove_docx)
+
+    def test_supplied_docx_requires_hash_format_and_fidelity_bound_run(self) -> None:
+        def docx_record(evidence: dict[str, object]) -> dict[str, object]:
+            return next(record for record in evidence["office_fixtures"] if record["format"] == "docx")
+
+        self.assert_rejected(
+            lambda evidence: docx_record(evidence).update(input_sha256="c" * 64)
+        )
+        self.assert_rejected(
+            lambda evidence: docx_record(evidence).update(format="xlsx")
+        )
+        self.assert_rejected(
+            lambda evidence: docx_record(evidence).pop("fidelity")
+        )
+        self.assert_rejected(
+            lambda evidence: docx_record(evidence)["packaged_run"].update(
+                fixture_sha256="c" * 64
+            )
+        )
+
     def test_sha_requires_exact_hex(self) -> None:
         self.assert_rejected(
             lambda evidence: evidence.update(cargo_lock_sha256="+" + "a" * 63)

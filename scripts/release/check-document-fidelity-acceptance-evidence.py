@@ -57,6 +57,7 @@ SOURCE_ROOTS = (
 )
 EXCLUDED_PARTS = {"evidence", "tasks.md", "docs", "target", "__pycache__", "node_modules"}
 SUPPLIED_OFFICE_FIXTURES = {
+    "a1b7e22021218d314bc2d90c526d6d682981828b67cef6e61d8cb2a71ef5742a": "docx",
     "04bf541a7cdb4e332e1f58cc8dc14148e2fd46110fb6c73a77bbafbcaa768aaa": "xlsx",
     "c77f80d3f28daf69c19d3c9986e60f2bf1bdc2cba81b55aea3fb2e741ce00756": "xlsx",
     "77b03ab621c3d197db1bd7b1a6a6a5b544fac56ecf12c24eca2f4fd6fd3e15a9": "xlsx",
@@ -574,7 +575,7 @@ def verify_packaged_record(target: str, record: object) -> None:
 
 def verify_office(root: Path, value: object, packaged_targets: dict[str, Any]) -> None:
     if not isinstance(value, list) or len(value) < len(SUPPLIED_OFFICE_FIXTURES):
-        fail("Office evidence must contain all six fixture results")
+        fail("Office evidence must contain every supplied fixture result")
     run_ids: set[str] = set()
     for index, record in enumerate(value):
         if not isinstance(record, dict) or record.get("status") != "passed":
@@ -618,10 +619,10 @@ def verify_office(root: Path, value: object, packaged_targets: dict[str, Any]) -
     if len(set(input_hashes)) != len(input_hashes):
         fail("Office evidence must contain distinct input fixture hashes")
     if not set(SUPPLIED_OFFICE_FIXTURES).issubset(input_hashes):
-        fail("Office evidence must include all six supplied fixture hashes")
+        fail("Office evidence must include every supplied fixture hash")
     formats = {record["format"] for record in value}
-    if not {"xlsx", "pptx"}.issubset(formats):
-        fail("Office evidence must include XLSX and PPTX fixtures")
+    if not {"docx", "xlsx", "pptx"}.issubset(formats):
+        fail("Office evidence must include DOCX, XLSX, and PPTX fixtures")
 
 
 def verify(root: Path, evidence_path: Path | None = None) -> None:
