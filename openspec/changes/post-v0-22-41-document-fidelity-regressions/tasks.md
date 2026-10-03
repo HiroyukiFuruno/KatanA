@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-04 PR346 P2 4173709245: TTC全collection cloneを旧コードREDで再現し、選択face全tableを単独SFNTへ抽出する修正を実装。元face identity/字形幅・輪郭/style/全table/Weak解放・破損/サイズ上限をfocused23件GREEN、実font2face保持3048480→1524220bytes。format/impacted Clippy/AST23成功、独立レビューP0/P1なし。追加all-target Clippyは共有空き1.4GiBでowned command SIGINT(exit130)、成功扱いしない。全gate/通常push/配布再受入/reply/resolve/current reviewは未完了。unsafe/static leak/閾値変更なし。証跡evidence/ttc-face-payload-2026-10-04.md。
+
 - [x] 2026-10-03 PR346 P1 4173547522: 公開直前のdownload/collect後に実ZIP/TAR/DMG/MSIのmain/sidecar bytesを受入SHAへ照合するcheckerを追加。旧workflowでRED、新8回帰GREEN、実新macDMGと公開v0.22.41MSI抽出照合exit0。独立レビューで未知version skipをP1検出し、拒否/manifest照合を修正して再レビューP0/P1なし。preflightにもself-testを登録、全5asset契約成功。a54940ddへ正式commit・a578f293まで通常push exit0、reply4173661744→個別resolve→全thread/comments再取得でresolved確認。current再review5970424458は結果待ち、新版全OSの実受入JSON未完成で公開拒否を維持。証跡evidence/publication-identity-docx-review-2026-10-03.md。
 - [x] 2026-10-03 PR346 P1 4173547527: legal data-descriptor DOCX実SHAを元6件へ追加、DOCX/XLSX/PPTXとfidelity/run identityを必須化。新DOCX除外回帰を旧a832b01b validatorへ実行しRED確認、修正後全41+release gate17件GREEN。0435368へ正式commit・通常push exit0、reply4173661820→個別resolve→全thread/comments再取得でresolved確認。実packaged DOCX/独立fidelityの完了とは別。証跡evidence/publication-identity-docx-review-2026-10-03.md。
 

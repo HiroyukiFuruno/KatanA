@@ -187,7 +187,7 @@ fn face_metadata_at(path: &Path) -> Option<FaceMetadata> {
 }
 
 fn assert_glyph_matches_payload(resolved: &super::types::ResolvedFontFace) {
-    let font = skrifa::FontRef::from_index(resolved.payload.font.as_ref(), resolved.face_index)
+    let font = skrifa::FontRef::from_index(resolved.payload.font.as_ref(), resolved.payload.index)
         .expect("resolved face index is valid");
     let glyph_id = font.charmap().map('A').expect("bold face maps A");
     assert!(

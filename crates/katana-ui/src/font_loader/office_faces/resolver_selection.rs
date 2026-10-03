@@ -4,8 +4,9 @@ use std::sync::Arc;
 
 use skrifa::FontRef;
 
+use super::face_payload::FacePayload;
 use super::font_metadata::{FaceMetadata, face_metadata, matches_request, weight_distance};
-use super::types::{FontFaceRequest, ResolvedFontFace};
+use super::types::{FontFaceRequest, FontFaceResolutionDiagnostic, ResolvedFontFace};
 
 pub(super) type RequestKey = (String, bool, bool);
 
@@ -72,41 +73,45 @@ pub(super) fn append_matches(
     matches: Vec<PendingMatch>,
     payload: Vec<u8>,
     selected: &mut BTreeMap<RequestKey, SelectedFace>,
-) {
-    let multi_face = matches.len() > 1;
-    let mut owned_payload = Some(payload);
+) -> Vec<FontFaceResolutionDiagnostic> {
+    let mut payload = FacePayload::new(payload);
+    let mut diagnostics = Vec::new();
     for found in matches {
         if !should_replace(selected.get(&found.key), found.distance) {
             continue;
         }
-        let Some(bytes) = payload_for_match(&mut owned_payload, multi_face) else {
+        let Ok(font_data) = payload.take_face(found.index) else {
+            diagnostics.push(FontFaceResolutionDiagnostic::InvalidFontFace {
+                path: path.to_owned(),
+                face_index: found.index as usize,
+            });
             continue;
         };
-        let mut font_data = egui::FontData::from_owned(bytes);
-        font_data.index = found.index;
-        selected.insert(
-            found.key,
-            SelectedFace {
-                metadata: found.metadata,
-                path: path.to_owned(),
-                index: found.index,
-                distance: found.distance,
-                payload: Arc::new(font_data),
-            },
-        );
+        insert_match(path, found, font_data, selected);
     }
+    diagnostics
+}
+
+fn insert_match(
+    path: &Path,
+    found: PendingMatch,
+    payload: egui::FontData,
+    selected: &mut BTreeMap<RequestKey, SelectedFace>,
+) {
+    selected.insert(
+        found.key,
+        SelectedFace {
+            metadata: found.metadata,
+            path: path.to_owned(),
+            index: found.index,
+            distance: found.distance,
+            payload: Arc::new(payload),
+        },
+    );
 }
 
 fn should_replace(current: Option<&SelectedFace>, distance: u16) -> bool {
     current.is_none_or(|selected| distance < selected.distance)
-}
-
-fn payload_for_match(payload: &mut Option<Vec<u8>>, multi_face: bool) -> Option<Vec<u8>> {
-    if multi_face {
-        payload.as_ref().cloned()
-    } else {
-        payload.take()
-    }
 }
 
 pub(super) fn request_key(request: &FontFaceRequest) -> RequestKey {

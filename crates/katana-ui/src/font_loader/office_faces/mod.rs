@@ -1,3 +1,4 @@
+mod face_payload;
 mod font_file;
 mod font_metadata;
 mod resolver;
@@ -8,6 +9,15 @@ mod types;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod ttc_payload_regression_tests;
+
+#[cfg(test)]
+pub(super) mod ttc_payload_assertions;
+
+#[cfg(test)]
+pub(super) mod ttc_payload_fixture;
 
 #[cfg(test)]
 mod metadata_tests;

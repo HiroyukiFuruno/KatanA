@@ -92,7 +92,9 @@ fn inspect_payload(
         };
         collect_faces(file, path, requests, result, incomplete, cancelled)
     };
-    append_matches(path, matches, payload, selected);
+    let diagnostics = append_matches(path, matches, payload, selected);
+    *incomplete |= !diagnostics.is_empty();
+    result.diagnostics.extend(diagnostics);
 }
 
 fn font_file<'a>(
