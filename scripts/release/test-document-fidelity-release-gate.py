@@ -8,6 +8,7 @@ import io
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import tempfile
 import unittest
@@ -457,6 +458,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
         self.assertLess(source.index(install), source.index(self_test))
         self.assertLess(source.index(self_test), source.index("for CHANGE_DIR in"))
         self.assertLess(source.index(gate), source.index("for CHANGE_DIR in"))
+
+    def test_preflight_evidence_environment_does_not_disable_cargo_sweep(self) -> None:
+        repository = SCRIPT.parents[2]
+        source = (repository / "scripts/release/preflight.sh").read_text(encoding="utf-8")
+        match = re.search(r'^EVIDENCE_PYTHON_ENV="([^"]+)"$', source, re.MULTILINE)
+        self.assertIsNotNone(match)
+        relative = Path(match.group(1))
+        scanner_spec = importlib.util.spec_from_file_location(
+            "cargo_sweep_target", repository / "scripts/ci/cargo_sweep_target.py"
+        )
+        scanner = importlib.util.module_from_spec(scanner_spec)
+        scanner_spec.loader.exec_module(scanner)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target"
+            profiles = [target / "debug", target / "release"]
+            for profile in profiles:
+                (profile / ".fingerprint").mkdir(parents=True)
+            for child in ("bin", "include", "lib"):
+                (root / relative / child).mkdir(parents=True)
+            self.assertEqual(scanner.profile_directories(target), sorted(profiles))
+            self.assertFalse((root / relative).is_relative_to(target))
 
 
 if __name__ == "__main__":

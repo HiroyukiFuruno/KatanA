@@ -119,7 +119,7 @@ scripts/release/check-linuxbrew-formula-contract.sh
 # 12. OpenSpec Validation
 info "13/13 Validating OpenSpec task completion..."
 # WHY（日本語）: v0.22.42のdocument-fidelityはpost-変更名のため、版番号globだけでは公開前必須受入を見落とす。
-EVIDENCE_PYTHON_ENV="target/release-evidence-python"
+EVIDENCE_PYTHON_ENV="tmp/release-evidence-python"
 if [[ ! -x "$EVIDENCE_PYTHON_ENV/bin/python" ]]; then
     python3 -m venv "$EVIDENCE_PYTHON_ENV"
 fi
