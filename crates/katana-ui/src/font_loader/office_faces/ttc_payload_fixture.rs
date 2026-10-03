@@ -104,7 +104,7 @@ fn build_ttc(fonts: &[Vec<u8>]) -> Vec<u8> {
     output[TTC_FACE_COUNT_OFFSET..TTC_HEADER_BYTES]
         .copy_from_slice(&(fonts.len() as u32).to_be_bytes());
     for (index, font) in fonts.iter().enumerate() {
-        while output.len() % TTC_ALIGNMENT_BYTES != 0 {
+        while !output.len().is_multiple_of(TTC_ALIGNMENT_BYTES) {
             output.push(0);
         }
         let base = output.len();

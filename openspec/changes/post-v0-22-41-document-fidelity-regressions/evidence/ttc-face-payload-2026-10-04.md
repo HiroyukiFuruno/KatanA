@@ -24,4 +24,7 @@
 
 ## 残DoD
 
+- 4aee907eの通常pushはexit0。pre-pushのjust check（native通常test、Linux実worker付きworkspace、Windows test-inclusive cross-check）を通過した。追加supply-chainもadvisories/bans/licenses/sourcesが全て成功。
+- 別途all-target Clippyを再実行し、test fixtureの剰余判定にmanual_is_multiple_ofを1件検出（exit101）。標準is_multiple_ofへ置換後、全target Clippy・format・focused23件がexit0。focused linkでは既存debug __eh_frame警告が出たため、配布版の検証を代替する結果とはしない。失敗・中断を成功として扱わない。
+
 現sourceの全target lint/test/coverage/supply-chain/packaging、正式履歴/通常push、comment4173709245へのreply/resolveと全review再取得。HTML正常close・Office fidelity・全OS clean-machine受入・公開は引き続き未完了。
