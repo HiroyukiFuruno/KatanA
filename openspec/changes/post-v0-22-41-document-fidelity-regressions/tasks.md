@@ -1,5 +1,9 @@
 ## 1. Reproduction and ownership evidence
 
+- [x] 2026-10-04 追加P2 font/queue修正は435ac5b2まで通常push exit0（native/Linux/Windows/preflight）、GitHub HEAD一致・upstream差0/0。各指摘へreply4177809513/4177809658後に個別resolve、全reviewThreads/commentsを再取得し次page無し・両thread解決を確認。既存manual-target公開方針P2一件は未解決、新HEAD rereview/CI・原本/配布/fidelity・JDK非依存・公開の残DoDは継続。supply-chain4分類もexit0、coverage JSON保存とsigned checkpoint後の生成物限定3.3GiB整理（再生成可能、source/release/sibling不変）を記録。証跡evidence/review-alias-queue-2026-10-04.md。
+
+- [ ] 2026-10-04 最新human制約（既存KRR担当「対応済みIssueを解決してClose」の直近userMessage）: 公開版はJDK非依存。公開KRR0.4.22のPlantUMLは既にJNI/JVMを使用しており、Java環境を固定する新修正もhumanがNGとして担当pushを中断、PR105はDraft・未merge・未公開。KatanAは現在固定0.4.22のまま独立font/queue修正と検証を継続するが、JDK/JVM依存を残してReady/merge/最終公開しない。別repoへ重複編集せず既存KRR担当で元仕様・導入差分・JDK非依存への是正と必要公開版を確認し、公開後にregistry採用・原本/全配布受入を再実施する。Java固定を無条件の継続依頼として扱わない。
+
 - [/] 2026-10-04 追加review二件を63279a37/019d7f59の署名付き正式履歴へ統合。変更後公式just coverage exit0、UI1039/既存ignore2・main17・実export13・parallel143/既存ignore2・serial18、meaningful未実行0・strict document surface100%/未実行0。全target Clippyも新callerテストの記法修正後成功、caller2件を再実行。new source release worker再build1m20s/exit0、runnerも新lockから再build中。通常push・個別reply/resolve・fresh全review・原本/配布/公開の残DoDは継続し、旧f8結果は流用しない。証跡evidence/review-alias-queue-2026-10-04.md。
 
 - [/] 2026-10-04 current f8cb595e review P2 4177495989 / thread PRRT_kwDORm09y86oyJyZ: 全localized/legacy alias保持・canonical命名/style/weight維持・同face複数request解決とArc共有を修正。実Ubuntu SFNT回帰の末尾空白不備を修正し、正規化済みfixtureでcanonical-only旧方針へ戻すと日本語名「日」の未導入診断をRED再現、復元後office-face全25件GREEN。無効/制御文字/重複・request保持・Arc同一性も検証、skip/閾値変更なし。AST23/format成功、残gate・正式履歴・個別reply/resolve・再取得は継続。証跡evidence/review-alias-queue-2026-10-04.md。
