@@ -6,7 +6,7 @@ fn queued_filter_mutation(index: usize) -> DocumentWorkerCommand {
     DocumentWorkerCommand::SpreadsheetFilter(SpreadsheetFilterCommand::ApplyValues {
         sheet_index: 0,
         column: 2,
-        values: vec![if index % 2 == 0 {
+        values: vec![if index.is_multiple_of(2) {
             "North".to_owned()
         } else {
             "South".to_owned()
