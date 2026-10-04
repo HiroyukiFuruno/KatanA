@@ -21,6 +21,19 @@ def step_block(job, name):
 
 
 class CiResourceContractTest(unittest.TestCase):
+    def test_test_concurrency_is_bounded_without_skipping_tests(self):
+        root = Path(__file__).resolve().parents[2]
+        justfile = (root / "Justfile").read_text(encoding="utf-8")
+        self.assertIn(
+            'export RUST_TEST_THREADS := env_var_or_default("RUST_TEST_THREADS", JOBS)',
+            justfile,
+        )
+        recipes = (root / "just/tests.just").read_text(encoding="utf-8")
+        linux = recipes.split("check-linux: check-linux-office-worker-contract\n", 1)[1].split("\n\n", 1)[0]
+        self.assertIn('-e RUST_TEST_THREADS="{{RUST_TEST_THREADS}}"', linux)
+        self.assertIn("cargo test --locked -q --workspace", linux)
+        self.assertRegex(current_test_job(), r"(?m)^      RUST_TEST_THREADS: 2$")
+
     def test_local_gates_keep_ci_symbol_only_profile_defaults(self):
         justfile = (Path(__file__).resolve().parents[2] / "Justfile").read_text(
             encoding="utf-8"

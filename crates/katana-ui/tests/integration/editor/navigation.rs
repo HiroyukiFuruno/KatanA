@@ -62,8 +62,18 @@ fn test_integration_open_multiple_documents_and_switch() {
 
     harness
         .state_mut()
-        .trigger_action(AppAction::OpenWorkspace(temp_dir));
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
     wait_for_workspace_load(&mut harness);
+
+    let workspace = &harness.state_mut().app_state_mut().workspace;
+    assert!(
+        !workspace.is_loading,
+        "workspace load must finish before selecting documents"
+    );
+    assert_eq!(
+        workspace.data.as_ref().expect("workspace should load").root,
+        temp_dir
+    );
 
     harness
         .state_mut()

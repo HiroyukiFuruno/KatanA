@@ -23,4 +23,6 @@ At the signed source checkpoint `c3b2c0d1`, official `cargo clean --frozen --pro
 
 ## Self-review
 
+After signed checkpoint `306531fe` and confirming no active Rust compilation, the official core dev dry-run identified15510 generated files/10.9GiB. The matching package-scoped Cargo clean removed15504 generated files/10.7GiB, restoring16GiB free. This supersedes the earlier dry-run-only checkpoint; source/release/screenshot/sibling outputs were preserved. The next normal push compiled without debuginfo2 but exited1 on the native parallel workspace polling failure documented in `parallel-workspace-budget-2026-10-04.md`; it did not publish the local commits or reach Linux/Windows gates.
+
 PASS for the resource-default diff and its regression contract. The exported values match existing CI; a caller can opt into symbols without changing test behavior. No broader quality-gate bypass or profile-performance change is introduced. Commit/push and the full rerun remain independent pending checkpoints.

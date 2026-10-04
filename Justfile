@@ -13,6 +13,7 @@ set shell := ["bash", "-uc"]
 RTK := env_var_or_default("RTK", `command -v rtk 2> /dev/null || true`)
 RTK_CMD := if RTK == "" { "" } else { RTK + " " }
 JOBS := env_var_or_default("JOBS", "2")
+export RUST_TEST_THREADS := env_var_or_default("RUST_TEST_THREADS", JOBS)
 export RUSTFLAGS := env_var_or_default("RUSTFLAGS", "-D warnings")
 export CARGO_PROFILE_DEV_DEBUG := env_var_or_default("CARGO_PROFILE_DEV_DEBUG", "0")
 export CARGO_PROFILE_TEST_DEBUG := env_var_or_default("CARGO_PROFILE_TEST_DEBUG", "0")
