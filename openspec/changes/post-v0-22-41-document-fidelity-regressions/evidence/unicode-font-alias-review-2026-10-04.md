@@ -31,3 +31,5 @@ mainのconsumer追跡で追加欠落を確認。cell request投影はASCII lower
 same_faceのASCII比較も調べたが、same_sharedがepochを保持するためcasing変更epoch回帰は旧製品でもPASS。この実証範囲では不要な再構築が外部可観測な不具合とは断定できず、今回の修正にdefinitions変更は含めない。追加sourceの全coverage/正式push/current review/原本・配布受入は未完了、前source成功で置き換えない。
 
 補強後の既存justターゲットはfont_loader67件・font_requests7件・AST23件すべてexit0。追加alias同一性assertの改行をfmtが検出したため公式just fmt後にfmt-check再実行成功、lint-impactedもexit0。self-reviewで実caller→投影→resolver→lease→painter経路、alias/style同一性と変更後の行数規則を確認。製品変更は投影1箇所・lease lookup1箇所に限定。残る正式push/変更後全coverage/current review/原本・全配布受入は継続。
+
+source7a068115変更後の公式just coverageはexit0。UI1043/既存ignore2・main17・実export13（250.89s）・parallel143/既存ignore2（23.77s）・serial18（2.75s）、meaningful未実行0・strict文書surface100%/uncovered0。ログtmp/unicode-consumer-full-coverage-2026-10-04.log、raw JSON15366622bytesを同prefix.jsonへ保存。通常push・Unicode二thread個別reply/resolve・fresh current review・変更後原本/配布受入は未完了。
