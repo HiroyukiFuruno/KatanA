@@ -21,3 +21,13 @@ source16d70b90/証跡8f989151を署名Gで正式履歴へ保存。使用中Cargo
 変更後の公式just coverageはexit0。UI1040/既存ignore2、main17、実export13（250.98s）、parallel143/既存ignore2（23.76s）、serial18（2.76s）、meaningful未実行0、strict document surface100%/uncovered0。ログ `tmp/unicode-font-alias-full-coverage-2026-10-04.log`。JSONを別途保存し、旧435/f8 coverageを流用しない。通常push/個別replyresolve/current rereview/新source実受入/配布公開は未完了。
 
 ライブregistry APIはHTTP403、webページも取得不能だったため、公開sparse indexで確認。KDV0.5.11 nonyanked/checksum865b7ed6...、KRR依存^0.4.22/office2pdf=0.8.1、registry null（crates.io）を確認。KRR0.4.22 nonyanked、0.4.23 entryなし。GitHub latestも0.4.22のままで、未公開版の採用や上流Issue95 closureを先取りしない。
+
+e554497bまで通常push exit0、GitHub PR346 HEAD一致・upstream差0/0、Draft維持を確認。native/Linux/Windows/preflightを省略せず通過し、current review5980969666を依頼。変更後coverage JSON保存・署名済clean checkpoint・active Cargoなしを確認してから、このworktreeのcoverage katana-ui dev生成物だけを公式dry-run後にclean（1405files/3.0GiB、再生成可能）。source/release/私有原本/siblingは不変。ログtmp/unicode-coverage-ui-clean-2026-10-04.log。
+
+mainのconsumer追跡で追加欠落を確認。cell request投影はASCII lowercase、resolver keyはUnicode lowercase、lease family_forはASCII一致のため、同document内のÉcole/école混在時はresolver dedupで残らなかった表記のlookupがNoneとなる。metadata単独の実SFNT回帰ではこの後段をカバーしない。実cell投影・実Ubuntu payload leaseの回帰RED→最小修正→GREENを継続し、当該threadはまだreply/resolveしない。KRR PR105は最新live HEAD73773067でDraft、latest公開版0.4.22のまま。
+
+実consumer回帰は旧製品で4件中2件FAIL/2件PASS/exit101。cell投影request2vs1とlease family_for Noneを再現（tmp/unicode-lease-consumer-real-red-2026-10-04.log）。最初の実行はstrip=none指定漏れでprofiling proc macro compile失敗となり、製品REDへ流用しない。投影とlookupの2箇所をUnicode lowercaseへ統一後、同4件GREEN/exit0。後からalias同一性/regular-bold区別assertを補強し、全font_loader/font_requests/AST/format/impacted lintを既存justターゲットで再実行中。
+
+same_faceのASCII比較も調べたが、same_sharedがepochを保持するためcasing変更epoch回帰は旧製品でもPASS。この実証範囲では不要な再構築が外部可観測な不具合とは断定できず、今回の修正にdefinitions変更は含めない。追加sourceの全coverage/正式push/current review/原本・配布受入は未完了、前source成功で置き換えない。
+
+補強後の既存justターゲットはfont_loader67件・font_requests7件・AST23件すべてexit0。追加alias同一性assertの改行をfmtが検出したため公式just fmt後にfmt-check再実行成功、lint-impactedもexit0。self-reviewで実caller→投影→resolver→lease→painter経路、alias/style同一性と変更後の行数規則を確認。製品変更は投影1箇所・lease lookup1箇所に限定。残る正式push/変更後全coverage/current review/原本・全配布受入は継続。
