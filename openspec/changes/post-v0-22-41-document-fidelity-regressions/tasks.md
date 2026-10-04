@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-05 current 8f212305実装のfresh release worker/runner再buildはexit0。DEBUG=false原本Office5は2回exit0（RSS delta195312/194784KiB、元196608維持）、multi-format38step・legal DOCX・実Sheet0→1→0・PPTX/XLSX/原本large PPTX cold1+warm10全exit0、終了資源全0。旧c626二回超過と原因未確定は保持しRSS修正済みとしない。canonical契約PASSと実PNG/geometryをKDV#58へhandoffし、独立95点・原本HTML・current review・全配布/公開DoDを継続。証跡evidence/current-p2-acceptance-2026-10-05.md。
+
 - [ ] 2026-10-04 current c62644f2 review5406778273追加P2: 4178163032/threadPRRT_kwDORm09y86oztRA（登録済み外部カスタム書体École/écoleのfallback照合）、4178163035/threadPRRT_kwDORm09y86oztRC（直接SetViewModeのHTML/Office availability）。回帰RED→最小修正→既存ゲート→正式push→各reply/resolve→fresh全取得を継続し、Draft維持。
   - 2026-10-05: 両回帰をtest-onlyで追加。初回buildとDEBUG診断runはdisk fullで失敗し、製品RED/受入証跡にはしない。使用中owned Cargo/runner終了確認後、公式cargo cleanのUI dev限定dry-run2121files/3.6GiB、実2116files/3.1GiBを再生成可能に整理。source/原本/release binary/siblingを保持、差分cacheだけCARGO_INCREMENTAL=0で再検証中。stash0/master clean/upstream0/0。
   - 再試行の全workspace buildも容量超過で実テスト前に失敗。既存全coverage raw JSON保全・owned Cargo終了確認後、当WTのcoverage用core dev生成物1691files/1.8GiBだけを公式dry-run→clean（再生成可能）。同じwarning/profile設定のUI --lib focused回帰へ絞ってまず製品REDを確認する。全workspace/coverageの最終DoDは削減しない。
