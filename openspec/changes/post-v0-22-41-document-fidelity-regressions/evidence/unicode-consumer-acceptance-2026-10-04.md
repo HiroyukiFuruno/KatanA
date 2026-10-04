@@ -1,6 +1,6 @@
 # Unicode consumer修正後の実受入
 
-正式公開source c62644f20cf5666f84d4cb6ea8fbb4e0954c296b、KDV=0.5.11/KRR=0.4.22/KUC=0.4.1/office2pdf=0.8.1 registry lock。locked release worker再build1m16s・runner再build1m44s、共にexit0。
+GitHub作業ブランチのsource c62644f20cf5666f84d4cb6ea8fbb4e0954c296b、KDV=0.5.11/KRR=0.4.22/KUC=0.4.1/office2pdf=0.8.1 registry lock。KatanAの正式リリースではない。locked release worker再build1m16s・runner再build1m44s、共にexit0。
 
 - worker SHA256: 819016885f855e3e56f99ff07a6a3e9ba6d992824c8d0d4a7bcbd87153d4543a
 - runner SHA256: 6b857cc9b60d792db8fc167640b7fe63c2d78c86120b4d4ceaa6dfa9158e68f4
@@ -34,3 +34,9 @@ tmp/unicode-consumer-office-five-2026-10-04.logはexit1。first frameはshop XLS
 canonical interaction契約はcontrols-on拒否と同frame controls-off両captureがPASS。tmp/unicode-consumer-canonical-2026-10-04.log。独立95点検査の代替ではない。
 
 同binary・同原本Office5の別process再現（session48484）は再度exit1。baseline104928→305648KiB、delta200720 >196608（4112KiB超過）、最終資源カウンタ全0。tmp/unicode-consumer-office-five-repro2-2026-10-04.log。初回失敗を消さず2標本とも失敗として残す。反復3件の成功とOffice5の超過は別の入力・順序であり、同一受入成功へ読み替えない。原因は引き続き未確定。
+
+## DEBUG診断の境界
+
+同じc626 release runnerをDEBUG=trueで実行した診断は104928→293200KiB、delta188272・exit0（tmp/unicode-consumer-office-five-font-diag-2026-10-05.log）。通常条件の失敗二標本を取り消す受入証跡にはしない。最初の診断試行はfixture copyでdisk fullとなったため除外し、終了済み試行の再実行結果と区別する。
+
+診断の書体探索は2回、requests2/3・採用faces0、130候補readの合計236961000bytes、metadata366faces・selected0、resolve71.6/74.7ms。resolverは候補bytesを読み、metadata照合後に不採用payloadをdropする。今回のsampleで新しい永続lease/payload保持は観測されず、一時読込・Unicode正規化allocation・allocator残存・実行順が検証候補である。ただし資源カウンタは全heapを説明せず、これだけで原因は確定しない。既存KDV #59担当へ通常失敗と診断境界を共有し、OPENを維持する。

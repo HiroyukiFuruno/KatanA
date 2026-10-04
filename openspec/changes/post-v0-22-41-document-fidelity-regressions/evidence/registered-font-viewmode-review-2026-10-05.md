@@ -18,3 +18,11 @@ FontDefinitionsに既存の実フォントchainをName("École")で登録し、l
 所有確認済み・終了済みの当WT生成物のみ公式package/profile限定dry-run→cleanで整理（native UI3.1GiB、coverage core1.8GiB、coverage KRR依存4.5GiB）。すべて再生成可能。旧全coverage raw JSONとソース・原本・release binaryを保全し、sibling repoは変更していない。差分cacheだけCARGO_INCREMENTAL=0、warning/profile/テスト・coverage・受入基準は不変。
 
 原本Office5のRSS超過二標本（200832/200720 >196608KiB）は別の未解決事項。今回の回帰修正をRSS修正やリリース完了として扱わない。
+
+## 公開ブランチとレビュー照合
+
+aab3ddf8759c76909cdcdbf30aa965e2b2c81dffまで通常push exit0、GitHub HEAD一致・upstream0/0。指摘へのreply4178280760/4178280877後、各threadをresolve。mainが全reviewThreads/commentsを再取得し両resolved・全page取得済み・既存manual-target方針P2一件だけ未解決と確認した（tmp/current-p2-review-all-2026-10-05.json）。新HEADへcurrent review5981677904を依頼、Draftを維持。
+
+全coverageは通常push後に別途実行中。hookはjust checkであり、coverageを実行したと推測しない。native検査終了後の署名clean checkpointとnative Cargoロック解放、Linuxの専用target volumeを確認し、native UI/core生成物2562files/6.2GiBだけ公式clean（再生成可能）して空き10GiBを確保した。source・原本・release binary・siblingは不変。
+
+その後の公式just coverageはexit0。UI1046/既存ignore2、main17、実export13（259.49s）、parallel143/既存ignore2、serial18が成功。meaningful未実行0、strict document surface100%/未実行0、raw JSON15443630bytesをtmp/current-p2-full-coverage-2026-10-05.jsonへ保全した。元coverage regex・閾値・fixtureの扱いは不変。新sourceのfresh release worker/runner・原本/配布・95点・上流公開採用・KatanA公開の残DoDは完了にしない。
