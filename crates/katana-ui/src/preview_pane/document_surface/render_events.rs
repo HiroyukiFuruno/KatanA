@@ -7,6 +7,18 @@ use super::worker::{DocumentWorkerCommand, DocumentWorkerEvent};
 const DOCUMENT_WORKER_POLL_INTERVAL: std::time::Duration = std::time::Duration::from_millis(25);
 
 impl DocumentSurface {
+    pub(super) fn fail_command_enqueue(&mut self) {
+        let failure = DocumentFailure::new(
+            DocumentFailureLayer::KdvWorker,
+            "enqueue",
+            self.source.uri.clone(),
+            Some(self.source.format),
+            "document command queue is full; the requested command was not queued",
+        );
+        failure.log();
+        self.failure = Some(failure);
+    }
+
     pub(super) fn poll(&mut self, ctx: &egui::Context) {
         loop {
             match self.event_rx.try_recv() {
@@ -110,7 +122,9 @@ impl DocumentSurface {
                     ?command,
                     "document worker channel was full; preserving command"
                 );
-                self.pending_commands.push(command);
+                if !self.pending_commands.push(command) {
+                    self.fail_command_enqueue();
+                }
             }
             Err(TrySendError::Disconnected(_)) => self.fail_disconnected(),
         }

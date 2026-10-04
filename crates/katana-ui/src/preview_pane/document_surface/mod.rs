@@ -40,6 +40,9 @@ mod failure_tests;
 #[cfg(test)]
 mod painter_tests;
 #[cfg(test)]
+#[path = "render_command_queue_tests.rs"]
+mod render_command_queue_tests;
+#[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod worker_tests;

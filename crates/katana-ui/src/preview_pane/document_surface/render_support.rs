@@ -20,16 +20,17 @@ pub(super) struct PendingDocumentCommands {
 }
 
 impl PendingDocumentCommands {
-    pub(super) fn push(&mut self, command: DocumentWorkerCommand) {
+    pub(super) fn push(&mut self, command: DocumentWorkerCommand) -> bool {
         match command {
             DocumentWorkerCommand::Surface(DocumentSurfaceCommand::Resize(_)) => {
                 self.resize = Some(command);
+                true
             }
             _ => self.push_user(command),
         }
     }
 
-    fn push_user(&mut self, command: DocumentWorkerCommand) {
+    fn push_user(&mut self, command: DocumentWorkerCommand) -> bool {
         if is_candidates(&command) {
             self.user.retain(|pending| !is_candidates(pending));
         } else {
@@ -37,24 +38,30 @@ impl PendingDocumentCommands {
                 && coalesces(last, &command)
             {
                 *last = command;
-                return;
+                return true;
             }
-            self.evict_oldest_user_if_full();
+            if !self.evict_oldest_user_if_full() {
+                return false;
+            }
         }
         self.user.push_back(command);
+        true
     }
 
-    fn evict_oldest_user_if_full(&mut self) {
+    fn evict_oldest_user_if_full(&mut self) -> bool {
         let user_count = self
             .user
             .iter()
             .filter(|pending| !is_candidates(pending))
             .count();
-        if user_count == MAX_PENDING_USER_COMMANDS
-            && let Some(index) = self.user.iter().position(|pending| !is_candidates(pending))
-        {
-            self.user.remove(index);
+        if user_count < MAX_PENDING_USER_COMMANDS {
+            return true;
         }
+        if let Some(index) = self.user.iter().position(is_disposable) {
+            self.user.remove(index);
+            return true;
+        }
+        false
     }
 
     pub(super) fn take_next(&mut self) -> Option<DocumentWorkerCommand> {
@@ -76,6 +83,19 @@ fn is_candidates(command: &DocumentWorkerCommand) -> bool {
         command,
         DocumentWorkerCommand::SpreadsheetFilter(SpreadsheetFilterCommand::Candidates { .. })
     )
+}
+
+fn is_filter_mutation(command: &DocumentWorkerCommand) -> bool {
+    matches!(
+        command,
+        DocumentWorkerCommand::SpreadsheetFilter(
+            SpreadsheetFilterCommand::ApplyValues { .. } | SpreadsheetFilterCommand::Clear { .. }
+        )
+    )
+}
+
+fn is_disposable(command: &DocumentWorkerCommand) -> bool {
+    !is_candidates(command) && !is_filter_mutation(command)
 }
 
 fn coalesces(previous: &DocumentWorkerCommand, next: &DocumentWorkerCommand) -> bool {

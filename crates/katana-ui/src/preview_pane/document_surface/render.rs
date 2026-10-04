@@ -158,7 +158,9 @@ impl DocumentSurface {
                 ?command,
                 "queued document command behind in-flight work"
             );
-            self.pending_commands.push(command);
+            if !self.pending_commands.push(command) {
+                self.fail_command_enqueue();
+            }
             return;
         }
         self.send(command);
