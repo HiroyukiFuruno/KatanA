@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-04 追加review二件を63279a37/019d7f59の署名付き正式履歴へ統合。変更後公式just coverage exit0、UI1039/既存ignore2・main17・実export13・parallel143/既存ignore2・serial18、meaningful未実行0・strict document surface100%/未実行0。全target Clippyも新callerテストの記法修正後成功、caller2件を再実行。new source release worker再build1m20s/exit0、runnerも新lockから再build中。通常push・個別reply/resolve・fresh全review・原本/配布/公開の残DoDは継続し、旧f8結果は流用しない。証跡evidence/review-alias-queue-2026-10-04.md。
+
 - [/] 2026-10-04 current f8cb595e review P2 4177495989 / thread PRRT_kwDORm09y86oyJyZ: 全localized/legacy alias保持・canonical命名/style/weight維持・同face複数request解決とArc共有を修正。実Ubuntu SFNT回帰の末尾空白不備を修正し、正規化済みfixtureでcanonical-only旧方針へ戻すと日本語名「日」の未導入診断をRED再現、復元後office-face全25件GREEN。無効/制御文字/重複・request保持・Arc同一性も検証、skip/閾値変更なし。AST23/format成功、残gate・正式履歴・個別reply/resolve・再取得は継続。証跡evidence/review-alias-queue-2026-10-04.md。
 - [/] 2026-10-04 current f8cb595e review P2 4177495994 / thread PRRT_kwDORm09y86oyJyb: 旧queueでmutation消失を3件RED再現、ApplyValues/Clear FIFO保護を修正。既存16command+最新Candidates最大17を維持し、全critical満杯時は新commandを明示拒否・enqueue failure表示、pending/inflight保持。実worker前提付き文書surface全130件GREEN、AST23/format成功、全coverage・正式履歴・個別reply/resolve・再取得は継続。上流待ちへ戻さず検証中、証跡evidence/review-alias-queue-2026-10-04.md。
 
