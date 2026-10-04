@@ -3,8 +3,10 @@ use skrifa::{FontRef, MetadataProvider, attribute::Style, raw::TableProvider, st
 
 use super::types::{BOLD_WEIGHT, BOLD_WEIGHT_THRESHOLD, MAX_FONT_WEIGHT, REGULAR_WEIGHT};
 
+#[derive(Clone)]
 pub(super) struct FaceMetadata {
     pub(super) family: String,
+    family_aliases: Vec<String>,
     pub(super) weight: u16,
     pub(super) bold: bool,
     pub(super) italic: bool,
@@ -12,7 +14,8 @@ pub(super) struct FaceMetadata {
 }
 
 pub(super) fn face_metadata(face: &FontRef<'_>) -> Option<FaceMetadata> {
-    let family = family_name(face)?;
+    let family_aliases = family_names(face)?;
+    let family = family_aliases.first()?.clone();
     let attributes = face.attributes();
     let weight = attributes
         .weight
@@ -27,6 +30,7 @@ pub(super) fn face_metadata(face: &FontRef<'_>) -> Option<FaceMetadata> {
     let monospaced = post.is_some_and(|table| table.is_fixed_pitch() != 0);
     Some(FaceMetadata {
         family,
+        family_aliases,
         weight,
         bold: weight >= BOLD_WEIGHT_THRESHOLD || flagged_bold,
         italic: matches!(attributes.style, Style::Italic | Style::Oblique(_))
@@ -42,7 +46,10 @@ pub(super) fn matches_request(
     bold: bool,
     italic: bool,
 ) -> bool {
-    metadata.family.eq_ignore_ascii_case(family)
+    metadata
+        .family_aliases
+        .iter()
+        .any(|alias| alias.eq_ignore_ascii_case(family))
         && metadata.bold == bold
         && metadata.italic == italic
 }
@@ -65,18 +72,42 @@ fn os2_style_flags(face: &FontRef<'_>) -> (bool, bool) {
         .unwrap_or_default()
 }
 
-fn family_name(face: &FontRef<'_>) -> Option<String> {
-    [StringId::TYPOGRAPHIC_FAMILY_NAME, StringId::FAMILY_NAME]
-        .into_iter()
-        .find_map(|id| family_name_for_id(face, id))
+fn family_names(face: &FontRef<'_>) -> Option<Vec<String>> {
+    let mut names = Vec::new();
+    for id in [StringId::TYPOGRAPHIC_FAMILY_NAME, StringId::FAMILY_NAME] {
+        let records = face.localized_strings(id);
+        if let Some(record) = records.clone().english_or_first() {
+            add_valid_name(&mut names, record.to_string());
+        }
+        for record in records {
+            add_valid_name(&mut names, record.to_string());
+        }
+    }
+    (!names.is_empty()).then_some(names)
 }
 
-fn family_name_for_id(face: &FontRef<'_>, id: StringId) -> Option<String> {
-    face.localized_strings(id)
-        .clone()
-        .english_or_first()
-        .into_iter()
-        .chain(face.localized_strings(id))
-        .map(|record| record.to_string().trim().to_owned())
-        .find(|name| !name.is_empty() && !name.chars().any(char::is_control))
+fn add_valid_name(names: &mut Vec<String>, raw: String) {
+    let name = raw.trim();
+    if !name.is_empty()
+        && !name.chars().any(char::is_control)
+        && !names.iter().any(|known| known.eq_ignore_ascii_case(name))
+    {
+        names.push(name.to_owned());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::add_valid_name;
+
+    #[test]
+    fn valid_name_filter_rejects_invalid_and_case_duplicate_aliases() {
+        let mut names = Vec::new();
+        add_valid_name(&mut names, " Alias ".into());
+        add_valid_name(&mut names, "ALIAS".into());
+        add_valid_name(&mut names, "".into());
+        add_valid_name(&mut names, "\u{0000}invalid".into());
+
+        assert_eq!(names, ["Alias"]);
+    }
 }

@@ -39,7 +39,7 @@ pub(super) fn selected_match(
     index: usize,
     path: &Path,
     requests: &BTreeMap<RequestKey, FontFaceRequest>,
-) -> Option<PendingMatch> {
+) -> Vec<PendingMatch> {
     DebugLog::write(
         "document_font_metadata",
         format_args!("phase=started path={} face_index={index}", path.display()),
@@ -51,7 +51,7 @@ pub(super) fn selected_match(
         format_args!(
             "phase=complete path={} face_index={index} selected={} metadata_us={}",
             path.display(),
-            usize::from(selected.is_some()),
+            selected.len(),
             started.elapsed().as_micros()
         ),
     );

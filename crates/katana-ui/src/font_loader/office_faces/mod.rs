@@ -23,6 +23,9 @@ pub(super) mod ttc_payload_fixture;
 mod metadata_tests;
 
 #[cfg(test)]
+mod metadata_alias_tests;
+
+#[cfg(test)]
 mod cancellation_tests;
 
 #[cfg(test)]

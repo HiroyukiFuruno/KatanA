@@ -54,18 +54,27 @@ pub(super) fn selected_match(
     face: &FontRef<'_>,
     index: usize,
     requests: &BTreeMap<RequestKey, FontFaceRequest>,
-) -> Option<PendingMatch> {
-    let index = u32::try_from(index).ok()?;
-    let metadata = face_metadata(face)?;
-    let (key, request) = requests.iter().find(|(_, request)| {
-        matches_request(&metadata, &request.family, request.bold, request.italic)
-    })?;
-    Some(PendingMatch {
-        key: key.clone(),
-        distance: weight_distance(&metadata, request.bold),
-        metadata,
-        index,
-    })
+) -> Vec<PendingMatch> {
+    let Ok(index) = u32::try_from(index) else {
+        return Vec::new();
+    };
+    let Some(metadata) = face_metadata(face) else {
+        return Vec::new();
+    };
+    requests
+        .iter()
+        .filter_map(|(key, request)| {
+            if !matches_request(&metadata, &request.family, request.bold, request.italic) {
+                return None;
+            }
+            Some(PendingMatch {
+                key: key.clone(),
+                distance: weight_distance(&metadata, request.bold),
+                metadata: metadata.clone(),
+                index,
+            })
+        })
+        .collect()
 }
 
 pub(super) fn append_matches(
@@ -75,19 +84,27 @@ pub(super) fn append_matches(
     selected: &mut BTreeMap<RequestKey, SelectedFace>,
 ) -> Vec<FontFaceResolutionDiagnostic> {
     let mut payload = FacePayload::new(payload);
+    let mut shared_payloads = BTreeMap::<u32, Arc<egui::FontData>>::new();
     let mut diagnostics = Vec::new();
     for found in matches {
         if !should_replace(selected.get(&found.key), found.distance) {
             continue;
         }
-        let Ok(font_data) = payload.take_face(found.index) else {
-            diagnostics.push(FontFaceResolutionDiagnostic::InvalidFontFace {
-                path: path.to_owned(),
-                face_index: found.index as usize,
-            });
-            continue;
+        let shared = if let Some(existing) = shared_payloads.get(&found.index) {
+            existing.clone()
+        } else {
+            let Ok(font_data) = payload.take_face(found.index) else {
+                diagnostics.push(FontFaceResolutionDiagnostic::InvalidFontFace {
+                    path: path.to_owned(),
+                    face_index: found.index as usize,
+                });
+                continue;
+            };
+            let shared = Arc::new(font_data);
+            shared_payloads.insert(found.index, shared.clone());
+            shared
         };
-        insert_match(path, found, font_data, selected);
+        insert_match(path, found, shared, selected);
     }
     diagnostics
 }
@@ -95,7 +112,7 @@ pub(super) fn append_matches(
 fn insert_match(
     path: &Path,
     found: PendingMatch,
-    payload: egui::FontData,
+    payload: Arc<egui::FontData>,
     selected: &mut BTreeMap<RequestKey, SelectedFace>,
 ) {
     selected.insert(
@@ -105,7 +122,7 @@ fn insert_match(
             path: path.to_owned(),
             index: found.index,
             distance: found.distance,
-            payload: Arc::new(payload),
+            payload,
         },
     );
 }
