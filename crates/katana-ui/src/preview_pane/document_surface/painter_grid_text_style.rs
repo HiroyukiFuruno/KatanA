@@ -125,20 +125,20 @@ fn font_id(
 }
 
 fn font_family(ui: &egui::Ui, family: &str) -> egui::FontFamily {
+    let normalized = family.to_lowercase();
     let registered = ui.fonts(|fonts| {
         fonts
             .definitions()
             .families
             .keys()
             .find(|candidate| {
-                matches!(candidate, egui::FontFamily::Name(name) if name.eq_ignore_ascii_case(family))
+                matches!(candidate, egui::FontFamily::Name(name) if name.to_lowercase() == normalized)
             })
             .cloned()
     });
     if let Some(family) = registered {
         return family;
     }
-    let normalized = family.to_ascii_lowercase();
     let monospace = ["mono", "courier", "consolas"]
         .iter()
         .any(|name| normalized.contains(name));
@@ -146,5 +146,26 @@ fn font_family(ui: &egui::Ui, family: &str) -> egui::FontFamily {
         egui::FontFamily::Monospace
     } else {
         egui::FontFamily::Proportional
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use eframe::egui;
+
+    #[test]
+    fn registered_unicode_family_is_selected_without_document_lease() {
+        let context = crate::test_ui::Context::default();
+        let mut definitions = egui::FontDefinitions::default();
+        let registered = egui::FontFamily::Name("École".into());
+        let proportional = definitions.families[&egui::FontFamily::Proportional].clone();
+        definitions
+            .families
+            .insert(registered.clone(), proportional);
+        context.set_fonts(definitions);
+
+        context.run_ui(egui::RawInput::default(), |ui| {
+            assert_eq!(super::font_id(ui, 12, "école", None).family, registered);
+        });
     }
 }
