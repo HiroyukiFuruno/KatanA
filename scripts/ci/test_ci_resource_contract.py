@@ -48,6 +48,13 @@ class CiResourceContractTest(unittest.TestCase):
                 f'export {name} := env_var_or_default("{name}", "{value}")',
                 justfile,
             )
+            for platform in ("linux", "windows"):
+                compose_path = (
+                    Path(__file__).resolve().parents[2]
+                    / f"platforms/{platform}/ci/compose.yml"
+                )
+                compose = compose_path.read_text(encoding="utf-8")
+                self.assertIn(f"      - {name}\n", compose)
         self.assertNotRegex(
             justfile,
             r"export CARGO_PROFILE_(DEV|TEST)_(OPT_LEVEL|DEBUG_ASSERTIONS|OVERFLOW_CHECKS)",

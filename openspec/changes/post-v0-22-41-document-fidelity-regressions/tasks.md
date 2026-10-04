@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-04 a5c3aed1通常pushはnative UI1030/parallel143/serial18/export13成功後、Linux linker Bus errorでexit1。終了後148GiB backing disk空き0を確認。ComposeがJustfileのsymbol0設定を継承しない原因を修正、Linux/Windows実container双方0/0/none/none確認、新契約RED→GREEN・全6件成功。active container0とsigned checkpoint後、公式Linux UI dev生成物267files/25.7GiBだけを再生成可能な削除、17GiB復旧。source/release/sibling不変。全4分類supply-chain成功、公開f79全CI/current review成功は新版local HEADへ流用しない。通常push・変更後coverage・実受入・公開は未完了で継続。
+
 - [/] 2026-10-04 通常push306531feはnative parallel UI142pass/1failでexit1、未公開。共通wait helperが既存100step予算後もloading=trueを正常扱いしていたことをfail-closed assertで直接再現（141pass/2fail）。同一全suiteを既存JOBS=2へ揃えると143pass/既存ignore2/exit0、固定待機・製品コード・全assert/coverage/受入基準不変。native/Linux実container/3OS CIにoverridable検査並列予算を明示、新contract RED→GREEN・全6件成功。正式commit/push・全gate・原本/配布受入は継続中。306531fe checkpoint後の公式core dev生成物15504files/10.7GiBのみ再生成可能な削除、空き16GiB復旧も確認。証跡evidence/parallel-workspace-budget-2026-10-04.md。
 
 - [/] 2026-10-04 通常push c3b2c0d1が既存CIのdebug symbols=0を継承せずdebuginfo=2でnative testを再生成し、空き10GiB→304MiBとなった。所有確認したCargoだけを中断し、子compile終了後に固まったowned hookを終了（push exit1、公開成功ではない）。公式dry-runとactive Rust0確認後、KatanA UI dev生成物3989files/6.2GiBだけをCargoで再生成可能な削除、空き5.3GiB。JustfileへCI同等のoverridable dev/test debug0・strip noneを固定し、新契約RED→GREEN・全5件成功。最適化/assertions/overflow/全test/coverage/platform/release profile不変。通常commit/push・全gate・実受入を継続、証跡evidence/local-symbol-profiles-2026-10-04.md。

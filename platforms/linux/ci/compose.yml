@@ -10,6 +10,10 @@ services:
     environment:
       - CARGO_HOME=/usr/local/cargo
       - CARGO_INCREMENTAL=0
+      - CARGO_PROFILE_DEV_DEBUG
+      - CARGO_PROFILE_TEST_DEBUG
+      - CARGO_PROFILE_DEV_STRIP
+      - CARGO_PROFILE_TEST_STRIP
 
 volumes:
   katana-linux-target:

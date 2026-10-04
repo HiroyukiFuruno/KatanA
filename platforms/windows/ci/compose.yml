@@ -10,6 +10,10 @@ services:
       - xwin-cache:/root/.cache/cargo-xwin
     environment:
       - CARGO_HOME=/usr/local/cargo
+      - CARGO_PROFILE_DEV_DEBUG
+      - CARGO_PROFILE_TEST_DEBUG
+      - CARGO_PROFILE_DEV_STRIP
+      - CARGO_PROFILE_TEST_STRIP
     command: cargo xwin check --workspace --target x86_64-pc-windows-msvc --tests
 
 volumes:
