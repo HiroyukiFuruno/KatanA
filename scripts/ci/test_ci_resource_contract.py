@@ -21,6 +21,25 @@ def step_block(job, name):
 
 
 class CiResourceContractTest(unittest.TestCase):
+    def test_local_gates_keep_ci_symbol_only_profile_defaults(self):
+        justfile = (Path(__file__).resolve().parents[2] / "Justfile").read_text(
+            encoding="utf-8"
+        )
+        for name, value in (
+            ("CARGO_PROFILE_DEV_DEBUG", "0"),
+            ("CARGO_PROFILE_TEST_DEBUG", "0"),
+            ("CARGO_PROFILE_DEV_STRIP", "none"),
+            ("CARGO_PROFILE_TEST_STRIP", "none"),
+        ):
+            self.assertIn(
+                f'export {name} := env_var_or_default("{name}", "{value}")',
+                justfile,
+            )
+        self.assertNotRegex(
+            justfile,
+            r"export CARGO_PROFILE_(DEV|TEST)_(OPT_LEVEL|DEBUG_ASSERTIONS|OVERFLOW_CHECKS)",
+        )
+
     def test_separate_screenshot_workspace_runs_before_acceptance(self):
         job = current_test_job()
         name = "Test screenshot harness contracts"

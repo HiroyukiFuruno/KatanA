@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-04 通常push c3b2c0d1が既存CIのdebug symbols=0を継承せずdebuginfo=2でnative testを再生成し、空き10GiB→304MiBとなった。所有確認したCargoだけを中断し、子compile終了後に固まったowned hookを終了（push exit1、公開成功ではない）。公式dry-runとactive Rust0確認後、KatanA UI dev生成物3989files/6.2GiBだけをCargoで再生成可能な削除、空き5.3GiB。JustfileへCI同等のoverridable dev/test debug0・strip noneを固定し、新契約RED→GREEN・全5件成功。最適化/assertions/overflow/全test/coverage/platform/release profile不変。通常commit/push・全gate・実受入を継続、証跡evidence/local-symbol-profiles-2026-10-04.md。
+
 - [/] 2026-10-04 KDV0.5.11変更後check-fullのserial Explorer失敗を因果確認。先行i18nテストが実ユーザーのglobal workspace履歴を復元し背景走査と競合していた。実JSON保存先を分離し全18件pass/exit0、当該assignmentだけ戻したnegative controlで17pass/1fail/exit101を再現し修正を復元。treeのみの分離は失敗のままであり原因修正とは区別。固定100frame/2ms polling・元2px配置・実filesystem・全18件/全coverage基準は不変。exact root/load完了assertも追加。変更後just check-full再実行中、正式commit/push・全gate・原本/配布/公開は未完了。証跡evidence/serial-workspace-isolation-2026-10-04.md。f79b9e5dの通常pushは成功、新HEAD review5978501109依頼済み。
 
 - [/] 2026-10-04 public KDV0.5.11: GitHub Release08:10Z、nonyanked registry、実crate checksum865b7ed683ff3bdbed463adba7dc692cb2888cdbc2bbea2509d6cfb693e7d9ceを一致確認。root固定=0.5.11・root/screenshot双方lockへoffice2pdf0.8.1/libc0.2.190等9更新を採用。独立paint-metrics lockも19互換更新、全3Cargo rootのincompatible/pinned direct調査と実MathJax Bun outdatedは追加候補なし。full locked rootはKDV0.5.11/KRR0.4.22/KUC0.4.1/V8singleton registry解決。変更後just check-full開始、契約6+4/format成功、残gate・実原本/配布/fidelity・正式commit/push/current review・公開は未完了。旧binary/旧CIを流用せず既存担当へ証跡と継続依頼。証跡evidence/public-kdv0511-2026-10-04.md。
