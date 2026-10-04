@@ -14,7 +14,7 @@ mod tests {
     }
 
     fn setup_harness() -> Harness<'static, KatanaApp> {
-        let settings_path = unique_temp_path("katana_test_layout").with_extension("json");
+        let settings_path = unique_temp_path("katana_test_layout").join("settings.json");
         let _ = std::fs::remove_file(&settings_path);
 
         Harness::builder().build_eframe(move |_cc| {
@@ -30,7 +30,19 @@ mod tests {
             );
             state.config.settings.settings_mut().terms_accepted_version =
                 Some(katana_ui::about_info::APP_VERSION.to_string());
+            state
+                .config
+                .settings
+                .settings_mut()
+                .updates
+                .previous_app_version = Some(katana_ui::about_info::APP_VERSION.to_string());
+            state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(
+                Box::new(katana_platform::workspace::JsonWorkspaceRepository::new(
+                    settings_path.with_file_name("workspace.json"),
+                )),
+            );
             let mut app = KatanaApp::new(state);
+            assert!(!app.needs_changelog_for_test());
             app.skip_splash();
             app
         })
@@ -69,6 +81,14 @@ mod tests {
             }
         }
         harness.step();
+
+        let workspace = &harness.state_mut().app_state_mut().workspace;
+        assert!(!workspace.is_loading, "workspace load did not finish");
+        assert_eq!(
+            workspace.data.as_ref().expect("workspace should load").root,
+            temp_dir,
+            "layout must use its own workspace"
+        );
 
         let all_labels: Vec<_> = harness
             .get_all_by_role(egui::accesskit::Role::Label)
