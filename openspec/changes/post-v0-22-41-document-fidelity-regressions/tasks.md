@@ -2,6 +2,7 @@
 
 - [ ] 2026-10-04 latest HEAD761439e review P2 4177866298/thread PRRT_kwDORm09y86oy_ZO: Unicode localized alias École/request écoleをASCII case comparisonで不一致にする問題。回帰RED→同一Unicode casingで修正→全gate→正式push→個別reply/resolve→fresh reviewを継続。既存二件resolve/受入を現review全完了へ読み替えない。
   - 実SFNT matcher unavailableをRED再現、alias/request/dedupのUnicode lowercaseを既存request_keyへ統一して書体26件GREEN。fixture責務/共通record reader分離後AST23と全target strict Clippy成功。0件filter・fixture length assertion・fmt/AST失敗は成功証跡から除外し、基準不変。正式履歴・全coverage・通常push・個別reply/resolve・fresh review/変更後実受入を継続、証跡evidence/unicode-font-alias-review-2026-10-04.md。
+  - source16d70b9と証跡8f98915は署名Gで正式履歴化。変更後公式just coverage exit0、UI1040/既存ignore2・main17・実export13・parallel143/既存ignore2・serial18、meaningful未実行0・strict文書surface100%/uncovered0。source保全後に生成物限定3.6GiB整理、stash0/master clean。通常push/個別replyresolve/current rereview/新source原本・全配布受入/公開は残し継続。
 
 - [/] 2026-10-04 追加font/queue修正後、fresh locked release runner再build30m48s/exit0。原本Office5件・実Sheet0→1→0・legal DOCX・PPTX/XLSX/原本large PPTX各cold1+warm10混合開閉を全exit0で再受入、元RSS/close/frame基準不変、終了resource全0。正式公開HEAD761439eへ新review5980503748依頼、Draft維持。配布main/全OS/原本HTML/独立95点/公開・後処理は未完了。証跡evidence/fresh-review-pair-acceptance-2026-10-04.md。
 
