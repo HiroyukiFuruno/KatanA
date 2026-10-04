@@ -26,6 +26,9 @@ mod metadata_tests;
 mod metadata_alias_tests;
 
 #[cfg(test)]
+mod sfnt_fixture;
+
+#[cfg(test)]
 mod cancellation_tests;
 
 #[cfg(test)]
