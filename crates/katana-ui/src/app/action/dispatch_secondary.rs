@@ -60,7 +60,19 @@ impl KatanaApp {
             AppAction::IngestClipboardImage => self.handle_action_ingest_clipboard_image(),
             AppAction::SetSplitDirection(dir) => self.state.set_active_split_direction(dir),
             AppAction::SetPaneOrder(order) => self.state.set_active_pane_order(order),
-            AppAction::SetViewMode(mode) => self.state.set_active_view_mode(mode),
+            AppAction::SetViewMode(mode) => {
+                if mode != ViewMode::PreviewOnly
+                    && !crate::views::panels::preview::PreviewMenuAvailability::for_path(
+                        self.state
+                            .active_document()
+                            .map(|document| document.path.as_path()),
+                        crate::views::panels::preview::PreviewMenu::Tools,
+                    )
+                {
+                    return;
+                }
+                self.state.set_active_view_mode(mode);
+            }
             AppAction::ToggleScrollSync(is_on) => {
                 self.state.scroll.sync_override = Some(is_on);
             }

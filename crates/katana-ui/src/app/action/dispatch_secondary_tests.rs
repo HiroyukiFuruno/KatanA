@@ -54,3 +54,45 @@ fn direct_view_tools_dispatch_remains_available_for_pdf_and_markdown_documents()
         assert_eq!(preview_app.state.active_view_mode(), ViewMode::PreviewOnly);
     }
 }
+
+#[test]
+fn direct_set_view_mode_rejects_split_and_code_only_for_html_and_office_documents() {
+    for path in [
+        "report.html",
+        "REPORT.HTM",
+        "report.docx",
+        "book.xlsx",
+        "deck.pptx",
+    ] {
+        for mode in [ViewMode::Split, ViewMode::CodeOnly] {
+            let mut app = app_with_active_path(path);
+            app.dispatch_secondary(&egui::Context::default(), AppAction::SetViewMode(mode));
+            assert_eq!(
+                app.state.active_view_mode(),
+                ViewMode::PreviewOnly,
+                "direct SetViewMode({mode:?}) must be rejected for {path}"
+            );
+        }
+
+        let mut app = app_with_active_path(path);
+        app.state.set_active_view_mode(ViewMode::CodeOnly);
+        app.dispatch_secondary(
+            &egui::Context::default(),
+            AppAction::SetViewMode(ViewMode::PreviewOnly),
+        );
+        assert_eq!(app.state.active_view_mode(), ViewMode::PreviewOnly);
+    }
+}
+
+#[test]
+fn direct_set_view_mode_preserves_all_modes_for_markdown_documents() {
+    for mode in [ViewMode::PreviewOnly, ViewMode::CodeOnly, ViewMode::Split] {
+        let mut app = app_with_active_path("readme.md");
+        app.dispatch_secondary(&egui::Context::default(), AppAction::SetViewMode(mode));
+        assert_eq!(
+            app.state.active_view_mode(),
+            mode,
+            "direct SetViewMode({mode:?}) must remain available for Markdown"
+        );
+    }
+}
