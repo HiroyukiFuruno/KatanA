@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [x] 2026-10-04 KRR担当の最新human「設計変えてないなら取り消さないで良いです」を実readで確認。既存JNI/JVM方式を維持する検査修正は復元され、PR105 HEAD9f06f14e5238bc47ac4db2612601460b1d30bbb5の通常push・P1 reply/resolve後、Draft再review中。下記の一律JDK/JVM非依存・公開停止という解釈は、この後発明示指示で訂正する。新しい設計変更は行わず、元の公開上流採用・原本/全配布受入DoDを継続。KDV担当にも最新条件をhandoff、監視promptを訂正。
+
 - [x] 2026-10-04 追加P2 font/queue修正は435ac5b2まで通常push exit0（native/Linux/Windows/preflight）、GitHub HEAD一致・upstream差0/0。各指摘へreply4177809513/4177809658後に個別resolve、全reviewThreads/commentsを再取得し次page無し・両thread解決を確認。既存manual-target公開方針P2一件は未解決、新HEAD rereview/CI・原本/配布/fidelity・JDK非依存・公開の残DoDは継続。supply-chain4分類もexit0、coverage JSON保存とsigned checkpoint後の生成物限定3.3GiB整理（再生成可能、source/release/sibling不変）を記録。証跡evidence/review-alias-queue-2026-10-04.md。
 
 - [ ] 2026-10-04 最新human制約（既存KRR担当「対応済みIssueを解決してClose」の直近userMessage）: 公開版はJDK非依存。公開KRR0.4.22のPlantUMLは既にJNI/JVMを使用しており、Java環境を固定する新修正もhumanがNGとして担当pushを中断、PR105はDraft・未merge・未公開。KatanAは現在固定0.4.22のまま独立font/queue修正と検証を継続するが、JDK/JVM依存を残してReady/merge/最終公開しない。別repoへ重複編集せず既存KRR担当で元仕様・導入差分・JDK非依存への是正と必要公開版を確認し、公開後にregistry採用・原本/全配布受入を再実施する。Java固定を無条件の継続依頼として扱わない。
