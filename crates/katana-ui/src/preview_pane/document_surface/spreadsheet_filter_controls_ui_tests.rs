@@ -21,11 +21,22 @@ type SharedFilterCommands = Arc<Mutex<Vec<SpreadsheetFilterCommand>>>;
 fn run_filter_harness(
     state: SpreadsheetFilterUiState,
 ) -> (Harness<'static>, SharedFilterState, SharedFilterCommands) {
+    run_filter_harness_with_width(state, None)
+}
+
+fn run_filter_harness_with_width(
+    state: SpreadsheetFilterUiState,
+    width: Option<u32>,
+) -> (Harness<'static>, SharedFilterState, SharedFilterCommands) {
     let shared_state = Arc::new(Mutex::new(state));
     let shared_commands = Arc::new(Mutex::new(Vec::new()));
     let rendered_state = Arc::clone(&shared_state);
     let rendered_commands = Arc::clone(&shared_commands);
-    let grid = super::super::super::painter_tests::grid_surface();
+    let mut grid = super::super::super::painter_tests::grid_surface();
+    if let Some(width) = width {
+        grid.cells[0].bounds.width = width;
+        grid.cells[0].clipped_bounds.width = width;
+    }
     let mut harness = Harness::builder()
         .with_size(TEST_VIEWPORT)
         .build_ui(move |ui| {
@@ -67,6 +78,9 @@ fn take_commands(
 ) -> Vec<SpreadsheetFilterCommand> {
     std::mem::take(&mut *commands.lock().expect("filter command lock"))
 }
+
+#[path = "spreadsheet_filter_controls_narrow_tests.rs"]
+mod narrow_tests;
 
 fn menu_labels() -> (String, String, String) {
     let messages = &crate::i18n::I18nOps::get().preview.spreadsheet_filter;

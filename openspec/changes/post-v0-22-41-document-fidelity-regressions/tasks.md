@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-04 current a91469ff review5405638326 / P2 4177218504（thread PRRT_kwDORm09y86oxgyI）: XLSX header幅22px以下でfilter_button_rectがNoneとなるバグを実クリックでRED再現。button幅を実cell幅へ制限し、元column右端anchor・viewport/cell clippingを維持。1/12/22/23pxでCandidates→実menu Clearを確認、real worker/offscreen-anchorを含む全16回帰成功。初稿型エラー・worker env欠落は成功扱いせず修正して再実行。静的検査・全coverage・正式commit/push、個別reply/resolve・全thread再取得を継続。証跡evidence/narrow-filter-review-2026-10-04.md。manual-target公開方針P2は別のユーザー判断待ち。
+
 - [/] 2026-10-04 a91469ff通常push exit0・upstreamとの差0/0を確認。変更後coverageはUI1030/main17/export13成功後、parallel workspace4件失敗（139pass/既存ignore2）。release compile終了後も同じ4件が失敗するため競合ビルド原因説は棄却。先行palette独自harnessだけ実ユーザーglobal workspace履歴を復元しており、実JSON保存先をunique TempDirへ分離すると全143pass/既存ignore2/exit0。同assignment2件だけ外すnegative controlで同4失敗/exit101を再現して修正を復元。元100step/2ms・全145test・全基準/製品コード不変。全coverage・通常push/current review・新worker/runner原本/配布受入・公開は継続。容量3.5GiBでowned fresh release buildだけ中断exit130、新binary成功とは扱わない。証跡evidence/parallel-palette-isolation-2026-10-04.md。
 
 - [/] 2026-10-04 a5c3aed1通常pushはnative UI1030/parallel143/serial18/export13成功後、Linux linker Bus errorでexit1。終了後148GiB backing disk空き0を確認。ComposeがJustfileのsymbol0設定を継承しない原因を修正、Linux/Windows実container双方0/0/none/none確認、新契約RED→GREEN・全6件成功。active container0とsigned checkpoint後、公式Linux UI dev生成物267files/25.7GiBだけを再生成可能な削除、17GiB復旧。source/release/sibling不変。全4分類supply-chain成功、公開f79全CI/current review成功は新版local HEADへ流用しない。通常push・変更後coverage・実受入・公開は未完了で継続。

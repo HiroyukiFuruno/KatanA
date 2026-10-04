@@ -97,16 +97,16 @@ fn filter_button_rect(
     cell: &DocumentGridCell,
 ) -> Option<(egui::Rect, egui::Rect)> {
     let cell_rect = super::painter_grid_style::translated(viewport.min, cell.bounds);
-    if cell_rect.width() <= FILTER_BUTTON_WIDTH {
-        return None;
-    }
     let cell_clip = super::painter_grid_style::translated(viewport.min, cell.clipped_bounds)
         .intersect(viewport);
     if cell_clip.is_negative() || cell_clip.width() <= 0.0 || cell_clip.height() <= 0.0 {
         return None;
     }
     let button_rect = egui::Rect::from_min_max(
-        egui::pos2(cell_rect.right() - FILTER_BUTTON_WIDTH, cell_rect.top()),
+        egui::pos2(
+            cell_rect.right() - FILTER_BUTTON_WIDTH.min(cell_rect.width()),
+            cell_rect.top(),
+        ),
         egui::pos2(cell_rect.right(), cell_rect.bottom()),
     );
     let visible_button = button_rect.intersect(cell_clip);
