@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [x] 2026-10-04 狭いXLSX filter P2 4177218504はf8cb595eへ正式統合、通常push（native/Linux/Windows/preflight）exit0。reply4177465992→個別resolve→全thread再取得で解決確認、GitHub HEAD一致・upstream差0/0。変更後の公式just coverageもexit0、UI1032/既存ignore2、main17、実export13（253.44s）、parallel143/既存ignore2（24.86s）、serial18（2.86s）、meaningful未実行0・strict document surface100%/uncovered0。current review5979738356結果待ち、原本/配布受入・公開は未完了。新KDV0.5.11 release workerを再build中で旧binary受入を流用しない。証跡evidence/narrow-filter-review-2026-10-04.md。
+
 - [/] 2026-10-04 current a91469ff review5405638326 / P2 4177218504（thread PRRT_kwDORm09y86oxgyI）: XLSX header幅22px以下でfilter_button_rectがNoneとなるバグを実クリックでRED再現。button幅を実cell幅へ制限し、元column右端anchor・viewport/cell clippingを維持。1/12/22/23pxでCandidates→実menu Clearを確認、real worker/offscreen-anchorを含む全16回帰成功。初稿型エラー・worker env欠落は成功扱いせず修正して再実行。静的検査・全coverage・正式commit/push、個別reply/resolve・全thread再取得を継続。証跡evidence/narrow-filter-review-2026-10-04.md。manual-target公開方針P2は別のユーザー判断待ち。
 
 - [/] 2026-10-04 a91469ff通常push exit0・upstreamとの差0/0を確認。変更後coverageはUI1030/main17/export13成功後、parallel workspace4件失敗（139pass/既存ignore2）。release compile終了後も同じ4件が失敗するため競合ビルド原因説は棄却。先行palette独自harnessだけ実ユーザーglobal workspace履歴を復元しており、実JSON保存先をunique TempDirへ分離すると全143pass/既存ignore2/exit0。同assignment2件だけ外すnegative controlで同4失敗/exit101を再現して修正を復元。元100step/2ms・全145test・全基準/製品コード不変。全coverage・通常push/current review・新worker/runner原本/配布受入・公開は継続。容量3.5GiBでowned fresh release buildだけ中断exit130、新binary成功とは扱わない。証跡evidence/parallel-palette-isolation-2026-10-04.md。
