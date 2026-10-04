@@ -1,5 +1,10 @@
 ## 1. Reproduction and ownership evidence
 
+- [ ] 2026-10-04 latest HEAD761439e review P2 4177866298/thread PRRT_kwDORm09y86oy_ZO: Unicode localized alias École/request écoleをASCII case comparisonで不一致にする問題。回帰RED→同一Unicode casingで修正→全gate→正式push→個別reply/resolve→fresh reviewを継続。既存二件resolve/受入を現review全完了へ読み替えない。
+  - 実SFNT matcher unavailableをRED再現、alias/request/dedupのUnicode lowercaseを既存request_keyへ統一して書体26件GREEN。fixture責務/共通record reader分離後AST23と全target strict Clippy成功。0件filter・fixture length assertion・fmt/AST失敗は成功証跡から除外し、基準不変。正式履歴・全coverage・通常push・個別reply/resolve・fresh review/変更後実受入を継続、証跡evidence/unicode-font-alias-review-2026-10-04.md。
+
+- [/] 2026-10-04 追加font/queue修正後、fresh locked release runner再build30m48s/exit0。原本Office5件・実Sheet0→1→0・legal DOCX・PPTX/XLSX/原本large PPTX各cold1+warm10混合開閉を全exit0で再受入、元RSS/close/frame基準不変、終了resource全0。正式公開HEAD761439eへ新review5980503748依頼、Draft維持。配布main/全OS/原本HTML/独立95点/公開・後処理は未完了。証跡evidence/fresh-review-pair-acceptance-2026-10-04.md。
+
 - [x] 2026-10-04 KRR担当の最新human「設計変えてないなら取り消さないで良いです」を実readで確認。既存JNI/JVM方式を維持する検査修正は復元され、PR105 HEAD9f06f14e5238bc47ac4db2612601460b1d30bbb5の通常push・P1 reply/resolve後、Draft再review中。下記の一律JDK/JVM非依存・公開停止という解釈は、この後発明示指示で訂正する。新しい設計変更は行わず、元の公開上流採用・原本/全配布受入DoDを継続。KDV担当にも最新条件をhandoff、監視promptを訂正。
 
 - [x] 2026-10-04 追加P2 font/queue修正は435ac5b2まで通常push exit0（native/Linux/Windows/preflight）、GitHub HEAD一致・upstream差0/0。各指摘へreply4177809513/4177809658後に個別resolve、全reviewThreads/commentsを再取得し次page無し・両thread解決を確認。既存manual-target公開方針P2一件は未解決、新HEAD rereview/CI・原本/配布/fidelity・JDK非依存・公開の残DoDは継続。supply-chain4分類もexit0、coverage JSON保存とsigned checkpoint後の生成物限定3.3GiB整理（再生成可能、source/release/sibling不変）を記録。証跡evidence/review-alias-queue-2026-10-04.md。
