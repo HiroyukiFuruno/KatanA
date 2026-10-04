@@ -33,3 +33,7 @@ same_faceのASCII比較も調べたが、same_sharedがepochを保持するた�
 補強後の既存justターゲットはfont_loader67件・font_requests7件・AST23件すべてexit0。追加alias同一性assertの改行をfmtが検出したため公式just fmt後にfmt-check再実行成功、lint-impactedもexit0。self-reviewで実caller→投影→resolver→lease→painter経路、alias/style同一性と変更後の行数規則を確認。製品変更は投影1箇所・lease lookup1箇所に限定。残る正式push/変更後全coverage/current review/原本・全配布受入は継続。
 
 source7a068115変更後の公式just coverageはexit0。UI1043/既存ignore2・main17・実export13（250.89s）・parallel143/既存ignore2（23.77s）・serial18（2.75s）、meaningful未実行0・strict文書surface100%/uncovered0。ログtmp/unicode-consumer-full-coverage-2026-10-04.log、raw JSON15366622bytesを同prefix.jsonへ保存。通常push・Unicode二thread個別reply/resolve・fresh current review・変更後原本/配布受入は未完了。
+
+署名Gのc62644f20cf5666f84d4cb6ea8fbb4e0954c296bまで通常push exit0（native/Linux実workspace/Windows test-inclusive/preflight）、GitHub HEAD一致・upstream差0/0。metadataへreply4178133293、leaseへreply4178133882後に各threadをresolve。mainも独立GraphQL再取得で両解決・全thread/comments next pageなし・未解決はmanual-target方針threadのみを確認。current review5981260229を依頼、Draft維持。全coverage JSONとclean署名checkpoint保存後、owned coverage UI dev生成物1405files/3.0GiBだけを公式dry-run→clean（再生成可能）。source/原本/release/sibling不変。新source locked release worker/runnerの再buildを開始（session85397）、成功・原本/全配布/95点は先取りしない。
+
+KRR最新live PR105 HEAD2916ea4cでcurrent reviews・未解決0→Ready後、必須Ubuntu CIおよびreusable Ubuntu evidenceがFAILURE、Draftへ戻った。既存担当へ証跡付き継続依頼、別repo編集はしない。latest registryはKRR0.4.22/KDV0.5.11 nonyanked・checksum一致、KUC GitHub Release0.4.1を再確認。未公開版採用・元HTML正常close完了は先取りしない。
