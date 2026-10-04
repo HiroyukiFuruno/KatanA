@@ -133,12 +133,13 @@ impl DocumentFontLease {
     pub(crate) fn family_for(&self, family: &str, bold: bool, italic: bool) -> Option<FontFamily> {
         let state = self.manager.lock_state();
         let lease = state.leases.get(&self.id)?;
+        let normalized_family = family.to_lowercase();
         lease
             .faces
             .iter()
             .zip(&lease.families)
             .find(|(face, _)| {
-                face.request.family.eq_ignore_ascii_case(family)
+                face.request.family.to_lowercase() == normalized_family
                     && face.request.bold == bold
                     && face.request.italic == italic
             })

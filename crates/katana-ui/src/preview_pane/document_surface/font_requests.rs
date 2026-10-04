@@ -26,7 +26,7 @@ impl DocumentFontRequestsOps {
             }
             Self::insert_style_requests(
                 &mut requests,
-                &family.to_ascii_lowercase(),
+                &family.to_lowercase(),
                 cell.appearance.bold,
                 cell.appearance.italic,
             );
@@ -97,6 +97,21 @@ mod tests {
                 .iter()
                 .any(|request| !request.bold && request.italic)
         );
+    }
+
+    #[test]
+    fn unicode_family_case_is_projected_to_one_request() {
+        let mut grid = super::super::painter_tests::grid_surface();
+        let mut upper = grid.cells[0].clone();
+        upper.appearance.font_family = "École".to_owned();
+        let mut lower = upper.clone();
+        lower.appearance.font_family = "école".to_owned();
+        grid.cells = vec![upper, lower];
+
+        let requests = DocumentFontRequestsOps::grid_requests(&grid);
+
+        assert_eq!(requests.len(), 1);
+        assert_eq!(requests[0].family, "école");
     }
 
     #[test]

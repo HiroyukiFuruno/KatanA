@@ -57,6 +57,44 @@ fn shared_payload_alias_survives_until_last_lease_drops() {
 }
 
 #[test]
+fn unicode_family_lookup_preserves_style_matching() {
+    let (context, manager, base) = installed_context();
+    let payload = base.font_data["Ubuntu-Light"].clone();
+    let mut lease = manager.lease(&context);
+    lease.replace_faces(&[
+        face_with(&payload, "école", false, false, false),
+        face_with(&payload, "école", true, false, false),
+    ]);
+
+    let regular = lease
+        .family_for("École", false, false)
+        .expect("regular Unicode family alias");
+    let bold = lease
+        .family_for("École", true, false)
+        .expect("bold Unicode family alias");
+    assert_eq!(
+        lease.family_for("école", false, false),
+        Some(regular.clone())
+    );
+    assert_eq!(lease.family_for("école", true, false), Some(bold.clone()));
+    assert_ne!(regular, bold);
+    assert!(lease.family_for("École", false, true).is_none());
+}
+
+#[test]
+fn unicode_family_casing_change_preserves_epoch() {
+    let (context, manager, base) = installed_context();
+    let payload = base.font_data["Ubuntu-Light"].clone();
+    let mut lease = manager.lease(&context);
+    lease.replace_faces(&[face_with(&payload, "école", false, false, false)]);
+    let initial_epoch = epoch(&manager);
+
+    lease.replace_faces(&[face_with(&payload, "École", false, false, false)]);
+
+    assert_eq!(epoch(&manager), initial_epoch);
+}
+
+#[test]
 fn existing_registry_and_base_changes_preserve_active_faces() {
     let (context, manager, base) = installed_context();
     let payload = base.font_data["Ubuntu-Light"].clone();
