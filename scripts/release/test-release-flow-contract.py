@@ -33,7 +33,27 @@ def verify_workflow(workflow: str) -> None:
             raise ValueError("check-pr-ready owns release preflight; do not run it twice")
 
 
+def verify_release_guidance(workflow: str, skill: str) -> None:
+    if "`./scripts/release/check-pr-ready.sh X.Y.Z` を実行し" in workflow:
+        raise ValueError("normal push owns readiness; do not require a prior manual run")
+    if "通常pushのpre-push hook" not in workflow:
+        raise ValueError("release guidance must identify the normal push owner")
+    if "1コミットに圧縮" in skill:
+        raise ValueError("release skill must preserve ordinary reviewed commits")
+
+
 class WorkflowContractTests(unittest.TestCase):
+    def test_manual_readiness_before_push_is_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            verify_release_guidance("`./scripts/release/check-pr-ready.sh X.Y.Z` を実行し", "")
+
+    def test_old_squash_skill_is_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            verify_release_guidance("通常pushのpre-push hook", "1コミットに圧縮")
+
+    def test_hook_owned_guidance_is_valid(self) -> None:
+        verify_release_guidance("通常pushのpre-push hook", "検証済み通常コミット")
+
     def test_single_readiness_entrypoint_is_valid(self) -> None:
         verify_workflow("  - run: ./scripts/release/check-pr-ready.sh 0.22.42\n")
 
@@ -57,6 +77,7 @@ def main() -> None:
     build_workflow = (ROOT / ".github/workflows/build-and-release.yml").read_text(encoding="utf-8")
     readiness_workflow = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")
     impl_release = (ROOT / ".agents/workflows/impl-release.md").read_text(encoding="utf-8")
+    release_skill = (ROOT / ".agents/skills/impl-release/SKILL.md").read_text(encoding="utf-8")
 
     assert "run: just lint-impacted" in lefthook
     assert "run: just lint\n" not in lefthook
@@ -66,6 +87,7 @@ def main() -> None:
     assert "preflight.sh" in check_pr_ready
     verify_workflow(build_workflow)
     verify_workflow(readiness_workflow)
+    verify_release_guidance(impl_release, release_skill)
     assert "check-platforms" in tests
     assert "coverage" in tests
     assert "check-full:" in maintenance

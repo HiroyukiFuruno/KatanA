@@ -68,7 +68,7 @@ PR マージ後は `build-and-release.yml` が自動発火し、マルチプラ�
 | --- | --- | --- |
 | pre-commit | lefthook → `just lint-impacted` | 変更影響範囲の lint を担当 |
 | release pre-push | lefthook → `just check` | 同じ差分への `just pre-push` 重複実行はしない |
-| PR/release preflight | `check-pr-ready.sh` → `preflight.sh` | workflow から `release-preflight` を別実行しない |
+| PR/release preflight | pre-push hook → `check-pr-ready.sh` → `preflight.sh` | 通常push前の手動再実行とworkflow内の直接preflightを重ねない |
 | release final / CI | `check-full`、coverage、3OS checks | 通常 pre-push の代替ではなく、明示された正式ゲートとして維持 |
 
 ### Phase 1: 環境準備
@@ -114,7 +114,7 @@ git switch release/vX.Y.Z
 
 ### Phase 5: 整合性チェック & QA
 
-1. `./scripts/release/check-pr-ready.sh X.Y.Z` を実行し、全項目が **[OK]** になるまで修正を繰り返す。
+1. PR readiness / preflight の正式ownerは通常pushのpre-push hookとする。同じHEADでpush前に `check-pr-ready.sh` を手動で重複実行しない。hook失敗時の原因確認に限り手動診断し、修正後は通常pushで再検証する。公開イベントのartifact検査は別の証跡として維持する。
 
 2. push 前の正式な品質ゲートは `pre-push` hook とする。通常の Task PR では、重い `just check` / `just check-light` を push 直前に二重実行せず、必要な対象検証を実施した上で通常の `git push` を行い、hook に通す。
 

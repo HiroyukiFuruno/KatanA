@@ -11,6 +11,7 @@ The user requested removal of duplicated checks, using KRR's release flow as a r
 - PR readiness already owns release preflight. CI behavior was not duplicated before this change; comments and executable regression checks prevent future direct or multiline duplication.
 - The workflow preserves ordinary release-branch commits, Draft review, thread repair/reply/resolve, Ready promotion and current-HEAD required checks. It no longer instructs squash/reset or renewed merge approval for an already authorized release.
 - Publication, asset/checksum verification and acceptance remain completion requirements. Remote branches are not implicitly deleted.
+- Follow-up audit found an actual same-HEAD duplicate: Phase 5 required manual readiness, then pre-push ran readiness again. Normal push now owns readiness; manual invocation is diagnostic only. The skill entrypoint's stale squash instruction is synchronized with the ordinary-history workflow. Three additional regressions reject old manual/squash guidance and accept hook-owned guidance.
 
 ## Verification
 
