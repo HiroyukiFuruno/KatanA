@@ -3,6 +3,7 @@
 use super::super::EMOJI_INLINE_PIXEL_SIZE;
 use super::super::types::HtmlRenderer;
 use super::text::HtmlInlineTextOps;
+use super::trace::BoundedSource;
 use eframe::egui;
 use katana_core::emoji::EmojiRasterOps;
 use katana_core::html::{HtmlNode, LinkAction};
@@ -34,7 +35,7 @@ impl HtmlInlineLinkOps {
                     "linked_image_response",
                     format_args!(
                         "src={} response=({:.1},{:.1},{:.1},{:.1})",
-                        src,
+                        BoundedSource::new(src),
                         response.rect.min.x,
                         response.rect.min.y,
                         response.rect.max.x,

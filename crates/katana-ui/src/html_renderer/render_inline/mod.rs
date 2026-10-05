@@ -10,6 +10,7 @@ use super::{EMOJI_INLINE_DISPLAY_SIZE, EMOJI_INLINE_PIXEL_SIZE, LINE_BREAK_SPACI
 
 mod link;
 mod text;
+mod trace;
 
 impl<'a> HtmlRenderer<'a> {
     pub(super) fn render_inline(&mut self, node: &HtmlNode) -> Option<LinkAction> {
@@ -73,7 +74,7 @@ impl<'a> HtmlRenderer<'a> {
                     "image_response",
                     format_args!(
                         "src={} response=({:.1},{:.1},{:.1},{:.1})",
-                        src,
+                        trace::BoundedSource::new(src),
                         response.rect.min.x,
                         response.rect.min.y,
                         response.rect.max.x,
