@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-05 画像trace修正28cd7ec2の公式JOBS2/CARGO_INCREMENTAL0 just check-fullはexit0。native UI1055/既存ignore2・実export13・parallel143/既存ignore2・serial18・実worker fixture8、meaningful未実行0/strict document surface100%、Linux実worker全workspace、Windows test込みcross-check、supply-chain4分類成功。raw JSON15470252bytes/SHA3fbebb7eを保持しhelperも210/15/106全部100%を実確認。既存duplicate警告/AppleScript診断もraw保持し配布OS受入へ代用しない。通常push・個別P2 reply/resolve・fresh current review/new-HEAD CI・変更後配布/原本/95点は継続。
+
 - [/] 2026-10-05 画像trace P2を28cd7ec2へ正式統合。旧全文formatterで3件RED→最終9件GREEN、実worker/canonical workspace入口9件exit0、pure helper独立LLVM coverage210/210 regions・15/15 functions・106/106 lines=100%。初回commitのcounter/Unicode AST違反を正規修正し通常Clippy/AST hook成功、除外/閾値変更なし。通常push・全coverage・個別reply/resolve・current review・変更後実配布/入力受入は未完了であり旧CI/旧package証跡を流用しない。KDV既存担当もDraft PR64 bff49e2でreview/3OS CI進行、まだ公開0.5.11のまま。
 
 - [/] 2026-10-05 c10254a3 current review（12:40:48Z）P2 threadPRRT_kwDORm09y86pCPUw: DEBUG HTML画像/linked画像traceの全文src出力を、借用Displayの入力128文字/出力192bytes上限へ修正。元描画入力/DEBUG条件/基準不変。childのworker不在baselineは製品REDにせず、mainが同moduleの旧全文表示で3件RED→復元後9件GREEN（standalone -D warnings）を確認。正式workspace/実worker・strict lint・全coverage/純helper独立計測・正式履歴・通常push・個別reply/resolve・fresh全取得は継続。証跡evidence/bounded-image-trace-review-2026-10-05.md。既存manual-target方針P2とは別件。

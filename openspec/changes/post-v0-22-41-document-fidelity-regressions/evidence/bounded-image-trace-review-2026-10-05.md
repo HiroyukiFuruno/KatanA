@@ -33,6 +33,12 @@ The canonical real-worker/workspace filtered test was also rerun after those lin
 
 The normal source commit passed its strict Clippy and AST hooks after those repairs: `28cd7ec2`, with raw receipt `tmp/bounded-image-trace-source-commit-retry-2026-10-05.log`. Aggregate full coverage, normal push and individual thread reply/resolve remain separate checkpoints. No existing coverage exclusion or threshold changed.
 
+The post-repair official `JOBS=2 CARGO_INCREMENTAL=0 just check-full` completed with exit 0 (`tmp/bounded-image-trace-check-full-2026-10-05.log`). Native UI: 1055 passed, zero failed, existing two ignored unchanged; actual export integration: 13 passed; parallel UI: 143 passed, existing two ignored unchanged; serial UI: 18 passed. Real-worker document fixtures: eight passed. Meaningful uncovered lines were zero and strict document-surface coverage was 100%. Linux ran the actual worker/workspace tests; Windows performed test-inclusive cross-compilation, not native Windows execution. Supply-chain advisories, bans, licenses and sources all succeeded; existing duplicate-dependency warnings were preserved, not suppressed. The passing native parallel suite also emitted an AppleScript conversion diagnostic; this log is retained and is not proof of all packaged OS interactions.
+
+Native raw coverage was separately preserved: `tmp/bounded-image-trace-full-coverage-2026-10-05.json`, 15470252 bytes, SHA-256 `3fbebb7e8df92c79039de3b3fb89405bb63071bc52cad5e14d750f03479d1330`. Its actual helper entry also reports 210/210 regions, 15/15 functions and 106/106 lines covered. It reports no branch counters and 17/20 generic instantiations; no claim of measured 100% branch/instantiation coverage is made.
+
+Normal push, individual P2 reply/resolve, fresh current review and new-HEAD CI remain pending at this checkpoint.
+
 ## Release boundary
 
 The successful c10254a3 CI and packaged arm64 startup receipt predate this Rust change. They are retained as historical evidence and do not verify a rebuilt candidate containing this repair. Packaged document input/normal close, independent four-axis scores, all native distribution targets, clean-machine acceptance and release cleanup remain unfinished.
