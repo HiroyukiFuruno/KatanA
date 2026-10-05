@@ -29,6 +29,15 @@ KatanA MUST disable table-of-contents, export/download, story/slideshow, and too
 
 The complete KatanA to KDV to KRR path MUST compare the supplied HTML at the same logical viewport against Chrome for CSS layout, JavaScript-visible state, scrolling, and anchor navigation. A static initial screenshot alone MUST NOT satisfy this requirement.
 
+Chrome rendering and observable behavior of the same original document MUST be the reference, not the current KatanA output. The comparison MUST record and align viewport, display scale, fonts, and external-resource/network conditions. It MUST cover typography, colors, image placement, and layout as well as applicable links, scrolling, forms, and JavaScript-driven interactions. Existing independent quality thresholds MUST remain unchanged.
+
+#### Scenario: A native report identifies a browser compatibility gap
+
+- **WHEN** the original HTML differs in style or behavior between Chrome and KatanA
+- **THEN** the expected result is captured from Chrome under the recorded comparison conditions
+- **AND THEN** the mismatch remains an unresolved acceptance item until its owner-layer fix is independently reverified through KatanA
+- **AND THEN** the reference MUST NOT be regenerated from KatanA to hide the mismatch
+
 #### Scenario: Browser differential reaches the same anchor and state
 
 - **WHEN** Chrome and KatanA open the supplied HTML with the same viewport and navigate to `#s15`

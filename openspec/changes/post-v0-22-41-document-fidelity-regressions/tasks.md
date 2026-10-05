@@ -1,5 +1,44 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-06 release flow追加最適化eda9c8b3: 手動check-pr-ready→通常push hook内check-pr-readyの同HEAD重複を除去し、通常pushを正本owner/手動は失敗診断のみへ統一。skill入口の旧squash指示も通常履歴へ同期。契約7件と既存CI品質維持6件をmain成功確認。PPTX/形式別menu85c032b5も通常hookで正式統合。CHANGELOG日英へhost改善と次期上流制限を同期し、未解決reload/native/全配布を解消済みにしない。
+
+- [/] 2026-10-06 host追加差分を正式統合: 未loaded Markdown診断8eb40d5（実file5件）、HTML smooth-scroll497392f（正確なfilter1件）、reload回帰04989ed（実RGB/session3件）。reload製品コードは未変更で本人の無反応は未解決。PPTX/形式別メニュー候補はfocused5/134/1件とmain fresh runner実15操作/exit0を確認、初回14.951秒（先行2.433秒）で安定した速度改善とは扱わない。in-processを配布/native証明へ代用しない。証跡evidence/host-feedback-integration-2026-10-06.md。新HEAD push/current review/全gate/全配布/公開は未完了。
+
+- [/] 2026-10-06 PNG非同期読込・bounded owned cacheをf3364c4へ通常hookで正式統合。main公式local_image_loader5件成功、AST23件成功後に通常Clippyの冗長closure1件を補正してlint-impacted成功。16bitRGBA・generation取消・decode/composite・missing失敗cache・oversize失敗の回帰を保持。画像cacheは16件/64MiB、超過は明示失敗として再decodeループさせない。公開/新HEAD CI/本人再確認は未完了で、現f336のGUI検証全完了とは扱わない。
+
+- [/] 2026-10-06 リリースフロー最適化を9c0fe5aeへ通常hook/署名Gで正式統合。pre-commitを既存impacted lint、pre-push aliasを実hookのcheckへ統一。check-pr-ready/preflightは元から単一路線で、重複実行を新たに検出する契約4件と既存全検証維持契約6件をmainで成功確認。Draft review順序・通常履歴・配布/公開後処理を手順へ反映。今回のflow差分で全Rust gate/新HEAD CI/公開が済んだとは扱わない。証跡evidence/release-flow-optimization-2026-10-06.md。
+
+- [ ] 2026-10-06 reload実回帰: 正常local HTMLの内容変更・同内容force・dirty保護3件は実action→新preview session→実RGB表示確認でGREEN。最初のframe generation単独比較はreloadで番号が再利用されるため誤REDであり、製品修正の根拠にしない。本人の無反応報告は未解決、原本/メニュー入力/URL/virtual経路の再現を継続する。testsを追加、製品reloadコードは変更していない。
+
+- [ ] 2026-10-06 本人指示: KRRのリリースフローを参考に重複チェックを最適化する。コミット前は変更箇所の検証、通常pushは既存hookの正式検査、公開前は全体coverage/供給網/3OS/配布検査を担当させる。同じ入力・HEADの検査を直前に再実行してhookを回避しない。`pre-push` aliasと実hookの不一致を解消し、`check-pr-ready`が内包するpreflightを別途二重呼び出ししない。全体テスト・fixture・coverageの対象差を無視した削除は禁止。再発防止のrelease-flow契約テストを追加し、変更graphで検証・正式履歴へ統合する。
+
+- [ ] 2026-10-06 最新公開範囲の本人決定: KDV/KRRの不備取り込みは次期とする。今回v0.22.42はKatanA側の対応を完了・正式統合し、変更graphのbuild/test/lint/coverage/supply-chain/packaging/current review・配布検証を通して公開する。上流Issue65/66/67・106/107の修正公開/採用を今回の停止条件にしない。上流依存の永続artifact/Chrome互換性は未解決・次期としてRelease/CHANGELOGへ明記し、解決済みや各95達成と偽らない。KatanA host固有の修正・回帰・品質条件は下げない。本人がリリース価値を認めた現公開registry版を維持し、未公開override/独自上流実装で補わない（検索語: upstream defects deferred next release host-only release scope）。
+
+- [ ] 2026-10-06 最新本人指示: 指摘をKatanA/KDV/KRRに切り分ける。KDV/KRRはIssueを立てるだけとし、この担当は上流の実装・version bump・commit/push・release作業を行わない。KatanAの既存release/v0.22.42でhost修正・公開版採用・受入を続ける。アンチパターン: 上流Issue作成を上流編集許可とみなす。正: 証跡/未確定/DoD付きIssueへ引継ぎ、host所有の修正だけ続行（検索語: upstream issue only no sibling implementation）。
+  - KatanA所有: PNG同期読込/Explorer停止、未loaded Markdown診断によるUI停止、Missing画像のPending/Failed/表示経路、HTML smooth-scroll尾部転送、reloadの再読込/画面反映、PPTXスライドショーと形式/状態別メニュー。PDF native画面待ちもhost側を継続切分けする。
+  - KDV所有/調査: DOCX/PDF変換・初期描画遅延 https://github.com/HiroyukiFuruno/katana-document-viewer/issues/65 、Office/PDF再起動永続artifact公開契約 https://github.com/HiroyukiFuruno/katana-document-viewer/issues/66 、PPTX ZIP読み取りエラー https://github.com/HiroyukiFuruno/katana-document-viewer/issues/67 。原本ZIP不在、PDF native遅延原因は未確定。Issue化を実装修正/完了扱いしない。
+  - KRR所有/調査: Chrome参照HTML描画・操作互換性 https://github.com/HiroyukiFuruno/katana-render-runtime/issues/106 、HTML再起動永続artifact/操作session復元契約 https://github.com/HiroyukiFuruno/katana-render-runtime/issues/107 。hostの入力欠落をKRRへ丸投げせず、静止画cacheを操作復元と偽らない。
+  - KatanA側cache保存場所/設定/容量/削除・上流artifact接続と再起動受入はhostタスクとして残す。公開API不足を確認、独自overrideや基準変更で回避しない。
+  - 原本PDF4/DOCX2の独立harness全14操作/quit成功、PDF初回0.063–0.102秒/DOCX1.264・3.159秒。ただしnative表示/原本パスOSアクセスを含まず、本人報告を否定しない。診断loaded/dirty/未loaded実ファイル回帰はmain公式test-specific全5件成功。PNG正式lintは引数数/if形式の2件失敗で補正中、未commit/全gate未完了。
+
+- [ ] 2026-10-06 本人指示: Office/HTML/PDFが起動中はcache再利用されるが再起動後は再ロードとなり基本要件違反。永続cacheの再利用を必須受入へ追加し、入力内容hash・renderer公開版/config/font/viewport等の必要キーで変更時無効化、容量上限・破損時の明示処理・削除操作・close後owned-memory解放を維持する。起動中warmだけで完了扱いしない。KatanA既存cacheと公開KDV/KRRの所有境界を一次ソースで調査中、private文書原本/cache内容を公開証跡へ漏らさない。
+
+- [/] PNGの非同期読込候補について2026-10-06本人が「画像の読み込みが遅いのは改善されたっぽい」と報告。実機改善証言を記録するが、missing表示/inline・fullscreen・slideshow回帰、正式AST/lint/全gate/commit/current reviewは別に検証する。改善証言をDOCX/PDF/HTML完了に代用しない。
+
+- [ ] 2026-10-06 PDF/DOCロードが遅すぎるとの本人追加報告。同原本でファイル取得、Office変換、PDF初期描画、host frame受信/画面反映を別計測する。原本名をasync確認中。live v0.22.42 PID36452の3秒sampleではmain202/219がMetal drawable取得待ち、document worker219/219がcommand待ちで、その窓にはPDF/Office処理は観測されない。正常描画のvsync待ちと異常停止を区別し、このsampleだけでGPU原因/ロード時間/改善を断定しない。
+
+- [ ] 2026-10-06 画像Missing Local Image表示の本人スクショ。選択PNGは実在/readable・581312bytes・884x1124・16bit RGBA。current loaderのPending/Failed混同とviewer_state None時にrequestが発生しない経路を検出し、待機/成功/失敗理由を分離、inline/slideshow/fullscreenの実画像表示回帰を必須にする。ファイル消失やPNG非対応と未検証で断定しない。
+
+- [ ] 2026-10-06 経歴書ディレクトリを開くとクラッシュしたとの本人報告。添付AE2A7A52はinstalled v0.22.41の22.08秒hangで、全11 main-thread samplesがRefreshDiagnostics→未loaded MarkdownのFilesystemService.load_document→read_to_string→open→EndpointSecurity応答待ち。終了原因・セキュリティ製品はこの記録だけで断定しない。current releaseも同じ同期読込を保持するため、診断が未loaded文書をUI上でロードしない修正とloaded/dirty文書診断保持・load完了後診断の実ファイル回帰を行う。
+
+- [ ] 2026-10-06 PPTXスライドショー対応と画像右側メニューの非活性状態が不適切との本人報告。現PreviewMenuAvailabilityはmenu引数を無視してOffice/HTMLを一律無効、その他を一律有効にする。形式別・表示成功/失敗別に各操作の実能力を調査して整合させる。PPTXはスライド送り・全画面・開始/終了を検証し、ロード失敗時の操作を成功表示と扱わない。添付のZIP local-header/file-lengthエラーは別件として原本破損と読み取り実装の非対応を切り分ける。
+
+- [ ] 2026-10-06 本人HTML実機でスクロール操作感度が悪く、リロードボタンが機能しないと追加報告。実入力delta/表示scale/座標変換とKatanA→KDV→KRRのscroll/refresh command・ack/frame generationを追跡し、通常Chromeの同原本操作を参照とする。ボタンの見た目・action発火だけで合格扱いせず、本文/状態の再読込と表示更新まで必要。dirty文書保護や既存tab再利用を破壊せず、旧RED→修正GREEN→本人再確認へ継続する（検索語: HTML scroll sensitivity reload button no effect）。
+
+- [ ] 2026-10-06 本人実機確認でHTMLが通常ブラウザーと見た目・動作とも乖離するとの報告。同じ原本HTMLをChromeで開いたスタイル・動作を参照基準とする。viewport・表示倍率・フォント・外部資源/ネットワーク条件を記録して揃え、レイアウト/文字/色/画像とリンク/スクロール/フォーム/JavaScript動作を比較する。Chrome側の操作結果を期待値に固定し、KatanAの現在の出力を正解や参照画像へ差し替えない。差分を再現してKatanA/KRR/KDVの所有境界を特定し、既存上流担当へ証跡を渡す。独立visual/semantic/interaction/performance各95と元公開DoDは維持する（検索語: Chrome reference HTML style behavior parity）。
+
+- [ ] 本人実機確認でOfficeロードが非常に遅く、軽いPNGの切替ごとにExplorerがフリーズする退行を報告（2026-10-06）。just run-release現5cb8bd21の本人操作を継続し、画像切替/UI threadとOffice変換の経路・実process sampleを分離診断する。前のrunner受入PASSで本人確認を合格扱いしない。原因確定→同条件回帰→修正/正式統合→本人再確認を必要とする。アンチパターン: Office上流やbuild競合だけと推測してPNG UI freezeを未検証で除外。正: 軽量PNG反復・Explorer応答・同時Office負荷を個別観測（検索語: PNG switch Explorer freeze, native loading regression）。
+
 - [ ] 最新ユーザー指示「今回は実機確認私の方でしたい」に従い、最新修正入りmacOS配布アプリを用意して本人へ渡す。本人のOffice/HTML/PDF実機確認は未確認として維持し、自動検査・正式統合・current reviewを並行継続する。本人確認を代行・完了扱いしない。
 
 - [/] 2026-10-06 最新ユーザー指示に従いKatanA側の実動作検証を継続。現両lockで実worker付き候補回帰8件、コメント構文回帰8件、正式AST23件、公式lint/fmt/供給網はactualexit0。通常診断OFF原Office5二回は全21steps/quit・idle0、RSS delta195712/195424KiB（元196608、余裕896/1184のみ）。原loom+HTML cold1/warm10は全10steps/quit・観測各11・idle0、cold156576/warm-16016KiB（元196608/65536）。実測成功を独立95点・全packaged/native・全gate/current review・公開完了へ代用しない。コメント方針の再質問待ちは撤回し、構文ベースの整合を検証済み。関心事別通常commit/pushへ継続する。

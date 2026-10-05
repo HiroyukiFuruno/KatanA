@@ -4,10 +4,16 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ## [0.22.42] - 2026-09-30 21:49:09 (UTC)
 
+### 🚀 Features
+
+- **PowerPoint slideshow**: Present supported PowerPoint files full-screen, with next/previous and first/last slide keyboard navigation.
+
 ### ✨ Improvements
 
 - **Workspace explorer responsiveness**: Large workspaces reuse their file-list projection and draw visible rows without copying the entire tree on every frame.
-- **Relevant document tools**: HTML and Office previews disable unsupported download, slideshow, display, and table-of-contents tools.
+- **Relevant document tools**: Image, HTML and Office previews disable tools unsupported by their format; PowerPoint retains slideshow controls and PDF retains its table of contents.
+- **Local image loading**: Image decoding runs in the background with a bounded cache, avoiding synchronous reads when switching previews.
+- **HTML scrolling**: Smooth scrolling continues forwarding movement after the initial wheel event instead of dropping its remaining motion.
 - **Excel filters**: Column headers provide value filters, blank-value selection, and filter clearing.
 - **Office loading responsiveness**: Initial file reads run in the background so a slow disk read does not stop the interface.
 - **Repeated large-document reads**: Reduced excess memory allocation while reading large files repeatedly; other document-memory regressions remain under investigation.
@@ -20,7 +26,14 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Excel sheet tabs**: Bottom tabs remain visible and clickable without overlapping document diagnostics.
 - **Excel font styles**: Bold and italic cells retain the requested font family when only a regular or partially matching style is installed.
 - **Unsupported display shortcuts**: HTML and Office documents cannot be switched into unsupported split or code-only views using keyboard shortcuts.
-- **Slideshow tab switching**: Switching to an HTML or Office tab exits the slideshow and restores the previous fullscreen state.
+- **Slideshow tab switching**: Switching to an unsupported HTML, Word or Excel tab exits the slideshow and restores the previous fullscreen state.
+- **Workspace diagnostics responsiveness**: Diagnostics no longer synchronously read unopened Markdown files on the interface thread.
+
+### Known limitations
+
+- **HTML compatibility**: Some HTML styles and interactions still differ from Chrome. Further rendering improvements are planned for a subsequent release.
+- **Document loading and restart caching**: Office/PDF loading can remain slow, and Office/HTML/PDF rendering is loaded again after restarting the application. Persistent render caching and additional loading improvements are planned for a subsequent release.
+- **Some PowerPoint files**: Certain presentations can still fail with a ZIP local-header error. This remains under investigation.
 
 ## [0.22.41] - 2026-08-26 06:32:56 (UTC)
 
