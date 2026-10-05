@@ -3943,9 +3943,9 @@ dependencies = [
 
 [[package]]
 name = "katana-render-runtime"
-version = "0.4.22"
+version = "0.4.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "545ed2ebc3a8ccd8e39c588f7e2ff4add90c58d110bfb1d6fe9792a7865a3465"
+checksum = "8e5e0803f343d781dc015d1fe21b052492d67579ba303cf86203f60455852e00"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -3955,13 +3955,17 @@ dependencies = [
  "image",
  "include_dir",
  "jni",
+ "katana-render-runtime-assets",
+ "log",
  "markup5ever",
+ "nix",
  "percent-encoding",
  "resvg 0.48.1",
  "rustybuzz",
  "serde",
  "serde_json",
  "sha2 0.11.0",
+ "skrifa 0.44.0",
  "taffy",
  "tendril",
  "thiserror 2.0.21",
@@ -3975,6 +3979,12 @@ dependencies = [
  "xml5ever",
  "xmltree",
 ]
+
+[[package]]
+name = "katana-render-runtime-assets"
+version = "0.4.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "729af5d660bb6f439ced0a7c56d86ad1cd15b6f1092becc70afd97d41c5a6073"
 
 [[package]]
 name = "katana-ui"
@@ -4529,6 +4539,18 @@ name = "new_debug_unreachable"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
+
+[[package]]
+name = "nix"
+version = "0.31.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf20d2fde8ff38632c426f1165ed7436270b44f199fc55284c38276f9db47c3d"
+dependencies = [
+ "bitflags 2.13.2",
+ "cfg-if",
+ "cfg_aliases",
+ "libc",
+]
 
 [[package]]
 name = "no_std_io2"
@@ -5646,9 +5668,9 @@ dependencies = [
 
 [[package]]
 name = "powerfmt"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "439ee305def115ba05938db6eb1644ff94165c5ab5e9420d1c1bcedbba909391"
+checksum = "4a6394b9e965e73d0a289ee54f589087e2c676aedf60885baf52c76b771e4958"
 
 [[package]]
 name = "ppmd-rust"

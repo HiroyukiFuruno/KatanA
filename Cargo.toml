@@ -27,7 +27,7 @@ egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonm
 # Markdown
 comrak = { version = "0.55", default-features = false, features = ["shortcodes"] }
 katana-document-viewer = "=0.5.11"
-katana-render-runtime = "=0.4.22"
+katana-render-runtime = "=0.4.23"
 katana-markdown-model = "0.2.3"
 katana-ast-lint = "0.5.2"
 katana-markdown-linter = "0.19.5"
