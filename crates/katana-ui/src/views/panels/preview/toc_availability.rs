@@ -79,8 +79,15 @@ mod tests {
     #[test]
     fn pdf_keeps_view_tools_without_markdown_only_menus() {
         let path = std::path::Path::new("manual.pdf");
-        assert!(PreviewMenuAvailability::for_path(Some(path), PreviewMenu::Tools));
-        for menu in [PreviewMenu::Export, PreviewMenu::Story, PreviewMenu::Slideshow] {
+        assert!(PreviewMenuAvailability::for_path(
+            Some(path),
+            PreviewMenu::Tools
+        ));
+        for menu in [
+            PreviewMenu::Export,
+            PreviewMenu::Story,
+            PreviewMenu::Slideshow,
+        ] {
             assert!(!PreviewMenuAvailability::for_path(Some(path), menu));
         }
     }
