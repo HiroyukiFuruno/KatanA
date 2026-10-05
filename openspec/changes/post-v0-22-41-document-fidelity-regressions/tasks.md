@@ -1,5 +1,11 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-05 公開KRR0.4.23/powerfmt0.2.1最終graphの公式JOBS=2 just check-fullがexit0。native全coverage meaningful未実行0/strict surface100%、Linux実worker全workspace実行、Windows test-inclusive cross-check、strict lint/fixture/最終supply-chain全成功。coverage raw JSON15444408bytes/SHA6feec8b6を保存。依存diff自己レビューPASS、正式commit/push/current reviewへ進む。独立95点・packaged全OS・KDV次版・公開後処理は未完了であり、このgate合格へすり替えない。
+
+- [/] KRR0.4.23/powerfmt0.2.1最終lockで原本HTMLを再build/再受入しexit0（初回1.352s・#s15移動1.704s・正常close0.959s・9操作元期限内・process群/資源0）。Office5二回RSS delta186128/192304<196608、legal DOCX/実Sheet0→1→0/3種類cold1+warm10もexit0。複合初回は未生成のexternal hyperlink fixtureで製品実行前に失敗し保持、既存run.sh生成後の再実行は全38操作exit0。最新graphを凍結し公式CARGO_INCREMENTAL=0 JOBS=2 just check-full実行中（tmp/public-krr0423-check-full-2026-10-05.log）。全gate・正式commit/push/current review・独立95点・packaged全OS・配布/公開/後処理は未完了。証跡evidence/public-krr0423-acceptance-2026-10-05.md。
+
+- [/] 2026-10-05 KRR PR105 cc60a7b6の全3OS CI・preflight・全reviewThreads unresolved0・merge、v0.4.23 tag/GitHub Release正式公開・crates.io non-yankedをライブ確認。既存release/v0.22.42のroot固定=0.4.23/両lockを採用中。assets0.4.23もregistry取得、V8 singleton152.2.0、供給網4分類とHTML入力/期限24・実process7契約は成功。原本1280x900/#s15/初期60秒/close5秒の既存driverを変更せず新worker/runner再build中。全依存調査でpowerfmt0.2.1の互換更新1件、直接major/pinned更新候補0・実MathJax JS更新候補0を確認。元HTML/全Office/独立95点/packaged全OS/最新全gate・正式commit/push/current review・公開後処理は未完了。
+
 - [/] 2026-10-05 current 8f212305実装のfresh release worker/runner再buildはexit0。DEBUG=false原本Office5は2回exit0（RSS delta195312/194784KiB、元196608維持）、multi-format38step・legal DOCX・実Sheet0→1→0・PPTX/XLSX/原本large PPTX cold1+warm10全exit0、終了資源全0。旧c626二回超過と原因未確定は保持しRSS修正済みとしない。canonical契約PASSと実PNG/geometryをKDV#58へhandoffし、独立95点・原本HTML・current review・全配布/公開DoDを継続。証跡evidence/current-p2-acceptance-2026-10-05.md。
 
 - [ ] 2026-10-04 current c62644f2 review5406778273追加P2: 4178163032/threadPRRT_kwDORm09y86oztRA（登録済み外部カスタム書体École/écoleのfallback照合）、4178163035/threadPRRT_kwDORm09y86oztRC（直接SetViewModeのHTML/Office availability）。回帰RED→最小修正→既存ゲート→正式push→各reply/resolve→fresh全取得を継続し、Draft維持。
