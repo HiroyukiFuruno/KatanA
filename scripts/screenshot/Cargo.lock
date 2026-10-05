@@ -3903,9 +3903,9 @@ dependencies = [
 
 [[package]]
 name = "katana-document-viewer"
-version = "0.5.11"
+version = "0.5.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "865b7ed683ff3bdbed463adba7dc692cb2888cdbc2bbea2509d6cfb693e7d9ce"
+checksum = "4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635"
 dependencies = [
  "cosmic-text",
  "epaint_default_fonts",
