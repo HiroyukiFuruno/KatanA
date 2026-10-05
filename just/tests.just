@@ -91,4 +91,4 @@ check-local: sweep fmt lint test-integration coverage check-platforms
     @echo "✅ All checks passed"
 
 # Pre-push hook equivalent checks
-pre-push: check-full
+pre-push: check

@@ -15,7 +15,7 @@ pre-commit:
       run: just biome-js-lint
     clippy:
       glob: "crates/**/*.{rs,toml,lock}"
-      run: just lint
+      run: just lint-impacted
     ast-lint:
       glob: "crates/**/*.{rs,toml,lock}"
       run: just ast-lint

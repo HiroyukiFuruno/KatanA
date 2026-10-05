@@ -157,6 +157,7 @@ jobs:
           echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Run release preflight logic
+        # WHY: check-pr-ready が preflight を内包するため、同じ公開検査を二重実行しない。
         env:
           GH_TOKEN: ${{ github.token }}
         run: ./scripts/release/check-pr-ready.sh "${{ steps.version.outputs.version_bare }}" --release-artifact-pending

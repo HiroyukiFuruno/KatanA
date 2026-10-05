@@ -36,7 +36,7 @@ PR マージ後は `build-and-release.yml` が自動発火し、マルチプラ�
 
 - `task-micro-cycle.md` の「単一タスクごとの停止」と「コミット前の承認待ち」は、通常の実装依頼向けの安全策であり、`impl-release` では適用しない。
 - `impl-release` では、各 Task Group の実装、検証、コミット、PR 作成、統合ブランチへのマージまでを AI が連続して進める。
-- ユーザーへの確認で停止する場所は、Phase 3 のユーザーレビュー、Phase 8 のマージ承認、またはテスト失敗・競合・仕様不明などのブロッカー発生時だけとする。
+- ユーザーへの確認で停止する場所は、Phase 3 のユーザーレビュー、またはテスト失敗・競合・仕様不明などのブロッカー発生時だけとする。
 - Task 1、Task 2 などの個別タスク完了時に「ここで止めてよいか」を聞いてはならない。
 - ユーザー手動の OpenSpec 整理差分、別バージョンの OpenSpec 移動、または実装対象外の文書差分が同じ作業ツリーに存在しても、それだけを理由に停止してはならない。`git status --short --branch` で存在を把握し、Task Group のコミット対象を明示的に分離して継続する。
 
@@ -51,8 +51,8 @@ PR マージ後は `build-and-release.yml` が自動発火し、マルチプラ�
 - 依存関係があるタスクグループ（Task Group）、同じファイルを編集する変更、統合ブランチの状態判断は順序を守り、親が最終的に差分を確認して取り込む。
 - 1つのタスクグループ（Task Group）が大きすぎる場合は、そのまま1ブランチへ詰め込まず、計画段階で `2A` / `2B` / `2C` のような分割タスクへ再編する。
 - 分割単位は AsIs/ToBe の乖離、保存モデル、共通 UI 部品（widget: 再利用できる画面部品）、Lint 連携、移行テストなど、責務と書き込み範囲が分かれる境界を使う。
-- 分割した各タスクには、依存関係、親または補助エージェントの担当、書き込み範囲、検証範囲、ブランチ名（例: `feature/vX.Y.Z-task2a`）を明記する。
-- 分割後もユーザー確認の停止位置は変えず、全分割タスクを統合ブランチへ順次マージしてから User Review Phase `x.1` へ進む。
+- 分割した各タスクには、依存関係、担当、書き込み範囲、検証範囲を明記し、既存の `release/vX.Y.Z` ブランチ上で通常コミットとして統合する。
+- 分割後もユーザー確認の停止位置は変えず、既存の `release/vX.Y.Z` 上で各タスクを順次検証してから User Review Phase `x.1` へ進む。
 
 ## 検証粒度の原則
 
@@ -64,14 +64,21 @@ PR マージ後は `build-and-release.yml` が自動発火し、マルチプラ�
 - **重複禁止**: 同じ差分に対して `just check-light` / `just check` と `pre-push` hook を連続で二重実行しない。すでに同等以上のゲートを通した場合は、以降の小修正では対象確認に戻し、次の節目まで全体ゲートを繰り返さない。
 - **証跡**: 実行した対象確認、節目確認、正式ゲートは `tasks.md` または PR 本文に残し、未実行の全体ゲートを「通った」と扱わない。
 
+| 段階 | 正本ゲート | 補足 |
+| --- | --- | --- |
+| pre-commit | lefthook → `just lint-impacted` | 変更影響範囲の lint を担当 |
+| release pre-push | lefthook → `just check` | 同じ差分への `just pre-push` 重複実行はしない |
+| PR/release preflight | `check-pr-ready.sh` → `preflight.sh` | workflow から `release-preflight` を別実行しない |
+| release final / CI | `check-full`、coverage、3OS checks | 通常 pre-push の代替ではなく、明示された正式ゲートとして維持 |
+
 ### Phase 1: 環境準備
 
-1. `master` を最新化し、**`release/vX.Y.Z`** ブランチを作成する。
+1. `master` の状態を確認し、既存の **`release/vX.Y.Z`** ブランチへ切り替える。
    これが今回の全実装およびリリースのための**統合ブランチ**となる。
 
 ```bash
-git switch master && git pull origin master
-git switch -c release/vX.Y.Z
+git status --short --branch
+git switch release/vX.Y.Z
 ```
 
 1. 対応する OpenSpec ディレクトリ（`openspec/changes/vX-Y-Z-*`）を特定する。
@@ -82,7 +89,7 @@ git switch -c release/vX.Y.Z
    - **完全自律進行の原則**: 各タスク（Task 1, Task 2...）やサブタスク（x.x）の完了ごとにユーザーへ都度進行の確認や承認を求めることは**禁止**します。実装、対象検証、通常の `git push` による `pre-push` hook、PR作成、PRマージまでの全サイクルをAIが自律的かつ連続的に遂行し、完了次第すぐに次のタスクへ進んでください。
    - ユーザーへの確認は、最終確認フェーズ前の「ユーザーレビューフェーズ（Phase 3）」で行うものとし、タスクごとの個別確認は行いません。
 
-2. 各 Major Task Group ごとに **`feature/vX.Y.Z-taskN`** ブランチを作成し、実装完了後に **`openspec-delivery.md`** を使用して `release/vX.Y.Z` へのマージと同期を行う。
+2. 各 Major Task Group は **`release/vX.Y.Z`** 上で実装・検証し、通常コミットとして記録する。新規 feature branch、temporary worktree、stash は作成しない。
 
 > [!IMPORTANT]
 > すべての実装は `release/vX.Y.Z` に対して行われ、この段階では `master` には一切触れない。
@@ -117,22 +124,15 @@ git switch -c release/vX.Y.Z
 
 ### Phase 6: リリース PR 作成 (to master)
 
-1. **OpenSpec のアーカイブ**: `/opsx-archive` を実行し、対象の OpenSpec ディレクトリを `archive/` へ移動する。
+1. OpenSpec の未対応事項を確認する。公開・配布確認を DoD に含む変更は、公開前に完了扱いでアーカイブしない。明示的に次期へ移す項目は次期タスクと既知制限へ記録し、解決済みと扱わない。
 
-- これにより、仕様の「完了」と「リリース」が同一の PR に含まれることになる。
-- `opsx-archive` 時には、delta specs の main specs への同期（Sync）も同時に実施すること。
-
-1. リリースPR作成前に `release/vX.Y.Z` 側のコミットを1本に圧縮（squash）してから、リリースコミットを作成する。  
-   `origin/master` との差分を1コミット化するため、作業ツリーとインデックスはこの時点でクリーンを前提にする。
+1. リリースPR作成前に `release/vX.Y.Z` の検証済み通常コミットを確認し、そのまま push する。履歴の squash、強制更新、再承認待ちは行わない。
 
 ```bash
-BASE_COMMIT=$(git merge-base origin/master HEAD)
-git reset --soft "${BASE_COMMIT}"
-git commit -S -m "release: vX.Y.Z リリース準備完了 (OpenSpec アーカイブ含む)"
 git push origin release/vX.Y.Z
 ```
 
-1. `create_pull_request` スキルを使用し、`release/vX.Y.Z` → `master` の PR を作成する。
+1. `create_pull_request` スキルを使用し、`release/vX.Y.Z` → `master` の Draft PR を作成する。既存 PR があればその PR を更新する。
 
 > [!CAUTION]
 > **`build-and-release.yml` のトリガー条件**:
@@ -150,12 +150,14 @@ git push origin release/vX.Y.Z
 
 ### Phase 8: マージ & 事後処理
 
-1. すべてのチェックがパスし、自己レビューによる修正も完了したことをユーザーに報告し、マージ承認を得る。
+1. Draft のまま `@codex review` と自己レビューを実行する。全レビュー指摘を取得し、P0/P1を必須として修正・各指摘へ reply・resolve し、再取得した指摘一覧で P0/P1 が 0 件であることを確認する。
 
-2. 承認後、`gh pr merge --merge --delete-branch` で PR をマージする。
+2. 指摘解消後に PR を Ready for review へ昇格し、現在 HEAD の required checks を確認してから通常の `gh pr merge --merge` で PR をマージする。リモートブランチ削除は明示された場合だけ行う。
     これにより CD ワークフローが発火し、配布物が公開される。
 
-3. `branch-hygiene` スキルを使用し、ローカルブランチ・リモートブランチ・`git worktree` をクリーンアップする。
+3. Actions の公開成功、GitHub Release、全配布 asset/checksum、必要な clean-machine 受入を確認する。Issue 更新と、実際の完了条件を満たした OpenSpec の同期・アーカイブを正式履歴へ取り込む。
+
+4. `branch-hygiene` スキルを使用し、ローカルブランチと `git worktree` をクリーンアップする。リモートブランチは削除しない。
     タスクブランチが残っている場合は、未コミット差分と未統合状態を確認した上で明示的に削除する。
 
 ```bash
@@ -164,7 +166,6 @@ git fetch --all --prune
 git pull
 git worktree list --porcelain
 git branch -d release/vX.Y.Z
-git branch --format='%(refname:short)' | grep "feature/vX.Y.Z-task" || true
 git worktree prune
 ```
 
@@ -176,6 +177,6 @@ git worktree prune
 
 - [ ] `tasks.md` の全タスクが完了し、`release/vX.Y.Z` に統合されている
 - [ ] `./scripts/release/check-pr-ready.sh` と通常 `git push` による `pre-push` hook がすべてパスしている
-- [ ] `release/vX.Y.Z` → `master` の PR がマージされ、CD (build-and-release) が開始されている
+- [ ] `release/vX.Y.Z` → `master` の PR がマージされ、CD (build-and-release) が成功し、全配布成果物・checksum・必要な受入を確認している
 - [ ] OpenSpec 変更ディレクトリが `archive/` に移動されている
 - [ ] ローカル環境の作業ブランチ、リモートブランチ、`git worktree` がクリーンアップまたは理由付きで残存報告されている
