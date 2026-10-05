@@ -1,5 +1,9 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-06 PDF Tools回帰を最小修正: ToolsをMarkdown専用Export/Story判定から分離し、既存PDFの分割/コードプレビュー切替を復元。追加pdf_keeps_view_tools_without_markdown_only_menusは旧実装RED→修正GREEN、公式just T=view_tools test-specificは既存失敗2件を含む5PASS/40suites/0.43秒、diff check/呼出元自己レビュー成功。テスト削除・閾値変更なし。通常commit/push・全gate・新HEADレビュー/配布は別途未完了。
+
+- [ ] 2026-10-06 通常push55ef95c2は正式hookのnative testで1075PASS/2FAILとなりupload前にexit1。85c032b5の形式別menu判定がPDFの既存Tools操作を無効化し、direct_view_tools_dispatch_remains_available_for_pdf_and_markdown_documents / registered_view_tools_commands_remain_available_for_pdf_and_markdown_documentsが失敗した。PDF Toolsだけを復元し、export/story/slideshowのMarkdown専用判定と画像/Office/HTML制御を維持してRED→GREEN、通常commit/pushを再実施する。旧c2 CIを新graph成功へ代用せずhook迂回しない。
+
 - [/] 2026-10-06 release flow追加最適化eda9c8b3: 手動check-pr-ready→通常push hook内check-pr-readyの同HEAD重複を除去し、通常pushを正本owner/手動は失敗診断のみへ統一。skill入口の旧squash指示も通常履歴へ同期。契約7件と既存CI品質維持6件をmain成功確認。PPTX/形式別menu85c032b5も通常hookで正式統合。CHANGELOG日英へhost改善と次期上流制限を同期し、未解決reload/native/全配布を解消済みにしない。
 
 - [/] 2026-10-06 host追加差分を正式統合: 未loaded Markdown診断8eb40d5（実file5件）、HTML smooth-scroll497392f（正確なfilter1件）、reload回帰04989ed（実RGB/session3件）。reload製品コードは未変更で本人の無反応は未解決。PPTX/形式別メニュー候補はfocused5/134/1件とmain fresh runner実15操作/exit0を確認、初回14.951秒（先行2.433秒）で安定した速度改善とは扱わない。in-processを配布/native証明へ代用しない。証跡evidence/host-feedback-integration-2026-10-06.md。新HEAD push/current review/全gate/全配布/公開は未完了。

@@ -34,7 +34,8 @@ impl PreviewMenuAvailability {
         let is_image = katana_core::workspace::TreeEntry::path_is_image(path);
         match menu {
             PreviewMenu::Toc => !is_office && !is_html && !is_image,
-            PreviewMenu::Export | PreviewMenu::Story | PreviewMenu::Tools => {
+            PreviewMenu::Tools => !is_office && !is_html && !is_image,
+            PreviewMenu::Export | PreviewMenu::Story => {
                 !is_office && !is_html && !is_image && format.is_none()
             }
             PreviewMenu::Slideshow => {
@@ -73,6 +74,15 @@ mod tests {
         assert!(TocAvailability::for_path(Some(std::path::Path::new(
             "readme.md"
         ))));
+    }
+
+    #[test]
+    fn pdf_keeps_view_tools_without_markdown_only_menus() {
+        let path = std::path::Path::new("manual.pdf");
+        assert!(PreviewMenuAvailability::for_path(Some(path), PreviewMenu::Tools));
+        for menu in [PreviewMenu::Export, PreviewMenu::Story, PreviewMenu::Slideshow] {
+            assert!(!PreviewMenuAvailability::for_path(Some(path), menu));
+        }
     }
 
     #[test]

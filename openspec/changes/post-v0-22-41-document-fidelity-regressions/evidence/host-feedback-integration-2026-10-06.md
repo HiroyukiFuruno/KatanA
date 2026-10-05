@@ -35,6 +35,14 @@ Identity SHA-256:
 
 Execution is in-process (`packaged_binary_tested=false`), not packaged/native or clean-machine acceptance. Escape is followed by tab-selection and active-document assertions, not a dedicated modal-visibility assertion. Same-frame keyboard-plus-button dispatch is prevented in source but has no direct E2E proof. No private document contents are included.
 
-## Remaining release obligations
+## PDF view-tools regression repair
+
+The normal push of `55ef95c2` failed before upload: 1,075 native tests passed and two existing PDF view-tools tests failed. The format-specific menu implementation had grouped `Tools` with Markdown-only `Export` and `Story`, inadvertently disabling PDF split/code-preview commands. This is a KatanA regression, not an upstream blocker.
+
+The new exact `pdf_keeps_view_tools_without_markdown_only_menus` regression failed on the old implementation. `Tools` is now separated from `Export`/`Story`, preserving PDF tools while keeping unsupported image/HTML/Office tools disabled. The official workspace `just T=view_tools test-specific` then passed five tests across 40 suites (1,876 filtered out, 0.43 seconds), including both existing failures and the new regression. Tests were not deleted or weakened.
+
+Self-review: PASS for the focused repair. The shared availability call sites in direct dispatch and command inventory both use `PreviewMenu::Tools`; sidebar uses the same contract. No new API, threshold, test exclusion, dependency or synchronous work is introduced. The prior failed push and focused GREEN do not constitute full-gate or publication success; normal signed integration and another normal push remain necessary.
+
+## Remaining release obligations (current)
 
 Normal push and new-HEAD review/CI, full coverage/supply-chain, all five packaged assets/checksums and clean-machine acceptance remain required. Known upstream HTML fidelity, loading and restart-cache limitations must be disclosed, not marked fixed. Release scope must be reflected explicitly in the task and acceptance contracts rather than bypassing checks or falsely completing deferred work.
