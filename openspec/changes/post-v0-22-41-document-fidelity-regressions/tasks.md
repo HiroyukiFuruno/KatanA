@@ -1,5 +1,10 @@
 ## 1. Reproduction and ownership evidence
 
+- [ ] 2026-10-05 current c8335e48 review5416352520（14:46:33Z、inline comments/threadなし）P2: 既に開いているHTML targetへの移動でprevious sourceを先に選び同path documentが重複する。source/target両タブの所有状態を維持する最小修正・旧コードRED→GREEN・正式履歴/通常push・reviewへの個別回答・fresh全取得を継続。元のmanual-target方針P2とは別件。
+  - 初稿target-first lookupでは重複RED→5件GREENだが、mainレビューでdirty既存targetをDocument::newへ上書きする新データ損失リスクを検出。採用前に実file URL経路のdirty target保持回帰と再利用時activate-onlyを補正中。5件GREENだけを統合/解決済みにしない。
+
+- [/] 2026-10-05 c8335e48通常push exit0・upstream0/0・stash0/master clean。画像P2へreply4185133688後resolve、fresh全review取得で当該resolved/P0P1未解決0。新HEAD reviewは上記navigation P2を検出、Draft維持。変更後公式package-mac exit0、main84347b23/worker7191cbaf両universal/minos13.0/deep strict署名成功。fresh arm64 startup exit0（RSS182880KiB/font27093388bytes/worker0/PID終了）、原本HTML fresh worker/runnerもexit0・全9操作/正常close/idle資源0。空workspace startupとin-process HTMLを実配布文書受入/独立95点へ代用しない。全required CI/全5native配布/後処理は未完了。証跡evidence/bounded-image-trace-review-2026-10-05.md。
+
 - [/] 2026-10-05 画像trace修正28cd7ec2の公式JOBS2/CARGO_INCREMENTAL0 just check-fullはexit0。native UI1055/既存ignore2・実export13・parallel143/既存ignore2・serial18・実worker fixture8、meaningful未実行0/strict document surface100%、Linux実worker全workspace、Windows test込みcross-check、supply-chain4分類成功。raw JSON15470252bytes/SHA3fbebb7eを保持しhelperも210/15/106全部100%を実確認。既存duplicate警告/AppleScript診断もraw保持し配布OS受入へ代用しない。通常push・個別P2 reply/resolve・fresh current review/new-HEAD CI・変更後配布/原本/95点は継続。
 
 - [/] 2026-10-05 画像trace P2を28cd7ec2へ正式統合。旧全文formatterで3件RED→最終9件GREEN、実worker/canonical workspace入口9件exit0、pure helper独立LLVM coverage210/210 regions・15/15 functions・106/106 lines=100%。初回commitのcounter/Unicode AST違反を正規修正し通常Clippy/AST hook成功、除外/閾値変更なし。通常push・全coverage・個別reply/resolve・current review・変更後実配布/入力受入は未完了であり旧CI/旧package証跡を流用しない。KDV既存担当もDraft PR64 bff49e2でreview/3OS CI進行、まだ公開0.5.11のまま。
