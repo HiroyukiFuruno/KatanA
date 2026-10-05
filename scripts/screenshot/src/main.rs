@@ -2,6 +2,7 @@ mod capture;
 mod executor_harness;
 mod fixture;
 mod http_fixture;
+mod memory_observer;
 mod request;
 
 use anyhow::{Context, Result};
@@ -18,6 +19,12 @@ struct Cli {
     request: PathBuf,
     #[arg(long, value_name = "DIR", help = "Output directory for PNG files")]
     output: PathBuf,
+    #[arg(
+        long,
+        default_value_t = false,
+        help = "Collect macOS vmmap/heap diagnostics (diagnostic only)"
+    )]
+    memory_diagnostics: bool,
 }
 
 fn main() -> Result<()> {
@@ -58,6 +65,7 @@ fn main() -> Result<()> {
         &fixture_env.config_dir,
         fixture_env.workspace_dir.as_deref(),
         &output_dir,
+        cli.memory_diagnostics,
     )?;
 
     println!("[katana-screenshot] done");
@@ -92,15 +100,28 @@ mod tests {
 
     #[test]
     fn accepts_in_process_request_without_binary() {
-        assert!(
-            Cli::try_parse_from([
-                "katana-screenshot",
-                "--request",
-                "input.json",
-                "--output",
-                "out"
-            ])
-            .is_ok()
-        );
+        let cli = Cli::try_parse_from([
+            "katana-screenshot",
+            "--request",
+            "input.json",
+            "--output",
+            "out",
+        ])
+        .expect("in-process request should parse");
+        assert!(!cli.memory_diagnostics);
+    }
+
+    #[test]
+    fn accepts_optional_memory_diagnostics_flag() {
+        let cli = Cli::try_parse_from([
+            "katana-screenshot",
+            "--request",
+            "input.json",
+            "--output",
+            "out",
+            "--memory-diagnostics",
+        ])
+        .expect("memory diagnostics flag should parse");
+        assert!(cli.memory_diagnostics);
     }
 }

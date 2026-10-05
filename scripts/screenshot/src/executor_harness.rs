@@ -1,5 +1,6 @@
 use crate::capture::PngBounds;
 use crate::http_fixture::FixtureHttpServer;
+use crate::memory_observer::MemoryObserver;
 use crate::request::{
     AssertActiveDocumentStep, AssertDiffReviewStep, AssertHtmlBrowserFrameContainsRgbStep,
     AssertHtmlBrowserOriginStep, ClickButton, Fixture, ScrollDirection, Step, UiAction,
@@ -134,6 +135,7 @@ pub fn run(
     config_dir: &Path,
     workspace_dir: Option<&Path>,
     output_dir: &Path,
+    memory_diagnostics: bool,
 ) -> Result<()> {
     let launch = steps.iter().find_map(|s| {
         if let Step::Launch(ls) = s {
@@ -227,6 +229,7 @@ pub fn run(
     let mut recording: Option<ActiveRecording> = None;
     let mut observed_frames = ObservedFrameProgress::default();
     let mut runtime_snapshots = HashMap::<String, RuntimeSnapshot>::new();
+    let mut memory_observer = MemoryObserver::new(memory_diagnostics, &output_dir)?;
 
     for (i, step) in steps.iter().enumerate() {
         let label = match step {
@@ -706,6 +709,7 @@ pub fn run(
                     "runtime snapshot name must not be empty"
                 );
                 let snapshot = capture_runtime_snapshot(&mut harness, observed_frames)?;
+                memory_observer.observe(i, "record_runtime_snapshot")?;
                 println!("  runtime snapshot {:?}: {snapshot:?}", s.name);
                 runtime_snapshots.insert(s.name.clone(), snapshot);
             }
@@ -964,6 +968,7 @@ pub fn run(
                 let baseline = runtime_snapshots.get(&s.baseline).with_context(|| {
                     format!("runtime snapshot {:?} was not recorded", s.baseline)
                 })?;
+                memory_observer.observe(i, "assert_runtime_snapshot")?;
                 let current = capture_runtime_snapshot(&mut harness, observed_frames)?;
                 assert_runtime_snapshot(baseline, &current, s)?;
                 println!(
@@ -1310,6 +1315,7 @@ pub fn run(
                             *wait_seconds,
                             "close_active_document",
                         )?;
+                        memory_observer.observe(i, "close_active_document")?;
                     }
                     UiAction::CloseAllDocuments { wait_seconds } => {
                         close_all_documents_and_wait_for_idle(
@@ -1317,6 +1323,7 @@ pub fn run(
                             recording.as_mut(),
                             *wait_seconds,
                         )?;
+                        memory_observer.observe(i, "close_all_documents")?;
                     }
                     UiAction::RunMixedDocumentCycles {
                         html_file_name,
