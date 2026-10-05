@@ -3,7 +3,7 @@ use serde::Serialize;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, ExitStatus, Stdio};
+use std::process::{Child, ExitStatus, Stdio};
 use std::thread::sleep;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
@@ -240,7 +240,7 @@ fn validate_phase(phase: &str) -> Result<()> {
 }
 
 fn spawn_command(path: &str, args: &[String], stdout: File, stderr: File) -> Result<Child> {
-    Command::new(path)
+    katana_core::system::ProcessService::create_command(path)
         .args(args)
         .stdin(Stdio::null())
         .stdout(Stdio::from(stdout))
