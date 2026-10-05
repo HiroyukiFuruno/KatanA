@@ -171,7 +171,10 @@ impl KatanaApp {
 mod tests {
     use super::URL_SOURCE_TIMEOUT;
     use super::document::{failed_document_identity, remote_document_path};
+    use crate::app::action::ActionOps;
+    use crate::app::document_contract::DocumentOps;
     use crate::app::url_source::ValidatedHttpUrl;
+    use crate::app_state::AppAction;
     use crate::shell::KatanaApp;
     use std::{
         io::{Read, Write},
@@ -810,6 +813,154 @@ mod tests {
         assert!(app.html_browser_frame_generation_for_test().is_some());
         app.html_browser_frame_viewport_for_test()
             .ok_or_else(|| "HTML browser update did not contain a frame".into())
+    }
+
+    fn active_preview_session_generation(app: &KatanaApp) -> TestResult<u64> {
+        let active_path = app
+            .state
+            .active_path()
+            .ok_or("active document is missing")?;
+        app.tab_previews
+            .iter()
+            .find(|preview| preview.path == active_path)
+            .map(|preview| preview.pane.session_generation)
+            .ok_or_else(|| "active preview is missing".into())
+    }
+
+    fn wait_for_preview_reload(
+        app: &mut KatanaApp,
+        ctx: &egui::Context,
+        previous_session_generation: u64,
+        expected_rgb: [u8; 3],
+    ) -> TestResult<u64> {
+        let deadline = Instant::now() + BROWSER_UPDATE_TIMEOUT;
+        loop {
+            for preview in app.tab_previews.iter_mut() {
+                preview.pane.poll_html_browser(ctx);
+            }
+            let session_generation = active_preview_session_generation(app)?;
+            if session_generation != previous_session_generation
+                && app
+                    .html_browser_frame_matching_rgb_pixels_for_test(expected_rgb)
+                    .is_some_and(|pixels| pixels > 0)
+            {
+                return Ok(session_generation);
+            }
+            if Instant::now() >= deadline {
+                return Err(format!(
+                    "timed out waiting for preview reload from session {previous_session_generation}"
+                )
+                .into());
+            }
+            thread::sleep(Duration::from_millis(5));
+        }
+    }
+
+    #[test]
+    fn local_html_manual_reload_reads_changed_file_and_updates_frame() -> TestResult {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("reload.html");
+        std::fs::write(
+            &path,
+            "<html><body style=\"background:#ff0000\"><p>Before</p></body></html>",
+        )?;
+        let url = url::Url::from_file_path(&path).map_err(|_| "file URL")?;
+        let ctx = egui::Context::default();
+        let mut app = app();
+        app.state.workspace.data = Some(katana_core::workspace::Workspace::new(
+            directory.path(),
+            Vec::new(),
+        ));
+        app.handle_open_url(&ctx, url.to_string());
+        wait_for_browser_frame(&mut app, &ctx)?;
+        let previous_session_generation = active_preview_session_generation(&app)?;
+        assert!(
+            app.html_browser_frame_matching_rgb_pixels_for_test([255, 0, 0])
+                .is_some_and(|pixels| pixels > 0)
+        );
+
+        std::fs::write(
+            &path,
+            "<html><body style=\"background:#00ff00\"><p>After</p></body></html>",
+        )?;
+        app.process_action(&ctx, AppAction::RefreshDocument { is_manual: true });
+        let generation =
+            wait_for_preview_reload(&mut app, &ctx, previous_session_generation, [0, 255, 0])?;
+
+        assert_ne!(generation, previous_session_generation);
+        assert!(
+            app.html_browser_frame_matching_rgb_pixels_for_test([0, 255, 0])
+                .is_some_and(|pixels| pixels > 0)
+        );
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "<html><body style=\"background:#00ff00\"><p>After</p></body></html>"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn local_html_manual_reload_forces_new_generation_for_unchanged_content() -> TestResult {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("same.html");
+        let content = "<html><body style=\"background:#ff0000\"><p>Same</p></body></html>";
+        std::fs::write(&path, content)?;
+        let url = url::Url::from_file_path(&path).map_err(|_| "file URL")?;
+        let ctx = egui::Context::default();
+        let mut app = app();
+        app.state.workspace.data = Some(katana_core::workspace::Workspace::new(
+            directory.path(),
+            Vec::new(),
+        ));
+        app.handle_open_url(&ctx, url.to_string());
+        wait_for_browser_frame(&mut app, &ctx)?;
+        let previous_session_generation = active_preview_session_generation(&app)?;
+
+        app.process_action(&ctx, AppAction::RefreshDocument { is_manual: true });
+        let generation =
+            wait_for_preview_reload(&mut app, &ctx, previous_session_generation, [255, 0, 0])?;
+
+        assert_ne!(generation, previous_session_generation);
+        assert_eq!(app.state.document.open_documents[0].buffer, content);
+        Ok(())
+    }
+
+    #[test]
+    fn local_html_manual_reload_preserves_dirty_buffer_when_disk_changes() -> TestResult {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("dirty.html");
+        let initial = "<html><body style=\"background:#ff0000\"><p>Initial</p></body></html>";
+        let unsaved = "<html><body style=\"background:#0000ff\"><p>Unsaved</p></body></html>";
+        let disk = "<html><body style=\"background:#00ff00\"><p>Disk</p></body></html>";
+        std::fs::write(&path, initial)?;
+        let url = url::Url::from_file_path(&path).map_err(|_| "file URL")?;
+        let ctx = egui::Context::default();
+        let mut app = app();
+        app.state.workspace.data = Some(katana_core::workspace::Workspace::new(
+            directory.path(),
+            Vec::new(),
+        ));
+        app.handle_open_url(&ctx, url.to_string());
+        wait_for_browser_frame(&mut app, &ctx)?;
+        app.handle_update_buffer(unsaved.to_string());
+        let previous_session_generation = active_preview_session_generation(&app)?;
+        std::fs::write(&path, disk)?;
+
+        app.process_action(&ctx, AppAction::RefreshDocument { is_manual: true });
+        let generation =
+            wait_for_preview_reload(&mut app, &ctx, previous_session_generation, [0, 0, 255])?;
+
+        assert_ne!(generation, previous_session_generation);
+        assert!(app.state.document.open_documents[0].is_dirty);
+        assert_eq!(app.state.document.open_documents[0].buffer, unsaved);
+        assert!(
+            app.html_browser_frame_matching_rgb_pixels_for_test([0, 0, 255])
+                .is_some_and(|pixels| pixels > 0)
+        );
+        Ok(())
     }
 
     fn start_pending_browser_sessions(app: &mut KatanaApp) -> TestResult {
