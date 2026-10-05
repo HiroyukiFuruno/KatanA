@@ -100,6 +100,7 @@ impl PreviewPane {
             Some(&mut self.heading_anchors),
             Some(&mut self.block_anchors),
             Some(&mut self.viewer_states),
+            &self.local_image_loader,
             if is_slideshow {
                 None
             } else {
@@ -143,6 +144,7 @@ impl PreviewPane {
             &self.sections,
             self.fullscreen_image,
             &mut self.fullscreen_viewer_state,
+            &self.local_image_loader,
         );
         self.apply_fullscreen_result(result, Some(ctx));
     }
@@ -153,6 +155,7 @@ impl PreviewPane {
         ctx: Option<&egui::Context>,
     ) {
         if result.is_none() && self.fullscreen_image.is_some() {
+            self.local_image_loader.reset();
             self.fullscreen_viewer_state.reset();
             if let Some(ctx) = ctx
                 && !self.was_os_fullscreen_before_modal
@@ -189,7 +192,6 @@ impl PreviewPane {
         }
     }
 }
-
 impl Drop for PreviewPane {
     fn drop(&mut self) {
         self.cancel_token

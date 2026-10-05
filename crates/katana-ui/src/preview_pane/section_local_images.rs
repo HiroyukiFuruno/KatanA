@@ -5,8 +5,8 @@ impl SectionImageOps {
     pub(crate) fn handle_local_image_section(
         ui: &mut egui::Ui,
         path: &std::path::Path,
-        alt: &str,
         i: usize,
+        loader: &crate::preview_pane::local_image_loader::LocalImageLoader,
         lines_in_section: usize,
         global_line_offset: usize,
         active_editor_line: Option<usize>,
@@ -49,8 +49,8 @@ impl SectionImageOps {
         if let Some(rect) = crate::preview_pane::ImageLogicOps::show_local_image(
             ui,
             path,
-            alt,
             i,
+            loader,
             state,
             if !allow_controls {
                 None

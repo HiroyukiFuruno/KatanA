@@ -1003,19 +1003,6 @@ mod tests {
     }
 
     #[test]
-    fn test_image_preload_queue_processing() {
-        let mut pane = PreviewPane::default();
-        let path = std::path::PathBuf::from("/tmp/test.png");
-        pane.image_preload_queue.push(path.clone());
-
-        let ctx = egui::Context::default();
-        pane.poll_renders(&ctx);
-
-        assert!(pane.image_preload_queue.is_empty());
-        assert!(pane.image_cache.contains(&path));
-    }
-
-    #[test]
     fn viewer_state_default_is_zoom_1_pan_zero() {
         let state = ViewerState::default();
         assert_eq!(state.zoom, 1.0);

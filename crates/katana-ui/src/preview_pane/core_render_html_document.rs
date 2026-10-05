@@ -15,6 +15,7 @@ impl PreviewPane {
         self.outline_items.clear();
         self.anchor_map.clear();
         self.document_anchors.clear();
+        self.local_image_loader.reset();
         self.replace_html_browser(source, html_file_path, current_origin.as_deref());
     }
 
@@ -44,8 +45,6 @@ impl PreviewPane {
     }
 
     fn reset_html_document_render_state(&mut self) {
-        self.image_preload_queue.clear();
-        self.image_cache.clear();
         self.render_rx = None;
         self.is_loading = false;
         self.cancel_token

@@ -50,6 +50,7 @@ pub struct PreviewPane {
     pub viewer_states: Vec<ViewerState>,
     pub fullscreen_image: Option<usize>,
     pub fullscreen_viewer_state: ViewerState,
+    pub(crate) local_image_loader: super::local_image_loader::LocalImageLoader,
     pub was_os_fullscreen_before_modal: bool,
     pub(crate) repaint_ctx: Option<egui::Context>,
     pub session_generation: u64,

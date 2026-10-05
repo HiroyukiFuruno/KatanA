@@ -33,6 +33,7 @@ pub mod fullscreen_local;
 pub mod fullscreen_svg;
 mod image_html_surface;
 mod image_raster;
+mod local_image_loader;
 #[cfg(feature = "screenshot-test-hooks")]
 mod overlay_inspection;
 #[cfg(feature = "screenshot-test-hooks")]

@@ -32,12 +32,8 @@ impl PreviewPane {
             &document_anchors,
         );
         self.document_anchors = document_anchors;
-        let (resolved, extracted_paths) =
-            ImagePreviewOps::resolve_image_paths(source, md_file_path);
-
-        self.image_preload_queue.clear();
-        self.image_cache.clear();
-        self.image_preload_queue = extracted_paths;
+        self.local_image_loader.reset();
+        let (resolved, _) = ImagePreviewOps::resolve_image_paths(source, md_file_path);
 
         let raw = PreviewSectionOps::split_into_sections(&resolved);
         self.render_rx = None;

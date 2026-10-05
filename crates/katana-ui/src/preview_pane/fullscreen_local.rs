@@ -3,12 +3,15 @@ use eframe::egui::{self, Vec2};
 
 use super::fullscreen::FULLSCREEN_PADDING;
 
+const REPAINT_INTERVAL_MS: u64 = 16;
+
 pub(super) fn show_fullscreen_local(
     ctx: &egui::Context,
     path: &std::path::Path,
     dc_close: &str,
     viewer_state: &mut ViewerState,
     idx: usize,
+    loader: &super::local_image_loader::LocalImageLoader,
 ) -> bool {
     let screen = ctx.content_rect();
     let mut keep_open = true;
@@ -33,11 +36,25 @@ pub(super) fn show_fullscreen_local(
             ui.painter().rect_filled(blocker_rect, 0.0, background);
 
             let texture_handle = if viewer_state.texture.is_none() {
-                viewer_state.texture = crate::preview_pane::ImageLogicOps::load_local_image_texture(
-                    ui, path, idx, background,
-                );
-                if viewer_state.texture.is_some() {
-                    viewer_state.texture_background = Some(background);
+                match loader.request(path, background) {
+                    super::local_image_loader::LocalImageStatus::Ready(image) => {
+                        viewer_state.texture = Some(ui.ctx().load_texture(
+                            format!("local_image_{idx}"),
+                            image,
+                            egui::TextureOptions::LINEAR,
+                        ));
+                        viewer_state.texture_background = Some(background);
+                    }
+                    super::local_image_loader::LocalImageStatus::Pending => {
+                        ctx.request_repaint_after(std::time::Duration::from_millis(
+                            REPAINT_INTERVAL_MS,
+                        ));
+                        ui.label(&crate::i18n::I18nOps::get().preview.rendering);
+                    }
+                    super::local_image_loader::LocalImageStatus::Failed(error) => {
+                        ui.label(&crate::i18n::I18nOps::get().preview.missing_image)
+                            .on_hover_text(error);
+                    }
                 }
                 viewer_state.texture.clone()
             } else {

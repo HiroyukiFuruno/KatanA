@@ -2,9 +2,6 @@ use crate::preview_pane::types::{ViewerState, ViewerTextureIdentity, ViewerTextu
 use eframe::egui;
 use katana_core::markdown::svg_rasterize::RasterizedSvg;
 use std::path::Path;
-use std::time::UNIX_EPOCH;
-
-const NANOS_PER_SECOND: u64 = 1_000_000_000;
 
 impl std::fmt::Debug for ViewerState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -45,21 +42,13 @@ impl ViewerTextureIdentity {
     }
 
     pub fn local_file(path: &Path) -> Self {
-        let metadata = std::fs::metadata(path).ok();
-        let modified_nanos = metadata
-            .as_ref()
-            .and_then(|it| it.modified().ok())
-            .and_then(|it| it.duration_since(UNIX_EPOCH).ok())
-            .map(|it| it.as_secs().wrapping_mul(NANOS_PER_SECOND) + u64::from(it.subsec_nanos()))
-            .unwrap_or(0);
-        let file_len = metadata.map_or(0, |it| it.len());
         Self {
             source: ViewerTextureSource::LocalFile,
             width: 0,
             height: 0,
             display_width_bits: 0,
             display_height_bits: 0,
-            content_hash: stable_path_hash(path, file_len, modified_nanos),
+            content_hash: stable_path_hash(path),
         }
     }
 }
@@ -125,10 +114,10 @@ impl ViewerState {
     }
 }
 
-fn stable_path_hash(path: &Path, file_len: u64, modified_nanos: u64) -> u64 {
+fn stable_path_hash(path: &Path) -> u64 {
     let mut hash = stable_hash_bytes(path.to_string_lossy().as_bytes());
-    hash = stable_hash_u64(hash, file_len);
-    stable_hash_u64(hash, modified_nanos)
+    hash = stable_hash_u64(hash, 0);
+    stable_hash_u64(hash, 0)
 }
 
 fn stable_hash_u64(hash: u64, value: u64) -> u64 {
