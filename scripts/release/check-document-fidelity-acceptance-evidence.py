@@ -39,6 +39,8 @@ SUPPORTED_TARGETS = {
 ORIGINAL_HTML_SHA256 = "c02d2d7a2420e4e15e3d98a044a310c67bc75fa858c95c4867b9c3f5d7aca012"
 SHA256 = 64
 MAX_NORMAL_CLOSE_MS = 5000
+MAX_COLD_RSS_DELTA_BYTES = 196608 * 1024
+MAX_WARM_STEADY_DELTA_BYTES = 65536 * 1024
 SHA256_PATTERN = re.compile(r"[0-9a-fA-F]{64}")
 SOURCE_ROOTS = (
     "Cargo.toml",
@@ -573,6 +575,136 @@ def verify_packaged_record(target: str, record: object) -> None:
         fail(f"packaged sidecar identity mismatch for {target}")
 
 
+def verify_cycle_snapshot(value: object, name: str) -> dict[str, Any]:
+    fields = {"rss_bytes", "physical_footprint_bytes", "worker_count", "frame_count", "texture_count", "cache_count"}
+    if not isinstance(value, dict) or set(value) != fields:
+        fail(f"{name} is incomplete")
+    result = {"rss_bytes": require_positive_integer(value["rss_bytes"], f"{name}.rss_bytes"), "physical_footprint_bytes": require_positive_integer(value["physical_footprint_bytes"], f"{name}.physical_footprint_bytes")}
+    for field in ("worker_count", "frame_count", "texture_count", "cache_count"):
+        count = value[field]
+        if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+            fail(f"{name}.{field} must be a non-negative integer")
+        result[field] = count
+    return result
+
+
+def verify_cycle_generations(records: object, label: str, cycle: int, name: str) -> tuple[set[tuple[str, int]], dict[tuple[str, int], float]]:
+    if not isinstance(records, list):
+        fail(f"{name}.resource_cycle cycle {cycle} generation lists are required")
+    pairs: set[tuple[str, int]] = set()
+    durations: dict[tuple[str, int], float] = {}
+    for record in records:
+        if not isinstance(record, dict) or set(record) - {"session_id", "generation", "close_ms"}:
+            fail(f"{name}.resource_cycle cycle {cycle} {label} generation record is invalid")
+        session_id, generation = record.get("session_id"), record.get("generation")
+        if not isinstance(session_id, str) or not session_id.strip() or not isinstance(generation, int) or isinstance(generation, bool) or generation <= 0:
+            fail(f"{name}.resource_cycle cycle {cycle} {label} generation record is invalid")
+        pair = (session_id, generation)
+        if pair in pairs:
+            fail(f"{name}.resource_cycle cycle {cycle} contains duplicate {label} generations")
+        pairs.add(pair)
+        if label == "closed":
+            duration = require_finite_number(record.get("close_ms"), f"{name}.resource_cycle cycle {cycle} closed.close_ms")
+            if duration > MAX_NORMAL_CLOSE_MS:
+                fail(f"{name}.resource_cycle cycle {cycle} close exceeds 5000 ms")
+            durations[pair] = duration
+    return pairs, durations
+
+
+def verify_cycle_entry(entry: object, kind: str, fixture: str, cycle: int, name: str) -> tuple[str, int, dict[str, Any], float]:
+    if not isinstance(entry, dict) or entry.get("fixture_sha256") != fixture:
+        fail(f"{name}.resource_cycle cycle {cycle} {kind} fixture is invalid")
+    session_id, generation = entry.get("session_id"), entry.get("generation")
+    if not isinstance(session_id, str) or not session_id.strip() or not isinstance(generation, int) or isinstance(generation, bool) or generation <= 0:
+        fail(f"{name}.resource_cycle cycle {cycle} {kind} generation is invalid")
+    if entry.get("close_completed") is not True:
+        fail(f"{name}.resource_cycle cycle {cycle} {kind} did not complete close")
+    close_ms = require_finite_number(entry.get("close_ms"), f"{name}.resource_cycle cycle {cycle} {kind}.close_ms")
+    if close_ms > MAX_NORMAL_CLOSE_MS:
+        fail(f"{name}.resource_cycle cycle {cycle} {kind} close exceeds 5000 ms")
+    close_snapshot = verify_cycle_snapshot(entry.get("snapshot"), f"{name}.resource_cycle cycle {cycle} {kind}.snapshot")
+    if any(close_snapshot[field] != 0 for field in ("worker_count", "frame_count", "texture_count", "cache_count")):
+        fail(f"{name}.resource_cycle cycle {cycle} {kind} retains resources after close")
+    return session_id, generation, close_snapshot, close_ms
+
+
+def verify_cycle_artifact_identity(artifact: dict[str, Any], run: dict[str, Any], target: str, input_sha: str, name: str) -> None:
+    if not isinstance(artifact.get("schema_version"), int) or isinstance(artifact.get("schema_version"), bool) or artifact.get("schema_version") != 1:
+        fail(f"{name}.resource_cycle schema is invalid")
+    identity = artifact.get("run_identity")
+    expected = {field: run.get(field) for field in ("run_id", "main_sha256", "sidecar_sha256", "fixture_sha256")}
+    expected["target"] = target
+    if not isinstance(identity, dict) or identity != expected:
+        fail(f"{name}.resource_cycle must bind its packaged run identity")
+    if identity.get("fixture_sha256") != input_sha:
+        fail(f"{name}.resource_cycle fixture identity does not match the packaged run")
+
+
+def verify_cycle_entries(cycle: dict[str, Any], input_sha: str, index: int, name: str, seen: set[tuple[str, int]], opened_pairs: set[tuple[str, int]], closed_pairs: set[tuple[str, int]], closed_durations: dict[tuple[str, int], float]) -> None:
+    entries = {}
+    for kind, fixture in (("html", ORIGINAL_HTML_SHA256), ("office", input_sha)):
+        entries[kind] = verify_cycle_entry(cycle.get(kind), kind, fixture, index, name)
+        pair = entries[kind][:2]
+        if pair in seen:
+            fail(f"{name}.resource_cycle contains a duplicate session generation")
+        seen.add(pair)
+    expected_pairs = {entries["html"][:2], entries["office"][:2]}
+    if not expected_pairs.issubset(opened_pairs) or opened_pairs != closed_pairs:
+        fail(f"{name}.resource_cycle cycle {index} generation open/close sets do not match")
+    if seen.intersection(opened_pairs - expected_pairs):
+        fail(f"{name}.resource_cycle reuses an obsolete session generation")
+    seen.update(opened_pairs)
+    for kind in ("html", "office"):
+        pair = entries[kind][:2]
+        if closed_durations.get(pair) != entries[kind][3]:
+            fail(f"{name}.resource_cycle cycle {index} {kind} close duration is not bound")
+
+
+def verify_cycle_measurements(artifact: dict[str, Any], run: dict[str, Any], name: str) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    cold = verify_cycle_snapshot(artifact.get("cold_snapshot"), f"{name}.resource_cycle.cold_snapshot")
+    warm = verify_cycle_snapshot(artifact.get("warm_snapshot"), f"{name}.resource_cycle.warm_snapshot")
+    final = verify_cycle_snapshot(artifact.get("final_snapshot"), f"{name}.resource_cycle.final_snapshot")
+    if warm["rss_bytes"] - cold["rss_bytes"] > MAX_COLD_RSS_DELTA_BYTES:
+        fail(f"{name}.resource_cycle cold delta exceeds 196608 KiB")
+    if final["rss_bytes"] - warm["rss_bytes"] > MAX_WARM_STEADY_DELTA_BYTES:
+        fail(f"{name}.resource_cycle warm steady delta exceeds 65536 KiB")
+    if cold["rss_bytes"] != require_positive_integer(run.get("cold_rss_bytes"), f"{name}.cold_rss_bytes") or warm["rss_bytes"] != require_positive_integer(run.get("after_close_rss_bytes"), f"{name}.after_close_rss_bytes"):
+        fail(f"{name}.resource_cycle RSS snapshots do not match the packaged run")
+    if any(final[field] != 0 for field in ("worker_count", "frame_count", "texture_count", "cache_count")):
+        fail(f"{name}.resource_cycle final resources are not idle")
+    return cold, warm, final
+
+
+def verify_cycle_records(cycles: object, input_sha: str, name: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    if not isinstance(cycles, list) or len(cycles) < 10:
+        fail(f"{name}.resource_cycle must contain at least ten cycles")
+    pairs: set[tuple[str, int]] = set()
+    for index, cycle in enumerate(cycles, 1):
+        if not isinstance(cycle, dict) or not isinstance(cycle.get("cycle"), int) or isinstance(cycle.get("cycle"), bool) or cycle.get("cycle") != index:
+            fail(f"{name}.resource_cycle cycle numbering is invalid")
+        opened_pairs, _ = verify_cycle_generations(cycle.get("opened_generations"), "opened", index, name)
+        closed_pairs, closed_durations = verify_cycle_generations(cycle.get("closed_generations"), "closed", index, name)
+        verify_cycle_entries(cycle, input_sha, index, name, pairs, opened_pairs, closed_pairs, closed_durations)
+    last_office = verify_cycle_snapshot(cycles[-1]["office"].get("snapshot"), f"{name}.last_cycle_office.snapshot")
+    first_office = verify_cycle_snapshot(cycles[0]["office"].get("snapshot"), f"{name}.first_cycle_office.snapshot")
+    return first_office, last_office
+
+
+def verify_resource_cycle(root: Path, run: dict[str, Any], target: str, input_sha: str, name: str) -> None:
+    artifact_path = run.get("resource_cycle_artifact")
+    artifact_sha = require_sha256(run.get("resource_cycle_sha256"), f"{name}.resource_cycle_sha256")
+    raw, artifact = load_artifact(root, artifact_path, f"{name}.resource_cycle")
+    if sha256_bytes(raw) != artifact_sha:
+        fail(f"{name}.resource_cycle artifact SHA-256 is stale or forged")
+    verify_cycle_artifact_identity(artifact, run, target, input_sha, name)
+    _, warm, final = verify_cycle_measurements(artifact, run, name)
+    first_office, last_office = verify_cycle_records(artifact.get("cycles"), input_sha, name)
+    if last_office != final:
+        fail(f"{name}.resource_cycle final snapshot is not the last Office close snapshot")
+    if first_office != warm:
+        fail(f"{name}.resource_cycle warm snapshot is not the first Office close snapshot")
+
+
 def verify_office(root: Path, value: object, packaged_targets: dict[str, Any]) -> None:
     if not isinstance(value, list) or len(value) < len(SUPPLIED_OFFICE_FIXTURES):
         fail("Office evidence must contain every supplied fixture result")
@@ -608,6 +740,7 @@ def verify_office(root: Path, value: object, packaged_targets: dict[str, Any]) -
         for field in ("main_sha256", "sidecar_sha256"):
             if run[field].lower() != artifact[field].lower():
                 fail(f"Office fixture {index} packaged {field} does not match its target")
+        verify_resource_cycle(root, run, target, input_sha, f"Office fixture {index}")
         cold_rss = require_positive_integer(run.get("cold_rss_bytes"), f"Office fixture {index}.cold_rss_bytes")
         after_close_rss = require_positive_integer(run.get("after_close_rss_bytes"), f"Office fixture {index}.after_close_rss_bytes")
         if after_close_rss - cold_rss > 196608 * 1024:

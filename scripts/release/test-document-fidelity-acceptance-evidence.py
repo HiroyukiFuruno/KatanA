@@ -778,14 +778,132 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                     lambda evidence, field=field: evidence["office_fixtures"][0]["packaged_run"].update({field: 0})
                 )
 
+    def test_resource_cycle_receipt_is_required_and_fail_closed(self) -> None:
+        mutations = (
+            lambda evidence: evidence["office_fixtures"][0]["packaged_run"].pop("resource_cycle_artifact"),
+            lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(resource_cycle_sha256="a" * 64),
+            lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(resource_cycle_sha256=math.nan),
+        )
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                self.assert_rejected(mutation)
+
+    def test_resource_cycle_requires_mixed_ten_closes_and_final_idle(self) -> None:
+        cases = (
+            ("short", lambda artifact: artifact["cycles"].pop()),
+            ("missing_html", lambda artifact: artifact["cycles"][0].pop("html")),
+            ("unclosed", lambda artifact: artifact["cycles"][0]["office"].update(close_completed=False)),
+            ("residual", lambda artifact: artifact["cycles"][0]["office"]["snapshot"].update(worker_count=1)),
+            ("oversize", lambda artifact: artifact["final_snapshot"].update(rss_bytes=200_000_100 + 65536 * 1024 + 1)),
+            ("invalid_footprint", lambda artifact: artifact["final_snapshot"].update(physical_footprint_bytes=math.nan)),
+        )
+        for case, mutation in cases:
+            with self.subTest(case=case), self.repository() as directory:
+                root = Path(directory)
+                evidence = self.valid_evidence(root)
+                run = evidence["office_fixtures"][0]["packaged_run"]
+                artifact_path = root / run["resource_cycle_artifact"]
+                artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+                mutation(artifact)
+                artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+                run["resource_cycle_sha256"] = MODULE.sha256_bytes(artifact_path.read_bytes())
+                self.write_evidence(root, evidence)
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify(root)
+
+    def _mutate_resource_cycle(self, evidence: dict[str, object], root: Path, mutate) -> None:
+        run = evidence["office_fixtures"][0]["packaged_run"]
+        artifact_path = root / run["resource_cycle_artifact"]
+        artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+        mutate(artifact, run)
+        artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+        run["resource_cycle_sha256"] = MODULE.sha256_bytes(artifact_path.read_bytes())
+
+    def test_resource_cycle_accepts_eleven_cycles_and_closed_obsolete_generation(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            def mutate(artifact, run):
+                cycle = json.loads(json.dumps(artifact["cycles"][-1]))
+                cycle["cycle"] = 11
+                cycle["html"]["session_id"] = "html-11"
+                cycle["office"]["session_id"] = "office-11"
+                for record in cycle["opened_generations"] + cycle["closed_generations"]:
+                    record["session_id"] = record["session_id"].replace("10", "11")
+                artifact["cycles"].append(cycle)
+                artifact["final_snapshot"] = cycle["office"]["snapshot"]
+            self._mutate_resource_cycle(evidence, root, mutate)
+            run = evidence["office_fixtures"][0]["packaged_run"]
+            MODULE.verify_resource_cycle(root, run, "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
+
+            evidence = self.valid_evidence(root)
+            def obsolete(artifact, run):
+                artifact["cycles"][0]["opened_generations"].append({"session_id": "old", "generation": 9})
+                artifact["cycles"][0]["closed_generations"].append({"session_id": "old", "generation": 9, "close_ms": 50})
+            self._mutate_resource_cycle(evidence, root, obsolete)
+            run = evidence["office_fixtures"][0]["packaged_run"]
+            MODULE.verify_resource_cycle(root, run, "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
+
+    def test_resource_cycle_rejects_unclosed_obsolete_and_foreign_identity(self) -> None:
+        def unclosed(artifact, run):
+            artifact["cycles"][0]["opened_generations"].append({"session_id": "old", "generation": 9})
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            self._mutate_resource_cycle(evidence, root, unclosed)
+            run = evidence["office_fixtures"][0]["packaged_run"]
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify_resource_cycle(root, run, "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
+            for field in ("run_id", "target", "main_sha256", "sidecar_sha256", "fixture_sha256"):
+                evidence = self.valid_evidence(root)
+                def foreign(artifact, run, field=field):
+                    artifact["run_identity"][field] = "f" * 64 if field not in ("run_id", "target") else "foreign"
+                self._mutate_resource_cycle(evidence, root, foreign)
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify_resource_cycle(root, evidence["office_fixtures"][0]["packaged_run"], "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
+
+    def test_resource_cycle_rejects_boolean_counts_cycle_and_nonfinite_duration(self) -> None:
+        def warm_oversize(artifact, run):
+            value = artifact["warm_snapshot"]["rss_bytes"] + 65_536 * 1024 + 1
+            artifact["final_snapshot"]["rss_bytes"] = value
+            artifact["cycles"][-1]["office"]["snapshot"]["rss_bytes"] = value
+        cases = (
+            lambda artifact, run: artifact["cycles"][0]["office"]["snapshot"].update(worker_count=True),
+            lambda artifact, run: artifact["cycles"][0].update(cycle=True),
+            lambda artifact, run: artifact["cycles"][0]["office"].update(close_ms=math.nan),
+            lambda artifact, run: artifact["warm_snapshot"].update(rss_bytes=artifact["cold_snapshot"]["rss_bytes"] + 196608 * 1024 + 1),
+            warm_oversize,
+        )
+        for mutation in cases:
+            with self.subTest(mutation=mutation), self.repository() as directory:
+                root = Path(directory)
+                evidence = self.valid_evidence(root)
+                self._mutate_resource_cycle(evidence, root, mutation)
+                run = evidence["office_fixtures"][0]["packaged_run"]
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify_resource_cycle(root, run, "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
+
     def test_office_cold_rss_delta_keeps_existing_budget(self) -> None:
         with self.repository() as directory:
             root = Path(directory)
             evidence = self.valid_evidence(root)
+            run = evidence["office_fixtures"][0]["packaged_run"]
             evidence["office_fixtures"][0]["packaged_run"].update(
                 cold_rss_bytes=100_000_000,
                 after_close_rss_bytes=100_000_000 + 196_608 * 1024,
             )
+            def sync_budget(artifact, run):
+                cold = run["cold_rss_bytes"]
+                warm = run["after_close_rss_bytes"]
+                final = warm + 100
+                for key, value in (("cold_snapshot", cold), ("warm_snapshot", warm), ("final_snapshot", final)):
+                    artifact[key]["rss_bytes"] = value
+                    artifact[key]["physical_footprint_bytes"] = value
+                for index, cycle in enumerate(artifact["cycles"]):
+                    value = final if index == len(artifact["cycles"]) - 1 else warm
+                    cycle["office"]["snapshot"]["rss_bytes"] = value
+                    cycle["office"]["snapshot"]["physical_footprint_bytes"] = value
+            self._mutate_resource_cycle(evidence, root, sync_budget)
             self.write_evidence(root, evidence)
             MODULE.verify(root)
         self.assert_rejected(
@@ -794,6 +912,39 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                 after_close_rss_bytes=100_000_000 + 196_608 * 1024 + 1,
             )
         )
+
+    def test_resource_cycle_keeps_separate_cold_and_warm_inclusive_budgets(self) -> None:
+        for cold_delta, warm_delta in ((191 * 1024 * 1024, 10 * 1024 * 1024),
+                                      (196_608 * 1024, 65_536 * 1024)):
+            with self.subTest(cold_delta=cold_delta, warm_delta=warm_delta), self.repository() as directory:
+                root = Path(directory)
+                evidence = self.valid_evidence(root)
+                def boundary(artifact, run):
+                    cold = run["cold_rss_bytes"]
+                    warm = cold + cold_delta
+                    final = warm + warm_delta
+                    run["after_close_rss_bytes"] = warm
+                    for key, value in (("warm_snapshot", warm), ("final_snapshot", final)):
+                        artifact[key].update(rss_bytes=value, physical_footprint_bytes=value)
+                    for index, cycle in enumerate(artifact["cycles"]):
+                        value = final if index == len(artifact["cycles"]) - 1 else warm
+                        cycle["office"]["snapshot"].update(rss_bytes=value, physical_footprint_bytes=value)
+                self._mutate_resource_cycle(evidence, root, boundary)
+                self.write_evidence(root, evidence)
+                MODULE.verify(root)
+
+    def test_resource_cycle_rejects_replayed_obsolete_generation(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            def replay(artifact, run):
+                for cycle in artifact["cycles"][:2]:
+                    cycle["opened_generations"].append({"session_id": "obsolete", "generation": 9})
+                    cycle["closed_generations"].append({"session_id": "obsolete", "generation": 9, "close_ms": 50})
+            self._mutate_resource_cycle(evidence, root, replay)
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root)
 
     def test_office_first_frame_has_15000_ms_inclusive_limit(self) -> None:
         with self.repository() as directory:
