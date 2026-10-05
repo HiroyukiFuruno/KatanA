@@ -1,9 +1,14 @@
 ## 1. Reproduction and ownership evidence
 
+- [ ] 2026-10-06 現5f9ccff5原本Office5終了後RSSが2回とも元196608KiB上限を超過（199680/199968、actual exit1）。全idle資源counter0は受入成功でも原因特定でもない。既存KDV #59担当へ原入力/新runner・worker/両生ログを送り既存担当で解析中。上限変更・重複実装なし、修正公開/adoption/再受入は未完了。証跡evidence/html-navigation-collision-review-2026-10-05.md最新節。
+- [ ] 2026-10-06 現5f9ccff5 macOS CI37338244362/job111858559878はdirty HTML target実frame待ちで1fail/exit101。該当新テストだけ既存共有runtime lock未取得だったため、既存guard1行追加でfocused1/関連8件GREEN。timeout/全assert/製品コード不変。正式canonical/normal commit-push/current-head CIで再確認を継続。独立OfficeRSS失敗はこの検査修正で解消扱いしない。
+  - main公式実worker/workspace8pass/1836filtered/39suites actualexit0、fmt/diffcheck/差分・caller自己レビュー成功。27a0b598へ通常hook/署名Gで正式統合。証跡別commit・normal push/現HEAD macOS CI再確認を継続。
+
 - [ ] 2026-10-05 current490df76a review PRR_kwDORm09y88AAAABQt3wcw P2 PRRT_kwDORm09y86pGLOg: 既存dirty HTML targetのbufferは保持されるがpreviewへdisk由来sourceを渡して不一致となる。preserved buffer由来sourceと移動先URL/fragmentの両立、実file RED→GREEN、全gate/正式統合/個別reply-resolve/fresh取得を継続。既存manual-target公開方針P2とは別件。
   - 2026-10-06 実fileのdisk青/unsaved赤で現490df76aのpreview不一致をRED再現。preserved bufferとrequested origin/fragmentからsourceを作る最小修正後、実RGB response/exact origin/dirty・固定・split・所有保持/same-path回帰を含む7件GREEN、format/diffcheck成功。実worker/canonical workspace入口・通常commit/push・個別reply-resolve/fresh review・変更後全gate/配布受入は継続。
   - 通常commit初回はAST行数210>200でexit1、未統合。source生成を共通化し検証→mutationの順序と責務を維持して184行へ整理。invalid origin時の文書/active path/preview history保持を含む8件GREEN、正規AST23件成功。閾値/除外/hook迂回なし、最終canonical/通常commit-push/各thread reply-resolve/変更後全gateは継続。
   - main最終実worker canonical8pass1836filtered39suites exit0、原本/process契約24+7成功。通常hookと署名Gで62ab1a14へsource正式統合。初回AST失敗を成功へ書換えず保持。通常push・当該thread返信/resolve・fresh review・変更後全coverage/package/原本/全配布/95点は未完了。
+  - 最新5f9ccff5はnormalpush exit0、当該reply4186114798→resolve→全件再取得、現HEAD Codex5998463527 major issuesなし。変更後公式test-integration/coverage/supply-chain、mac universal/ad-hocとfreshstartup、原本HTML全9/正常close0.831秒が成功。ただし同HEAD macOS CIと原本Office5 RSSの新失敗、全5native/独立95点/公開後処理は未完了。local成功をcloud成功へ代用しない。
 
 - [ ] 2026-10-05 current c8335e48 review5416352520（14:46:33Z、inline comments/threadなし）P2: 既に開いているHTML targetへの移動でprevious sourceを先に選び同path documentが重複する。source/target両タブの所有状態を維持する最小修正・旧コードRED→GREEN・正式履歴/通常push・reviewへの個別回答・fresh全取得を継続。元のmanual-target方針P2とは別件。
   - 初稿target-first lookupでは重複RED→5件GREENだが、mainレビューでdirty既存targetをDocument::newへ上書きする新データ損失リスクを検出。採用前に実file URL経路のdirty target保持回帰と再利用時activate-onlyを補正中。5件GREENだけを統合/解決済みにしない。

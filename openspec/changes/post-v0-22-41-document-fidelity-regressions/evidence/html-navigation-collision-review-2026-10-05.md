@@ -1,5 +1,32 @@
 # Existing HTML navigation target ownership
 
+## 最新検証（2026-10-06 JST、HEAD 5f9ccff5）
+
+source62ab1a14と証跡5f9ccff5は署名Gで正式統合し、通常push6373はexit0、GitHub HEAD一致・ahead/behind0/0を確認した。P2 thread PRRT_kwDORm09y86pGLOgへreply4186114798を入れてresolveし、全件再取得で解決を確認。現HEADのCodex本文レビュー5998463527（2026-10-05T16:17:26Z、Reviewed commit5f9ccff5f8）はmajor issuesなし。manual-target公開方針P2はユーザー判断待ちのまま残す。
+
+変更後の公式test-integration/coverage/supply-chain55122はexit0。実worker fixture8、native UI1059/既存ignore2、実export13、parallel143/既存ignore2、serial18が成功し、meaningful未実行0・strict document surface100%/未実行0、供給網4分類PASSを確認した。既存duplicate警告を隠さず保持。rawはtmp/html-navigation-collision-preview-release-gates-2026-10-06.log。native coverage JSON15508045bytes、SHA2d867dd518e3b26cc21397a7779272abf2a518388a577ff9db878da7ea993041を保存。html_navigation全fileは477/506lines・753/798regions・44/44functionsであり、全file100%とはしない。
+
+公式package-mac85190とfresh arm64 startup3405はexit0。main SHA f9d09e2eddbdd44a76d6998d38fcc8397ff1522a967c10bae21f0d46e238915a、worker7191cbaf、両universal/minos13.0/deep strict ad-hoc署名を確認した。startup peak195184KiB/font27093388bytes/Office worker0、owned PID43543終了。空workspace起動を文書受入・全5native・clean-machine・95点へ代用しない。Terms承認は代行していない。
+
+原本HTML76489はexit0、初回1.337秒・fragment1.641018334秒・正常close0.830844750秒、全9操作・idle資源0・残存process0を確認した。原入力SHA c02d2d7a2420e4e15e3d98a044a310c67bc75fa858c95c4867b9c3f5d7aca012、viewport/fragment/deadlinesは不変。これはin_process_hostであり、packaged-main文書受入や独立95点ではない。
+
+### 新規失敗：原本Office5の終了後RSS
+
+公式scripts/screenshot/run.sh、原request SHA f58b929fab7430afc4eb5893f49bccd0d7a7efd6a8cf2fddc29339c7a3641d0c、新runner SHA24ac73e5f99d67178f5fe1120fa79a35a0fa5313fa2501990ce7f7ffd4a7982b、実worker830426adで2回測定し、どちらもactual exit1。重い検査の同時実行やDEBUGはない。固定registry KDV0.5.11/KRR0.4.23/KUC0.4.1を維持した。
+
+- 初回：baseline104880→closed304560KiB、delta199680KiB。
+- 反復：baseline104656→closed304624KiB、delta199968KiB。
+
+元上限196608KiBを両方で超えた。5文書frameと各close操作を観測し、最後のresource/surface/worker/frame/texture/cache counterは0だが、step20のRSS assertion失敗でstep21 quitには到達していない。資源counter0だけで受入成功や原因特定としない。rawはtmp/html-navigation-collision-preview-office-five-2026-10-06.logとoffice-five-repeat-2026-10-06.log。既存KDV #59担当へ原入力・binary identity・2回の生ログを送付し、既存担当で調査を継続中。KDV0.5.12はRelease verify中で未公開のため未採用、公開だけで#58/#59完了とも扱わない。
+
+### 新規失敗：現HEAD macOS CI
+
+CI run37338244362/job111858559878はRun testsでexit101。1058pass/1fail/既存ignore2、file_navigation_to_an_open_dirty_target_preserves_target_stateが「timed out waiting for the HTML browser frame」。rawはtmp/html-preview-current-macos-ci-failure-2026-10-06.log。local focused8件/full coverage成功をこのcloud失敗の成功証拠へ代用しない。既存限定担当へ同file内の原因調査・最小修正を依頼し、timeout延長・固定待機・Mock・assert削減・製品コードのテスト都合変更は認めない。PRはDraftを維持する。
+
+限定担当とmainの差分/caller確認で、新しい実描画テストだけ既存RenderEnvLockを取得していないことを確認した。他のHTML描画回帰と同じhtml_browser_runtime_test_guard()を1行追加し、製品コード・2秒wait・実RGB/dirty/origin/fragment/所有assertを維持した。focused1件/関連8件GREEN、main公式実worker/workspace入口22841も8pass/1836filtered/39suites、actual exit0。fmt/diff check成功。rawはtmp/html-preview-current-macos-ci-fix-suite-green-2026-10-06.logとtmp/html-preview-runtime-guard-canonical-2026-10-06.log。共有lock不足は確認済みだが、macOS全CIの解消は変更後CIが成功するまで未確認として残す。通常source commitと次のnormal pushで正式ゲートを通す。
+
+テスト修正は通常commit91873 exit0・署名Gの27a0b59847bf41471390d3b3f0125648ab8c256dへ正式統合。証跡は別commitとし、normal push/新HEAD cloud結果は別checkpointで確認する。OfficeRSSの2回失敗と独立受入/公開DoDは未完了のまま維持。
+
 ## Finding and scope
 
 Current-HEAD review 5416352520 on c8335e48 reported that navigating from local HTML A to already-open B preferred A's document record, renamed it to B and removed B's preview. This produced two records with the same path. The review-specific GraphQL query returned no inline comments, and the complete paginated fetch returned no thread for this finding. Its review URL is https://github.com/HiroyukiFuruno/KatanA/pull/346#pullrequestreview-5416352520.
