@@ -12,7 +12,7 @@ pub(crate) enum PreviewMenu {
 pub(crate) struct PreviewMenuAvailability;
 
 impl PreviewMenuAvailability {
-    pub(crate) fn for_path(path: Option<&std::path::Path>, _menu: PreviewMenu) -> bool {
+    pub(crate) fn for_path(path: Option<&std::path::Path>, menu: PreviewMenu) -> bool {
         let Some(path) = path else {
             return true;
         };
@@ -30,7 +30,21 @@ impl PreviewMenuAvailability {
             .is_some_and(|extension| {
                 extension.eq_ignore_ascii_case("html") || extension.eq_ignore_ascii_case("htm")
             });
-        !is_office && !is_html
+        let format = katana_core::document_source::BinaryDocumentFormat::from_path(path);
+        let is_image = katana_core::workspace::TreeEntry::path_is_image(path);
+        match menu {
+            PreviewMenu::Toc => !is_office && !is_html && !is_image,
+            PreviewMenu::Export | PreviewMenu::Story | PreviewMenu::Tools => {
+                !is_office && !is_html && !is_image && format.is_none()
+            }
+            PreviewMenu::Slideshow => {
+                !is_office && !is_html && !is_image && format.is_none()
+                    || matches!(
+                        format,
+                        Some(katana_core::document_source::BinaryDocumentFormat::Pptx)
+                    )
+            }
+        }
     }
 }
 
@@ -62,14 +76,8 @@ mod tests {
     }
 
     #[test]
-    fn html_and_office_disable_all_unsupported_preview_menus() {
-        for path in [
-            "report.html",
-            "REPORT.HTM",
-            "report.docx",
-            "book.xlsx",
-            "deck.pptx",
-        ] {
+    fn html_and_non_pptx_office_disable_all_preview_menus() {
+        for path in ["report.html", "REPORT.HTM", "report.docx", "book.xlsx"] {
             for menu in [
                 PreviewMenu::Toc,
                 PreviewMenu::Export,
@@ -82,6 +90,37 @@ mod tests {
                     menu
                 ));
             }
+        }
+    }
+
+    #[test]
+    fn pptx_enables_only_slideshow() {
+        let path = std::path::Path::new("deck.pptx");
+        assert!(PreviewMenuAvailability::for_path(
+            Some(path),
+            PreviewMenu::Slideshow
+        ));
+        for menu in [
+            PreviewMenu::Toc,
+            PreviewMenu::Export,
+            PreviewMenu::Story,
+            PreviewMenu::Tools,
+        ] {
+            assert!(!PreviewMenuAvailability::for_path(Some(path), menu));
+        }
+    }
+
+    #[test]
+    fn images_disable_document_menus() {
+        let path = std::path::Path::new("photo.png");
+        for menu in [
+            PreviewMenu::Toc,
+            PreviewMenu::Export,
+            PreviewMenu::Story,
+            PreviewMenu::Tools,
+            PreviewMenu::Slideshow,
+        ] {
+            assert!(!PreviewMenuAvailability::for_path(Some(path), menu));
         }
     }
 }

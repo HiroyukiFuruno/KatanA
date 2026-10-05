@@ -20,6 +20,7 @@ mod render;
 mod render_events;
 mod render_inspection;
 mod render_support;
+mod slideshow;
 mod source;
 mod source_io;
 mod spreadsheet_filter_controls;

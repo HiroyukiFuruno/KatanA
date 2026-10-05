@@ -40,6 +40,36 @@ impl PreviewPane {
             || self.document_intake.is_some()
     }
 
+    pub(crate) fn is_pptx_document_surface(&self) -> bool {
+        self.document_surface
+            .as_ref()
+            .is_some_and(DocumentSurface::is_pptx)
+    }
+
+    pub(crate) fn document_slideshow_state(&self) -> Option<(usize, usize)> {
+        self.document_surface
+            .as_ref()
+            .and_then(DocumentSurface::slideshow_state)
+    }
+
+    pub(crate) fn document_slideshow_step(&mut self, next: bool) {
+        if let Some(surface) = &mut self.document_surface {
+            surface.slideshow_step(next);
+        }
+    }
+
+    pub(crate) fn document_slideshow_jump_to(&mut self, index: usize) {
+        if let Some(surface) = &mut self.document_surface {
+            surface.slideshow_jump_to(index);
+        }
+    }
+
+    pub(crate) fn show_document_slideshow(&mut self, ui: &mut egui::Ui) {
+        if let Some(surface) = &mut self.document_surface {
+            surface.show_slideshow(ui);
+        }
+    }
+
     pub(crate) fn show_document_surface(&mut self, ui: &mut egui::Ui) {
         self.poll_document_intake(ui.ctx());
         if let Some(surface) = &mut self.document_surface {
