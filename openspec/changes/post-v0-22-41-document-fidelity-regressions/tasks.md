@@ -1,5 +1,18 @@
 ## 1. Reproduction and ownership evidence
 
+- [ ] 最新ユーザー指示「今回は実機確認私の方でしたい」に従い、最新修正入りmacOS配布アプリを用意して本人へ渡す。本人のOffice/HTML/PDF実機確認は未確認として維持し、自動検査・正式統合・current reviewを並行継続する。本人確認を代行・完了扱いしない。
+
+- [/] 2026-10-06 最新ユーザー指示に従いKatanA側の実動作検証を継続。現両lockで実worker付き候補回帰8件、コメント構文回帰8件、正式AST23件、公式lint/fmt/供給網はactualexit0。通常診断OFF原Office5二回は全21steps/quit・idle0、RSS delta195712/195424KiB（元196608、余裕896/1184のみ）。原loom+HTML cold1/warm10は全10steps/quit・観測各11・idle0、cold156576/warm-16016KiB（元196608/65536）。実測成功を独立95点・全packaged/native・全gate/current review・公開完了へ代用しない。コメント方針の再質問待ちは撤回し、構文ベースの整合を検証済み。関心事別通常commit/pushへ継続する。
+
+- [/] 最新ユーザー指示「進めますではなく進めて」「日本語コメント」に従い、コメント言語の再確認待ちを取り消す。説明コメントを実行時文字列から分離する検査へ整合させ、日英規約を同期する。既存識別子・文字列制約、品質/95点/配布受入基準は維持する。アンチパターン: 承認済み作業を宣言だけでターン終了、既存指示を再質問して全体停止。正: 検証→関心事別通常commit/push→current review/全gateを継続し、上流未完成と独立作業を分ける。検査整合は実装中で完了扱いしない（検索語: continuation without repeated approval, Japanese comments contract）。
+
+- [ ] 2026-10-06 新KDV0.5.12/observer固定binaryの通常flag-OFF Office5はRSS delta197760KiB>元196608でactualexit1、step20失敗・quit未実施。同binary診断ONはdelta179920/全21steps exit0だが診断介入の影響を持つため通常受入PASSへ代用しない。同親malloc診断で解放済みLarge resident約151MiB増・live heap約2.31MiB増を確認し、最終document-preview削除遷移だけのmacOS pressure-relief候補を限定実装・検証中。原本基準不変、実改善・残存文書保持・全gate・正式履歴/current reviewは未完了。証跡evidence/office-memory-observer-2026-10-06.md。
+  - 補強候補のmain実worker canonical8件exit0、locked release再build64906exit0。新runner bc8570c5/worker・両lock・原request同一で診断OFF通常Office5を2回実行しactualexit0・全21steps/quit・idle0、RSS delta196176/194432KiBで元上限196608を満たした。ただし余裕432/2176KiBのみ、安定解消や原因確定と断定しない。既存loom cold1+warm10・元warm65536/全assertを再検証中、全gate/current review/packaged等は未完了。
+  - 原loom+HTML cold1/warm10は70236 actualexit0・全10steps/quit・HTML/document観測11/11・idle0、cold delta154400/warm delta-6000KiB（元196608/65536）。main all-target strictClippy/fmt成功後、正式AST20pass/3failでobserver直Command・コメント形式・日本語禁止を検出。既存ProcessServiceへ補正し公式screenshot release契約54/Clippy/fmt50851成功、コメント形式も補正。最新日本語コメント指示と既存日本語禁止ゲートの矛盾はユーザーへ方針確認し、規約/ゲートを独断変更しない。全gate・正式commit/push/newreviewは未完了。
+  - 最新正式AST3703 actualexit101、22pass/1fail（日本語禁止のみ）、直Command/commentstyleは補正後通過。コメント方針の回答後、AST全成功→normalcommit/push→newHEADreview・全gateを継続する。未回答を理由に基準緩和/英語化を独断せず、stash0/master clean、候補/補正差分の所有・次手順を物理台帳へ保存した。
+  - 判断待ちの独立回帰は公式just test-integration88290 actualexit0/fixture8passと実worker付きUI lib9340 actualexit0/1067pass/0fail/既存ignore2/0filterで完了。AST矛盾/全coverage/全platform/newHEAD review・公開DoDの代用にはしない。rawはtmp/comment-policy-pending-{fixture,ui}-regression-2026-10-06.log。
+  - c2旧公開graph CI37343717559は全3OS build/test・lint・CodeQL・供給網completed successをライブ確認。新graph/candidateの全gate成功へ流用しない。候補初稿pure判定4UTだけでは実app/livebuffer保持を証明しないためmain未採用、同2files限定でcaller/native safety回帰を補強する。
+
 - [ ] 2026-10-06 KDV v0.5.12のRelease run37332907624 success・GitHub Release公開16:58:52Z・registry非yank/checksum4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635をライブ確認。既存release/v0.22.42の固定依存と両lockを0.5.12へ更新、差分は版/checksumだけ。変更graphの全gate・原本再受入・正式履歴/current reviewは未完了。Office解放の変更を含まないため、元RSS FAIL2やKDV #58/#59を解消扱いしない。
   - 新graph公式実worker/HTML canonical19206 exit0、8pass/1836filtered/39suites。供給網7933 exit0/4分類PASS。原本host契約24/process-group実検証7件成功（初回unittest呼出しはmodule探索エラーで未実行、独立script正規入口へ訂正）。検査observerの初稿50件成功だけでは実mac観測・上限監視を証明できないためmainレビューで未統合、実行中上限監視/owned child回収/実PID診断・overwrite拒否を補正して再検証する。
   - 000a2869へ固定依存/両lockを通常commit exit0で正式統合。補正observerは別関心事9401a5b0へ通常commit exit0で正式統合。正式push/current review・新graph全gate/原本/全配布受入は後続として残す。
