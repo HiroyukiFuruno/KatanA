@@ -1,5 +1,10 @@
 ## 1. Reproduction and ownership evidence
 
+- [ ] 2026-10-05 current490df76a review PRR_kwDORm09y88AAAABQt3wcw P2 PRRT_kwDORm09y86pGLOg: 既存dirty HTML targetのbufferは保持されるがpreviewへdisk由来sourceを渡して不一致となる。preserved buffer由来sourceと移動先URL/fragmentの両立、実file RED→GREEN、全gate/正式統合/個別reply-resolve/fresh取得を継続。既存manual-target公開方針P2とは別件。
+  - 2026-10-06 実fileのdisk青/unsaved赤で現490df76aのpreview不一致をRED再現。preserved bufferとrequested origin/fragmentからsourceを作る最小修正後、実RGB response/exact origin/dirty・固定・split・所有保持/same-path回帰を含む7件GREEN、format/diffcheck成功。実worker/canonical workspace入口・通常commit/push・個別reply-resolve/fresh review・変更後全gate/配布受入は継続。
+  - 通常commit初回はAST行数210>200でexit1、未統合。source生成を共通化し検証→mutationの順序と責務を維持して184行へ整理。invalid origin時の文書/active path/preview history保持を含む8件GREEN、正規AST23件成功。閾値/除外/hook迂回なし、最終canonical/通常commit-push/各thread reply-resolve/変更後全gateは継続。
+  - main最終実worker canonical8pass1836filtered39suites exit0、原本/process契約24+7成功。通常hookと署名Gで62ab1a14へsource正式統合。初回AST失敗を成功へ書換えず保持。通常push・当該thread返信/resolve・fresh review・変更後全coverage/package/原本/全配布/95点は未完了。
+
 - [ ] 2026-10-05 current c8335e48 review5416352520（14:46:33Z、inline comments/threadなし）P2: 既に開いているHTML targetへの移動でprevious sourceを先に選び同path documentが重複する。source/target両タブの所有状態を維持する最小修正・旧コードRED→GREEN・正式履歴/通常push・reviewへの個別回答・fresh全取得を継続。元のmanual-target方針P2とは別件。
   - 初稿target-first lookupでは重複RED→5件GREENだが、mainレビューでdirty既存targetをDocument::newへ上書きする新データ損失リスクを検出。採用前に実file URL経路のdirty target保持回帰と再利用時activate-onlyを補正中。5件GREENだけを統合/解決済みにしない。
   - 補正後は実file URLのdirty buffer/固定/分割/両preview所有を保持してB#detailsを既存sessionへ反映、same-path reloadも回帰追加。child7件GREEN/fmt/diff check成功をmain実diff/rawで確認。dirty REDは元HEADではなくtarget-first中間実装に対する実証と明記。公式実worker/workspace filtered入口・strict hook・正式履歴/通常push・review個別回答/fresh取得・新source全coverage/配布/受入は継続。証跡evidence/html-navigation-collision-review-2026-10-05.md。
