@@ -196,11 +196,10 @@ pub struct AppState {
 ## 6. コメント規約
 
 **コメントは「なぜ（WHY）」のみ。何をしているか（WHAT）はコードで表現する。**
-コメントは **英語** で記載する（English First Policy に従う）。
+新規・変更する説明コメントは、最新のユーザー指示に従い **日本語** で記載する。無関係な既存コメントの一括翻訳は不要。識別子・実行時文字列・テスト文字列の既存の言語制約は維持し、コメントを実行時テキストと混同しない。
 
 ```rust
-// ✅ Good — WHY のみ、英語
-// comrak disables GFM by default, so we explicitly enable the extension here.
+/* WHY: comrakはGFMを既定で無効にするため、表の拡張を明示的に有効にする。 */
 opts.extension.table = true;
 
 // ❌ Bad — WHAT をコメントしている（コードを読めばわかる）
@@ -208,7 +207,7 @@ opts.extension.table = true;
 opts.extension.table = true;
 ```
 
-ドキュメンテーションコメント（`///`）は公開 API に対して英語で記載する（crates.io / rustdoc 慣習に従う）。
+日本語のドキュメンテーションコメントも許可する。公開API・コメント形式の既存検査は維持し、この言語規約をユーザー向けテキストのハードコード許可として扱わない。
 
 ---
 

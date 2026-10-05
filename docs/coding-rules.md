@@ -196,11 +196,10 @@ pub struct AppState {
 ## 6. Comment Rules
 
 **Comments should only describe the "WHY". The "WHAT" should be expressed through code.**
-Comments must be written in **English** (following the English First Policy).
+New or modified explanatory comments must be written in **Japanese**, following the latest user instruction. Existing comments do not require unrelated bulk translation. Source identifiers and runtime/test strings retain the existing language restrictions; comments are not runtime text.
 
 ```rust
-// ✅ Good — Only WHY, written in English
-// comrak disables GFM by default, so we explicitly enable the extension here.
+/* WHY: comrakはGFMを既定で無効にするため、表の拡張を明示的に有効にする。 */
 opts.extension.table = true;
 
 // ❌ Bad — Commenting on the WHAT (obvious from reading the code)
@@ -208,7 +207,7 @@ opts.extension.table = true;
 opts.extension.table = true;
 ```
 
-Documentation comments (`///`) must be written in English for public APIs (following crates.io / rustdoc conventions).
+Japanese documentation comments are also permitted. Documentation remains subject to the existing public-API and comment-style checks; this language rule does not permit hardcoded user-facing text.
 
 ---
 
@@ -418,10 +417,10 @@ Batch check: `just check` (equivalent to the pre-push hook)
 2. Generated code or macro expansion results
 3. There is a design reason that obtained agreement during PR review
 
-You must **always state the reason in an English comment** for `#[allow(...)]`:
+You must **always state the reason in a Japanese comment** for `#[allow(...)]`:
 
 ```rust
-// App::update in egui is a single entry point and cannot be split due to framework constraints.
+/* WHY: eguiのApp::updateは単一の入口であり、フレームワークの制約で分割できない。 */
 #[allow(clippy::too_many_lines)]
 fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) { ... }
 ```
