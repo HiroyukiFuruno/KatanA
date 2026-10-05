@@ -122,22 +122,31 @@ impl KatanaApp {
         previous_path: Option<std::path::PathBuf>,
         browser_source: katana_document_viewer::browser_session::HtmlBrowserSource,
     ) {
-        let document_index = previous_path
-            .as_ref()
-            .and_then(|path| {
+        let target_document_index = self
+            .state
+            .document
+            .open_documents
+            .iter()
+            .position(|document| document.path == document_path);
+        let document_index = target_document_index.or_else(|| {
+            previous_path.as_ref().and_then(|path| {
                 self.state
                     .document
                     .open_documents
                     .iter()
                     .position(|document| document.path == *path)
             })
-            .or_else(|| {
-                self.state
-                    .document
-                    .open_documents
-                    .iter()
-                    .position(|document| document.path == document_path)
-            });
+        });
+        if let Some(index) = target_document_index.filter(|_| {
+            previous_path
+                .as_ref()
+                .is_some_and(|path| path != &document_path)
+        }) {
+            self.state.document.active_doc_idx = Some(index);
+            self.state.document.scroll_to_active_tab = true;
+            self.full_refresh_html_source(&document_path, browser_source);
+            return;
+        }
         let was_open = document_index.is_some();
         let index = document_index.unwrap_or_else(|| {
             self.state
@@ -242,6 +251,204 @@ mod tests {
     }
 
     #[test]
+    fn navigation_to_an_open_target_reuses_target_and_preserves_source_document() {
+        use katana_platform::{PaneOrder, SplitDirection};
+
+        let mut app = test_app();
+        let source_path = std::path::PathBuf::from("Katana://URL/source.html");
+        let target_path = std::path::PathBuf::from("Katana://URL/target.html");
+        let source_document = source_with_body("https://example.com/source", "source");
+        let target_document = source_with_body("https://example.com/target", "target");
+        let navigated_target = source_with_body("https://example.com/navigated", "navigated");
+
+        app.state
+            .url_tab
+            .open_source(source_document.clone(), source_path.clone());
+        app.replace_html_document(source_document, source_path.clone(), None);
+        app.state
+            .set_active_view_mode(crate::state::ViewMode::CodeOnly);
+
+        app.state
+            .url_tab
+            .open_source(target_document.clone(), target_path.clone());
+        app.replace_html_document(target_document, target_path.clone(), None);
+        app.state.document.open_documents[1].is_pinned = true;
+        app.state
+            .set_active_view_mode(crate::state::ViewMode::Split);
+        app.state
+            .set_active_split_direction(SplitDirection::Vertical);
+        app.state.set_active_pane_order(PaneOrder::PreviewFirst);
+        let target_preview_history = app
+            .html_browser_navigation_history_for_test()
+            .expect("target preview history");
+
+        app.state
+            .url_tab
+            .open_source(navigated_target.clone(), target_path.clone());
+        app.replace_html_document(
+            navigated_target,
+            target_path.clone(),
+            Some(source_path.clone()),
+        );
+
+        assert_eq!(app.state.document.open_documents.len(), 2);
+        assert_eq!(
+            app.state
+                .document
+                .open_documents
+                .iter()
+                .map(|document| document.path.clone())
+                .collect::<Vec<_>>(),
+            vec![source_path.clone(), target_path.clone()]
+        );
+        assert_eq!(app.state.active_path(), Some(target_path.clone()));
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "<html><body>source</body></html>"
+        );
+        assert_eq!(
+            app.state.document.open_documents[1].buffer,
+            "<html><body>target</body></html>"
+        );
+        assert!(app.state.document.open_documents[1].is_pinned);
+        assert_eq!(app.state.active_view_mode(), crate::state::ViewMode::Split);
+        assert_eq!(app.state.active_split_direction(), SplitDirection::Vertical);
+        assert_eq!(app.state.active_pane_order(), PaneOrder::PreviewFirst);
+        assert_eq!(app.tab_previews.len(), 2);
+        assert!(
+            app.tab_previews
+                .iter()
+                .any(|preview| preview.path == source_path)
+        );
+        assert!(
+            app.tab_previews
+                .iter()
+                .any(|preview| preview.path == target_path)
+        );
+        assert_eq!(
+            app.state.url_tab.source_for_document(&source_path),
+            Some(&HtmlSource {
+                raw_html: "<html><body>source</body></html>".to_owned(),
+                source_url: "https://example.com/source".to_owned(),
+                origin: "https://example.com/source".to_owned(),
+            })
+        );
+        assert_eq!(
+            app.html_browser_navigation_history_for_test(),
+            Some({
+                let mut history = target_preview_history;
+                history.push("https://example.com/navigated".to_owned());
+                history
+            })
+        );
+    }
+
+    #[test]
+    fn file_navigation_to_an_open_dirty_target_preserves_target_state() -> TestResult {
+        use katana_platform::{PaneOrder, SplitDirection};
+
+        let temporary_directory = tempfile::tempdir()?;
+        let source_path = temporary_directory.path().join("source.html");
+        let target_path = temporary_directory.path().join("target.html");
+        std::fs::write(&source_path, "<html><body>source-file</body></html>")?;
+        std::fs::write(&target_path, "<html><body>target-file</body></html>")?;
+
+        let mut app = test_app();
+        let source_url = url::Url::from_file_path(&source_path).map_err(|()| "source URL")?;
+        let target_url = url::Url::from_file_path(&target_path).map_err(|()| "target URL")?;
+        let source_document = source_with_body(source_url.as_str(), "source-document");
+        let target_document = source_with_body(target_url.as_str(), "target-document");
+        app.replace_html_document(source_document, source_path.clone(), None);
+        app.replace_html_document(target_document, target_path.clone(), None);
+        app.state.document.open_documents[1].update_buffer("unsaved-target");
+        app.state.document.open_documents[1].is_pinned = true;
+        app.state
+            .set_active_view_mode(crate::state::ViewMode::Split);
+        app.state
+            .set_active_split_direction(SplitDirection::Vertical);
+        app.state.set_active_pane_order(PaneOrder::PreviewFirst);
+        app.state.document.active_doc_idx = Some(0);
+        let target_history = app
+            .tab_previews
+            .iter()
+            .find(|preview| preview.path == target_path)
+            .and_then(|preview| preview.pane.html_browser_navigation_history())
+            .expect("target preview history");
+
+        let mut target_navigation_url = target_url.clone();
+        target_navigation_url.set_fragment(Some("details"));
+        app.handle_html_navigation(
+            &egui::Context::default(),
+            source_path.clone(),
+            target_navigation_url.to_string(),
+        );
+
+        assert_eq!(app.state.document.open_documents.len(), 2);
+        assert_eq!(app.state.active_path(), Some(target_path.clone()));
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "<html><body>source-document</body></html>"
+        );
+        assert_eq!(
+            app.state.document.open_documents[1].buffer,
+            "unsaved-target"
+        );
+        assert!(app.state.document.open_documents[1].is_dirty);
+        assert!(app.state.document.open_documents[1].is_pinned);
+        assert_eq!(app.state.active_split_direction(), SplitDirection::Vertical);
+        assert_eq!(app.state.active_pane_order(), PaneOrder::PreviewFirst);
+        assert_eq!(
+            app.tab_previews
+                .iter()
+                .filter(|preview| preview.path == source_path || preview.path == target_path)
+                .count(),
+            2
+        );
+        assert_eq!(
+            app.tab_previews
+                .iter()
+                .find(|preview| preview.path == target_path)
+                .and_then(|preview| preview.pane.html_browser_navigation_history()),
+            Some({
+                let mut history = target_history;
+                history.push(target_navigation_url.to_string());
+                history
+            })
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn same_path_reload_replaces_document_and_updates_browser_history() {
+        let mut app = test_app();
+        let path = std::path::PathBuf::from("Katana://URL/reload.html");
+        app.replace_html_document(
+            source_with_body("https://example.com/first", "first"),
+            path.clone(),
+            None,
+        );
+        app.replace_html_document(
+            source_with_body("https://example.com/second", "second"),
+            path.clone(),
+            Some(path.clone()),
+        );
+
+        assert_eq!(app.state.document.open_documents.len(), 1);
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "<html><body>second</body></html>"
+        );
+        assert_eq!(app.state.active_path(), Some(path));
+        assert_eq!(
+            app.html_browser_navigation_history_for_test(),
+            Some(vec![
+                "https://example.com/first".to_owned(),
+                "https://example.com/second".to_owned(),
+            ])
+        );
+    }
+
+    #[test]
     fn consecutive_navigation_intents_preserve_active_tab_and_queue_order() -> TestResult {
         let (base_url, server) = navigation_server()?;
         let mut app = test_app();
@@ -289,8 +496,12 @@ mod tests {
     }
 
     fn source(url: &str) -> HtmlSource {
+        source_with_body(url, "browser")
+    }
+
+    fn source_with_body(url: &str, body: &str) -> HtmlSource {
         HtmlSource {
-            raw_html: "<html><body>browser</body></html>".to_owned(),
+            raw_html: format!("<html><body>{body}</body></html>"),
             source_url: url.to_owned(),
             origin: url.to_owned(),
         }
