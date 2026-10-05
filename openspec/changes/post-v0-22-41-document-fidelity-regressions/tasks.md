@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-05 P1資源cycle検査をf612b178/証跡ea5ef282へ署名Gで正式統合し通常push exit0。comment4183935873で個別reply後、PRRT_kwDORm09y86pAtOTをresolve。provided fetch_comments.pyで全reviewをfresh取得しP0/P1未解決0、既存manual-target方針P2一件だけ未解決、GitHub HEAD一致/upstream0/0/stash0/master cleanを確認。Draft維持、新HEAD再review/CIと実配布受入・独立95点・公開後処理は継続。
+
 - [/] 2026-10-05 P1資源cycle検査の旧HEAD欠落REDを確認し、artifact identity/SHA・混合10cycle・全open/close世代一致・close5s・cold196608/warm65536KiB・各close後/最終idle0を必須化。最終単一定義の独立65件/構文/diff checkと通常preflightはexit0、自己レビューPASS。正式commit/push・個別reply/resolve・fresh全取得を続行。実配布main receipt/独立95点/全OS受入は未完了であり合成UTを代用しない。証跡evidence/resource-cycle-review-2026-10-05.md。
 
 - [/] 2026-10-05 current公開graphの公式package-mac exit0、実main/worker両arm64+x86_64・各minos13.0・ad-hoc deep strict署名検証成功。main SHA cf170c57/worker7191cbaf、配布raw buildログ保持。別担当のnative coverage buildを実観測したためRSS/performance smokeを同時実行せず、P1 validatorの回帰・正式統合を継続。archive検査をclean-machine/原本/正常close/全OS受入へ代用しない。証跡evidence/public-krr0423-acceptance-2026-10-05.md。

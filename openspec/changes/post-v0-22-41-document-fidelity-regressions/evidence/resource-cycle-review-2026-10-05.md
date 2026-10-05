@@ -46,7 +46,7 @@ Office close後RSSだけを確認し、元resource-lifecycle specの十回混合
 
 UT用のsynthetic artifactはvalidatorの試験入力だけに使用する。
 実配布受入receiptには使用せず、PNGデコードの省略やfake完了値の補完は行わない。
-正式push、個別reply/resolve、fresh review取得と実配布受入はまだ未完了である。
+この検証時点では正式push、個別reply/resolve、fresh review取得と実配布受入は未完了だった。
 
 ## 最終ソースの独立検証
 
@@ -57,3 +57,12 @@ acceptance48件とrelease gate17件、計65件がexit0。Python構文検査とdi
 通常preflightもexit0（`tmp/resource-cycle-pr-ready-2026-10-05.log`）。
 自己レビューは入力境界・caller・世代使い回し・cold/warm別予算を確認しPASS。
 Rust製品コード・原本・受入基準は変更していない。
+
+## 正式統合とレビュー終端
+
+修正f612b178、証跡ea5ef282は署名G。通常pushはexit0でGitHub HEADと一致。
+reply4183935873の後、対象threadをresolveし、provided fetch_comments.pyで全レビューを
+再取得した。P0/P1未解決0、既存manual-target公開方針P2一件はユーザー判断待ち。
+原ログ: `tmp/resource-cycle-normal-push-2026-10-05.log`、
+`tmp/resource-cycle-after-resolve-review-2026-10-05.json`。
+Draftと元DoDを維持し、新HEADの再review/CI・実配布受入を継続する。
