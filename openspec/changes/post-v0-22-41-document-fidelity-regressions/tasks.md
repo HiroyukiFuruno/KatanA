@@ -2,6 +2,8 @@
 
 - [ ] 2026-10-05 current c8335e48 review5416352520（14:46:33Z、inline comments/threadなし）P2: 既に開いているHTML targetへの移動でprevious sourceを先に選び同path documentが重複する。source/target両タブの所有状態を維持する最小修正・旧コードRED→GREEN・正式履歴/通常push・reviewへの個別回答・fresh全取得を継続。元のmanual-target方針P2とは別件。
   - 初稿target-first lookupでは重複RED→5件GREENだが、mainレビューでdirty既存targetをDocument::newへ上書きする新データ損失リスクを検出。採用前に実file URL経路のdirty target保持回帰と再利用時activate-onlyを補正中。5件GREENだけを統合/解決済みにしない。
+  - 補正後は実file URLのdirty buffer/固定/分割/両preview所有を保持してB#detailsを既存sessionへ反映、same-path reloadも回帰追加。child7件GREEN/fmt/diff check成功をmain実diff/rawで確認。dirty REDは元HEADではなくtarget-first中間実装に対する実証と明記。公式実worker/workspace filtered入口・strict hook・正式履歴/通常push・review個別回答/fresh取得・新source全coverage/配布/受入は継続。証跡evidence/html-navigation-collision-review-2026-10-05.md。
+  - main公式実worker/workspace filtered入口は7pass/1836filtered/39suites・exit0、fmt/diff check/自己レビュー成功。834b58b8へ通常hook/署名Gで正式統合。sourceのみを分離commitし、前段配布証跡は2d3e53e8へ別commit。通常push/review本文への個別回答/fresh全取得・新source全coverage/配布/受入は未完了で継続。
 
 - [/] 2026-10-05 c8335e48通常push exit0・upstream0/0・stash0/master clean。画像P2へreply4185133688後resolve、fresh全review取得で当該resolved/P0P1未解決0。新HEAD reviewは上記navigation P2を検出、Draft維持。変更後公式package-mac exit0、main84347b23/worker7191cbaf両universal/minos13.0/deep strict署名成功。fresh arm64 startup exit0（RSS182880KiB/font27093388bytes/worker0/PID終了）、原本HTML fresh worker/runnerもexit0・全9操作/正常close/idle資源0。空workspace startupとin-process HTMLを実配布文書受入/独立95点へ代用しない。全required CI/全5native配布/後処理は未完了。証跡evidence/bounded-image-trace-review-2026-10-05.md。
 
