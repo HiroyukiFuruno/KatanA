@@ -1,5 +1,13 @@
 # Existing HTML navigation target ownership
 
+## 最新checkpoint（2026-10-06 JST、公開HEAD c2ed191b）
+
+cfg(test)共有runtime guardの1行修正27a0b598と証跡c2ed191bは通常push58363 exit0で公開HEAD一致、ahead/behind0/0、stash0/master cleanを確認。製品コード、既存2秒wait、pixel/dirty/fragment assertは変更していない。変更後公式coverage/supply-chain86558 exit0、UI1059/既存ignore2・実export13・parallel143/既存ignore2・serial18、meaningful未実行0/strict文書100%/未実行0、供給網4分類PASS。rawはtmp/html-preview-runtime-guard-current-coverage-2026-10-06.log。native JSON15508304bytes SHA d67853e9ecfd20eaa51f6177684868d6ab2baa547b968c4e810247407fa352b7。html_navigation全fileは478/507lines・755/800regions・44/44functionsであり、全file100%とはしない。
+
+現HEAD review PRR_kwDORm09y88AAAABQvAyZAはmanual-target公開方針の重複P2を検出。thread PRRT_kwDORm09y86pIe7Bへreply4186624366後、全thread/commentsを再取得し次page無し、元方針threadと合わせ未解決2件/P0P1未解決0を確認。ユーザー判断待ちの同一公開方針であり、未修正・未resolveを維持する。PR346はDraft。新CI37343717559はUbuntu buildと全3OS lint・供給網・readiness成功、macOS/Windows buildとCodeQL進行中。旧macOS失敗の解消はcloud結果未確認のため先取りしない。
+
+KDV v0.5.12のRelease37332907624 success、GitHub Release16:58:52Z、registry非yank/checksum4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635をライブ確認し、固定依存と両lockを更新した。差分は版/checksumのみでlocked metadataは両方exit0。製品Office解放変更なしを公式tag比較で確認。新graph全gate・原本再受入・正式commit/push/current reviewは未完了。以下のKDV0.5.11原本RSS FAIL2を、この新公開版や検査修正で解消扱いしない。親同PIDのcold/各正常close直後を分類する任意診断observerはscreenshot検査ハーネス限定で実装中、通常受入の元基準を維持する。
+
 ## 最新検証（2026-10-06 JST、HEAD 5f9ccff5）
 
 source62ab1a14と証跡5f9ccff5は署名Gで正式統合し、通常push6373はexit0、GitHub HEAD一致・ahead/behind0/0を確認した。P2 thread PRRT_kwDORm09y86pGLOgへreply4186114798を入れてresolveし、全件再取得で解決を確認。現HEADのCodex本文レビュー5998463527（2026-10-05T16:17:26Z、Reviewed commit5f9ccff5f8）はmajor issuesなし。manual-target公開方針P2はユーザー判断待ちのまま残す。
