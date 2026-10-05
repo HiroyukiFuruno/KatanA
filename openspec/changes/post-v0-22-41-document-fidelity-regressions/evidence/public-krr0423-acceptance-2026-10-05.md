@@ -56,6 +56,23 @@ The full sequence finishes with exit0. Linux actual-worker workspace tests pass,
 - Office first frames can still take roughly4s; these passes do not prove a particular RSS cause has been repaired. Independent score categories, updated packaged binaries on every declared target, clean-machine acceptance and publication remain open.
 - KDV next-version work stays with its existing owner. The manual partial-publication P2 remains a user-policy choice, not silently resolved by this dependency update.
 
+## Packaged arm64 startup follow-up
+
+On 2026-10-05, the existing startup script launched the actual ad-hoc universal
+package on native macOS arm64 with a fresh isolated configuration. Exit status
+was 0; the verified main SHA was `cf170c57e76413dff13d0bad317e44da6b4909258ce49e36fc4f7c3ac013a2ac`.
+UI heartbeat advanced to frame37, peak subtree RSS was225424KiB (limit524288),
+owned font bytes27093388 (limit134217728), font initialization appeared once,
+and no Office worker was present. The owned main PID12345 disappeared after
+cleanup; configuration, startup log and heartbeat were retained under
+`tmp/trash/2026-10-05-223105-startup.iySmm9`.
+Raw terminal receipt: `tmp/public-krr0423-packaged-startup-2026-10-05.log`.
+This is local empty-workspace startup proof only. It does not prove Terms
+acceptance, normal document close, Office/HTML input fidelity, independent
+95-point categories, other native CPU/OS targets or clean-machine acceptance.
+Current c10254a3 CI passed all declared PR jobs; this result is not transferred
+to a future Rust source change or rebuilt package.
+
 ### Conclusion
 
 PASS for this dependency-adoption and evidence diff; NOT complete for the overall release.

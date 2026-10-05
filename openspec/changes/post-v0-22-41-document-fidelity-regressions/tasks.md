@@ -1,5 +1,11 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-05 画像trace P2を28cd7ec2へ正式統合。旧全文formatterで3件RED→最終9件GREEN、実worker/canonical workspace入口9件exit0、pure helper独立LLVM coverage210/210 regions・15/15 functions・106/106 lines=100%。初回commitのcounter/Unicode AST違反を正規修正し通常Clippy/AST hook成功、除外/閾値変更なし。通常push・全coverage・個別reply/resolve・current review・変更後実配布/入力受入は未完了であり旧CI/旧package証跡を流用しない。KDV既存担当もDraft PR64 bff49e2でreview/3OS CI進行、まだ公開0.5.11のまま。
+
+- [/] 2026-10-05 c10254a3 current review（12:40:48Z）P2 threadPRRT_kwDORm09y86pCPUw: DEBUG HTML画像/linked画像traceの全文src出力を、借用Displayの入力128文字/出力192bytes上限へ修正。元描画入力/DEBUG条件/基準不変。childのworker不在baselineは製品REDにせず、mainが同moduleの旧全文表示で3件RED→復元後9件GREEN（standalone -D warnings）を確認。正式workspace/実worker・strict lint・全coverage/純helper独立計測・正式履歴・通常push・個別reply/resolve・fresh全取得は継続。証跡evidence/bounded-image-trace-review-2026-10-05.md。既存manual-target方針P2とは別件。
+
+- [/] 2026-10-05 c10254a3の3OS build/test/lint・Release Readiness・supply-chain・CodeQL全SUCCESSを実確認。署名済み実packaged main cf170c57のarm64空workspace smokeはexit0、UI heartbeat進行、最大RSS225424KiB<524288、font bytes27093388<134217728、font初期化記録1・Office worker0・所有PID終了を確認。隔離config/log/heartbeatを保持しTerms承認を代行しない。実入力/正常close/独立95点/他CPU・OS/clean-machineは未完了。tmp/public-krr0423-packaged-startup-2026-10-05.log、tmp/trash/2026-10-05-223105-startup.iySmm9。
+
 - [/] 2026-10-05 P1資源cycle検査をf612b178/証跡ea5ef282へ署名Gで正式統合し通常push exit0。comment4183935873で個別reply後、PRRT_kwDORm09y86pAtOTをresolve。provided fetch_comments.pyで全reviewをfresh取得しP0/P1未解決0、既存manual-target方針P2一件だけ未解決、GitHub HEAD一致/upstream0/0/stash0/master cleanを確認。Draft維持、新HEAD再review/CIと実配布受入・独立95点・公開後処理は継続。
 
 - [/] 2026-10-05 P1資源cycle検査の旧HEAD欠落REDを確認し、artifact identity/SHA・混合10cycle・全open/close世代一致・close5s・cold196608/warm65536KiB・各close後/最終idle0を必須化。最終単一定義の独立65件/構文/diff checkと通常preflightはexit0、自己レビューPASS。正式commit/push・個別reply/resolve・fresh全取得を続行。実配布main receipt/独立95点/全OS受入は未完了であり合成UTを代用しない。証跡evidence/resource-cycle-review-2026-10-05.md。
