@@ -59,3 +59,20 @@ The full sequence finishes with exit0. Linux actual-worker workspace tests pass,
 ### Conclusion
 
 PASS for this dependency-adoption and evidence diff; NOT complete for the overall release.
+
+## macOS universal candidate
+
+The existing `just VERSION=0.22.42 package-mac` completes with exit0. Both the actual
+main and isolated Office worker contain arm64 and x86_64 slices, each with
+`LC_BUILD_VERSION` minimum macOS13.0. `codesign --verify --deep --strict` succeeds;
+the signature is ad-hoc, without a paid Developer ID or TeamIdentifier.
+
+Main SHA256: `cf170c57e76413dff13d0bad317e44da6b4909258ce49e36fc4f7c3ac013a2ac`.
+Worker SHA256: `7191cbafe1f79f3cda93f90961bea13f6d81318904a3f8fda5dc4eeff8c320ce`.
+Actual bundle: `target/release/bundle/osx/KatanA Desktop.app`.
+Build log: `tmp/public-krr0423-package-mac-2026-10-05.log`.
+
+This proves archive architecture/signature, not clean-machine startup or document
+acceptance. At the next observation, another owner has active native coverage
+compilation. RSS/performance smoke is therefore not executed in that competing
+measurement window; independent validator repair continues instead.
