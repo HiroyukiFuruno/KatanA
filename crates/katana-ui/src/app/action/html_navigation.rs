@@ -333,6 +333,7 @@ mod tests {
     #[test]
     fn file_navigation_to_an_open_dirty_target_preserves_target_state() -> TestResult {
         use katana_platform::{PaneOrder, SplitDirection};
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
 
         let temporary_directory = tempfile::tempdir()?;
         let source_path = temporary_directory.path().join("source.html");
