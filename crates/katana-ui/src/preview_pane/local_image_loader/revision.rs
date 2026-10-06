@@ -150,7 +150,13 @@ impl LocalImageLoader {
         let Ok(mut watched) = self.inner.watched_paths.lock() else {
             return;
         };
-        watched.insert(path);
+        watched.insert(path.clone());
+        drop(watched);
+        drop(pending);
+        let Ok(mut errors) = self.inner.watch_errors.lock() else {
+            return;
+        };
+        errors.remove(&path);
     }
 
     fn store_watch_error(&self, path: PathBuf, error: String) {

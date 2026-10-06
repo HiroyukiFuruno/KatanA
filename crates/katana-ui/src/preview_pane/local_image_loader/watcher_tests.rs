@@ -114,3 +114,36 @@ fn reset_drops_old_watch_generation_before_rerequest() {
         .expect("reset PNG");
     wait_ready(&loader, &path, TEST_BACKGROUND, GREEN_PIXEL);
 }
+
+#[test]
+fn successful_registration_clears_prior_watch_failure() {
+    let (_root, path) = fixture_path();
+    image::RgbaImage::from_pixel(1, 1, image::Rgba(RED_PIXEL))
+        .save(&path)
+        .expect("initial PNG");
+    let loader = LocalImageLoader::default();
+    wait_ready(&loader, &path, TEST_BACKGROUND, RED_PIXEL);
+    let generation = loader.generation();
+    loader
+        .inner
+        .invalidation_tx
+        .send(WatchEvent::Failed(
+            path.clone(),
+            "watch registration failed".to_owned(),
+            generation,
+        ))
+        .expect("failure event");
+    loader.poll(0);
+    assert!(matches!(
+        loader.request(&path, TEST_BACKGROUND),
+        LocalImageStatus::Failed(_)
+    ));
+    loader
+        .inner
+        .invalidation_tx
+        .send(WatchEvent::Registered(path.clone(), generation))
+        .expect("registration event");
+    loader.poll(0);
+    assert!(loader.watch_error(&path).is_none());
+    wait_ready(&loader, &path, TEST_BACKGROUND, RED_PIXEL);
+}
