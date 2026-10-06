@@ -1,7 +1,5 @@
-use super::worker_memory::WorkerMemoryState;
+use super::worker_memory::{DOCUMENT_WORKER_MEMORY, WorkerMemoryState};
 use std::sync::atomic::Ordering;
-
-static DOCUMENT_WORKER_MEMORY: WorkerMemoryState = WorkerMemoryState::new();
 
 pub(crate) struct DocumentWorkerLifecycle;
 

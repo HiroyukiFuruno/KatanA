@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 
 use super::source_io::{enforce_remote_size, file_url, read_bounded, revision};
 use super::types::{DocumentFailure, DocumentFailureLayer};
+use super::worker_memory::{DOCUMENT_WORKER_MEMORY, IntakeMemoryLease};
 
 #[derive(Debug, Clone)]
 pub(crate) struct DocumentSurfaceSource {
@@ -15,10 +16,13 @@ pub(crate) struct DocumentSurfaceSource {
     pub mime: String,
     pub revision: String,
     bytes: Vec<u8>,
+    /* WHY: bytesとその複製・送信結果が解放された後にだけ読込分の返却待機を解除する。 */
+    _intake_memory: Option<std::sync::Arc<IntakeMemoryLease<'static>>>,
 }
 
 impl DocumentSurfaceSource {
     pub(crate) fn local(path: &Path) -> Result<Self, DocumentFailure> {
+        let intake_memory = std::sync::Arc::new(DOCUMENT_WORKER_MEMORY.retain_intake());
         let started_at = std::time::Instant::now();
         let canonical = path.canonicalize().map_err(|error| {
             DocumentFailure::intake("canonicalize", path, None, error.to_string())
@@ -45,6 +49,7 @@ impl DocumentSurfaceSource {
             mime: format.mime().to_owned(),
             revision: revision(&bytes),
             bytes,
+            _intake_memory: Some(intake_memory),
         };
         super::debug_log::DebugLog::write(
             "document_source_intake",
@@ -89,6 +94,7 @@ impl DocumentSurfaceSource {
             mime: format.mime().to_owned(),
             revision: revision(&bytes),
             bytes,
+            _intake_memory: None,
         };
         super::debug_log::DebugLog::write(
             "document_source_intake",
@@ -110,6 +116,7 @@ impl DocumentSurfaceSource {
             mime: self.mime.clone(),
             revision: self.revision.clone(),
             bytes: Vec::new(),
+            _intake_memory: None,
         }
     }
 
@@ -176,3 +183,7 @@ impl PartialEq for DocumentSurfaceSource {
 }
 
 impl Eq for DocumentSurfaceSource {}
+
+#[cfg(test)]
+#[path = "source_memory_tests.rs"]
+mod memory_tests;

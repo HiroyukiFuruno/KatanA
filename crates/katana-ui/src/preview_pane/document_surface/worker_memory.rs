@@ -3,15 +3,33 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
 };
 
+pub(super) static DOCUMENT_WORKER_MEMORY: WorkerMemoryState = WorkerMemoryState::new();
+
+#[derive(Debug)]
 pub(super) struct WorkerMemoryState {
     pub(super) counter: AtomicUsize,
+    intakes: AtomicUsize,
     relief_pending: Mutex<bool>,
+}
+
+#[derive(Debug)]
+pub(super) struct IntakeMemoryLease<'a> {
+    state: &'a WorkerMemoryState,
+}
+
+impl Drop for IntakeMemoryLease<'_> {
+    fn drop(&mut self) {
+        let mut pending = self.state.pending();
+        self.state.intakes.fetch_sub(1, Ordering::AcqRel);
+        self.state.relieve_if_idle(&mut pending);
+    }
 }
 
 impl WorkerMemoryState {
     pub(super) const fn new() -> Self {
         Self {
             counter: AtomicUsize::new(0),
+            intakes: AtomicUsize::new(0),
             relief_pending: Mutex::new(false),
         }
     }
@@ -28,6 +46,12 @@ impl WorkerMemoryState {
         /* WHY: 新しい文書が始まった場合、以前の最終タブ終了要求を持ち越さない。 */
         *pending = false;
         self.counter.fetch_add(1, Ordering::AcqRel);
+    }
+
+    pub(super) fn retain_intake(&self) -> IntakeMemoryLease<'_> {
+        let _pending = self.pending();
+        self.intakes.fetch_add(1, Ordering::AcqRel);
+        IntakeMemoryLease { state: self }
     }
 
     pub(super) fn release(&self) {
@@ -49,7 +73,10 @@ impl WorkerMemoryState {
 
     fn relieve_if_idle(&self, pending: &mut bool) {
         /* WHY: 所有データの解放後にだけ返却し、返却中の新worker開始も同じmutexで順序化する。 */
-        if *pending && self.counter.load(Ordering::Acquire) == 0 {
+        if *pending
+            && self.counter.load(Ordering::Acquire) == 0
+            && self.intakes.load(Ordering::Acquire) == 0
+        {
             *pending = false;
             let _released = relieve();
         }
@@ -123,6 +150,41 @@ mod tests {
         state.request_relief();
         assert!(!*state.pending());
         assert_eq!(state.counter.load(Ordering::Acquire), 0);
+    }
+
+    #[test]
+    fn intake_payload_defers_relief_without_changing_worker_count() {
+        let state = WorkerMemoryState::new();
+        let intake = state.retain_intake();
+        state.request_relief();
+        assert!(*state.pending());
+        assert_eq!(state.counter.load(Ordering::Acquire), 0);
+        let queued_intake = state.retain_intake();
+        assert!(*state.pending(), "intake preserves pending relief");
+        drop(intake);
+        assert!(*state.pending());
+        drop(queued_intake);
+        assert!(!*state.pending());
+    }
+
+    #[test]
+    fn both_worker_and_intake_must_release_before_relief() {
+        for intake_first in [true, false] {
+            let state = WorkerMemoryState::new();
+            let intake = state.retain_intake();
+            state.acquire();
+            state.request_relief();
+            if intake_first {
+                drop(intake);
+                assert!(*state.pending());
+                state.release();
+            } else {
+                state.release();
+                assert!(*state.pending());
+                drop(intake);
+            }
+            assert!(!*state.pending());
+        }
     }
 
     #[cfg(target_os = "macos")]
