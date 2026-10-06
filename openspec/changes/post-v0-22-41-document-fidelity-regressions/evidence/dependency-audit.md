@@ -1,5 +1,21 @@
 # Dependency audit evidence
 
+## 2026-10-06 current registry re-audit and adoption
+
+The read-only audit at public HEAD `68348738` covered the root workspace, screenshot runner, paint-metrics runner, and standalone MathJax JavaScript package. Resolver dry-runs and Bun's outdated check exited 0; all eight audited manifest/lock hashes were unchanged. Logs and hashes are retained in `tmp/dependency-audit-68348738-summary.md` and adjacent logs.
+
+The actual registry supplies Comrak 0.56.0. Its dated changelog records security/performance repairs, Rust 1.89 support (within this project's 1.95 requirement), and removal of a `tagfilter` option that KatanA does not use. The current AST call sites were reviewed against the downloaded crate; stale web caches and an unavailable GitHub tag were not used as publication evidence.
+
+The scoped candidate updates Comrak to 0.56.0 and glam to 0.34.1 in the root and screenshot locks, and zerocopy/derive to 0.8.60 in paint-metrics. Comrak's new scanner dependencies and eliminated duplicate shortcode dependencies are resolver changes, not unrelated manual upgrades. All three actual Cargo roots resolve with `--locked` full metadata successfully. Main-agent diff/call-site review confirms the actual direct Comrak consumers are all in `katana-core` (render, outline, image paths, and diagram extraction), not guessed UI module paths.
+
+Official `just test-core` produced `360 passed, 2 ignored (19 suites, 280.32s)` in `tmp/dependency-adoption-test-core.log`, but the worker lost its running-command session identifier and could not recover the final shell exit. This completion output is retained, but is not described as an observed exit 0; the normal push's full workspace gate must supply independently observed completion. A zero-match UI image filter is preserved in `tmp/dependency-adoption-ui-image.log` and is not counted as verification. The actual core `test_resolve_image_paths` regression and the downstream diagram source-anchor regression each passed one test with observed exit 0; paint-metrics passed two with observed exit 0. See `dependency-adoption-core-image.log`, `dependency-adoption-ui-sourcepos.log`, and `dependency-adoption-test-paint-metrics.log`.
+
+Official `just supply-chain` exited 0 on this candidate (`tmp/dependency-adoption-supply-chain.log`: advisories, bans, licenses, and sources all OK); existing duplicate-dependency warnings remain visible and no policy was loosened. Main-agent final `just fmt` and `just lint-impacted` both exited 0 (`dependency-adoption-final-fmt.log`, `dependency-adoption-final-lint.log`). Full current-graph gates and publication are not yet complete.
+
+KDV 0.5.12 and KRR 0.4.23 stay fixed registry dependencies under the human-approved next-release upstream scope. `generic-array` stays 0.14.7 because published `crypto-common` 0.1.7 requires that exact version. No sibling path/git override, acceptance exclusion, threshold change, or vendor/JIS patch removal is introduced.
+
+The four manifest/lock files were integrated through normal hooked, signed commit `d03de14a11d128764b1b582214d2365fa2aed005`. Main independently extracted the package source/version fields from all three metadata logs and confirmed the intended registry versions, including runtime-assets 0.4.23. Normal push, current-HEAD CI/coverage/review and packaged acceptance remain separate pending gates.
+
 ## Published KDV batch adoption on 2026-10-01
 
 - Adopted exact registry KDV `=0.5.8` after successful release run36834399570, non-draft GitHub Release and actual downloaded crate checksum verification: `d77723a4ae0fb4dfe267810a23c77ba558c2d7dd4293539228d1f62c5511b5c0`. Its published dependency manifest uses registry KUC `=0.4.0` and KRR `^0.4.20`, without dependency path/git overrides. KatanA resolves KRR `=0.4.21` and singleton V8 `152.2.0`; the render dependency contract passes.
