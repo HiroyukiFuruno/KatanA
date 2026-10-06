@@ -346,8 +346,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                 },
                 "reload": {
                     "input_received": True,
-                    "frame_before": 3,
-                    "frame_after": 4,
+                    "session_before": 1,
+                    "session_after": 2,
+                    "frame_after": 1,
+                    "frame_session": 2,
                     "source_sha256": EVIDENCE.ORIGINAL_HTML_SHA256,
                 },
                 "dirty_source": {

@@ -73,9 +73,22 @@ class DivergenceTests(unittest.TestCase):
     def host_actions(self):
         action = {"input_received": True, "frame_before": 1, "frame_after": 2,
                   "source_sha256": ACCEPTANCE.ORIGINAL_HTML_SHA256}
-        return {"scroll": dict(action), "reload": dict(action),
+        reload = {"input_received": True, "session_before": 1, "session_after": 2,
+                  "frame_after": 1, "frame_session": 2,
+                  "source_sha256": ACCEPTANCE.ORIGINAL_HTML_SHA256}
+        return {"scroll": dict(action), "reload": reload,
                 "dirty_source": {"before_sha256": "a" * 64, "after_sha256": "a" * 64,
                                  "modified_before": True, "modified_after": True}}
+
+    def test_reload_observes_a_frame_in_the_new_session_not_global_frame_order(self):
+        ACCEPTANCE.verify_html_host_actions(self.host_actions(), ACCEPTANCE.ORIGINAL_HTML_SHA256)
+        for field, value in (("session_after", 1), ("session_after", 0),
+                             ("frame_session", 1), ("frame_after", 0),
+                             ("input_received", False), ("source_sha256", "b" * 64)):
+            actions = self.host_actions()
+            actions["reload"][field] = value
+            with self.subTest(field=field), self.assertRaises(ACCEPTANCE.AcceptanceEvidenceError):
+                ACCEPTANCE.verify_html_host_actions(actions, ACCEPTANCE.ORIGINAL_HTML_SHA256)
 
     def bind_host_measurement(self, root, evidence):
         html = evidence["html"]

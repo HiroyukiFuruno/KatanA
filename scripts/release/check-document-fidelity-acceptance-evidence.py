@@ -469,7 +469,7 @@ def verify_html_comparison(root: Path, value: dict[str, Any], *, collect_diverge
 def verify_html_host_actions(value: object, input_sha: str) -> None:
     if not isinstance(value, dict) or set(value) != {"scroll", "reload", "dirty_source"}:
         fail("HTML host scope requires scroll, reload and dirty-source measurements")
-    for action in ("scroll", "reload"):
+    for action in ("scroll",):
         record = value[action]
         if not isinstance(record, dict) or set(record) != {
             "input_received", "frame_before", "frame_after", "source_sha256"
@@ -481,6 +481,20 @@ def verify_html_host_actions(value: object, input_sha: str) -> None:
         after = require_positive_integer(record["frame_after"], f"HTML host {action}.frame_after")
         if after <= before or record["source_sha256"] != input_sha:
             fail(f"HTML host {action} must advance a frame without replacing its source")
+    reload = value["reload"]
+    if not isinstance(reload, dict) or set(reload) != {
+        "input_received", "session_before", "session_after", "frame_after",
+        "frame_session", "source_sha256"
+    }:
+        fail("HTML host reload measurement is incomplete")
+    if reload["input_received"] is not True or reload["source_sha256"] != input_sha:
+        fail("HTML host reload must receive input and preserve its source")
+    before = require_positive_integer(reload["session_before"], "HTML host reload.session_before")
+    after = require_positive_integer(reload["session_after"], "HTML host reload.session_after")
+    frame_session = require_positive_integer(reload["frame_session"], "HTML host reload.frame_session")
+    require_positive_integer(reload["frame_after"], "HTML host reload.frame_after")
+    if after <= before or frame_session != after:
+        fail("HTML host reload must observe a frame from its new session")
     dirty = value["dirty_source"]
     if not isinstance(dirty, dict) or set(dirty) != {"before_sha256", "after_sha256", "modified_before", "modified_after"}:
         fail("HTML host dirty-source measurement is incomplete")
