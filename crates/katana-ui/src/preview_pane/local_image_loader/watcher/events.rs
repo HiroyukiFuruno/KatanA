@@ -1,38 +1,33 @@
+use super::WatchEvent;
 use super::registration::{Registration, Targets};
-use super::{Inner, WatchEvent};
 use notify::{EventKind, RecommendedWatcher, Watcher};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 
-pub(super) fn send_event(owner: &Inner, event: WatchEvent) {
-    if owner.invalidation_tx.try_send(event).is_err() {
-        owner
-            .invalidation_overflow
-            .store(true, std::sync::atomic::Ordering::Release);
-    }
-    if let Ok(context) = owner.repaint_context.lock()
-        && let Some(context) = context.as_ref()
-    {
-        context.request_repaint();
-    }
-}
+mod queue;
 
-pub(super) fn notify_overflow(targets: &mut Targets) {
+pub(super) use queue::send_event;
+
+pub(super) fn notify_overflow(targets: &Targets) {
     for owners in targets.values() {
         for target in owners {
             if let Some(owner) = target.owner.upgrade() {
                 send_event(
                     owner.as_ref(),
-                    WatchEvent::Failed(
-                        target.requested_path.clone(),
-                        "image watcher event queue overflowed".to_owned(),
-                        target.generation,
-                    ),
+                    WatchEvent::Overflow(target.requested_path.clone(), target.generation),
                 );
             }
         }
     }
+}
+
+pub(super) fn notify_event(event: notify::Event, targets: &mut Targets) {
+    if event.need_rescan() {
+        notify_overflow(targets);
+        return;
+    }
+    notify_targets(event.kind, &event.paths, targets);
 }
 
 pub(super) fn notify_targets(kind: EventKind, paths: &[PathBuf], targets: &mut Targets) {
@@ -118,15 +113,26 @@ pub(super) fn unwatch_unused_dirs(
                 .to_path_buf()
         })
         .collect();
+    let mut changed = false;
     for directory in watched_dirs
         .difference(&live_dirs)
         .cloned()
         .collect::<Vec<_>>()
     {
-        if let Err(error) = watcher.unwatch(&directory) {
-            tracing::warn!(path = %directory.display(), %error, "local image watcher unwatch failed");
-            continue;
+        if unwatch_directory(watcher, &directory) {
+            changed |= watched_dirs.remove(&directory);
         }
-        watched_dirs.remove(&directory);
     }
+    if changed {
+        notify_overflow(targets);
+    }
+}
+
+fn unwatch_directory(watcher: &mut RecommendedWatcher, directory: &Path) -> bool {
+    let result = watcher.unwatch(directory);
+    let Err(error) = result else {
+        return true;
+    };
+    tracing::warn!(path = %directory.display(), %error, "local image watcher unwatch failed");
+    false
 }

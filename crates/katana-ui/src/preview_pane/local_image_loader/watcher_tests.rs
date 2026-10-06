@@ -4,12 +4,12 @@ use std::time::{Duration, Instant};
 
 const TEST_BACKGROUND: egui::Color32 = crate::theme_bridge::WHITE;
 const WAIT_SECONDS: u64 = 5;
-const RGBA_CHANNELS: usize = 4;
+pub(super) const RGBA_CHANNELS: usize = 4;
 const RED_PIXEL: [u8; 4] = [255, 0, 0, 255];
 const GREEN_PIXEL: [u8; 4] = [0, 255, 0, 255];
 const BLUE_PIXEL: [u8; 4] = [0, 0, 255, 255];
 
-fn fixture_path() -> (tempfile::TempDir, PathBuf) {
+pub(super) fn fixture_path() -> (tempfile::TempDir, PathBuf) {
     let root = tempfile::Builder::new()
         .prefix("katana-local-image-watch-")
         .tempdir_in(".")
@@ -21,7 +21,7 @@ fn fixture_path() -> (tempfile::TempDir, PathBuf) {
     (root, path)
 }
 
-fn wait_ready(
+pub(super) fn wait_ready(
     loader: &LocalImageLoader,
     path: &Path,
     background: egui::Color32,
@@ -53,11 +53,13 @@ fn wait_revision(loader: &LocalImageLoader, path: &Path, previous: u64) {
         frame += 1;
         std::thread::yield_now();
     }
-    panic!("watcher did not publish revision");
+    let state = super::watcher_overflow_tests::watch_state(loader, path);
+    panic!("watcher did not publish revision: {state}");
 }
 
 #[test]
 fn atomic_replace_reloads_relative_path_without_touching_other_background() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
     let (root, path) = fixture_path();
     let other_path = root.path().join("other.png");
     let sentinel_path = root.path().join("sentinel.png");
@@ -102,13 +104,31 @@ fn atomic_replace_reloads_relative_path_without_touching_other_background() {
 
 #[test]
 fn reset_drops_old_watch_generation_before_rerequest() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
     let (_root, path) = fixture_path();
     image::RgbaImage::from_pixel(1, 1, image::Rgba([255, 0, 0, 255]))
         .save(&path)
         .expect("initial PNG");
     let loader = LocalImageLoader::default();
     wait_ready(&loader, &path, TEST_BACKGROUND, RED_PIXEL);
+    loader
+        .inner
+        .deferred_watch_results
+        .lock()
+        .expect("deferred errors lock")
+        .insert(
+            path.clone(),
+            (loader.generation(), Err("stale failure".to_owned())),
+        );
     loader.reset();
+    assert!(
+        loader
+            .inner
+            .deferred_watch_results
+            .lock()
+            .expect("deferred errors lock")
+            .is_empty()
+    );
     image::RgbaImage::from_pixel(1, 1, image::Rgba([0, 255, 0, 255]))
         .save(&path)
         .expect("reset PNG");
@@ -117,6 +137,7 @@ fn reset_drops_old_watch_generation_before_rerequest() {
 
 #[test]
 fn successful_registration_clears_prior_watch_failure() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
     let (_root, path) = fixture_path();
     image::RgbaImage::from_pixel(1, 1, image::Rgba(RED_PIXEL))
         .save(&path)
@@ -134,6 +155,16 @@ fn successful_registration_clears_prior_watch_failure() {
         ))
         .expect("failure event");
     loader.poll(0);
+    assert!(matches!(
+        loader.request(&path, TEST_BACKGROUND),
+        LocalImageStatus::Failed(_)
+    ));
+    loader
+        .inner
+        .invalidation_overflow
+        .store(true, std::sync::atomic::Ordering::Release);
+    loader.poll(0);
+    assert!(loader.watch_error(&path).is_some());
     assert!(matches!(
         loader.request(&path, TEST_BACKGROUND),
         LocalImageStatus::Failed(_)

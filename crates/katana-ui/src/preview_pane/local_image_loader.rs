@@ -5,6 +5,7 @@ use std::sync::{Arc, Mutex, atomic::AtomicU64, mpsc};
 
 mod cache;
 mod decode;
+mod overflow;
 mod pool;
 mod revision;
 mod revision_cache;
@@ -18,6 +19,8 @@ const REQUEST_CAPACITY: usize = 2;
 const INVALIDATION_QUEUE_CAPACITY: usize = 256;
 const IMAGE_CACHE_LIMIT: usize = 64 * 1024 * 1024;
 const CACHE_ENTRY_LIMIT: usize = 16;
+
+type DeferredWatchResults = HashMap<PathBuf, (u64, Result<(), String>)>;
 
 #[derive(Clone, Hash, PartialEq, Eq)]
 struct RequestKey {
@@ -45,6 +48,7 @@ struct Inner {
     watched_paths: Mutex<HashSet<PathBuf>>,
     watch_pending: Mutex<HashSet<PathBuf>>,
     watch_errors: Mutex<HashMap<PathBuf, String>>,
+    deferred_watch_results: Mutex<DeferredWatchResults>,
     cache: Mutex<Cache>,
     generation: AtomicU64,
     active_frame: AtomicU64,
@@ -84,6 +88,7 @@ impl Default for LocalImageLoader {
                 watched_paths: Mutex::new(HashSet::new()),
                 watch_pending: Mutex::new(HashSet::new()),
                 watch_errors: Mutex::new(HashMap::new()),
+                deferred_watch_results: Mutex::new(HashMap::new()),
                 cache: Mutex::new(Cache {
                     ready: HashMap::new(),
                     textures: HashMap::new(),
@@ -176,5 +181,7 @@ mod batch_tests;
 
 #[cfg(test)]
 mod display_tests;
+#[cfg(test)]
+mod watcher_overflow_tests;
 #[cfg(test)]
 mod watcher_tests;

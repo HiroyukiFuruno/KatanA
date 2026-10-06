@@ -19,6 +19,7 @@ fn show_image(
 
 #[test]
 fn viewer_state_entry_repaints_and_replaces_texture_after_atomic_write() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
     let directory = tempfile::tempdir().expect("fixture directory");
     let path = directory.path().join("image.png");
     image::RgbaImage::from_pixel(1, 1, image::Rgba([255, 0, 0, 255]))

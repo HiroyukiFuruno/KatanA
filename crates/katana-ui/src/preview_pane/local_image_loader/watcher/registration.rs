@@ -63,9 +63,7 @@ impl Registration {
             if watched_dirs.contains(parent) {
                 continue;
             }
-            watcher
-                .watch(parent, RecursiveMode::NonRecursive)
-                .map_err(|error| format!("image watch registration failed: {error}"))?;
+            Self::watch_directory(watcher, parent, targets)?;
             watched_dirs.insert(parent.to_path_buf());
         }
         Self::remove_previous(request, targets);
@@ -78,6 +76,17 @@ impl Registration {
         }
         super::events::unwatch_unused_dirs(watcher, watched_dirs, targets);
         Ok(())
+    }
+
+    fn watch_directory(
+        watcher: &mut RecommendedWatcher,
+        parent: &Path,
+        targets: &Targets,
+    ) -> Result<(), String> {
+        let result = watcher.watch(parent, RecursiveMode::NonRecursive);
+        /* WHY: 監視先変更時にbackendが破棄した通知を補うため、既存画像を非同期で再確認する。 */
+        super::events::notify_overflow(targets);
+        result.map_err(|error| format!("image watch registration failed: {error}"))
     }
 
     fn remove_previous(request: &WatchRequest, targets: &mut Targets) {

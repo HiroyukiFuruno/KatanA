@@ -15,7 +15,7 @@ mod registration;
 use registration::{Registration, Targets};
 
 use events::{
-    notify_error, notify_overflow, notify_targets, retain_live_targets, send_event,
+    notify_error, notify_event, notify_overflow, retain_live_targets, send_event,
     unwatch_unused_dirs,
 };
 
@@ -24,6 +24,7 @@ const WATCH_REQUEST_CAPACITY: usize = 64;
 pub(super) enum WatchEvent {
     Registered(PathBuf, u64),
     Changed(PathBuf, u64),
+    Overflow(PathBuf, u64),
     Failed(PathBuf, String, u64),
 }
 
@@ -107,10 +108,10 @@ fn run(request_rx: mpsc::Receiver<WatchCommand>) {
     loop {
         drain_requests(&request_rx, &mut watcher, &mut watched_dirs, &mut targets);
         if event_overflow.swap(false, Ordering::AcqRel) {
-            notify_overflow(&mut targets);
+            notify_overflow(&targets);
         }
         match event_rx.recv_timeout(Duration::from_millis(25)) {
-            Ok(Ok(event)) => notify_targets(event.kind, &event.paths, &mut targets),
+            Ok(Ok(event)) => notify_event(event, &mut targets),
             Ok(Err(error)) => notify_error(&mut targets, error.to_string()),
             Err(mpsc::RecvTimeoutError::Timeout) => {}
             Err(mpsc::RecvTimeoutError::Disconnected) => return,
@@ -162,3 +163,10 @@ fn clear_owner(
     });
     unwatch_unused_dirs(watcher, watched_dirs, targets);
 }
+
+#[cfg(test)]
+mod order_tests;
+#[cfg(test)]
+mod tests;
+#[cfg(test)]
+mod topology_tests;

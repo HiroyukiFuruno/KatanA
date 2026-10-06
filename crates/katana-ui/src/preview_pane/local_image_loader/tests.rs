@@ -26,6 +26,7 @@ fn wait_for(loader: &LocalImageLoader, path: &Path) -> LocalImageStatus {
 
 #[test]
 fn local_png_is_decoded_off_request_and_composited() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
     let path = test_png_path("decode");
     let image = image::RgbaImage::from_pixel(1, 1, image::Rgba([255, 0, 0, 128]));
     image.save(&path).expect("test PNG should be written");
@@ -52,6 +53,7 @@ fn local_png_is_decoded_off_request_and_composited() {
 
 #[test]
 fn sixteen_bit_rgba_png_is_decoded_without_loss_of_dimensions() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
     let path = test_png_path("rgba16");
     let image: image::ImageBuffer<image::Rgba<u16>, Vec<u16>> =
         image::ImageBuffer::from_pixel(2, 1, image::Rgba([u16::MAX, 32_768, 16_384, u16::MAX]));
@@ -68,6 +70,7 @@ fn sixteen_bit_rgba_png_is_decoded_without_loss_of_dimensions() {
 
 #[test]
 fn failed_result_is_cached_without_retrying() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
     let path = test_png_path("missing");
     let loader = LocalImageLoader::default();
     let status = wait_for(&loader, &path);
@@ -102,6 +105,7 @@ fn reset_discards_old_generation_result() {
 
 #[test]
 fn oversized_images_are_active_but_not_cached() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
     let loader = LocalImageLoader::default();
     let key = RequestKey {
         path: PathBuf::from("oversized"),

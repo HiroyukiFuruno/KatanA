@@ -15,6 +15,7 @@ impl LocalImageLoader {
             return;
         };
         pending.clear();
+        drop(pending);
         let Ok(mut cache) = self.inner.cache.lock() else {
             return;
         };
@@ -23,22 +24,32 @@ impl LocalImageLoader {
         cache.active_images.clear();
         cache.active_textures.clear();
         cache.bytes = 0;
+        drop(cache);
         let Ok(mut paths) = self.inner.watched_paths.lock() else {
             return;
         };
         paths.clear();
+        drop(paths);
         let Ok(mut pending) = self.inner.watch_pending.lock() else {
             return;
         };
         pending.clear();
+        drop(pending);
+        let Ok(mut deferred_results) = self.inner.deferred_watch_results.lock() else {
+            return;
+        };
+        deferred_results.clear();
+        drop(deferred_results);
         let Ok(mut errors) = self.inner.watch_errors.lock() else {
             return;
         };
         errors.clear();
+        drop(errors);
         let Ok(mut context) = self.inner.repaint_context.lock() else {
             return;
         };
         *context = None;
+        drop(context);
         let Ok(mut revisions) = self.inner.path_revisions.lock() else {
             return;
         };
@@ -115,34 +126,37 @@ impl LocalImageLoader {
             self.invalidate_overflowed_paths();
         }
         while let Ok(event) = rx.try_recv() {
-            match event {
-                WatchEvent::Registered(path, event_generation) => {
-                    if event_generation == self.generation() {
-                        self.register_watched(path);
-                    }
-                    changed = true;
-                }
-                WatchEvent::Changed(path, event_generation) => {
-                    if event_generation != self.generation() {
-                        continue;
-                    }
-                    self.invalidate_path(&path);
-                    changed = true;
-                }
-                WatchEvent::Failed(path, error, event_generation) => {
-                    if event_generation != self.generation() {
-                        continue;
-                    }
-                    self.invalidate_path(&path);
-                    self.store_watch_error(path, error);
-                    changed = true;
-                }
-            }
+            changed |= self.process_watch_event(event);
         }
+        changed |= self.apply_deferred_watch_results();
         changed
     }
 
-    fn register_watched(&self, path: PathBuf) {
+    fn process_watch_event(&self, event: WatchEvent) -> bool {
+        match event {
+            WatchEvent::Registered(path, generation) => {
+                if generation == self.generation() {
+                    self.register_watched(path);
+                }
+            }
+            WatchEvent::Changed(path, generation) | WatchEvent::Overflow(path, generation) => {
+                if generation != self.generation() {
+                    return false;
+                }
+                self.invalidate_path(&path);
+            }
+            WatchEvent::Failed(path, error, generation) => {
+                if generation != self.generation() {
+                    return false;
+                }
+                self.invalidate_path(&path);
+                self.store_watch_error(path, error, generation);
+            }
+        }
+        true
+    }
+
+    pub(super) fn register_watched(&self, path: PathBuf) {
         let Ok(mut pending) = self.inner.watch_pending.lock() else {
             return;
         };
@@ -159,23 +173,12 @@ impl LocalImageLoader {
         errors.remove(&path);
     }
 
-    fn store_watch_error(&self, path: PathBuf, error: String) {
+    pub(super) fn store_watch_error(&self, path: PathBuf, error: String, generation: u64) {
         let Ok(mut errors) = self.inner.watch_errors.lock() else {
             return;
         };
-        errors.insert(path, error);
-    }
-
-    fn invalidate_overflowed_paths(&self) {
-        let paths = self
-            .inner
-            .watched_paths
-            .lock()
-            .map(|paths| paths.iter().cloned().collect::<Vec<_>>())
-            .unwrap_or_default();
-        for path in paths {
-            self.invalidate_path(&path);
-            self.store_watch_error(path, "image watcher event queue overflowed".to_owned());
+        if self.generation() == generation {
+            errors.insert(path, error);
         }
     }
 }
