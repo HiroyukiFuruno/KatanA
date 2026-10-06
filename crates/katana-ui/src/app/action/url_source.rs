@@ -125,6 +125,17 @@ impl KatanaApp {
 
     pub(crate) fn poll_url_source(&mut self, ctx: &egui::Context) {
         while let Some(request) = self.state.url_tab.pending_url_requests.pop_front() {
+            if request.target_document.as_ref().is_some_and(|target| {
+                !self
+                    .state
+                    .document
+                    .open_documents
+                    .iter()
+                    .any(|document| document.path == *target)
+            }) {
+                self.state.url_tab.is_loading = !self.state.url_tab.pending_url_requests.is_empty();
+                continue;
+            }
             match request.response_rx.try_recv() {
                 Ok(Ok(source)) => {
                     self.apply_fetched_url_source(source, request.target_document);
@@ -445,6 +456,190 @@ mod tests {
         assert!(details.contains("Format: pdf"));
         assert!(details.contains(source_url));
         assert!(details.contains("timed out after 30 seconds"));
+    }
+
+    #[test]
+    fn closing_target_document_cancels_its_pending_url_request() -> TestResult {
+        use crate::app::action::ActionOps;
+        use katana_core::document::Document;
+
+        let ctx = egui::Context::default();
+        let mut app = app();
+        let target = std::path::PathBuf::from("target.md");
+        app.state
+            .document
+            .open_documents
+            .push(Document::new(target.clone(), "original"));
+        app.state.document.active_doc_idx = Some(0);
+        let (_sender, receiver) = std::sync::mpsc::channel();
+        app.state
+            .url_tab
+            .pending_url_requests
+            .push_back(crate::state::PendingUrlRequest {
+                response_rx: receiver,
+                target_document: Some(target),
+                source_url: "https://example.test/target.html".to_string(),
+                deadline: Instant::now() + URL_SOURCE_TIMEOUT,
+            });
+        app.state.url_tab.is_loading = true;
+
+        app.process_action(&ctx, AppAction::ForceCloseDocument(0));
+
+        assert!(app.state.document.open_documents.is_empty());
+        assert!(app.state.url_tab.pending_url_requests.is_empty());
+        assert!(!app.state.url_tab.is_loading);
+        Ok(())
+    }
+
+    #[test]
+    fn closing_target_preserves_user_entered_pending_url_request() -> TestResult {
+        use crate::app::action::ActionOps;
+        use katana_core::document::Document;
+
+        let ctx = egui::Context::default();
+        let mut app = app();
+        let target = std::path::PathBuf::from("target.md");
+        app.state
+            .document
+            .open_documents
+            .push(Document::new(target.clone(), "original"));
+        app.state.document.open_documents[0].is_dirty = true;
+        app.state.document.active_doc_idx = Some(0);
+        for target_document in [Some(target), None] {
+            let (_sender, receiver) = std::sync::mpsc::channel();
+            app.state
+                .url_tab
+                .pending_url_requests
+                .push_back(crate::state::PendingUrlRequest {
+                    response_rx: receiver,
+                    target_document,
+                    source_url: "https://example.test/pending.html".to_string(),
+                    deadline: Instant::now() + URL_SOURCE_TIMEOUT,
+                });
+        }
+        app.state.url_tab.is_loading = true;
+
+        app.process_action(&ctx, AppAction::CloseDocument(0));
+        assert!(app.state.layout.pending_close_confirm.is_some());
+        assert_eq!(app.state.url_tab.pending_url_requests.len(), 2);
+        app.state.document.open_documents[0].is_dirty = false;
+        app.state.document.open_documents[0].is_pinned = true;
+        app.cleanup_closed_tab_previews();
+        assert_eq!(app.state.url_tab.pending_url_requests.len(), 2);
+        app.state.document.open_documents[0].is_pinned = false;
+        app.process_action(&ctx, AppAction::ForceCloseDocument(0));
+
+        assert_eq!(app.state.url_tab.pending_url_requests.len(), 1);
+        assert!(
+            app.state.url_tab.pending_url_requests[0]
+                .target_document
+                .is_none()
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn completed_request_cannot_reopen_closed_target_or_replace_new_generation() {
+        use crate::app::action::ActionOps;
+        use katana_core::document::Document;
+
+        let ctx = egui::Context::default();
+        let mut app = app();
+        let target = std::path::PathBuf::from("target.html");
+        app.state
+            .document
+            .open_documents
+            .push(Document::new(target.clone(), "old generation"));
+        app.state.document.active_doc_idx = Some(0);
+        let (sender, receiver) = std::sync::mpsc::channel();
+        app.state
+            .url_tab
+            .pending_url_requests
+            .push_back(crate::state::PendingUrlRequest {
+                response_rx: receiver,
+                target_document: Some(target.clone()),
+                source_url: "https://example.test/old.html".to_string(),
+                deadline: Instant::now() + URL_SOURCE_TIMEOUT,
+            });
+        app.state.url_tab.is_loading = true;
+        app.process_action(&ctx, AppAction::ForceCloseDocument(0));
+        app.state
+            .document
+            .open_documents
+            .push(Document::new(target.clone(), "new generation"));
+        app.state.document.active_doc_idx = Some(0);
+        let _ = sender.send(Ok(crate::state::FetchedUrlSource::Html(
+            crate::state::HtmlSource {
+                raw_html: "<html><body>old generation</body></html>".to_string(),
+                source_url: "https://example.test/old.html".to_string(),
+                origin: "https://example.test/old.html".to_string(),
+            },
+        )));
+        let (error_sender, error_receiver) = std::sync::mpsc::channel();
+        let _ = error_sender.send(Err(crate::state::HtmlSourceError::Timeout {
+            url: "https://example.test/closed-error.pdf".to_string(),
+            seconds: URL_SOURCE_TIMEOUT.as_secs(),
+        }));
+        app.state
+            .url_tab
+            .pending_url_requests
+            .push_back(crate::state::PendingUrlRequest {
+                response_rx: error_receiver,
+                target_document: Some(std::path::PathBuf::from("closed-error.html")),
+                source_url: "https://example.test/closed-error.pdf".to_string(),
+                deadline: Instant::now() + URL_SOURCE_TIMEOUT,
+            });
+        let (_timeout_sender, timeout_receiver) = std::sync::mpsc::channel();
+        app.state
+            .url_tab
+            .pending_url_requests
+            .push_back(crate::state::PendingUrlRequest {
+                response_rx: timeout_receiver,
+                target_document: Some(std::path::PathBuf::from("closed-timeout.html")),
+                source_url: "https://example.test/closed-timeout.pdf".to_string(),
+                deadline: Instant::now(),
+            });
+
+        app.poll_url_source(&ctx);
+
+        assert_eq!(app.state.document.open_documents.len(), 1);
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "new generation"
+        );
+        assert!(app.state.url_tab.last_error.is_none());
+        assert!(app.state.layout.status_message.is_none());
+    }
+
+    #[test]
+    fn completed_request_for_closed_target_is_discarded() {
+        let ctx = egui::Context::default();
+        let mut app = app();
+        let target = std::path::PathBuf::from("closed.html");
+        let (sender, receiver) = std::sync::mpsc::channel();
+        app.state
+            .url_tab
+            .pending_url_requests
+            .push_back(crate::state::PendingUrlRequest {
+                response_rx: receiver,
+                target_document: Some(target),
+                source_url: "https://example.test/closed.html".to_string(),
+                deadline: Instant::now() + URL_SOURCE_TIMEOUT,
+            });
+        app.state.url_tab.is_loading = true;
+        let _ = sender.send(Ok(crate::state::FetchedUrlSource::Html(
+            crate::state::HtmlSource {
+                raw_html: "<html><body>stale</body></html>".to_string(),
+                source_url: "https://example.test/closed.html".to_string(),
+                origin: "https://example.test/closed.html".to_string(),
+            },
+        )));
+
+        app.poll_url_source(&ctx);
+
+        assert!(app.state.document.open_documents.is_empty());
+        assert!(app.state.url_tab.tabs.is_empty());
+        assert!(!app.state.url_tab.is_loading);
     }
 
     #[test]

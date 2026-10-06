@@ -98,6 +98,13 @@ impl ActionOps for KatanaApp {
             .url_tab
             .document_tabs
             .retain(|tab| open_paths.contains(&tab.document_path));
+        self.state.url_tab.pending_url_requests.retain(|request| {
+            request
+                .target_document
+                .as_ref()
+                .is_none_or(|path| open_paths.contains(path))
+        });
+        self.state.url_tab.is_loading = !self.state.url_tab.pending_url_requests.is_empty();
         let transition = closed_preview_memory::ClosedPreviewTransition {
             removed_document_preview,
             open_documents_empty: open_paths.is_empty(),
