@@ -45,8 +45,11 @@ impl ImageLogicOps {
                         ui.label(&crate::i18n::I18nOps::get().preview.rendering);
                     }
                     super::local_image_loader::LocalImageStatus::Failed(error) => {
-                        ui.label(&crate::i18n::I18nOps::get().preview.missing_image)
-                            .on_hover_text(error);
+                        return Some(
+                            ui.label(&crate::i18n::I18nOps::get().preview.missing_image)
+                                .on_hover_text(error)
+                                .rect,
+                        );
                     }
                 }
             }
@@ -63,9 +66,11 @@ impl ImageLogicOps {
                     None
                 }
                 super::local_image_loader::LocalTextureStatus::Failed(error) => {
-                    ui.label(&crate::i18n::I18nOps::get().preview.missing_image)
-                        .on_hover_text(error);
-                    None
+                    return Some(
+                        ui.label(&crate::i18n::I18nOps::get().preview.missing_image)
+                            .on_hover_text(error)
+                            .rect,
+                    );
                 }
             }
         };

@@ -15,6 +15,8 @@ pub mod viewer_state;
 pub use types::ViewerState;
 
 #[cfg(test)]
+mod images_failure_tests;
+#[cfg(test)]
 mod tests;
 
 pub mod section;
