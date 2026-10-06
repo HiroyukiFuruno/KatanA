@@ -2,7 +2,7 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
-## [0.22.42] - 2026-10-06 11:04:21 (UTC)
+## [0.22.42] - 2026-10-06 13:41:42 (UTC)
 
 ### 🚀 Features
 
@@ -13,6 +13,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Workspace explorer responsiveness**: Large workspaces reuse their file-list projection and draw visible rows without copying the entire tree on every frame.
 - **Relevant document tools**: Image, HTML and Office previews disable tools unsupported by their format; PowerPoint retains slideshow controls and PDF retains its table of contents.
 - **Local image loading**: Image decoding runs in the background with a bounded cache, avoiding synchronous reads when switching previews.
+- **Preview setup**: Image, HTML and Office previews no longer load unused code-highlighting dictionaries and themes when they are created.
 - **HTML scrolling**: Smooth scrolling continues forwarding movement after the initial wheel event instead of dropping its remaining motion.
 - **Excel filters**: Column headers provide value filters, blank-value selection, and filter clearing.
 - **Office loading responsiveness**: Initial file reads run in the background so a slow disk read does not stop the interface.

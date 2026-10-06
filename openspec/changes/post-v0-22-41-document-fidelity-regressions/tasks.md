@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] KatanA同repoのtracked CommonMark backendのprivate SyntaxSet/ThemeSetをコード描画/カスタム追加時へ遅延。rootlock backend4回帰、実worker HTML7/sidebar1、selected all-targets strictClippy、公式AST23 actual0。source3dc70d94・検証接続c1957f0b・sidebar lint8228a76cを関心別通常hook/署名Gで統合。vendor旧分類assertRED1→現UT3GREEN、CI/resource9/flow9/lefthookvalidate0。public API/renderer/MSRV/閾値不変、原mac2149ms失敗の因果/新HEAD全CI・coverage・packaged受入は未完。evidence/commonmark-lazy-initialization-2026-10-06.md。初回features指定拒否101/egui API compile101は製品assertREDとしない。
+
 - [ ] 68348738 macCI112216525291: HTML dirtytarget初frame2014ms/idlefalse/genNone、1125PASS/1FAIL/ignore2。完了job raw tmp/68348738-live-snapshot/mac-job-112216525291-logs.txt、artifact11405211618/actualPID23458 sampleを保持。後続focused0.27秒PASSは原失敗を上書きしない。timeout後sampleと起動前原因を分け、host所有/待ち経路を監査する。元2秒/dirty保護/実RGB/assert維持。
 
 - [/] current68348738 review5426924438 P2 PRRT_kwDORm09y86patMV: 実missingparent復元RED101→可視request限定bounded async再登録。root自然deadline callback補正後exact1+1/全loader29、AST23/impactedClippy/fmt各actual0、通常hook/署名G a1e914a801dd0d40becaa49203fdee971ed8f8d5へ正式統合。evidence/watch-transient-registration-retry-2026-10-06.md。通常push・個別reply/resolve/fresh・新graph全gateは未完。UI同期IO・固定待機延長・新公開API・ゲート緩和なし、共有backend全directory置換保証と誇張しない。
