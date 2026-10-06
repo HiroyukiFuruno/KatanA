@@ -65,7 +65,7 @@ impl HtmlLogicOps {
                 format_args!(
                     "stage=vertical_response frame={} html={} response=({:.1},{:.1},{:.1},{:.1}) parent_next_y={:.1} parent_min=({:.1},{:.1},{:.1},{:.1})",
                     ui.ctx().cumulative_frame_nr(),
-                    summarize_html(html),
+                    HtmlSummary::summarize_html(html),
                     response.response.rect.min.x,
                     response.response.rect.min.y,
                     response.response.rect.max.x,
@@ -101,7 +101,7 @@ fn trace_html_layout(ui: &egui::Ui, stage: &str, html: &str) {
         format_args!(
             "stage={stage} frame={} html={} body_height={:.1} cursor_height={:.1} item_spacing_y={:.1} next=({:.1},{:.1}) min=({:.1},{:.1},{:.1},{:.1}) available=({:.1},{:.1},{:.1},{:.1})",
             ui.ctx().cumulative_frame_nr(),
-            summarize_html(html),
+            HtmlSummary::summarize_html(html),
             ui.text_style_height(&egui::TextStyle::Body),
             ui.cursor().height(),
             ui.spacing().item_spacing.y,
@@ -131,15 +131,8 @@ fn is_trace_target(html: &str) -> bool {
         || html.contains("data:image/svg+xml")
 }
 
-fn summarize_html(html: &str) -> String {
-    const MAX_CHARS: usize = 80;
-    let compact = html.split_whitespace().collect::<Vec<_>>().join(" ");
-    let mut summary = compact.chars().take(MAX_CHARS).collect::<String>();
-    if compact.chars().nth(MAX_CHARS).is_some() {
-        summary.push_str("...");
-    }
-    summary.replace(' ', "_")
-}
+mod summary;
+use summary::HtmlSummary;
 
 #[cfg(test)]
 mod tests {
