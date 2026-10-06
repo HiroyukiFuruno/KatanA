@@ -1,5 +1,17 @@
 # Host feedback integration (2026-10-06)
 
+## Current review follow-up
+
+The final fixes were integrated with normal hooks as `371aeb67` (PPTX ownership) and `e8e98caa` (oversized PNG). Official AST checks passed all 23 after replacing one nested success path with early error handling; impacted Clippy passed. The generic sidebar button pointer-click regression passed one test, but does not establish the actual native reload-button failure is resolved. Individual review replies/resolution require the normal push and a fresh review query.
+
+The final PPTX-only background guard passed both official workspace regressions: the actual PPTX pane no longer renders behind its slideshow, while Markdown background polling remains active (2 passed, 0.08 seconds). The earlier broad guard was rejected before integration.
+
+The oversized-image cache repair passed six official loader tests. A 6000x4000 decoded image stays displayable at original dimensions, keeps the same texture identity across repeated frames, releases its transient loader ownership after two unobserved frames, and is not displaced by an unrelated small result. Display-owned handles remain valid after loader release. Active entries are capped at 16 and reset clears them; reusable decoded cache remains capped at 64 MiB. This is cache/ownership regression evidence, not GPU-memory or native performance acceptance. The first focused test failed because a default headless egui context advertises a 2048-pixel texture limit; the test now explicitly uses an 8192-pixel capable context, without changing product input limits.
+
+At c520076f, Linux/Windows CI completed successfully; macOS failed the existing two-second dirty-HTML-target frame wait. An unchanged focused run passed locally. Only the failed macOS job was rerun after the workflow completed; this is diagnostic evidence, not a fix or verification of the new candidates.
+
+Current review identified competing PPTX slideshow/background viewport resizes (P1) and oversized PNG rejection at the cache limit (P2). Both remain open. The background-render regression fails on the old product path after correcting the egui harness's texture-delta disposal. A broad slideshow skip passed that regression but would stop Markdown background polling; the final repair must be PPTX-specific and preserve Markdown rendering. The PNG candidate must separate transient display ownership from the bounded cache; an oversized persistent map is not accepted as a cache-bound fix.
+
 ## Scope
 
 The user authorized KatanA-owned fixes for v0.22.42 and deferred KDV/KRR deficiencies to the next release. Upstream Issues are handoff only: KDV #65/#66/#67 and KRR #106/#107. No upstream implementation or unpublished dependency override is part of this change.
@@ -44,5 +56,9 @@ The new exact `pdf_keeps_view_tools_without_markdown_only_menus` regression fail
 Self-review: PASS for the focused repair. The shared availability call sites in direct dispatch and command inventory both use `PreviewMenu::Tools`; sidebar uses the same contract. No new API, threshold, test exclusion, dependency or synchronous work is introduced. The prior failed push and focused GREEN do not constitute full-gate or publication success; normal signed integration and another normal push remain necessary.
 
 ## Remaining release obligations (current)
+
+The normal push of signed HEAD `c520076f` completed successfully through the existing hooks and updated PR 346. Its current Release Readiness, three-OS lint, dependency supply-chain and CodeQL checks passed. CI run `37388041504` macOS job `112026208786` failed with 1,079 passed and one failed UI test: `file_navigation_to_an_open_dirty_target_preserves_target_state` did not receive the first HTML frame within its existing two-second test deadline. The subsequent multi-format upload had no evidence because the preceding test step failed. Neither a product navigation defect nor a safe timeout change is established by this observation. The focused reproduction and source investigation retain the original deadline and assertions. Linux/Windows checks and new-HEAD review are not yet complete.
+
+The current sidebar reload source route reaches `RefreshDocument { is_manual: true }` and the three local HTML action/frame regressions pass. They do not prove an actual sidebar pointer click; that input boundary remains a separate host regression target. KRR issue 107 was closed as `NOT_PLANNED` only because its unimplemented persistence contract was consolidated into open issue 106; it is not a fixed-cache result.
 
 Normal push and new-HEAD review/CI, full coverage/supply-chain, all five packaged assets/checksums and clean-machine acceptance remain required. Known upstream HTML fidelity, loading and restart-cache limitations must be disclosed, not marked fixed. Release scope must be reflected explicitly in the task and acceptance contracts rather than bypassing checks or falsely completing deferred work.

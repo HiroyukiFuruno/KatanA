@@ -1,5 +1,12 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-06 current review候補のmain検証: PPTX限定背面描画停止とMarkdown継続の実経路2件PASS、PNG原寸6000x4000・同texture反復・非表示後保持解除・small結果非干渉・16件上限/resetを含む公式loader6件PASS。impacted lint成功。通常commit/push・各thread reply/resolve・fresh取得・新HEAD全gate/配布は未完了。headless既定2048pixelによる初回失敗を保持し、実context capability8192指定で検査したもので製品上限変更ではない。
+
+- [ ] 2026-10-06 c520 current review P1: PPTX slideshow時に背面previewとmodalが同DocumentSurfaceへ別viewport Resizeを毎frame送る。modal中の描画所有を一意化し、実経路回帰・通常commit/push・PRRT_kwDORm09y86pQ8GT個別reply/resolveと再取得を行う。新P2 PRRT_kwDORm09y86pQ8GXは64MiB cache上限を入力拒否にした大型PNG互換退行で、非同期読込/容量上限/原寸を維持した所有分離を検討中。既存manual-target P2二件は別判断。
+- [/] 同macOS CI dirty-targetテストの公式focused確認は1PASS/2.47秒、元2秒期限と全assert不変。ただしCI失敗の原因確定/修復ではなく、workflow進行中の単job再実行はGitHubに拒否された。Linux/Windows進行中・全gate未完了を維持する。
+
+- [/] 2026-10-06 c520076fは通常pushの正式hookを通過し、PR346の現HEADへ送信済み（ahead0/behind0）。新HEADのRelease Readiness・全3OS lint・供給網・CodeQLは成功。macOS CIは1079PASS/1FAILで、file_navigation_to_an_open_dirty_target_preserves_target_stateのHTML初回frame待ちが失敗し、後続headless証跡も未生成。Linux/Windowsと新HEAD reviewは進行中。全gate/coverage/packaged/公開成功ではない。期限延長・skip・旧CI流用をせず、同条件のfocused再現と初回起動/入力更新の条件を切り分ける。
+
 - [/] 2026-10-06 PDF Tools回帰を最小修正: ToolsをMarkdown専用Export/Story判定から分離し、既存PDFの分割/コードプレビュー切替を復元。追加pdf_keeps_view_tools_without_markdown_only_menusは旧実装RED→修正GREEN、公式just T=view_tools test-specificは既存失敗2件を含む5PASS/40suites/0.43秒、diff check/呼出元自己レビュー成功。テスト削除・閾値変更なし。通常commit/push・全gate・新HEADレビュー/配布は別途未完了。
 
 - [ ] 2026-10-06 通常push55ef95c2は正式hookのnative testで1075PASS/2FAILとなりupload前にexit1。85c032b5の形式別menu判定がPDFの既存Tools操作を無効化し、direct_view_tools_dispatch_remains_available_for_pdf_and_markdown_documents / registered_view_tools_commands_remain_available_for_pdf_and_markdown_documentsが失敗した。PDF Toolsだけを復元し、export/story/slideshowのMarkdown専用判定と画像/Office/HTML制御を維持してRED→GREEN、通常commit/pushを再実施する。旧c2 CIを新graph成功へ代用せずhook迂回しない。
