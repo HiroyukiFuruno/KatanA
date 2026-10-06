@@ -83,6 +83,7 @@ fn failed_result_is_cached_without_retrying() {
 
 #[test]
 fn reset_discards_old_generation_result() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
     let path = test_png_path("generation");
     let image = image::RgbaImage::from_pixel(1, 1, image::Rgba([0, 0, 255, 255]));
     image.save(&path).expect("test PNG should be written");
@@ -178,6 +179,7 @@ fn oversized_images_are_active_but_not_cached() {
 
 #[test]
 fn active_display_entries_keep_same_frame_ownership_and_prune_afterward() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
     let loader = LocalImageLoader::default();
     let ctx = egui::Context::default();
     let mut textures = Vec::new();

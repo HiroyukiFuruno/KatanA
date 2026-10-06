@@ -39,7 +39,8 @@ pub(super) fn wait_ready(
         frame += 1;
         std::thread::yield_now();
     }
-    panic!("watcher did not publish expected image: {expected:?}");
+    let state = super::watcher_overflow_tests::watch_state(loader, path);
+    panic!("watcher did not publish expected image: {expected:?}; {state}");
 }
 
 fn wait_revision(loader: &LocalImageLoader, path: &Path, previous: u64) {
