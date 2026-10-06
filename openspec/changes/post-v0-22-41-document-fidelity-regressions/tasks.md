@@ -1,5 +1,9 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 最新通常push91452は1099PASS/1FAIL/既存ignore2でactualexit1、remote042のまま。dirty-target初frame2010ms/idlefalse/generationNoneを元2秒のまま保持し、失敗確定後だけ同一test binaryのstackを採取するdefault-off macOS test-only helperを追加。公式focused4PASS74317/AST23PASS38757/strict impacted Clippy92336/fmt86444/CI契約8PASSを確認。単独dirty-target45592は1PASSだが元全suite失敗の修復ではない。正常pushで同一process証跡回収と原因修復を続ける。
+- [x] reload受入のsession境界を補正しce3ffaa2へ通常署名commit。旧checker新契約は3ERROR、補正後scope10PASS58320/gate26PASS3424/旧strict48PASS98217。旧sessionとのframe大小比較ではなく増分session identityと新session内frameを検証し、原本hash/入力/dirty保護を維持。実配布操作の証明は別未完。
+- [/] default本人profileのTermsはreadonlyでterms_accepted_version=0.22.9、現UIはSomeを受理。再承認待ちへ戻さない。本人最終受入・隔離clean-machine profileの確認は未完、自動承認/本人app操作はしない。
+
 - [ ] 2026-10-06 HEAD04269741のcurrent review追加P2 PRRT_kwDORm09y86pUrOm: 同一pollで17件以上の画像結果が届くと、初表示前に先の未消費結果が再利用cacheから退避される。初consumerまでのframe限定所有、失敗結果、次frameの同TextureId、reset/変更世代/解放、元16件64MiB上限を回帰し、通常commit/push後に個別reply/resolve・fresh取得する。
 - [/] 通常push48627 actualexit0、local/remote/PR346 HEAD042697416c0433cb66f120d255a9580461fb0797一致・ahead0/behind0。従前の小画像17/MathJax physics/Unicode fontの3件は個別reply4191620938/4191621452/4191622006→resolve→全1page fresh取得でresolved確認済み。新HEAD CI37415299660はLinux通常tests成功、macOS/Windows進行中。旧CI・in-process・過去coverageを新graph/実配布へ流用しない。
 

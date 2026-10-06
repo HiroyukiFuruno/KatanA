@@ -2,6 +2,10 @@
 
 ## 追加検証と現状
 
+- reload契約は新sessionのframeを検証するce3ffaa2へ補正した。新sessionではframeがリセットされ得るため旧sessionとの大小比較を使わない。RED3ERROR→scope10PASS/gate26PASS、旧strict48PASSを維持。実配布receiptはまだ欠落。
+- 公開042の3OS結果を再取得しLinux/Windows成功・macOS失敗を確認。通常push91452もnative1099PASS/1FAIL/既存ignore2でactualexit1、未upload。失敗確定後の元snapshotを維持した同一test binary採取候補は公式4PASS/AST23/Clippy/fmt/CI契約8PASS。単独対象1PASSを原因修復としない。
+- default本人profileの既存Terms承認0.22.9をreadonly確認した。現UIはSomeを受理するためdefault再承認待ちを停止条件にしない。隔離clean-machine profile/本人最終受入は未確認であり、自動承認や設定複製はしない。
+
 - ビルド前source gateと公開前packaged-host gateを分離した。後者は実配布binary、元入力・参照・測定hash、全対象、正常close/RSS、scroll/reload/dirty-sourceを必須とし、KRR106の測定済みChrome乖離だけを未解決として区別する。未測定やhost操作欠落は拒否する。
 - 機械回帰は正式evidence venvでgate26件、divergence9件、既存strict48件、flow8件が成功。初稿fixtureのhost_actions欠落1FAILと標準PythonのPillow不足1ERRORは保持し、補正後結果と区別する。実mainの配布受入receiptはまだ生成していない。
 - 両manifestの最新互換/major/pinned dry-runとJS依存確認後、両lockのctutils0.4.3、zerocopy/derive0.8.60だけを更新。KDV0.5.12/KRR0.4.23の公開sparse index非yank/checksumを再確認した。上流次期版を独自採用しない。
