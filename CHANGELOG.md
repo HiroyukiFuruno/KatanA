@@ -2,7 +2,7 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
-## [0.22.42] - 2026-10-06 13:41:42 (UTC)
+## [0.22.42] - 2026-10-06 15:11:33 (UTC)
 
 ### 🚀 Features
 
@@ -28,7 +28,8 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Excel sheet tabs**: Bottom tabs remain visible and clickable without overlapping document diagnostics.
 - **Excel font styles**: Bold and italic cells retain the requested font family when only a regular or partially matching style is installed.
 - **Unsupported display shortcuts**: HTML and Office documents cannot be switched into unsupported split or code-only views using keyboard shortcuts.
-- **Slideshow tab switching**: Switching to an unsupported HTML, Word or Excel tab exits the slideshow and restores the previous fullscreen state.
+- **Slideshow tab switching**: Switching to an unsupported tab or closing the last document exits the slideshow and restores the previous fullscreen state.
+- **Empty workspace shortcuts**: Slideshow commands are disabled when no document is active, preventing an empty workspace from entering fullscreen.
 - **Workspace diagnostics responsiveness**: Diagnostics no longer synchronously read unopened Markdown files on the interface thread.
 
 ### Known limitations

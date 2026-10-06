@@ -1,5 +1,10 @@
 ## 1. Reproduction and ownership evidence
 
+- [ ] 公開181391e5 macCI112323232248はHTML初frame2041ms/acceptedtrue/idlefalse/genNone、1127PASS/1FAIL/ignore2。raw tmp/181391e5-macos-job-112323232248.log、original PID22676 sampleはsymbol処理の5秒制限でactualfile0bytes、後続別process159.312ms成功を原失敗へ代用しない。tmp/181391e5-current-ci-audit/analysis.md。現runでは隣接診断childsampleが約0.65秒重複、旧4a/683は非重複でも失敗したため反復根因ではない。実診断テストだけ既存RenderEnvLockで隔離する候補を追加、原2秒・assert・skip・製品コード不変。候補検証/newHEAD全gateは未完。
+
+- [/] 公開181391e5 current review5430016913の新P2 PRRT_kwDORm09y86pg4Qo/4196609706・PRRT_kwDORm09y86pg4Qv/4196609713: sidebar/直接actionの終了時fullscreen復元と無文書Slideshow拒否をe2d3d361へ通常署名Gで統合。旧製品分岐+同fixtureで2PASS/5assertFAIL actual101→main正式worker入口7PASS actual0。元fullscreen維持/反復復元/Noneと5非対応形式/Markdown・PPTX可用性、188行のprivate cfg(test)だけで検証。evidence/slideshow-fullscreen-review-2026-10-07.md。通常push/各reply-resolve-fresh/newHEAD全gate・本人packaged受入は未完、既存manual-target選択二件と別。
+- [/] 181391e5本人候補package10267 actual0、final署名36515 actual0/Intel・arm64両main-worker/minos13/version、tmp/181391e5-package-verification.md。本人app/Terms非操作、全OS packaged/本人受入/95点/公開証明ではない。後続修正へこのartifactidentityを流用しない。公式coverage52581は新review修正が必要になり所有PGIDのみ中断actual130、修正後graphで元ゲートを実行する。
+
 - [/] KatanA同repoのtracked CommonMark backendのprivate SyntaxSet/ThemeSetをコード描画/カスタム追加時へ遅延。rootlock backend4回帰、実worker HTML7/sidebar1、selected all-targets strictClippy、公式AST23 actual0。source3dc70d94・検証接続c1957f0b・sidebar lint8228a76cを関心別通常hook/署名Gで統合。vendor旧分類assertRED1→現UT3GREEN、CI/resource9/flow9/lefthookvalidate0。public API/renderer/MSRV/閾値不変、原mac2149ms失敗の因果/新HEAD全CI・coverage・packaged受入は未完。evidence/commonmark-lazy-initialization-2026-10-06.md。初回features指定拒否101/egui API compile101は製品assertREDとしない。
 
 - [ ] 68348738 macCI112216525291: HTML dirtytarget初frame2014ms/idlefalse/genNone、1125PASS/1FAIL/ignore2。完了job raw tmp/68348738-live-snapshot/mac-job-112216525291-logs.txt、artifact11405211618/actualPID23458 sampleを保持。後続focused0.27秒PASSは原失敗を上書きしない。timeout後sampleと起動前原因を分け、host所有/待ち経路を監査する。元2秒/dirty保護/実RGB/assert維持。
