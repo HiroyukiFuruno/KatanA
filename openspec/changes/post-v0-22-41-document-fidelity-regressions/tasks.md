@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 画像監視のFailed→Registered成功通知後にも旧watch_errorsが残る追加不備をunit eventprocessor回帰で再現（77891、assert watch_error.is_none、exit101）。成功通知時だけ旧エラーを解除し、公式loader10PASS82361/0.91秒・AST23PASS40982/12.91秒・impacted Clippy75863 exit0。自動再試行や失敗の隠蔽は追加しない。旧未送信normalpushは新不備修正のため所有プロセスのみ中断、hook成功/公開成功として扱わない。通常統合/newHEAD公開検証は別途継続。
+
 - [/] 2026-10-06 画像候補の正式AST75428は23PASS/72filtered/4suites/11.82秒、最終impacted Clippy88774 exit0。fixture RGBA期待値をbytes比較と名前付きchannel数へ修正し、規約除外/基準変更なし。画像表示所有efe2ebf0・外部変更通知18b1db3fを関心別通常hook/署名Gでcommit済み、未push。実sidebar入力回帰を別commit中。新review2件はpush後に各reply/resolve、旧macOS CI失敗は新graphへ持ち越し診断する。
 
 - [/] 2026-10-06 root公式画像回帰10922 exit0: loader9PASS/1880filtered/40suites/0.82秒。実PNGの相対../経路・atomic rename・両背景再decode・無関係画像保持・read通知非invalidate・reset世代に加え、実ImageLogicOps/Some(ViewerState)/egui repaint callbackでidle変更通知と新TextureIdを確認。68580の8PASS後にGUI検査を追加した。GUI初回は旧egui Context::runを使ったharness compile FAIL、既存run_ui/texture delta処理へ合わせ修正した。native実機/全OS/新HEADCI/公開成功とはしない。最終AST/impactedlint・通常commit/push・review reply/resolveを継続。
