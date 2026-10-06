@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] current ebdce22a review5435243464/P2 PRRT_kwDORm09y86prljY・4201042151: Failed画像label後Noneでsection未drawn/anchor欠落を実caller7946 runtime RED101/1PASS3assertFAILで再現。両Failed branchで既存label rect Someだけ返す最小修正後51072/最終83989 actual0、caller4・loader38・AST31（既存token8含む）・strictClippy/fmt成功。positive rect/anchor0..1/textureNone/Pending Noneを保持、同期fallback/画像IO/上流代替なし。初回98973 fixture compile101はREDにしない。通常統合/push/各replyresolve/fresh/new全gate・実配布公開は未完、ebd coverage60146は後続へ流用しない。
+
 - [/] 新P2二件を通常hook/署名G source29778148（画像）・345c095b（HTML summary）へ関心別統合。93025全loader38/summary6/AST23/strictClippy/fmt actual0、関連method最終8595 summary6/AST23/strictClippy/fmt actual0、通常commit45089/57116 actual0。EN22:05:40UTC/JA07:05:40JST同期。normaldocscommit/push→各replyresolve/fresh→newcurrentreview/全CI/coverage/package/全5実受入/公開後処理を継続、旧0fa証跡の流用無し。
 
 - [/] current0fa review5434903489/P2 PRRT_kwDORm09y86pq2FP・4200733415: watch登録失敗中Failed cache永続化は53394 runtime RED101/1PASS1FAIL→期限到達時だけ同path失敗decode除去。成功Arc/bytes/別path/元backoff/診断保持、93025全loader38PASS/AST23/strictClippy/fmt actual0。初回37PASS1FAILは画像復旧とwatch登録完了の非同期競合で、実pixel+登録を同一元5秒でawaitし最終assert保持。正式統合/push/replyresolve/new全gate/実配布は未完。evidence/failed-image-retry-and-bounded-html-summary-2026-10-07.md。

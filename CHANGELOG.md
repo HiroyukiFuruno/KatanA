@@ -2,7 +2,7 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
-## [0.22.42] - 2026-10-06 22:05:40 (UTC)
+## [0.22.42] - 2026-10-06 22:38:31 (UTC)
 
 ### 🚀 Features
 
@@ -26,6 +26,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Office tabs and memory**: Documents using the same installed font share its data across tabs instead of retaining an extra copy for every tab.
 - **Preview image stability**: Diagram and image textures remain available when image controls are hidden.
 - **Missing image recovery**: If an image folder is temporarily unavailable, the preview retries in the background and recovers after the folder and image become available, without reopening the workspace.
+- **Failed image previews**: Unavailable images show an error without leaving their preview section permanently loading, and retain document navigation positions.
 - **Readable images without file watching**: Images still load when background file-change monitoring is unavailable, and recover from earlier loading failures when the image becomes readable.
 - **Image folder changes**: Notifications from a deleted image folder no longer mark unrelated image previews as failed; recreating the folder restores monitoring of subsequent image updates.
 - **Image updates after fullscreen**: Closing a full-screen image keeps normal previews monitoring external image updates.
