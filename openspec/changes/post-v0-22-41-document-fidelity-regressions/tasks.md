@@ -1,5 +1,11 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] workspace P2修復を通常hook/署名Gの3c777614cf0339832b43326baf6415daee1b5a78（53167 actual0）へ正式統合。workspace16/URL27/AST23/strictClippy/fmt-check全成功、private284行。EN/JAは実commit18:51:55UTC/03:51:55JSTへ同期。docs通常commit/normalpush・各replyresolve/fresh/newgraph全gate/実配布/公開後処理は継続、旧068CIの流用無し。
+
+- [/] workspace generation P2を17440 actual101/15PASS1assertFAILで再現（20674 fixture compile errorは別保存）。成功Openのdocumentset置換でSome requestだけ取消・None保持/is_loading再計算を実装、74603全workspace16PASS・87861全URL27PASS/actual0。Refresh/error/unfinished保持、Settings/GlobalWorkspace InMemory隔離・本人app非操作。公式static46428実行中、通常統合push/replyresolve/fresh/newgraph全gate/配布公開は未完。evidence/workspace-url-generation-review-2026-10-07.md。
+
+- [ ] current068 review5433007691/P2 PRRT_kwDORm09y86pm6yc・4199097415: workspace Open成功時のdocumentset clear/同local HTMLpath復元後、古targeted HTTP応答を受理し新文書を置換する。rootは実置換時だけSome request取消/None保護・is_loading再計算を設計、限定private poll/session回帰を準備。製品未編集、RED/GREEN/通常統合/push/replyresolve/fresh/currentgateは未完。上流次期へ移さずKatanA所有。
+
 - [/] queue修復b0088fb8f38f03ce2e415667cece05b8efaf8c52を通常precommit/署名Gで正式統合（49488 actual0）。最終URL27/AST23/strictClippy/fmt/check成功、EN/JAは実source commit18:16:12UTC/03:16:12JSTへ同期。通常docscommit/push・公開新HEAD各replyresolve/fresh/全gate・packaged受入・公開後処理は継続、旧5a coverage/CIを流用しない。
 
 - [/] current5a review5432594216/P2 PRRT_kwDORm09y86pmEZA・4198748139: binary実path移行後の後続URL応答喪失を元製品34217 actual101/24PASS3assertFAILで再現。実移行時だけpendingtarget追従・binary→HTML形式復元、閉鎖取消・dirty/collision保持を実装。private4回帰/format4組を161/228行へ分離し46654 actual0/全URL27PASS。初候補92652の26PASS1FAILはDOCX fixture.pdf不一致で保持し拡張子だけ補正。最終22420 actual0/AST23・impactedstrictClippy・fmt/check成功、diff/caller自己review成功/masterclean/stash0。通常統合push/各replyresolve/fresh/newgraph全gate・実packaged・公開は未完。evidence/queued-url-migration-review-2026-10-07.md。
