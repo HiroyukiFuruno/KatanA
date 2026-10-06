@@ -1,5 +1,9 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] queue修復b0088fb8f38f03ce2e415667cece05b8efaf8c52を通常precommit/署名Gで正式統合（49488 actual0）。最終URL27/AST23/strictClippy/fmt/check成功、EN/JAは実source commit18:16:12UTC/03:16:12JSTへ同期。通常docscommit/push・公開新HEAD各replyresolve/fresh/全gate・packaged受入・公開後処理は継続、旧5a coverage/CIを流用しない。
+
+- [/] current5a review5432594216/P2 PRRT_kwDORm09y86pmEZA・4198748139: binary実path移行後の後続URL応答喪失を元製品34217 actual101/24PASS3assertFAILで再現。実移行時だけpendingtarget追従・binary→HTML形式復元、閉鎖取消・dirty/collision保持を実装。private4回帰/format4組を161/228行へ分離し46654 actual0/全URL27PASS。初候補92652の26PASS1FAILはDOCX fixture.pdf不一致で保持し拡張子だけ補正。最終22420 actual0/AST23・impactedstrictClippy・fmt/check成功、diff/caller自己review成功/masterclean/stash0。通常統合push/各replyresolve/fresh/newgraph全gate・実packaged・公開は未完。evidence/queued-url-migration-review-2026-10-07.md。
+
 - [/] 新P2二件を通常署名Gで関心別統合: 画像54462de7ba2fec1454ccdbb8ef88e6eac8a51e94/session42015 actual0、cursor53937b77ca0ee37ded725c6e14aa8ae953bcab44/session93577 actual0。最終loader31/cursor5/AST23/impactedstrictClippy/fmt・route契約は成功。normal push/各reply-resolve/fresh/newHEAD全CI・coverage・packaged受入/公開は未完。旧fe証跡を流用しない。
 
 - [/] currentreview4198242488画像watch独立化: 初期候補の27PASS4FAIL/次候補25PASS6FAILを保持し、rootはretry→既存cache→初期watch Pending→decodeの元順序へ補正。root91798 actual0/全loader31PASS、cold実PNG・未回復watch error診断・反復Ready Arc・Registered回復・旧revision拒否・atomic/GUI/missingparent/overflow/cache契約成功。watch failureだけでcacheを破棄せず、回復時のみ既存revisionで古結果を拒否。正常decode/queue errorをwatch errorへ置換しない。cursor5回帰/AST23/strictlint/fmt公式1256 actual0、両新P2の通常統合/公開reply/resolve/freshは未完。

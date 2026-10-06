@@ -2,7 +2,7 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
-## [0.22.42] - 2026-10-06 17:35:21 (UTC)
+## [0.22.42] - 2026-10-06 18:16:12 (UTC)
 
 ### 🚀 Features
 
@@ -34,6 +34,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Empty workspace shortcuts**: Slideshow commands are disabled when no document is active, preventing an empty workspace from entering fullscreen.
 - **Closed URL tabs**: A pending download cannot reopen a tab after you close it or replace a new document opened at the same address.
 - **Document links from HTML**: PDF and Office downloads open with their correct document tools, while retaining tab order and pinned state; unsaved HTML remains in its original tab.
+- **Consecutive document links**: Later downloads are no longer discarded when an earlier link changes the tab's document format; returning to HTML restores its normal tools.
 - **Workspace diagnostics responsiveness**: Diagnostics no longer synchronously read unopened Markdown files on the interface thread.
 
 ### Known limitations
