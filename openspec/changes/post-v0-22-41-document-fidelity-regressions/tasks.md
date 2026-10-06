@@ -1,5 +1,8 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-06 b8 current review P2 PRRT_kwDORm09y86pXXH6/comment4192736419: 最終preview削除直後ではなく既存leaseの所有終了後にlast workerへ返却要求を保留、新worker開始は取消し、mutexでcounter0判定/返却/開始を順序化。UI join・固定待機・新allocator・閾値変更なし。旧即時判定RED actual101→memory4/lease7/caller7/GUI1 GREEN、最終lease7/AST23/fmt0/strict lint rebuild0を回収。先行lint101はlibm rmeta消失として保持。evidence/worker-memory-lifetime-review-2026-10-06.md。通常commit/push・個別reply/resolve・fresh review・新graph全gate/RSS受入は未完。
+- [/] b8公式coverageはactual101/UI1116PASS1FAILignore2、GUIidle watcher wake失敗でstrict/meaningful未集計。idle preconditionと失敗時egui_pending/watch_stateを追加した通常focused1PASSと同計測UI1117PASSignore2/19.71秒は原因修復・正式coverage成功ではない。profile不一致DEBUG2診断は所有process停止actual130で保持し、条件一致版だけ診断証拠とする。期限/assert/ignore不変、次の正式graphで全coverageを検証する。
+
 - [/] 画像監視修正2a38304bとpost-release-host契約53f754f8を通常hook/署名Gで関心別commit。画像27PASS/AST23/Clippy/fmtとgate30/flow9/divergence10/旧strict48PASSを保持。未公開候補は解消したが通常push・新HEAD CI/coverage/currentreview/実配布・公開後処理は未完。
 
 - [/] 型別名補正後watch-final-type検査はAST23PASS・strict impacted Clippy PASS・fmt PASS、各actualexit0で回収。27loader PASSと差分/callsite自己reviewを evidence/watch-overflow-self-review-2026-10-06.mdへ記録しtargeted precommit PASS。関心別通常commit/pushとreview replyresolve/newHEAD全gateを進める。live PR346はed8 Draft/BLOCKED、Windows進行/mac失敗、v0.22.42公開無し。
