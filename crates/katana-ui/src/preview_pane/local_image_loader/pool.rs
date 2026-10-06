@@ -1,3 +1,4 @@
+use super::super::cancellable_read::ReadCancellation;
 use super::{Inner, decode, egui};
 use std::path::Path;
 use std::sync::{OnceLock, Weak, mpsc};
@@ -39,8 +40,25 @@ impl GlobalPool {
                             continue;
                         }
                         drop(owner);
-                        let image =
-                            decode::load_image(Path::new(&work.key.path), work.key.background);
+                        let owner = work.owner.clone();
+                        let generation = work.generation;
+                        let cancellation = ReadCancellation::new(move || {
+                            owner.upgrade().is_none_or(|owner| {
+                                owner.generation.load(std::sync::atomic::Ordering::Acquire)
+                                    != generation
+                            })
+                        });
+                        if cancellation.check().is_err() {
+                            continue;
+                        }
+                        let image = decode::ImageDecodeOps::load_image(
+                            Path::new(&work.key.path),
+                            work.key.background,
+                            &cancellation,
+                        );
+                        if cancellation.check().is_err() {
+                            continue;
+                        }
                         let _ = work.result_tx.send(ResultMessage {
                             key: work.key,
                             generation: work.generation,

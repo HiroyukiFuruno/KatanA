@@ -190,6 +190,8 @@ mod tests;
 
 #[cfg(test)]
 mod batch_tests;
+#[cfg(test)]
+mod cancellation_tests;
 
 #[cfg(test)]
 mod display_tests;
