@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 公開9ca公式coverage48503 actual101/UI1156PASS1FAILignore2。atomic上書き前のinitial egui repaint未消費で、watchstateはrevision0/watchedtrue/pendingfalse/errorNone/deferredNone/overflowfalse。同instrumented focused1PASSは正式fullgateへ代用せず保持。既存font_loader最大8実frame消費方式へprivate GUI test setupだけ補正し、no-op helper契約75137 actual101/1assertREDを確認。60014全loader35PASS/AST22PASS1FAIL（明示再描画のperformance規約）を保持、初期Context自身のpendingを確認する最終12981は全loader35/AST23/strictlint/fmt actual0。通常hook/署名G9ae652d4へtest-only統合、normalpush/新graph fullcoverage/配布受入未完。原atomic5秒・画像identity/assert・ignore/製品コードは不変。evidence/initial-image-repaint-settle-2026-10-07.md。
+
 - [/] current8f7 review5433854835/P2 PRRT_kwDORm09y86popFe・4199818144: 登録済みparent削除→再作成→後続overwriteを実Linux17331 genuineRED→81431 GREENで修復。最終native35810全loader34PASS/Linux84146全35PASS、正式36706 AST23/strictClippy/fmt-checkactual0。該当directoryとsubscriberだけ既存bounded再登録へ戻し、通常fileRemove/別dir監視/genuineFailed/FSEvents通知補完を維持。通常署名G8f461241c18c5eff045eb3d081c13f6b48c680abへ正式統合、push・個別reply/resolve/fresh・新graph全gateは未完。evidence/registered-directory-image-recovery-2026-10-07.md。
 - [x] 公開8f7ae2b0公式coverage78303 actualexit0: UI1156/native18/export13/parallel143（既存ignore2）/serial18成功、meaningful成功・strict document100%未カバー0。raw tmp/8f7ae2b0-current-coverage.log、report-only JSON SHA2562a77f302e7f33ac9feee825345e1098ac3744ba9787bff154b91e65bdbd93033・独立strict checkeractual0。後続directory復旧修正へ流用しない。
 
