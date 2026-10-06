@@ -42,6 +42,11 @@ impl WorkerMemoryState {
         self.relieve_if_idle(&mut pending);
     }
 
+    pub(super) fn cancel_relief(&self) {
+        /* WHY: HTMLや画像はworker leaseを持たないため、再表示をhost側から通知する。 */
+        *self.pending() = false;
+    }
+
     fn relieve_if_idle(&self, pending: &mut bool) {
         /* WHY: 所有データの解放後にだけ返却し、返却中の新worker開始も同じmutexで順序化する。 */
         if *pending && self.counter.load(Ordering::Acquire) == 0 {
@@ -93,6 +98,21 @@ mod tests {
         state.acquire();
         assert!(!*state.pending());
         state.release();
+        state.release();
+        assert!(!*state.pending());
+    }
+
+    #[test]
+    fn reopening_a_non_worker_document_cancels_pending_relief() {
+        let state = WorkerMemoryState::new();
+        state.acquire();
+        state.request_relief();
+        assert!(*state.pending());
+        state.cancel_relief();
+        assert!(
+            !*state.pending(),
+            "reopened content must cancel deferred relief"
+        );
         state.release();
         assert!(!*state.pending());
     }

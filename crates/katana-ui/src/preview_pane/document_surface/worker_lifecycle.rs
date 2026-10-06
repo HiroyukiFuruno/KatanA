@@ -24,6 +24,10 @@ impl DocumentWorkerLifecycle {
     pub(crate) fn request_closed_preview_memory_relief() {
         DOCUMENT_WORKER_MEMORY.request_relief();
     }
+
+    pub(crate) fn cancel_closed_preview_memory_relief() {
+        DOCUMENT_WORKER_MEMORY.cancel_relief();
+    }
 }
 
 struct DocumentWorkerLease<'a> {

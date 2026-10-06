@@ -105,6 +105,8 @@ impl ActionOps for KatanaApp {
         };
         if closed_preview_memory::should_relieve_memory(transition) {
             crate::preview_pane::DocumentWorkerLifecycle::request_closed_preview_memory_relief();
+        } else if !transition.open_documents_empty || !transition.previews_empty {
+            crate::preview_pane::DocumentWorkerLifecycle::cancel_closed_preview_memory_relief();
         }
     }
 
