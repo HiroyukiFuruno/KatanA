@@ -46,8 +46,9 @@ fn notify_path(path: &Path, removed: bool, targets: &mut Targets) {
     let paths = match Registration::paths(path) {
         Ok(paths) => paths,
         Err(error) => {
-            notify_error(targets, error);
-            return;
+            /* WHY: 削除後の通知は正規化できなくても該当先だけを無効化し、別画像の監視失敗にしない。 */
+            tracing::warn!(path = %path.display(), %error, "local image event path unavailable");
+            vec![path.to_path_buf()]
         }
     };
     for path in paths {

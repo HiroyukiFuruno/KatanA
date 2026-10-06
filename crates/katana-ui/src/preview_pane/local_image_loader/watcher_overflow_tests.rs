@@ -50,7 +50,11 @@ fn watcher_overflow_retries_registration_without_persisting_failure() {
         .send(WatchEvent::Overflow(path.clone(), loader.generation()))
         .expect("overflow event");
     loader.poll(0);
-    assert!(loader.watch_error(&path).is_none());
+    assert!(
+        loader.watch_error(&path).is_none(),
+        "{}",
+        watch_state(&loader, &path)
+    );
     assert!(matches!(
         loader.request(&path, TEST_BACKGROUND),
         LocalImageStatus::Pending
@@ -82,8 +86,16 @@ fn subscriber_overflow_retries_watched_and_pending_paths() {
         .invalidation_overflow
         .store(true, std::sync::atomic::Ordering::Release);
     loader.poll(0);
-    assert!(loader.watch_error(&path).is_none());
-    assert!(loader.watch_error(&pending_path).is_none());
+    assert!(
+        loader.watch_error(&path).is_none(),
+        "{}",
+        watch_state(&loader, &path)
+    );
+    assert!(
+        loader.watch_error(&pending_path).is_none(),
+        "{}",
+        watch_state(&loader, &pending_path)
+    );
     for path in [&path, &pending_path] {
         assert!(matches!(
             loader.request(path, TEST_BACKGROUND),

@@ -165,6 +165,8 @@ fn clear_owner(
 }
 
 #[cfg(test)]
+mod event_path_tests;
+#[cfg(test)]
 mod order_tests;
 #[cfg(test)]
 mod tests;
