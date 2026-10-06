@@ -29,3 +29,30 @@ These focused results are not current-head CI, full coverage, a packaged receipt
 ## GUI coverage failure retained
 
 The previous official `b8ff6c63` coverage run failed (UI 1116 passed / 1 failed / 2 ignored) at the native image GUI wakeup assertion. Added assertions record whether the initial GUI is actually idle and include egui pending repaint / watcher state only on failure. The same-profile diagnostic UI run passed 1117 tests with 2 ignored in 19.71 seconds, but did not reproduce or prove a repair of the earlier failure. The mismatched debug-profile diagnostic was interrupted with actual exit 130 and is not test evidence. No timeout, assertion or ignore was relaxed.
+
+## Non-worker document reopen boundary
+
+Main self-review identified that HTML, PNG and Markdown do not acquire a document-worker lease. Cleanup therefore cancels a pending close request whenever documents or previews remain/reappear. The normal push was interrupted before upload (actual exit 130, three commits ahead, zero behind); the killed Mermaid export in that interrupted log is not a product failure.
+
+- No-op cancellation RED: `tmp/worker-memory-reopen-red.log`, actual exit 101, 0 passed / 1 failed at `reopened content must cancel deferred relief`.
+- Implemented cancellation: `tmp/worker-memory-reopen-memory-green.log`, actual exit 0, 5 passed.
+- Existing caller: `tmp/worker-memory-reopen-caller-green.log`, actual exit 0, 7 passed.
+- Existing lifetime: `tmp/worker-memory-reopen-lifecycle-green.log`, actual exit 0, 7 passed.
+
+Additional-boundary AST (`tmp/worker-memory-reopen-ast.log`, 23 passed) and strict impacted lint (`tmp/worker-memory-reopen-lint.log`) completed with actual exit 0. Initial formatting check failed solely on the new assertion layout; normal `just fmt` completed with exit 0, then `tmp/worker-memory-reopen-fmt-after-format.log` completed with exit 0. Normal integration remains separate. These tests do not prove packaged acceptance or stable RSS improvement.
+
+The additional boundary is integrated by normal signed commit `e5ab75c5`.
+
+## Current public-head CI failures
+
+The exact public `b8ff6c63` CI failed on Ubuntu at `watcher_overflow_retries_registration_without_persisting_failure`: 1095 passed / 1 failed / 2 ignored, with the expected red image not published before the original five-second deadline. macOS failed at the dirty-target HTML initial frame: 1116 passed / 1 failed / 2 ignored, startup accepted, 2137 ms elapsed, worker not idle, no frame generation. Its failure-only sample also exceeded the independent five-second bound and was killed/reaped, so no failed-process stack was obtained. Raw completed-job logs are `tmp/worker-memory-live-{ubuntu,macos}-job-logs.zip` (despite the filename suffix, these API responses are text containing ANSI sequences).
+
+Host code waits directly on the public adapter update queue. In published KDV 0.5.12, initial session construction and frame publication precede marking the worker ready. This narrows the observed boundary but does not identify the internal stalled stage or prove an upstream cause. Both failures remain distinct from targeted local passes.
+
+## Shared native watcher fixture audit
+
+Two local image tests (reset and active-texture lifetime) also reach the process-global watcher but omitted the existing `RenderEnvLock` used by other native watcher tests. They are brought under that same fixture lock. The expected-image wait now includes the already-existing watch state on failure. Neither the five-second deadline nor success assertions are changed; explicit two-live-loader topology tests remain. A shared-environment interference possibility is not a proven cause of the Ubuntu failure.
+
+The resulting official local-image suite passed 27 tests with actual exit 0 in `tmp/watch-fixture-isolation-tests.log`. AST passed 23 tests, strict impacted lint and formatting also completed with actual exit 0 (`tmp/watch-fixture-isolation-{ast,lint,fmt}.log`). Normal integration and full verification remain separate checkpoints, not a current-head CI or full-coverage claim.
+
+The fixture and failure-diagnostic changes are integrated by normal commit `fede89a`.

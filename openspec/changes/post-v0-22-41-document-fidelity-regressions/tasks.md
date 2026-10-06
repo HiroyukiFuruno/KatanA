@@ -1,5 +1,9 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 最終memory selfreview追加: 保留中にHTML/PNG/Markdown等が再openした場合もcleanup非empty分岐から取消す。no-op取消しRED actual101/1assert FAIL→本取消しmemory5/caller7/lifecycle7、AST23/strict lint/fmt各actual0。tmp/worker-memory-reopen-*.log。通常署名G e5ab75c5へ統合。upload前normalpush中断130を保持、公開b8のまま。新graph push/全gate/個別review解決・実配布/RSSは未完。
+- [/] b8 live CI失敗: Ubuntu1095PASS1FAILignore2はwatcher_overflow_retries_registration_without_persisting_failureの赤画像取得待ち、mac1116PASS1FAILignore2はdirty-target2137ms/idlefalse/genNone。完了job API raw tmp/worker-memory-live-{ubuntu,macos}-job-logs.zip（text+ANSI）を保持。共有watch coordinatorに未guardのreset/active textureテストが接続する可能性を追跡、原因確定・修復済みとはしない。期限/assert/ignore不変で診断と共有環境保護を検証する。
+- [/] 共有watch fixture保護・失敗状態記録を検証: process-global backendへ接続するreset/active textureの2testsへ既存RenderEnvLockを適用、wait_readyのpanicへ既存watch_stateを追加。期限・assert・2live loader topology保持。公式loader27/AST23/strict lint/fmt各actual0、tmp/watch-fixture-isolation-*.log。b8 CI失敗の確定原因・新HEAD全gate成功ではない。通常統合/push/newHEAD CI・全coverageを継続する。
+
 - [/] 2026-10-06 b8 current review P2 PRRT_kwDORm09y86pXXH6/comment4192736419: 最終preview削除直後ではなく既存leaseの所有終了後にlast workerへ返却要求を保留、新worker開始は取消し、mutexでcounter0判定/返却/開始を順序化。UI join・固定待機・新allocator・閾値変更なし。旧即時判定RED actual101→memory4/lease7/caller7/GUI1 GREEN、最終lease7/AST23/fmt0/strict lint rebuild0を回収。先行lint101はlibm rmeta消失として保持。evidence/worker-memory-lifetime-review-2026-10-06.md。通常commit/push・個別reply/resolve・fresh review・新graph全gate/RSS受入は未完。
 - [/] b8公式coverageはactual101/UI1116PASS1FAILignore2、GUIidle watcher wake失敗でstrict/meaningful未集計。idle preconditionと失敗時egui_pending/watch_stateを追加した通常focused1PASSと同計測UI1117PASSignore2/19.71秒は原因修復・正式coverage成功ではない。profile不一致DEBUG2診断は所有process停止actual130で保持し、条件一致版だけ診断証拠とする。期限/assert/ignore不変、次の正式graphで全coverageを検証する。
 
