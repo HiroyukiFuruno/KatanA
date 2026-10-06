@@ -2,7 +2,7 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
-## [0.22.42] - 2026-10-06 16:39:06 (UTC)
+## [0.22.42] - 2026-10-06 17:35:21 (UTC)
 
 ### 🚀 Features
 
@@ -25,6 +25,8 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Office tabs and memory**: Documents using the same installed font share its data across tabs instead of retaining an extra copy for every tab.
 - **Preview image stability**: Diagram and image textures remain available when image controls are hidden.
 - **Missing image recovery**: If an image folder is temporarily unavailable, the preview retries in the background and recovers after the folder and image become available, without reopening the workspace.
+- **Readable images without file watching**: Images still load when background file-change monitoring is unavailable.
+- **Custom cursor updates**: Custom cursors retain the correct size and click position when their appearance changes.
 - **Excel sheet tabs**: Bottom tabs remain visible and clickable without overlapping document diagnostics.
 - **Excel font styles**: Bold and italic cells retain the requested font family when only a regular or partially matching style is installed.
 - **Unsupported display shortcuts**: HTML and Office documents cannot be switched into unsupported split or code-only views using keyboard shortcuts.

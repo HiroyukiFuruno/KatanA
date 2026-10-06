@@ -1,5 +1,13 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 新P2二件を通常署名Gで関心別統合: 画像54462de7ba2fec1454ccdbb8ef88e6eac8a51e94/session42015 actual0、cursor53937b77ca0ee37ded725c6e14aa8ae953bcab44/session93577 actual0。最終loader31/cursor5/AST23/impactedstrictClippy/fmt・route契約は成功。normal push/各reply-resolve/fresh/newHEAD全CI・coverage・packaged受入/公開は未完。旧fe証跡を流用しない。
+
+- [/] currentreview4198242488画像watch独立化: 初期候補の27PASS4FAIL/次候補25PASS6FAILを保持し、rootはretry→既存cache→初期watch Pending→decodeの元順序へ補正。root91798 actual0/全loader31PASS、cold実PNG・未回復watch error診断・反復Ready Arc・Registered回復・旧revision拒否・atomic/GUI/missingparent/overflow/cache契約成功。watch failureだけでcacheを破棄せず、回復時のみ既存revisionで古結果を拒否。正常decode/queue errorをwatch errorへ置換しない。cursor5回帰/AST23/strictlint/fmt公式1256 actual0、両新P2の通常統合/公開reply/resolve/freshは未完。
+
+- [ ] current fe6b8e96 review5432002232 inline P2 PRRT_kwDORm09y86pk197/4198242488: readable PNGでもwatch登録失敗でdecodeを止める。実PNG+既存Failedイベント/回復を抑止した元Ready期限で14901 actual101/1FAILを再現。watch freshnessとdecodeの独立化、診断保持、反復失敗時Ready保持、再登録時古結果拒否を修正・検証中。evidence/image-watch-cursor-review-2026-10-07.md。上流次期とは別のKatanA所有。
+- [/] 同review P2 PRRT_kwDORm09y86pk1-E/4198242505: cursor pointer-only keyのhotspot/size更新漏れと元Arc寿命欠落。旧ロジック抽出の実RED34319 actual101/2PASS3assertFAIL→元画像保持+geometry比較のGREEN28210 actual0/5PASS。workspace外依存の通常local/3OS検査入口へ回帰を接続。正式route47994は画像編集中のunused helperでactual101、成功扱いせずsource freeze後に再検査する。通常統合/push/reply/resolve/fresh/newHEAD全gateは未完。
+- [x] 公開fe6b8e96公式coverage40956 actual0、UI1144/native18/export13/parallel143/serial18/meaningful成功・既存ignore維持、strict文書100%未カバー0。report-only30790と独立checkeractual0/JSON SHA2566b86492d9a3e4e4ae251f85f64a5eedcca24eceaed55223158246e38b2d71cc0。本人用package7288 actual0/署名universal/minos13.0/version0.22.42は同source候補で、後続review修正へ流用しない。本人app/Terms非操作。
+
 - [/] current04e mac失敗sampleに65thread中59のUpdateCleanupOps→brew status待ちを確認。文書fixtureごとのKatanaApp::newでOS更新元整理を開始していたため、既存cleanup実装を実native AppCreatorへ移し汎用constructorの副作用を除去。契約1assertRED84951 actual101→native全18GREEN80361/AST23・strictClippy・fmt26510 actual0、通常署名G bc78503aへ統合。evidence/native-host-update-cleanup-2026-10-07.md。元2秒失敗の因果未確定/newHEAD全gate未完、正常host非同期cleanup維持、app操作/Terms代行無し。
 
 - [/] current04e596f0 review5431243615本文P2: pending URLのtarget close後完了で閉鎖tabを再生成する。実close成立時targeted request取消/直接poll closed guard/同path再open旧応答拒否/dirty確認中・open pinned・ユーザー入力維持を実装。元assertRED7→URL全23GREEN37652、AST23/strictClippy/fmt3159 actual0。通常署名G ad264741へ統合、evidence/url-review-routing-2026-10-07.md。push・本文個別返信/fresh全レビューは未完。inline thread無し。
