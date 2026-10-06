@@ -82,10 +82,14 @@ impl LocalImageLoader {
             });
         }
         let frame = self.inner.active_frame.load(Ordering::Acquire);
-        cache.active_images.get_mut(key).map(|(image, seen)| {
+        if let Some((image, seen)) = cache.active_images.get_mut(key) {
             *seen = frame;
-            super::LocalImageStatus::Ready(Arc::clone(image))
-        })
+            return Some(match image {
+                Ok(image) => super::LocalImageStatus::Ready(Arc::clone(image)),
+                Err(error) => super::LocalImageStatus::Failed(error.clone()),
+            });
+        }
+        None
     }
 
     pub(super) fn store_result(&self, key: RequestKey, image: Result<egui::ColorImage, String>) {
@@ -105,7 +109,7 @@ impl LocalImageLoader {
             let frame = self.inner.active_frame.load(Ordering::Acquire);
             cache
                 .active_images
-                .insert(key.clone(), (Arc::new(image), frame));
+                .insert(key.clone(), (Ok(Arc::new(image)), frame));
             trim_cache(&mut cache, &key);
             return;
         }
@@ -113,7 +117,10 @@ impl LocalImageLoader {
             .bytes
             .saturating_sub(cache.ready.get(&key).map_or(0, result_bytes));
         cache.bytes += bytes;
-        cache.ready.insert(key.clone(), image.map(Arc::new));
+        let result = image.map(Arc::new);
+        cache.ready.insert(key.clone(), result.clone());
+        let frame = self.inner.active_frame.load(Ordering::Acquire);
+        cache.active_images.insert(key.clone(), (result, frame));
         trim_cache(&mut cache, &key);
     }
 

@@ -28,7 +28,7 @@ struct RequestKey {
 struct Cache {
     ready: HashMap<RequestKey, Result<Arc<egui::ColorImage>, String>>,
     textures: HashMap<RequestKey, egui::TextureHandle>,
-    active_images: HashMap<RequestKey, (Arc<egui::ColorImage>, u64)>,
+    active_images: HashMap<RequestKey, (Result<Arc<egui::ColorImage>, String>, u64)>,
     active_textures: HashMap<RequestKey, (egui::TextureHandle, u64)>,
     bytes: usize,
 }
@@ -170,6 +170,9 @@ impl LocalImageLoader {
 mod gui_tests;
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod batch_tests;
 
 #[cfg(test)]
 mod display_tests;
