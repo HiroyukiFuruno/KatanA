@@ -14,6 +14,19 @@ fn result_bytes(image: &Result<Arc<egui::ColorImage>, String>) -> usize {
 }
 
 impl LocalImageLoader {
+    pub(super) fn evict_failed_decodes(&self, path: &std::path::Path) {
+        let Ok(mut cache) = self.inner.cache.lock() else {
+            return;
+        };
+        /* WHY: watch復旧を待たず実decodeを再試行するが、成功画像と別pathのcacheは保持する。失敗entryの使用bytesは0。 */
+        cache
+            .ready
+            .retain(|key, image| key.path != path || image.is_ok());
+        cache
+            .active_images
+            .retain(|key, (image, _)| key.path != path || image.is_ok());
+    }
+
     pub(super) fn advance_active_frame(&self, frame: u64) {
         let previous = self.inner.active_frame.swap(frame, Ordering::AcqRel);
         if previous == frame {

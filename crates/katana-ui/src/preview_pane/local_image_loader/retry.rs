@@ -75,6 +75,7 @@ impl LocalImageLoader {
         let generation = failure.generation;
         let next_deadline = failure.deadline;
         drop(errors);
+        self.evict_failed_decodes(path);
         if let Err(error) = self.ensure_watched(path) {
             self.store_watch_error(path.to_path_buf(), error, generation);
         }

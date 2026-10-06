@@ -1,4 +1,3 @@
-use super::watcher_tests::wait_ready;
 use super::*;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -8,6 +7,23 @@ const RED_PIXEL: [u8; 4] = [255, 0, 0, 255];
 const WAIT_SECONDS: u64 = 5;
 const REQUEST_REPETITIONS: usize = 100;
 const RETRY_REPAINT_LIMIT: Duration = Duration::from_secs(2);
+
+fn wait_ready_and_registered(loader: &LocalImageLoader, path: &Path) {
+    let deadline = Instant::now() + Duration::from_secs(WAIT_SECONDS);
+    while Instant::now() < deadline {
+        loader.poll(0);
+        /* WHY: decode復旧と非同期watch登録は独立して完了するため、同じ期限内で両方の契約を確認する。 */
+        if let LocalImageStatus::Ready(image) = loader.request(path, TEST_BACKGROUND)
+            && image.pixels.first().map(egui::Color32::to_array) == Some(RED_PIXEL)
+            && loader.watch_error(path).is_none()
+        {
+            return;
+        }
+        std::thread::yield_now();
+    }
+    let state = super::watcher_overflow_tests::watch_state(loader, path);
+    panic!("image and watch registration did not recover: {state}");
+}
 
 #[test]
 fn missing_parent_recovers_after_directory_and_png_are_created() {
@@ -45,7 +61,7 @@ fn missing_parent_recovers_after_directory_and_png_are_created() {
     image::RgbaImage::from_pixel(1, 1, image::Rgba(RED_PIXEL))
         .save(&path)
         .expect("created PNG");
-    wait_ready(&loader, &path, TEST_BACKGROUND, RED_PIXEL);
+    wait_ready_and_registered(&loader, &path);
     assert!(loader.watch_error(&path).is_none());
 }
 
