@@ -21,6 +21,18 @@ def step_block(job, name):
 
 
 class CiResourceContractTest(unittest.TestCase):
+    def test_patched_backend_contracts_use_root_lock_and_ui_features(self):
+        job = current_test_job()
+        cache_tests = step_block(job, "Test CommonMark cache contracts")
+        command = "cargo test --locked -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests"
+        self.assertIn(f"run: {command}", cache_tests)
+        self.assertNotIn("continue-on-error", cache_tests)
+        self.assertNotIn("--manifest-path", cache_tests)
+        tests_just = (Path(__file__).resolve().parents[2] / "just/tests.just").read_text()
+        self.assertRegex(tests_just, r"(?m)^test:.*\btest-commonmark-backend\b")
+        self.assertIn("test-commonmark-backend:", tests_just)
+        self.assertIn("-p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests", tests_just)
+
     def test_original_failure_sample_is_opt_in_and_cannot_replace_failure(self):
         job = current_test_job()
         tests = step_block(job, "Run tests")

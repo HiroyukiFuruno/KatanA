@@ -11,11 +11,16 @@ type-check:
     {{CARGO}} check --workspace
 
 # Run impacted unit tests (local default)
-test: test-cargo-sweep-contract test-ci-resource-contract test-html-host-contract test-impacted
+test: test-cargo-sweep-contract test-ci-resource-contract test-html-host-contract test-commonmark-backend test-impacted
+
+# root lockとUIのfeature集合で、workspace外の既存patched backendを検査する。
+test-commonmark-backend:
+    {{CARGO}} test --locked -j {{JOBS}} -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
 
 # デバッグ情報の容量対策で全test・coverage・受入を削減していないことを確認する。
 test-ci-resource-contract:
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
+    {{RTK_CMD}}python3 -B -m unittest discover -s scripts/runner -p test_impacted.py -v
 
 # 実Cargoのロック競合と不明なtarget構造で、cache整理が安全に停止することを確認する。
 test-cargo-sweep-contract:

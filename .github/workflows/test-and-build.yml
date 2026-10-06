@@ -99,7 +99,9 @@ jobs:
         run: cargo check --workspace
 
       - name: Verify CI resource contract
-        run: python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
+        run: |
+          python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
+          python3 -B -m unittest discover -s scripts/runner -p test_impacted.py -v
 
       - name: Install cargo-sweep
         run: |
@@ -117,6 +119,9 @@ jobs:
           cargo test --locked -p katana-ui --lib
           preview_pane::document_surface::font_lookup::tests::real_background_worker_returns_result_with_identity_while_ui_paints
           -- --exact --nocapture
+
+      - name: Test CommonMark cache contracts
+        run: cargo test --locked -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
 
       - name: Run tests
         id: workspace_tests
