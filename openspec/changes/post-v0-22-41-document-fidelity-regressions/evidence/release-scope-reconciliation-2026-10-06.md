@@ -1,5 +1,13 @@
 # v0.22.42 公開範囲の整合
 
+## 追加検証と現状
+
+- ビルド前source gateと公開前packaged-host gateを分離した。後者は実配布binary、元入力・参照・測定hash、全対象、正常close/RSS、scroll/reload/dirty-sourceを必須とし、KRR106の測定済みChrome乖離だけを未解決として区別する。未測定やhost操作欠落は拒否する。
+- 機械回帰は正式evidence venvでgate26件、divergence9件、既存strict48件、flow8件が成功。初稿fixtureのhost_actions欠落1FAILと標準PythonのPillow不足1ERRORは保持し、補正後結果と区別する。実mainの配布受入receiptはまだ生成していない。
+- 両manifestの最新互換/major/pinned dry-runとJS依存確認後、両lockのctutils0.4.3、zerocopy/derive0.8.60だけを更新。KDV0.5.12/KRR0.4.23の公開sparse index非yank/checksumを再確認した。上流次期版を独自採用しない。
+- 更新graphの画像loader16件、AST23件、strict impacted Clippyは成功。旧候補watcher1FAILは原因未確定であり今回の成功を原因解消と読み替えない。
+- GitHub公開HEAD04269741のmacOS通常suiteは1096PASS/1FAIL/既存ignore2。dirty-target HTMLの初frame2秒待ちが失敗した。後続別プロセスの診断成功は元失敗の修復証拠ではない。Linux成功、Windows未完了、元期限不変で切り分けを続ける。
+
 ## 正本となる本人決定
 
 KDV/KRRの不備取り込みは次期とし、今回はKatanA所有の改善を完了して公開する。Issue作成は上流編集許可ではない。未解決の描画差分・変換遅延・再起動artifact不足は既知制限として公開する。独立95点、Chrome完全一致、全不備解消を主張しない。

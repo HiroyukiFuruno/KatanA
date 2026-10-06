@@ -1,5 +1,8 @@
 ## 1. Reproduction and ownership evidence
 
+- [ ] 2026-10-06 HEAD04269741のcurrent review追加P2 PRRT_kwDORm09y86pUrOm: 同一pollで17件以上の画像結果が届くと、初表示前に先の未消費結果が再利用cacheから退避される。初consumerまでのframe限定所有、失敗結果、次frameの同TextureId、reset/変更世代/解放、元16件64MiB上限を回帰し、通常commit/push後に個別reply/resolve・fresh取得する。
+- [/] 通常push48627 actualexit0、local/remote/PR346 HEAD042697416c0433cb66f120d255a9580461fb0797一致・ahead0/behind0。従前の小画像17/MathJax physics/Unicode fontの3件は個別reply4191620938/4191621452/4191622006→resolve→全1page fresh取得でresolved確認済み。新HEAD CI37415299660はLinux通常tests成功、macOS/Windows進行中。旧CI・in-process・過去coverageを新graph/実配布へ流用しない。
+
 - [/] 2026-10-06通常push23466はLinux1079PASS/1FAIL/既存ignore2でexit1、公開不成立。small17初表示前の即時cache退避を検出。helper組立案7f1b46abはconsumer検証が抜けるため撤回し、元store_result→texture回帰を復元、新規結果keyを即時退避から保護する製品補正へ変更。native85122 loader11PASS、Linux73828は別PNG初回1FAIL/10PASS、診断だけ追加し40070 loader11PASS/0.67秒。別PNG失敗原因未確定、単独再成功を解消証明にしない。AST40757=23PASS/Clippy97322/fmt36459/diffcheck exit0、上限・timeout・assert不変。CI失敗後限定DEBUG診断bc6b27ecは契約RED→7PASS/実exact50828 1PASS、正常性能やcold CI解消の証明ではない。通常push再実行/個別replyresolve/newHEAD全gate・packaged未完。
 
 - [/] 2026-10-06今回公開範囲の現物監査: 本人決定の上流次期をproposal/designへ反映し、evidence/release-scope-reconciliation-2026-10-06.mdへhost必須/次期Issueを区分した。3.2だけのallowではacceptance checkerのChrome完全一致が残り、上流延期が実効化されないため未採用。Issue-bound延期契約、実参照/packaged測定のidentityと未解決差分保存、host全品質/close/RSS/入力/全配布拒否回帰の実装・検証・正式統合は未完了。文書記録をゲート完成/公開成功に代用しない。
@@ -223,6 +226,7 @@
 - [x] 2.3 Remove normal loading of the 183 MiB Apple Color Emoji payload, prevent duplicate first-frame font initialization, and preserve CJK/emoji rendering tests.
 - [x] 2.4 Add the `DEBUG=true`-only timing/resource helper and instrument KatanA source intake, worker handoff, frame receipt, texture update, and surface drop.
 - [x] 2.5 Remove the Explorer's per-frame recursive workspace-tree clone, cache revision-bound projections, render only visible expanded rows, and add latency/scroll regressions.
+- [x] 2.6 Retain every unread same-poll local image result until the actual texture consumer or frame-grace expiry, including typed failures; keep reusable cache limits16/64MiB and prove next-frame ownership, reset and file revision invalidation. Source verification: official local_image_loader16PASS (tmp/same-poll-final-loader.log), AST23PASS (tmp/same-poll-ast.log), strict impacted Clippy exit0 (tmp/same-poll-lint.log). Current P2 PRRT_kwDORm09y86pUrOm still requires normal commit/push and individual reply/resolve/fresh retrieval; source completion is not packaged acceptance.
 
 ## 3. Owner-layer viewer and renderer fixes
 
@@ -246,6 +250,11 @@
   - 背景intakeと変更通知/強制更新/取消を実装。新規5件を含むLinux UI878件、parallel141件、fixture8件、serial18件が成功（既存の手動ignoreは変更なし）。native strict Clippy、AST23件、formatが成功。読込待ち中に実FIFO/egui frameを実行する回帰を含む。実main再受入と全coverageを残すため3.6は未完了のまま維持。
 - [ ] 3.7 Bound KDV rendered-page caches and ensure KDV/KRR sessions release worker, frame, artifact, and cache resources on close.
 - [x] 3.8 Fix [KatanA #340](https://github.com/HiroyukiFuruno/KatanA/issues/340) so the Markdown HTML image parser treats `>` inside quoted attributes as data instead of a tag terminator, and prove the supplied `sample.md` data-SVG does not leak raw encoded text into preview/export. The parser and host-preview regressions fail before the fix; parser tests (33), core preview tests (42), the focused host test (1), format, Clippy, and diff checks pass after it.
+- [x] 3.9 Source implementation only: XLSX filter forwarding/header controls and visible-row state are integrated in a296e49e with real worker Candidates/Apply/Clear and twelve state/menu regressions. This splits the implemented host portion from 3.3; packaged input and current-source full gates remain required.
+- [x] 3.10 Source implementation only: legal data-descriptor DOCX display, typed error propagation and unchanged archive safety are verified with the public release worker. The legal DOCX and actual Sheet0→1→0 runs complete with normal close and zero idle resources; see evidence/public-krr0423-acceptance-2026-10-05.md. KDV #67 is unresolved and is not marked fixed; current packaged-main acceptance remains required.
+- [x] 3.11 Source implementation only: named/weight/style font face ownership, Unicode identity and one-pass batch border projection are integrated (c4678022, cc8e9123, 7b5224d4). Font155, real worker surface68, border4096/all-side/order/late-invalid-entry and AST regressions are recorded in evidence/current-review-three-repairs-2026-10-06.md and evidence/dependency-audit.md. Source tests are not source-renderer fidelity scores or packaged proof.
+- [x] 3.12 Source implementation only: background intake, external changes, forced refresh and cancellation are integrated in 437f6c81. Five regressions include real FIFO/egui-frame responsiveness, with Linux UI878/fixture8/parallel141/serial18 and unchanged AST/lint gates recorded under 3.6. KDV #65 conversion delay remains unresolved; current actual-main timings remain required.
+- [x] 3.13 Source implementation only: final document-preview cleanup and frame/session ownership are integrated in b96f5f36 with eight real caller/live-buffer regressions. Diagnostic-OFF Office5 twice and loom+HTML cold/warm results retain original limits; see evidence/office-memory-observer-2026-10-06.md. Narrow RSS margins do not prove stable memory resolution; current packaged release/close/idle evidence remains required under 3.7.
 
 ## 4. Regression harness and full verification
 
@@ -315,6 +324,7 @@
 - [ ] 5.1 Publish required owner-layer fixes in dependency order and verify each public registry artifact.
 - [/] 5.2 Update KatanA to exact published registry versions with no path/git overrides and rerun the packaged acceptance suite. 2026-10-01: root/screenshot resolve public KDV0.5.8 / KUC0.4.0 / KRR0.4.21 / singleton V8 152.2.0 with no sibling path/git override. Both lockfiles retain registry checksums; the full compatible and major/pinned audit proposes no further feasible update. Earlier packaged Office worker acceptance after KatanA #345 is not current main-app/updated-font acceptance. The supplied HTML still times out and remains CPU-bound on KRR0.4.21 (KRR #95), so HTML packaged acceptance requires a later public KRR fix.
 - [ ] 5.3 Report all tracked user findings as verified fixed or explicitly unresolved; do not mark this change complete while any required item lacks evidence.
+- [x] 5.4 Source graph only: both locks and exact registry KDV=0.5.12/KRR=0.4.23 adoption are integrated (000a2869/297f1f59); current public sparse index confirms non-yanked checksums4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635 and8e5e0803f343d781dc015d1fe21b052492d67579ba303cf86203f60455852e00. No unpublished sibling path/git override is allowed. This does not close deferred KDV65/66/67 or KRR106, and does not substitute for 5.2 packaged acceptance.
 
 ## 6. User Review Phase
 

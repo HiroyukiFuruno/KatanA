@@ -1,5 +1,15 @@
 # c07 current review追加3件の修正検証
 
+## 最新統合と追加レビュー
+
+旧3件は通常push48627 exit0でHEAD04269741へ公開し、各返信4191620938/4191621452/4191622006とresolve後の全1page取得で解決済みを確認した。最新042レビューのP2同一poll結果欠落(PRRT_kwDORm09y86pUrOm / discussion_r4191642495)は別指摘として対応する。
+
+同一pollに17個以上の小画像結果を受けた時、初consumer前に先行結果を退避してしまう問題を実texture経路で再現した。表示用active所有をResultへ一般化し、成功/失敗を初consumerまたはframe-graceまで保持する。新規map/allocator/公開APIは追加せず、reuse上限16件/64MiBを維持する。5追加回帰は同一poll全texture・次frame同TextureId・Failed非再queue・grace/reset/pathrevisionを検証する。実file decodeやnative GPU性能の証拠とは区別する。
+
+最終公開依存graphで公式loader16PASS/40suites/2.13秒(session10252)、AST23PASS/17.12秒(16869)、strict impacted Clippy exit0(23335)、fmt-check91414/diffcheck exit0。先行watcher期待pixel失敗1件は原因未確定で、今回の成功だけで修復済みとは主張しない。関心事別署名付き通常commit67841c51、最新互換両lock3件aca70d84。通常push/新thread個別replyresolve/新HEAD全gateはまだ後続。
+
+公開042のmacOS通常CIは1096PASS/1FAIL/既存ignore2、dirty-target初frame待ち2034ms/idlefalse/generationNoneで失敗。失敗後別process DEBUG成功0.31秒は元失敗stageの証拠ではない。Linux成功、Windows進行、元2秒/cold/判定不変で診断を続ける。
+
 ## 対象と未完了
 
 PR346のc07b5028 current reviewで追加された小画像表示所有、Physics数式、Unicodeフォント名照合を対象とする。今回公開のKatanA修正であり、KDV/KRRの次期Issueを実装しない。通常commit/push、各thread reply/resolve、fresh review、新HEAD CI、packaged受入、公開は別工程で未完了。
