@@ -13,6 +13,8 @@ from pathlib import Path
 TARGET_VERSION = "0.22.42"
 CHANGE_NAME = "post-v0-22-41-document-fidelity-regressions"
 MODES = {
+    "source",
+    "packaged-host",
     "strict",
     "pr-bootstrap",
     "release-artifact-pending",
@@ -31,16 +33,54 @@ BOOTSTRAP_ALLOWED = {
     "6.2",
     "6.3",
 }
+SOURCE_UPSTREAM_DEFERRED = {"3.2"}
+SOURCE_HOST_IMPLEMENTATION_MARKERS = {
+    "3.3": "3.9",
+    "3.4": "3.10",
+    "3.5": "3.11",
+    "3.6": "3.12",
+    "3.7": "3.13",
+    "5.1": "5.4",
+}
+SOURCE_EVIDENCE_GENERATION = {
+    "1.2",
+    "1.6",
+    "4.3",
+    "4.4",
+    "4.5",
+    "4.7",
+    "4.11",
+    "4.12",
+    "4.13",
+    "4.15",
+    "4.23",
+    "5.2",
+    "6.2",
+}
+SOURCE_POST_PUBLICATION = {"4.8", "4.9", "5.3", "6.3"}
+PACKAGED_HOST_ALLOWED = (
+    SOURCE_UPSTREAM_DEFERRED
+    | set(SOURCE_HOST_IMPLEMENTATION_MARKERS)
+    | SOURCE_POST_PUBLICATION
+)
+SOURCE_ALLOWED = (
+    SOURCE_UPSTREAM_DEFERRED
+    | set(SOURCE_HOST_IMPLEMENTATION_MARKERS)
+    | SOURCE_EVIDENCE_GENERATION
+    | SOURCE_POST_PUBLICATION
+)
 CRITICAL_REQUIRED = {
     "1.2",
     "1.6",
     *{f"2.{number}" for number in range(1, 6)},
+    "2.6",
     *{f"3.{number}" for number in range(2, 9)},
     *{f"4.{number}" for number in (3, 4, 5, 7, 13, 14, 16, 17, 23)},
     *{f"5.{number}" for number in range(1, 4)},
     "6.2",
 }
 TASK_ID_PATTERN = re.compile(r"^\s*-\s*\[[^\]]\]\s+(\d+\.\d+)\b")
+COMPLETED_TASK_ID_PATTERN = re.compile(r"^\s*-\s*\[x\]\s+(\d+\.\d+)\b")
 
 
 class GateError(RuntimeError):
@@ -77,11 +117,48 @@ def declared_task_ids(tasks: Path) -> set[str]:
     }
 
 
+def completed_task_ids(tasks: Path) -> set[str]:
+    return {
+        match.group(1)
+        for line in tasks.read_text(encoding="utf-8").splitlines()
+        if (match := COMPLETED_TASK_ID_PATTERN.match(line)) is not None
+    }
+
+
+def verify_host_implementation_markers(tasks: Path, mode: str) -> None:
+    if mode not in {"source", "packaged-host"}:
+        return
+    declared = declared_task_ids(tasks)
+    completed = completed_task_ids(tasks)
+    missing = sorted(
+        marker
+        for marker in SOURCE_HOST_IMPLEMENTATION_MARKERS.values()
+        if marker not in declared
+    )
+    incomplete = sorted(
+        marker
+        for marker in SOURCE_HOST_IMPLEMENTATION_MARKERS.values()
+        if marker in declared and marker not in completed
+    )
+    if missing or incomplete:
+        details = []
+        if missing:
+            details.append("missing: " + ", ".join(missing))
+        if incomplete:
+            details.append("incomplete: " + ", ".join(incomplete))
+        raise GateError("required host implementation markers are " + "; ".join(details))
+
+
 def run_task_checker(tasks: Path, mode: str) -> int:
     checker = Path(__file__).with_name("check-openspec-task-completion.py")
     command = [sys.executable, str(checker), str(tasks)]
-    if mode == "pr-bootstrap":
-        for task_id in sorted(BOOTSTRAP_ALLOWED):
+    allowed = {
+        "pr-bootstrap": BOOTSTRAP_ALLOWED,
+        "source": SOURCE_ALLOWED,
+        "packaged-host": PACKAGED_HOST_ALLOWED,
+    }.get(mode)
+    if allowed is not None:
+        for task_id in sorted(allowed):
             command.extend(("--allow", task_id))
     result = subprocess.run(command, capture_output=True, text=True, check=False)
     if result.stdout:
@@ -91,17 +168,20 @@ def run_task_checker(tasks: Path, mode: str) -> int:
     return result.returncode
 
 
-def run_acceptance_evidence_checker(repository_root: Path) -> int:
+def run_acceptance_evidence_checker(repository_root: Path, *, host_scope: bool = False) -> int:
     checker = Path(__file__).with_name("check-document-fidelity-acceptance-evidence.py")
+    command = [
+        sys.executable,
+        str(checker),
+        "--root",
+        str(repository_root),
+        "--evidence",
+        str(tasks_evidence_path(repository_root)),
+    ]
+    if host_scope:
+        command.extend(("--scope", "katana-host"))
     result = subprocess.run(
-        [
-            sys.executable,
-            str(checker),
-            "--root",
-            str(repository_root),
-            "--evidence",
-            str(tasks_evidence_path(repository_root)),
-        ],
+        command,
         capture_output=True,
         text=True,
         check=False,
@@ -131,9 +211,12 @@ def verify(version: str, mode: str, repository_root: Path) -> int:
             "critical release task IDs are missing from the bound change: "
             + ", ".join(missing)
         )
+    verify_host_implementation_markers(tasks, mode)
     task_result = run_task_checker(tasks, mode)
-    if task_result != 0 or mode == "pr-bootstrap":
+    if task_result != 0 or mode in {"pr-bootstrap", "source"}:
         return task_result
+    if mode == "packaged-host":
+        return run_acceptance_evidence_checker(repository_root, host_scope=True)
     evidence_result = run_acceptance_evidence_checker(repository_root)
     return evidence_result
 

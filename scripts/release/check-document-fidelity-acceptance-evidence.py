@@ -18,6 +18,8 @@ import warnings
 from pathlib import Path
 from typing import Any
 
+from document_fidelity_divergence import DivergenceError, verify_disposition
+
 
 TARGET = "v0.22.42"
 EVIDENCE_RELATIVE = (
@@ -382,7 +384,8 @@ def verify_contract_identity(root: Path, contract: dict[str, Any], comparison: d
     return expected_viewport, reference_artifact, measured_artifact
 
 
-def verify_comparison_geometry(comparison: dict[str, Any], contract: dict[str, Any], names: set[str], name: str, reference_artifact: dict[str, Any], measured_artifact: dict[str, Any]) -> None:
+def verify_comparison_geometry(comparison: dict[str, Any], contract: dict[str, Any], names: set[str], name: str, reference_artifact: dict[str, Any], measured_artifact: dict[str, Any], *, collect_divergence: bool = False) -> set[str]:
+    differences: set[str] = set()
     geometry = comparison.get("geometry")
     contract_geometry = contract.get("geometry")
     if not isinstance(geometry, dict) or set(geometry) != names:
@@ -411,10 +414,13 @@ def verify_comparison_geometry(comparison: dict[str, Any], contract: dict[str, A
         tolerance = require_finite_number(expected["tolerance"], f"{name}.contract.geometry.{target}.tolerance")
         delta = max(abs(measured[field] - reference[field]) for field in ("x", "y", "width", "height"))
         if delta > tolerance:
-            fail(f"{name}.geometry.{target} exceeds the contract tolerance")
+            if not collect_divergence:
+                fail(f"{name}.geometry.{target} exceeds the contract tolerance")
+            differences.add(f"geometry.{target}")
+    return differences
 
 
-def verify_html_comparison(root: Path, value: dict[str, Any]) -> None:
+def verify_html_comparison(root: Path, value: dict[str, Any], *, collect_divergence: bool = False) -> None:
     input_sha = require_sha256(value.get("fixture_sha256"), "HTML.fixture_sha256")
     comparison = value.get("comparison")
     if not isinstance(comparison, dict):
@@ -436,7 +442,7 @@ def verify_html_comparison(root: Path, value: dict[str, Any]) -> None:
         fail("HTML.comparison.input must bind the #s15 anchor")
     if require_sha256(input_record.get("fixture_sha256"), "HTML.comparison.input.fixture_sha256") != input_sha:
         fail("HTML.comparison input fixture identity does not match HTML fixture")
-    verify_comparison_geometry(comparison, contract, {"sticky_toc", "main", "visible_section"}, "HTML", reference_artifact, measured_artifact)
+    differences = verify_comparison_geometry(comparison, contract, {"sticky_toc", "main", "visible_section"}, "HTML", reference_artifact, measured_artifact, collect_divergence=collect_divergence)
     if measured_artifact.get("navigation") != comparison.get("navigation"):
         fail("HTML navigation does not match the measured artifact")
     for field in ("active_toc", "visible_section_state"):
@@ -444,10 +450,44 @@ def verify_html_comparison(root: Path, value: dict[str, Any]) -> None:
         if (not isinstance(state, dict) or set(state) != {"reference", "measured"}
                 or not isinstance(state["reference"], str) or not state["reference"]
                 or not isinstance(state["measured"], str) or not state["measured"]
-                or state["reference"] != state["measured"] or state["reference"] != "#s15"):
+                or state["reference"] != "#s15"):
             fail(f"HTML.comparison.{field} must match the reference state")
         if reference_artifact.get(field) != state["reference"] or measured_artifact.get(field) != state["measured"]:
             fail(f"HTML.comparison.{field} does not match the render measurements")
+        if state["reference"] != state["measured"]:
+            if not collect_divergence:
+                fail(f"HTML.comparison.{field} must match the reference state")
+            differences.add(field)
+    if collect_divergence:
+        verify_html_host_actions(measured_artifact.get("host_actions"), input_sha)
+        try:
+            verify_disposition(comparison.get("disposition"), differences)
+        except DivergenceError as error:
+            fail(str(error))
+
+
+def verify_html_host_actions(value: object, input_sha: str) -> None:
+    if not isinstance(value, dict) or set(value) != {"scroll", "reload", "dirty_source"}:
+        fail("HTML host scope requires scroll, reload and dirty-source measurements")
+    for action in ("scroll", "reload"):
+        record = value[action]
+        if not isinstance(record, dict) or set(record) != {
+            "input_received", "frame_before", "frame_after", "source_sha256"
+        }:
+            fail(f"HTML host {action} measurement is incomplete")
+        if record["input_received"] is not True:
+            fail(f"HTML host {action} input was not received")
+        before = require_positive_integer(record["frame_before"], f"HTML host {action}.frame_before")
+        after = require_positive_integer(record["frame_after"], f"HTML host {action}.frame_after")
+        if after <= before or record["source_sha256"] != input_sha:
+            fail(f"HTML host {action} must advance a frame without replacing its source")
+    dirty = value["dirty_source"]
+    if not isinstance(dirty, dict) or set(dirty) != {"before_sha256", "after_sha256", "modified_before", "modified_after"}:
+        fail("HTML host dirty-source measurement is incomplete")
+    before = require_sha256(dirty["before_sha256"], "HTML host dirty_source.before_sha256")
+    after = require_sha256(dirty["after_sha256"], "HTML host dirty_source.after_sha256")
+    if before != after or dirty["modified_before"] is not True or dirty["modified_after"] is not True:
+        fail("HTML host operations must preserve unsaved source and dirty state")
 
 
 def verify_html_navigation(value: object) -> None:
@@ -481,7 +521,7 @@ def verify_normal_close_duration(record: dict[str, Any], name: str) -> None:
         fail(f"{name} normal close must be within {MAX_NORMAL_CLOSE_MS} ms")
 
 
-def verify_html(root: Path, value: object, packaged_targets: dict[str, Any]) -> None:
+def verify_html(root: Path, value: object, packaged_targets: dict[str, Any], *, host_scope: bool = False) -> None:
     if not isinstance(value, dict):
         fail("HTML acceptance evidence is missing")
     if value.get("fixture_sha256") != ORIGINAL_HTML_SHA256:
@@ -496,7 +536,7 @@ def verify_html(root: Path, value: object, packaged_targets: dict[str, Any]) -> 
         fail("HTML first frame must be within 60000 ms")
     require_finite_number(value.get("cpu_percent"), "HTML cpu_percent")
     require_positive_finite_number(value.get("rss_bytes"), "HTML rss_bytes")
-    verify_html_comparison(root, value)
+    verify_html_comparison(root, value, collect_divergence=host_scope)
     target_artifact = packaged_targets[value["packaged_target"]]
     for field in ("main_path", "sidecar_path", "main_sha256", "sidecar_sha256"):
         if value["packaged_run"][field] != target_artifact[field]:
@@ -758,7 +798,9 @@ def verify_office(root: Path, value: object, packaged_targets: dict[str, Any]) -
         fail("Office evidence must include DOCX, XLSX, and PPTX fixtures")
 
 
-def verify(root: Path, evidence_path: Path | None = None) -> None:
+def verify(root: Path, evidence_path: Path | None = None, *, scope: str = "strict") -> None:
+    if scope not in {"strict", "katana-host"}:
+        fail("unknown acceptance scope")
     evidence_path = evidence_path or root / EVIDENCE_RELATIVE
     if not evidence_path.is_file():
         fail(f"acceptance evidence is required: {evidence_path}")
@@ -793,7 +835,7 @@ def verify(root: Path, evidence_path: Path | None = None) -> None:
         if not isinstance(record, dict) or record.get("version") != package["version"] or record.get("source") != CRATES_IO_SOURCE:
             fail(f"published dependency evidence does not match Cargo.lock for {name}")
     verify_packaged(evidence.get("packaged_targets"))
-    verify_html(root, evidence.get("html"), evidence["packaged_targets"])
+    verify_html(root, evidence.get("html"), evidence["packaged_targets"], host_scope=scope == "katana-host")
     verify_office(root, evidence.get("office_fixtures"), evidence["packaged_targets"])
 
 
@@ -801,13 +843,14 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--evidence", type=Path)
+    parser.add_argument("--scope", choices=("strict", "katana-host"), default="strict")
     args = parser.parse_args()
     try:
-        verify(args.root.resolve(), args.evidence.resolve() if args.evidence else None)
+        verify(args.root.resolve(), args.evidence.resolve() if args.evidence else None, scope=args.scope)
     except (AcceptanceEvidenceError, OSError) as error:
         print(f"ERROR: document acceptance evidence: {error}", file=sys.stderr)
         return 1
-    print("OK: v0.22.42 document acceptance evidence is current and complete.")
+    print(f"OK: v0.22.42 {args.scope} acceptance evidence is current; known upstream divergence is not a fidelity pass.")
     return 0
 
 

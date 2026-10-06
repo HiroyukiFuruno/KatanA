@@ -24,6 +24,8 @@ for argument in "$@"; do
         --pr-bootstrap) TASK_GATE_MODE="pr-bootstrap" ;;
         --release-artifact-pending) TASK_GATE_MODE="release-artifact-pending" ;;
         --post-release-evidence) TASK_GATE_MODE="post-release-evidence" ;;
+        --document-source) TASK_GATE_MODE="source" ;;
+        --packaged-host) TASK_GATE_MODE="packaged-host" ;;
         --*) error "Unknown option: $argument"; exit 2 ;;
         *)
             if [[ -n "$EXPECTED_VERSION" ]]; then

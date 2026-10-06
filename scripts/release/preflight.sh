@@ -130,6 +130,8 @@ if [[ ! -x "$EVIDENCE_PYTHON_ENV/bin/python" ]]; then
 fi
 "$EVIDENCE_PYTHON_ENV/bin/python" -m pip install --disable-pip-version-check --only-binary=:all: -r scripts/release/evidence-requirements.txt
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-release-gate.py
+"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-divergence.py
+"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-acceptance-evidence.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-published-artifact-identity.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/check-document-fidelity-release-gate.py "$VERSION" "$TASK_GATE_MODE"
 VERSION_DASHED=$(echo "$VERSION" | tr '.' '-')

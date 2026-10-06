@@ -106,7 +106,18 @@ class DocumentFidelityReleaseGateTests(unittest.TestCase):
                         raise error
 
     def completed_required_tasks(self) -> str:
-        return "".join(f"- [x] {task_id} complete\n" for task_id in sorted(MODULE.CRITICAL_REQUIRED))
+        task_ids = MODULE.CRITICAL_REQUIRED | set(
+            MODULE.SOURCE_HOST_IMPLEMENTATION_MARKERS.values()
+        )
+        return "".join(f"- [x] {task_id} complete\n" for task_id in sorted(task_ids))
+
+    def required_tasks_with_pending(self, *task_ids: str) -> str:
+        tasks = self.completed_required_tasks()
+        for task_id in task_ids:
+            tasks = tasks.replace(
+                f"- [x] {task_id} complete", f"- [/] {task_id} pending"
+            )
+        return tasks
 
     def repository(
         self,
@@ -114,6 +125,7 @@ class DocumentFidelityReleaseGateTests(unittest.TestCase):
         *,
         archive_names: tuple[str, ...] = (),
         with_evidence: bool = False,
+        with_host_actions: bool = False,
     ) -> tempfile.TemporaryDirectory[str]:
         directory = tempfile.TemporaryDirectory()
         root = Path(directory.name)
@@ -133,10 +145,20 @@ class DocumentFidelityReleaseGateTests(unittest.TestCase):
                 if tasks is not None
                 else root / "openspec" / "changes" / "archive" / archive_names[0]
             )
-            self.write_valid_evidence(root, evidence_parent=evidence_parent)
+            self.write_valid_evidence(
+                root,
+                evidence_parent=evidence_parent,
+                with_host_actions=with_host_actions,
+            )
         return directory
 
-    def write_valid_evidence(self, root: Path, *, evidence_parent: Path | None = None) -> None:
+    def write_valid_evidence(
+        self,
+        root: Path,
+        *,
+        evidence_parent: Path | None = None,
+        with_host_actions: bool = False,
+    ) -> None:
         (root / "Cargo.toml").write_text("[workspace]\nmembers = []\n", encoding="utf-8")
         (root / "crates").mkdir()
         (root / "crates" / "source.rs").write_text("pub fn source() {}\n", encoding="utf-8")
@@ -311,6 +333,37 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             record["fidelity"]["reference_sha256"] = EVIDENCE.sha256_bytes((artifacts / f"office-{index}-reference.json").read_bytes())
             record["fidelity"]["measured_sha256"] = EVIDENCE.sha256_bytes((artifacts / f"office-{index}-measured.json").read_bytes())
         bind_render_artifacts(root, evidence, EVIDENCE)
+        if with_host_actions:
+            comparison = evidence["html"]["comparison"]
+            measured_path = root / comparison["measured_artifact"]
+            measured = json.loads(measured_path.read_text(encoding="utf-8"))
+            measured["host_actions"] = {
+                "scroll": {
+                    "input_received": True,
+                    "frame_before": 2,
+                    "frame_after": 3,
+                    "source_sha256": EVIDENCE.ORIGINAL_HTML_SHA256,
+                },
+                "reload": {
+                    "input_received": True,
+                    "frame_before": 3,
+                    "frame_after": 4,
+                    "source_sha256": EVIDENCE.ORIGINAL_HTML_SHA256,
+                },
+                "dirty_source": {
+                    "before_sha256": EVIDENCE.ORIGINAL_HTML_SHA256,
+                    "after_sha256": EVIDENCE.ORIGINAL_HTML_SHA256,
+                    "modified_before": True,
+                    "modified_after": True,
+                },
+            }
+            measured_path.write_text(json.dumps(measured), encoding="utf-8")
+            measured_sha256 = EVIDENCE.sha256_bytes(measured_path.read_bytes())
+            comparison["measured_sha256"] = measured_sha256
+            evidence["html"]["packaged_run"]["render_output"][
+                "metrics_sha256"
+            ] = measured_sha256
+            comparison["disposition"] = {"status": "matched"}
         subprocess.run(["git", "-C", str(root), "add", "-f", str(contracts)], check=True, env=EVIDENCE.git_environment())
         evidence["source_tree_sha256"] = EVIDENCE.source_tree_sha256(root)
         evidence_path.parent.mkdir(parents=True)
@@ -354,6 +407,161 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
         self.assertNotEqual(result, 0)
         self.assertIn("9.1", output)
 
+    def test_source_allows_only_fixed_phase_evidence_and_upstream_deferral(self) -> None:
+        self.assertSetEqual(MODULE.SOURCE_UPSTREAM_DEFERRED, {"3.2"})
+        self.assertDictEqual(
+            MODULE.SOURCE_HOST_IMPLEMENTATION_MARKERS,
+            {
+                "3.3": "3.9",
+                "3.4": "3.10",
+                "3.5": "3.11",
+                "3.6": "3.12",
+                "3.7": "3.13",
+                "5.1": "5.4",
+            },
+        )
+        self.assertSetEqual(
+            MODULE.SOURCE_EVIDENCE_GENERATION,
+            {
+                "1.2",
+                "1.6",
+                "4.3",
+                "4.4",
+                "4.5",
+                "4.7",
+                "4.11",
+                "4.12",
+                "4.13",
+                "4.15",
+                "4.23",
+                "5.2",
+                "6.2",
+            },
+        )
+        self.assertSetEqual(
+            MODULE.SOURCE_POST_PUBLICATION, {"4.8", "4.9", "5.3", "6.3"}
+        )
+        tasks = self.required_tasks_with_pending(*MODULE.SOURCE_ALLOWED)
+        with self.repository(tasks) as directory:
+            with mock.patch.object(
+                MODULE, "run_acceptance_evidence_checker"
+            ) as acceptance_checker:
+                result, output = self.run_gate(Path(directory), mode="source")
+        self.assertEqual(result, 0, output)
+        acceptance_checker.assert_not_called()
+
+    def test_source_rejects_incomplete_or_missing_host_implementation_markers(self) -> None:
+        for task_id, marker in MODULE.SOURCE_HOST_IMPLEMENTATION_MARKERS.items():
+            with self.subTest(task_id=task_id, marker=marker):
+                tasks = self.required_tasks_with_pending(task_id, marker)
+                with self.repository(tasks) as directory:
+                    result, output = self.run_gate(Path(directory), mode="source")
+                self.assertNotEqual(result, 0)
+                self.assertIn(marker, output)
+
+        tasks = self.required_tasks_with_pending("3.3").replace(
+            "- [x] 3.9 complete\n", ""
+        )
+        with self.repository(tasks) as directory:
+            result, output = self.run_gate(Path(directory), mode="source")
+        self.assertNotEqual(result, 0)
+        self.assertIn("3.9", output)
+
+        tasks = self.required_tasks_with_pending("3.3").replace(
+            "- [x] 3.9 complete\n", "- [x] 3.14 unknown marker\n"
+        )
+        with self.repository(tasks) as directory:
+            result, output = self.run_gate(Path(directory), mode="source")
+        self.assertNotEqual(result, 0)
+        self.assertIn("3.9", output)
+
+    def test_packaged_host_always_runs_strict_acceptance_evidence(self) -> None:
+        with self.repository(self.completed_required_tasks()) as directory:
+            root = Path(directory)
+            with mock.patch.object(
+                MODULE, "run_acceptance_evidence_checker", return_value=0
+            ) as acceptance_checker:
+                result, output = self.run_gate(root, mode="packaged-host")
+        self.assertEqual(result, 0, output)
+        acceptance_checker.assert_called_once_with(root, host_scope=True)
+
+    def test_packaged_host_allows_only_fixed_future_tasks_before_evidence(self) -> None:
+        self.assertSetEqual(
+            MODULE.PACKAGED_HOST_ALLOWED,
+            MODULE.SOURCE_UPSTREAM_DEFERRED
+            | set(MODULE.SOURCE_HOST_IMPLEMENTATION_MARKERS)
+            | MODULE.SOURCE_POST_PUBLICATION,
+        )
+        tasks = self.required_tasks_with_pending(*MODULE.PACKAGED_HOST_ALLOWED)
+        with self.repository(tasks) as directory:
+            root = Path(directory)
+            with mock.patch.object(
+                MODULE, "run_acceptance_evidence_checker", return_value=0
+            ) as acceptance_checker:
+                result, output = self.run_gate(root, mode="packaged-host")
+        self.assertEqual(result, 0, output)
+        acceptance_checker.assert_called_once_with(root, host_scope=True)
+
+    def test_packaged_host_rejects_source_phase_pending_evidence(self) -> None:
+        tasks = self.required_tasks_with_pending("1.6")
+        with self.repository(tasks) as directory:
+            result, output = self.run_gate(Path(directory), mode="packaged-host")
+        self.assertNotEqual(result, 0)
+        self.assertIn("1.6", output)
+
+    def test_packaged_host_requires_markers_and_actual_acceptance(self) -> None:
+        tasks = self.completed_required_tasks().replace("- [x] 3.9 complete\n", "")
+        with self.repository(tasks) as directory:
+            result, output = self.run_gate(Path(directory), mode="packaged-host")
+        self.assertNotEqual(result, 0)
+        self.assertIn("3.9", output)
+
+        with self.repository(self.completed_required_tasks()) as directory:
+            result, output = self.run_gate(Path(directory), mode="packaged-host")
+        self.assertNotEqual(result, 0)
+        self.assertIn("acceptance evidence", output)
+
+    def test_existing_strict_modes_do_not_require_source_markers(self) -> None:
+        tasks = "".join(
+            f"- [x] {task_id} complete\n" for task_id in sorted(MODULE.CRITICAL_REQUIRED)
+        )
+        for mode in ("strict", "release-artifact-pending", "post-release-evidence"):
+            with self.subTest(mode=mode):
+                with self.repository(tasks) as directory:
+                    root = Path(directory)
+                    with mock.patch.object(
+                        MODULE, "run_acceptance_evidence_checker", return_value=0
+                    ) as acceptance_checker:
+                        result, output = self.run_gate(root, mode=mode)
+                self.assertEqual(result, 0, output)
+                acceptance_checker.assert_called_once_with(root)
+
+    def test_packaged_host_scope_is_limited_to_packaged_host(self) -> None:
+        with self.repository(self.completed_required_tasks()) as directory:
+            root = Path(directory)
+            completed = subprocess.CompletedProcess([], 0, stdout="", stderr="")
+            with mock.patch.object(
+                MODULE.subprocess, "run", return_value=completed
+            ) as run:
+                result = MODULE.run_acceptance_evidence_checker(root, host_scope=True)
+                self.assertEqual(result, 0)
+                packaged_command = run.call_args.args[0]
+                self.assertEqual(packaged_command[-2:], ["--scope", "katana-host"])
+
+                result = MODULE.run_acceptance_evidence_checker(root)
+                self.assertEqual(result, 0)
+                legacy_command = run.call_args.args[0]
+                self.assertNotIn("--scope", legacy_command)
+
+    def test_owner_source_task_cannot_be_removed(self) -> None:
+        tasks = self.completed_required_tasks().replace("- [x] 2.6 complete\n", "")
+        for mode in ("source", "packaged-host", "strict"):
+            with self.subTest(mode=mode):
+                with self.repository(tasks) as directory:
+                    result, output = self.run_gate(Path(directory), mode=mode)
+                self.assertNotEqual(result, 0)
+                self.assertIn("2.6", output)
+
     def test_pending_office_performance_evidence_only_allows_draft(self) -> None:
         tasks = "".join(
             f"- [x] {task_id} complete\n"
@@ -381,16 +589,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                 self.assertIn("4.23", output, mode)
 
     def test_completed_tasks_pass(self) -> None:
-        for mode in ("strict", "release-artifact-pending", "post-release-evidence"):
-            with self.repository(self.completed_required_tasks(), with_evidence=True) as directory:
+        for mode in (
+            "strict",
+            "release-artifact-pending",
+            "post-release-evidence",
+            "packaged-host",
+        ):
+            with self.repository(
+                self.completed_required_tasks(),
+                with_evidence=True,
+                with_host_actions=mode == "packaged-host",
+            ) as directory:
                 result, output = self.run_gate(Path(directory), mode=mode)
             self.assertEqual(result, 0, (mode, output))
 
     def test_completed_tasks_without_evidence_fail_closed(self) -> None:
-        with self.repository(self.completed_required_tasks()) as directory:
-            result, output = self.run_gate(Path(directory))
-        self.assertNotEqual(result, 0)
-        self.assertIn("acceptance evidence", output)
+        for mode in ("strict", "packaged-host"):
+            with self.subTest(mode=mode):
+                with self.repository(self.completed_required_tasks()) as directory:
+                    result, output = self.run_gate(Path(directory), mode=mode)
+                self.assertNotEqual(result, 0)
+                self.assertIn("acceptance evidence", output)
 
     def test_other_versions_are_unchanged(self) -> None:
         with self.repository(None) as directory:

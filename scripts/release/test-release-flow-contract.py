@@ -42,7 +42,33 @@ def verify_release_guidance(workflow: str, skill: str) -> None:
         raise ValueError("release skill must preserve ordinary reviewed commits")
 
 
+def verify_document_phase_order(workflow: str) -> None:
+    preflight = workflow.split("  build_macos:", 1)[0]
+    publish = workflow.split("  publish:", 1)[1]
+    if "--document-source" not in preflight or " packaged-host " in preflight:
+        raise ValueError("build preflight must verify source, not unbuilt packaged evidence")
+    host_gate = publish.find('check-document-fidelity-release-gate.py "${{ needs.preflight.outputs.version_bare }}" packaged-host')
+    public_commands = [publish.find(command) for command in
+                       ("gh release edit", "gh release upload", "gh release create")]
+    if host_gate < 0 or any(position < 0 or host_gate > position for position in public_commands):
+        raise ValueError("packaged host acceptance must succeed before any public release")
+    if "needs: [preflight, build_macos, smoke_macos, build_linux, build_windows]" not in publish:
+        raise ValueError("host acceptance must follow every build and native macOS smoke")
+
+
 class WorkflowContractTests(unittest.TestCase):
+    def test_real_workflow_requires_packaged_host_before_publication(self) -> None:
+        workflow = (ROOT / ".github/workflows/build-and-release.yml").read_text(encoding="utf-8")
+        verify_document_phase_order(workflow)
+        for altered in (
+            workflow.replace("--document-source", "--release-artifact-pending"),
+            workflow.replace(" packaged-host --root .", " source --root ."),
+            workflow.replace("needs: [preflight, build_macos, smoke_macos, build_linux, build_windows]", "needs: preflight"),
+            workflow.replace("      - name: Verify downloaded publication executable identities", "      - name: Early unsafe publication\n        run: gh release upload v0.22.42 bad.zip\n      - name: Verify downloaded publication executable identities"),
+        ):
+            with self.assertRaises(ValueError):
+                verify_document_phase_order(altered)
+
     def test_manual_readiness_before_push_is_rejected(self) -> None:
         with self.assertRaises(ValueError):
             verify_release_guidance("`./scripts/release/check-pr-ready.sh X.Y.Z` を実行し", "")
@@ -86,6 +112,7 @@ def main() -> None:
     assert "run: just check" in lefthook
     assert "preflight.sh" in check_pr_ready
     verify_workflow(build_workflow)
+    verify_document_phase_order(build_workflow)
     verify_workflow(readiness_workflow)
     verify_release_guidance(impl_release, release_skill)
     assert "check-platforms" in tests

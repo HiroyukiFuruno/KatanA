@@ -160,7 +160,12 @@ jobs:
         # WHY: check-pr-ready が preflight を内包するため、同じ公開検査を二重実行しない。
         env:
           GH_TOKEN: ${{ github.token }}
-        run: ./scripts/release/check-pr-ready.sh "${{ steps.version.outputs.version_bare }}" --release-artifact-pending
+        run: |
+          if [[ "${{ steps.version.outputs.version_bare }}" == "0.22.42" ]]; then
+            ./scripts/release/check-pr-ready.sh "${{ steps.version.outputs.version_bare }}" --document-source
+          else
+            ./scripts/release/check-pr-ready.sh "${{ steps.version.outputs.version_bare }}" --release-artifact-pending
+          fi
 
       - name: Extract release notes from CHANGELOG.md
         run: |
@@ -481,6 +486,7 @@ jobs:
           python3 -m venv tmp/release-evidence-python
           tmp/release-evidence-python/bin/python -m pip install --disable-pip-version-check --only-binary=:all: -r scripts/release/evidence-requirements.txt
           tmp/release-evidence-python/bin/python scripts/release/test-published-artifact-identity.py
+          tmp/release-evidence-python/bin/python scripts/release/check-document-fidelity-release-gate.py "${{ needs.preflight.outputs.version_bare }}" packaged-host --root .
           tmp/release-evidence-python/bin/python scripts/release/check-published-artifact-identity.py --root . --assets release-files --version "${{ needs.preflight.outputs.version }}"
 
       - name: Create or Update GitHub Release
