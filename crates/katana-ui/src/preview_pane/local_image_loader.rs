@@ -180,6 +180,8 @@ impl LocalImageLoader {
 }
 
 #[cfg(test)]
+mod fullscreen_gui_tests;
+#[cfg(test)]
 mod gui_tests;
 #[cfg(test)]
 mod tests;

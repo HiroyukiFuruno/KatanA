@@ -155,7 +155,7 @@ impl PreviewPane {
         ctx: Option<&egui::Context>,
     ) {
         if result.is_none() && self.fullscreen_image.is_some() {
-            self.local_image_loader.reset();
+            /* WHY: 通常プレビューと画像監視を共有するため、終了時は全画面側のtexture所有だけを解放する。 */
             self.fullscreen_viewer_state.reset();
             if let Some(ctx) = ctx
                 && !self.was_os_fullscreen_before_modal
