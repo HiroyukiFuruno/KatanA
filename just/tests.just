@@ -11,11 +11,15 @@ type-check:
     {{CARGO}} check --workspace
 
 # Run impacted unit tests (local default)
-test: test-cargo-sweep-contract test-ci-resource-contract test-html-host-contract test-commonmark-backend test-impacted
+test: test-cargo-sweep-contract test-ci-resource-contract test-html-host-contract test-commonmark-backend test-custom-cursor-cache test-impacted
 
 # root lockとUIのfeature集合で、workspace外の既存patched backendを検査する。
 test-commonmark-backend:
     {{CARGO}} test --locked -j {{JOBS}} -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
+
+# workspace外のcursor修正も、UIと同じfeature集合で通常検査へ含める。
+test-custom-cursor-cache:
+    {{CARGO}} test --locked -j {{JOBS}} -p katana-ui -p egui-winit --lib cursor_cache::tests
 
 # デバッグ情報の容量対策で全test・coverage・受入を削減していないことを確認する。
 test-ci-resource-contract:

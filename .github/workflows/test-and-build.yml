@@ -123,6 +123,9 @@ jobs:
       - name: Test CommonMark cache contracts
         run: cargo test --locked -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
 
+      - name: Test patched custom cursor cache
+        run: cargo test --locked -p katana-ui -p egui-winit --lib cursor_cache::tests
+
       - name: Run tests
         id: workspace_tests
         shell: bash

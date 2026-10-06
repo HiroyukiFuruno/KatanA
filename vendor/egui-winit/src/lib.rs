@@ -21,6 +21,7 @@ use egui::{Pos2, Rect, Theme, Vec2, ViewportBuilder, ViewportCommand, ViewportId
 pub use winit;
 
 pub mod clipboard;
+mod cursor_cache;
 mod dropped_file;
 mod safe_area;
 mod window_settings;
@@ -29,6 +30,7 @@ pub use window_settings::WindowSettings;
 
 use raw_window_handle::HasDisplayHandle;
 
+use cursor_cache::CursorImageKey;
 use dropped_file::NativeFile;
 
 use winit::{
@@ -98,13 +100,8 @@ pub struct State {
     any_pointer_button_down: bool,
     current_cursor_icon: Option<egui::CursorIcon>,
 
-    /// Cached `CustomCursor` for the last RGBA bitmap pushed through
-    /// `PlatformOutput::cursor_image`. We dedupe by `Arc::as_ptr` so the
-    /// integration only re-uploads the bitmap to the OS when the app
-    /// switches sprite, not every frame the cursor moves. `usize` is the
-    /// raw pointer of the source `Arc<[u8]>` — opaque, only used as a
-    /// cache key.
-    current_custom_cursor: Option<(usize, CustomCursor)>,
+    // 元画像を保持してアドレス再利用を防ぎ、形状と操作点の変更もOSへ反映する。
+    current_custom_cursor: Option<(CursorImageKey, CustomCursor)>,
 
     clipboard: clipboard::Clipboard,
 
@@ -1241,11 +1238,10 @@ impl State {
         // dropped and we fall through to the icon path — this is the
         // documented fallback for integrations that didn't opt in.
         if let (Some(image), Some(event_loop)) = (cursor_image, event_loop) {
-            let key = std::sync::Arc::as_ptr(&image.rgba).cast::<u8>() as usize;
             let cached = self
                 .current_custom_cursor
                 .as_ref()
-                .filter(|(k, _)| *k == key)
+                .filter(|(k, _)| k.matches(image))
                 .map(|(_, c)| c.clone());
 
             let custom = match cached {
@@ -1259,7 +1255,7 @@ impl State {
                 ) {
                     Ok(source) => {
                         let c = event_loop.create_custom_cursor(source);
-                        self.current_custom_cursor = Some((key, c.clone()));
+                        self.current_custom_cursor = Some((CursorImageKey::new(image), c.clone()));
                         c
                     }
                     Err(err) => {

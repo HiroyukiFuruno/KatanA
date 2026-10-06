@@ -21,6 +21,18 @@ def step_block(job, name):
 
 
 class CiResourceContractTest(unittest.TestCase):
+    def test_patched_cursor_contracts_use_root_lock_and_ui_features(self):
+        job = current_test_job()
+        cache_tests = step_block(job, "Test patched custom cursor cache")
+        command = "cargo test --locked -p katana-ui -p egui-winit --lib cursor_cache::tests"
+        self.assertIn(f"run: {command}", cache_tests)
+        self.assertNotIn("continue-on-error", cache_tests)
+        self.assertNotIn("--manifest-path", cache_tests)
+        tests_just = (Path(__file__).resolve().parents[2] / "just/tests.just").read_text()
+        self.assertRegex(tests_just, r"(?m)^test:.*\btest-custom-cursor-cache\b")
+        self.assertIn("test-custom-cursor-cache:", tests_just)
+        self.assertIn("-p katana-ui -p egui-winit --lib cursor_cache::tests", tests_just)
+
     def test_patched_backend_contracts_use_root_lock_and_ui_features(self):
         job = current_test_job()
         cache_tests = step_block(job, "Test CommonMark cache contracts")
