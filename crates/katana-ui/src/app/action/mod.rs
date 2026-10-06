@@ -104,7 +104,7 @@ impl ActionOps for KatanaApp {
             previews_empty: self.tab_previews.is_empty(),
         };
         if closed_preview_memory::should_relieve_memory(transition) {
-            let _released = closed_preview_memory::relieve_closed_preview_memory();
+            crate::preview_pane::DocumentWorkerLifecycle::request_closed_preview_memory_relief();
         }
     }
 

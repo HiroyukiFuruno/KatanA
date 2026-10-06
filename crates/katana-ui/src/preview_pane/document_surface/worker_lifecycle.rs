@@ -1,6 +1,7 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
+use super::worker_memory::WorkerMemoryState;
+use std::sync::atomic::Ordering;
 
-static LIVE_DOCUMENT_WORKERS: AtomicUsize = AtomicUsize::new(0);
+static DOCUMENT_WORKER_MEMORY: WorkerMemoryState = WorkerMemoryState::new();
 
 pub(crate) struct DocumentWorkerLifecycle;
 
@@ -17,30 +18,34 @@ impl DocumentWorkerLifecycle {
     }
 
     pub(crate) fn live_count() -> usize {
-        LIVE_DOCUMENT_WORKERS.load(Ordering::Acquire)
+        DOCUMENT_WORKER_MEMORY.counter.load(Ordering::Acquire)
+    }
+
+    pub(crate) fn request_closed_preview_memory_relief() {
+        DOCUMENT_WORKER_MEMORY.request_relief();
     }
 }
 
 struct DocumentWorkerLease<'a> {
-    counter: &'a AtomicUsize,
+    state: &'a WorkerMemoryState,
 }
 
 impl DocumentWorkerLease<'static> {
     fn start() -> Self {
-        Self::acquire(&LIVE_DOCUMENT_WORKERS)
+        Self::acquire(&DOCUMENT_WORKER_MEMORY)
     }
 }
 
 impl<'a> DocumentWorkerLease<'a> {
-    fn acquire(counter: &'a AtomicUsize) -> Self {
-        counter.fetch_add(1, Ordering::AcqRel);
-        Self { counter }
+    fn acquire(state: &'a WorkerMemoryState) -> Self {
+        state.acquire();
+        Self { state }
     }
 }
 
 impl Drop for DocumentWorkerLease<'_> {
     fn drop(&mut self) {
-        self.counter.fetch_sub(1, Ordering::AcqRel);
+        self.state.release();
     }
 }
 

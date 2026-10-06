@@ -1,3 +1,4 @@
+use super::WorkerMemoryState;
 use super::{DocumentWorkerLease, DocumentWorkerLifecycle};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -15,11 +16,12 @@ fn worker_lease_remains_live_until_owned_work_has_dropped() {
         drop(work);
     }
 
-    let counter = AtomicUsize::new(0);
+    let state = WorkerMemoryState::new();
+    let counter = &state.counter;
     std::thread::scope(|scope| {
-        let lease = DocumentWorkerLease::acquire(&counter);
+        let lease = DocumentWorkerLease::acquire(&state);
         assert_eq!(counter.load(Ordering::Acquire), 1);
-        let work = OwnedWork(&counter);
+        let work = OwnedWork(counter);
         let (started_tx, started_rx) = std::sync::mpsc::channel();
         let (finish_tx, finish_rx) = std::sync::mpsc::channel();
         let worker = scope.spawn(move || {
@@ -42,10 +44,11 @@ fn worker_lease_releases_on_worker_panic() {
         panic!("worker failure");
     }
 
-    let counter = AtomicUsize::new(0);
+    let state = WorkerMemoryState::new();
+    let counter = &state.counter;
     std::thread::scope(|scope| {
-        let lease = DocumentWorkerLease::acquire(&counter);
-        let work = OwnedWork(&counter);
+        let lease = DocumentWorkerLease::acquire(&state);
+        let work = OwnedWork(counter);
         let worker = scope.spawn(move || {
             let _worker_lifetime = lease;
             run(work);
@@ -64,10 +67,11 @@ fn process_worker_lease_is_observable_without_a_pane() {
 
 #[test]
 fn worker_lease_releases_when_thread_creation_fails() {
-    let counter = AtomicUsize::new(0);
+    let state = WorkerMemoryState::new();
+    let counter = &state.counter;
     std::thread::scope(|scope| {
-        let lease = DocumentWorkerLease::acquire(&counter);
-        let worker_inputs = (OwnedWork(&counter), lease);
+        let lease = DocumentWorkerLease::acquire(&state);
+        let worker_inputs = (OwnedWork(counter), lease);
         let start = std::panic::catch_unwind(|| {
             std::thread::Builder::new()
                 .stack_size(usize::MAX)
@@ -96,9 +100,10 @@ fn lifecycle_spawn_observes_worker_while_owned_work_runs() {
 
 #[test]
 fn worker_lease_releases_when_unstarted_closure_is_dropped() {
-    let counter = AtomicUsize::new(0);
-    let lease = DocumentWorkerLease::acquire(&counter);
-    let worker_inputs = (OwnedWork(&counter), lease);
+    let state = WorkerMemoryState::new();
+    let counter = &state.counter;
+    let lease = DocumentWorkerLease::acquire(&state);
+    let worker_inputs = (OwnedWork(counter), lease);
     let worker = move || {
         let (work, _worker_lifetime) = std::convert::identity(worker_inputs);
         drop(work);

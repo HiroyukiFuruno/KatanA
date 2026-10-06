@@ -28,6 +28,7 @@ mod types;
 mod worker;
 mod worker_border_projection;
 mod worker_lifecycle;
+mod worker_memory;
 mod worker_session;
 mod worker_support;
 

@@ -11,32 +11,6 @@ pub(super) fn should_relieve_memory(transition: ClosedPreviewTransition) -> bool
         && transition.previews_empty
 }
 
-#[cfg(target_os = "macos")]
-mod macos {
-    use std::ffi::c_void;
-
-    unsafe extern "C" {
-        fn malloc_zone_pressure_relief(zone: *mut c_void, goal: usize) -> usize;
-    }
-
-    pub(super) fn relieve() -> usize {
-        /* SAFETY: NULLで登録済みzone全体を対象にし、goal 0で最大限の返却候補を要求する。
-         * ポインタを保持せず、呼出し中だけlibmallocの契約に従う。 */
-        unsafe { malloc_zone_pressure_relief(std::ptr::null_mut(), 0) }
-    }
-}
-
-#[cfg(target_os = "macos")]
-pub(super) fn relieve_closed_preview_memory() -> usize {
-    macos::relieve()
-}
-
-#[cfg(not(target_os = "macos"))]
-pub(super) fn relieve_closed_preview_memory() -> usize {
-    /* WHY: 非macOSではlibmallocの契約を持たないため、製品動作を変えず観測候補だけ無効化する。 */
-    0
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -91,18 +65,5 @@ mod tests {
         assert!(katana_core::workspace::TreeEntry::path_is_document(
             std::path::Path::new("report.docx")
         ));
-    }
-
-    #[cfg(target_os = "macos")]
-    #[test]
-    fn macos_pressure_relief_call_is_live_and_safe() {
-        let live = vec![0x2a_u8; 32];
-        let pointer = live.as_ptr();
-        let length = live.len();
-        let contents = live.clone();
-        let _released = relieve_closed_preview_memory();
-        assert_eq!(live.as_ptr(), pointer);
-        assert_eq!(live.len(), length);
-        assert_eq!(live, contents);
     }
 }
