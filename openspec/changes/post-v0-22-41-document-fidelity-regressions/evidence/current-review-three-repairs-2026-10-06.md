@@ -25,3 +25,17 @@ PR346のc07b5028 current reviewで追加された小画像表示所有、Physics
 ## 既存CIの未解消
 
 c07 macOS CI112090923848はHTML初回frame待ち2007ms/受理true/idlefalse/generationNoneで失敗した。KDV公開0.5.12のAdapter Dropはcloseとworker.joinを行うことを一次コードで確認し、非同期Drop残留という仮説は支持されなかった。原因監査は継続し、2秒期限・cold条件・assert・quality基準を変更しない。Linux成功/Windows進行を全3OS成功と扱わない。
+
+## 通常push失敗後の回収
+
+- 通常push23466はexit1。Linuxの小画像回帰が初表示前に任意のcache退避へ当たり、1079PASS/1FAIL/既存ignore2で停止した。remoteはc07のままであり公開・reply/resolveの成功ではない。
+- 最初に所有回帰の組み立てを実build_textureへ変更した7f1b46ab。mac focused40544、Linux focused37017は各1PASS/exit0だったが、独立監査で初回consumer経路の検証が抜けると判明したため、この案は撤回した。成功を製品修復に代用しない。store_result→公開textureの元回帰を復元し、新規受信キーを即時退避から保護する最小製品修正を検証中。17件所有・同TextureId・非表示grace解放・16件/64MiB上限を変更しない。
+- macOS CIが通常suiteで失敗した場合に限り、既存DEBUG描画traceをexact test/nocaptureで取得する別stepを追加。正式契約は旧workflowで1FAIL→修正版7PASS。通常suiteはDEBUG無し、continue-on-error無し、元cold/2秒/dirty保護assertを維持する。診断の成功で通常suite失敗を取り消さない。
+- 同じexact診断入口50828は実1PASS/0.28秒、layout_svg=150035us、初frame_total=157182us、fragment後frame_total=4001us。cloud失敗を再現しておらず、DEBUG ON測定を通常性能や原因解消の証拠にしない。
+- 最新live c07 checksはWindows/Linux成功、macOS失敗、他lint/供給網/CodeQL成功。新localのCIへ流用しない。
+
+## 追加差分の自己レビュー
+
+初稿のhelper直接呼び出し案は初回consumer検証が抜けるため撤回。元回帰の公開texture経路・実TextureHandle取得を維持し、製品修正を再検証する。Mock/timeout延長/ignore/閾値変更は無い。診断envは失敗後の別stepだけで、元テストの失敗結果を維持する。公開API・上流ソース・本人アプリ操作・hook迂回を追加していない。CI契約7件は成功、製品修正の対象focused2OS/AST/lintは進行中。全push/newHEAD CI/packaged/公開は未完了。
+
+製品補正の再検証: native85122はloader11PASS/exit0、Linux73828は10PASS/PNG初回ロード1FAIL（失敗statusの内訳は旧panicに記録されず原因未確定）。失敗時にFailed理由とPendingを区別する診断だけを追加し、timeout/assertは変更せずLinux40070で11PASS/0.67秒/exit0。単独再成功を原因解消としない。AST92540/40757は各23PASS、strict impacted Clippy97322はexit0。fmt29427は折返しだけFAIL、公式formatter補正後再確認する。独立read-only再監査ではconsumer復元/新規キー保護/既存上限/oversized所有について採用可を得たが、全push/新HEAD品質は別工程。

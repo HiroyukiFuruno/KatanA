@@ -1,5 +1,9 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-06通常push23466はLinux1079PASS/1FAIL/既存ignore2でexit1、公開不成立。small17初表示前の即時cache退避を検出。helper組立案7f1b46abはconsumer検証が抜けるため撤回し、元store_result→texture回帰を復元、新規結果keyを即時退避から保護する製品補正へ変更。native85122 loader11PASS、Linux73828は別PNG初回1FAIL/10PASS、診断だけ追加し40070 loader11PASS/0.67秒。別PNG失敗原因未確定、単独再成功を解消証明にしない。AST40757=23PASS/Clippy97322/fmt36459/diffcheck exit0、上限・timeout・assert不変。CI失敗後限定DEBUG診断bc6b27ecは契約RED→7PASS/実exact50828 1PASS、正常性能やcold CI解消の証明ではない。通常push再実行/個別replyresolve/newHEAD全gate・packaged未完。
+
+- [/] 2026-10-06今回公開範囲の現物監査: 本人決定の上流次期をproposal/designへ反映し、evidence/release-scope-reconciliation-2026-10-06.mdへhost必須/次期Issueを区分した。3.2だけのallowではacceptance checkerのChrome完全一致が残り、上流延期が実効化されないため未採用。Issue-bound延期契約、実参照/packaged測定のidentityと未解決差分保存、host全品質/close/RSS/入力/全配布拒否回帰の実装・検証・正式統合は未完了。文書記録をゲート完成/公開成功に代用しない。
+
 - [/] c07追加review3件の候補をroot検証: MathJax実アプリ10PASS10331、JS source/bundle4PASS22expect、正式AST23PASS29799、fmt38937/strict impacted lint73275/diffcheck exit0。全UI36972はworker指定不足2FAIL、既存worker付き入口6855は1286PASS/既存ignore4/10suites/107.21秒/exit0で回収。小画像通知missとmacOS cold CI失敗の原因は未確定、全UI成功で原因解消と主張しない。正式統合/push/各replyresolve/newHEAD全gateは未完。証跡evidence/current-review-three-repairs-2026-10-06.md。
 
 - [ ] 2026-10-06 c07 current review追加P2三件: 小画像17枚の表示所有PRRT_kwDORm09y86pTsE-、MathJax physics設定PRRT_kwDORm09y86pTsFA、Unicode font identity PRRT_kwDORm09y86pTsFD。小画像回帰26472は旧実装assertion RED、最小表示所有候補で当該はGREENだがloader全体87785は既存watcher通知待ち1FAIL/10PASS。フォントcanonical回帰72295はmetadata/resolver・request dedupe・painterの3assertion RED。追加三件の正式統合・通常push・個別reply/resolve・fresh取得は未完。
