@@ -1,5 +1,10 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] c07追加review3件の候補をroot検証: MathJax実アプリ10PASS10331、JS source/bundle4PASS22expect、正式AST23PASS29799、fmt38937/strict impacted lint73275/diffcheck exit0。全UI36972はworker指定不足2FAIL、既存worker付き入口6855は1286PASS/既存ignore4/10suites/107.21秒/exit0で回収。小画像通知missとmacOS cold CI失敗の原因は未確定、全UI成功で原因解消と主張しない。正式統合/push/各replyresolve/newHEAD全gateは未完。証跡evidence/current-review-three-repairs-2026-10-06.md。
+
+- [ ] 2026-10-06 c07 current review追加P2三件: 小画像17枚の表示所有PRRT_kwDORm09y86pTsE-、MathJax physics設定PRRT_kwDORm09y86pTsFA、Unicode font identity PRRT_kwDORm09y86pTsFD。小画像回帰26472は旧実装assertion RED、最小表示所有候補で当該はGREENだがloader全体87785は既存watcher通知待ち1FAIL/10PASS。フォントcanonical回帰72295はmetadata/resolver・request dedupe・painterの3assertion RED。追加三件の正式統合・通常push・個別reply/resolve・fresh取得は未完。
+- [ ] c07 macOS CI112090923848は1088PASS/1FAIL/既存ignore2。追加stage診断はstartup_accepted=true、elapsed_ms=2007、idle=Some(false)、generation=None、origin_matches=true、resources=(2,2,0,0,0,0)。HTML受理後の初frame未取得であり、受理失敗や修復済みとはしない。元2秒/cold/assertを保持して起動・描画原因を切り分ける。raw tmp/ci-c07b5028-macos.log。c07公式coverage60957 exit0/strict文書100%は新候補graphへ流用しない。
+
 - [/] 画像監視のFailed→Registered成功通知後にも旧watch_errorsが残る追加不備をunit eventprocessor回帰で再現（77891、assert watch_error.is_none、exit101）。成功通知時だけ旧エラーを解除し、公式loader10PASS82361/0.91秒・AST23PASS40982/12.91秒・impacted Clippy75863 exit0。自動再試行や失敗の隠蔽は追加しない。旧未送信normalpushは新不備修正のため所有プロセスのみ中断、hook成功/公開成功として扱わない。通常統合/newHEAD公開検証は別途継続。
 
 - [/] 2026-10-06 画像候補の正式AST75428は23PASS/72filtered/4suites/11.82秒、最終impacted Clippy88774 exit0。fixture RGBA期待値をbytes比較と名前付きchannel数へ修正し、規約除外/基準変更なし。画像表示所有efe2ebf0・外部変更通知18b1db3fを関心別通常hook/署名Gでcommit済み、未push。実sidebar入力回帰を別commit中。新review2件はpush後に各reply/resolve、旧macOS CI失敗は新graphへ持ち越し診断する。
