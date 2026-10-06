@@ -20,8 +20,12 @@ impl ImageLogicOps {
             ui.ctx(),
             ui.visuals().window_fill(),
         );
+        loader.set_repaint_context(ui.ctx());
         let texture_handle = if let Some(state) = viewer_state.as_mut() {
-            state.prepare_texture(ViewerTextureIdentity::local_file(path), preview_background);
+            state.prepare_texture(
+                ViewerTextureIdentity::local_file_revision(path, loader.path_revision(path)),
+                preview_background,
+            );
             if state.texture.is_none() || state.texture_background != Some(preview_background) {
                 match loader.request(path, preview_background) {
                     super::local_image_loader::LocalImageStatus::Ready(image) => {

@@ -13,6 +13,7 @@ pub(super) fn show_fullscreen_local(
     idx: usize,
     loader: &super::local_image_loader::LocalImageLoader,
 ) -> bool {
+    loader.set_repaint_context(ctx);
     let screen = ctx.content_rect();
     let mut keep_open = true;
 
@@ -26,7 +27,10 @@ pub(super) fn show_fullscreen_local(
                 panel_fill.g(),
                 panel_fill.b(),
             );
-            viewer_state.prepare_texture(ViewerTextureIdentity::local_file(path), background);
+            viewer_state.prepare_texture(
+                ViewerTextureIdentity::local_file_revision(path, loader.path_revision(path)),
+                background,
+            );
             let (blocker_rect, response) =
                 ui.allocate_exact_size(screen.size(), egui::Sense::click_and_drag());
             if response.hovered() {

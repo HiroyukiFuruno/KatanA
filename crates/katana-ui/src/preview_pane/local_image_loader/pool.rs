@@ -7,11 +7,13 @@ pub(super) struct Work {
     pub(super) result_tx: mpsc::Sender<ResultMessage>,
     pub(super) key: super::RequestKey,
     pub(super) generation: u64,
+    pub(super) revision: u64,
 }
 
 pub(super) struct ResultMessage {
     pub(super) key: super::RequestKey,
     pub(super) generation: u64,
+    pub(super) revision: u64,
     pub(super) image: Result<egui::ColorImage, String>,
 }
 
@@ -42,6 +44,7 @@ impl GlobalPool {
                         let _ = work.result_tx.send(ResultMessage {
                             key: work.key,
                             generation: work.generation,
+                            revision: work.revision,
                             image,
                         });
                     }

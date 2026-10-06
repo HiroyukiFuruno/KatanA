@@ -1,0 +1,116 @@
+use super::*;
+use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
+
+const TEST_BACKGROUND: egui::Color32 = crate::theme_bridge::WHITE;
+const WAIT_SECONDS: u64 = 5;
+const RGBA_CHANNELS: usize = 4;
+const RED_PIXEL: [u8; 4] = [255, 0, 0, 255];
+const GREEN_PIXEL: [u8; 4] = [0, 255, 0, 255];
+const BLUE_PIXEL: [u8; 4] = [0, 0, 255, 255];
+
+fn fixture_path() -> (tempfile::TempDir, PathBuf) {
+    let root = tempfile::Builder::new()
+        .prefix("katana-local-image-watch-")
+        .tempdir_in(".")
+        .expect("fixture directory");
+    std::fs::create_dir_all(root.path().join("nested")).expect("nested directory");
+    let current = std::env::current_dir().expect("current directory");
+    let relative_root = root.path().strip_prefix(current).expect("relative fixture");
+    let path = relative_root.join("nested/../image.png");
+    (root, path)
+}
+
+fn wait_ready(
+    loader: &LocalImageLoader,
+    path: &Path,
+    background: egui::Color32,
+    expected: [u8; RGBA_CHANNELS],
+) {
+    let deadline = Instant::now() + Duration::from_secs(WAIT_SECONDS);
+    let mut frame = 0;
+    while Instant::now() < deadline {
+        loader.poll(frame);
+        if let LocalImageStatus::Ready(image) = loader.request(path, background)
+            && image.pixels.first().map(egui::Color32::to_array) == Some(expected)
+        {
+            return;
+        }
+        frame += 1;
+        std::thread::yield_now();
+    }
+    panic!("watcher did not publish expected image: {expected:?}");
+}
+
+fn wait_revision(loader: &LocalImageLoader, path: &Path, previous: u64) {
+    let deadline = Instant::now() + Duration::from_secs(WAIT_SECONDS);
+    let mut frame = 0;
+    while Instant::now() < deadline {
+        loader.poll(frame);
+        if loader.path_revision(path) != previous {
+            return;
+        }
+        frame += 1;
+        std::thread::yield_now();
+    }
+    panic!("watcher did not publish revision");
+}
+
+#[test]
+fn atomic_replace_reloads_relative_path_without_touching_other_background() {
+    let (root, path) = fixture_path();
+    let other_path = root.path().join("other.png");
+    let sentinel_path = root.path().join("sentinel.png");
+    image::RgbaImage::from_pixel(1, 1, image::Rgba([255, 0, 0, 255]))
+        .save(&path)
+        .expect("initial PNG");
+    image::RgbaImage::from_pixel(1, 1, image::Rgba([0, 0, 255, 255]))
+        .save(&other_path)
+        .expect("unrelated PNG");
+    let loader = LocalImageLoader::default();
+    wait_ready(&loader, &path, TEST_BACKGROUND, RED_PIXEL);
+    wait_ready(&loader, &path, crate::theme_bridge::BLACK, RED_PIXEL);
+    wait_ready(&loader, &other_path, TEST_BACKGROUND, BLUE_PIXEL);
+    let LocalImageStatus::Ready(other_image) = loader.request(&other_path, TEST_BACKGROUND) else {
+        panic!("unrelated image must be cached");
+    };
+    image::RgbaImage::from_pixel(1, 1, image::Rgba([0, 0, 255, 255]))
+        .save(&sentinel_path)
+        .expect("sentinel PNG");
+    wait_ready(&loader, &sentinel_path, TEST_BACKGROUND, BLUE_PIXEL);
+    let revision = loader.path_revision(&path);
+    let sentinel_revision = loader.path_revision(&sentinel_path);
+    let _ = std::fs::read(&path).expect("access event source");
+    image::RgbaImage::from_pixel(1, 1, image::Rgba([0, 255, 255, 255]))
+        .save(&sentinel_path)
+        .expect("sentinel change");
+    wait_revision(&loader, &sentinel_path, sentinel_revision);
+    assert_eq!(loader.path_revision(&path), revision);
+
+    let replacement = root.path().join("replacement.png");
+    image::RgbaImage::from_pixel(1, 1, image::Rgba([0, 255, 0, 255]))
+        .save(&replacement)
+        .expect("replacement PNG");
+    std::fs::rename(&replacement, root.path().join("image.png")).expect("atomic replacement");
+    wait_ready(&loader, &path, TEST_BACKGROUND, GREEN_PIXEL);
+    wait_ready(&loader, &path, crate::theme_bridge::BLACK, GREEN_PIXEL);
+    let LocalImageStatus::Ready(unchanged) = loader.request(&other_path, TEST_BACKGROUND) else {
+        panic!("unrelated image must remain cached");
+    };
+    assert!(Arc::ptr_eq(&unchanged, &other_image));
+}
+
+#[test]
+fn reset_drops_old_watch_generation_before_rerequest() {
+    let (_root, path) = fixture_path();
+    image::RgbaImage::from_pixel(1, 1, image::Rgba([255, 0, 0, 255]))
+        .save(&path)
+        .expect("initial PNG");
+    let loader = LocalImageLoader::default();
+    wait_ready(&loader, &path, TEST_BACKGROUND, RED_PIXEL);
+    loader.reset();
+    image::RgbaImage::from_pixel(1, 1, image::Rgba([0, 255, 0, 255]))
+        .save(&path)
+        .expect("reset PNG");
+    wait_ready(&loader, &path, TEST_BACKGROUND, GREEN_PIXEL);
+}

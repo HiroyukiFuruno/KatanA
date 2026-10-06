@@ -1,19 +1,21 @@
 use eframe::egui;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
-use std::sync::{
-    Arc, Mutex,
-    atomic::{AtomicU64, Ordering},
-    mpsc,
-};
+use std::sync::{Arc, Mutex, atomic::AtomicU64, mpsc};
 
 mod cache;
 mod decode;
 mod pool;
+mod revision;
+mod revision_cache;
+mod texture;
+mod watcher;
 
 use pool::{GlobalPool, ResultMessage, Work};
+use watcher::WatchEvent;
 
 const REQUEST_CAPACITY: usize = 2;
+const INVALIDATION_QUEUE_CAPACITY: usize = 256;
 const IMAGE_CACHE_LIMIT: usize = 64 * 1024 * 1024;
 const CACHE_ENTRY_LIMIT: usize = 16;
 
@@ -34,7 +36,15 @@ struct Cache {
 struct Inner {
     result_rx: Mutex<mpsc::Receiver<ResultMessage>>,
     result_tx: mpsc::Sender<ResultMessage>,
+    invalidation_rx: Mutex<mpsc::Receiver<WatchEvent>>,
+    invalidation_tx: mpsc::SyncSender<WatchEvent>,
+    invalidation_overflow: std::sync::atomic::AtomicBool,
+    repaint_context: Mutex<Option<egui::Context>>,
     pending: Mutex<HashSet<RequestKey>>,
+    path_revisions: Mutex<HashMap<PathBuf, u64>>,
+    watched_paths: Mutex<HashSet<PathBuf>>,
+    watch_pending: Mutex<HashSet<PathBuf>>,
+    watch_errors: Mutex<HashMap<PathBuf, String>>,
     cache: Mutex<Cache>,
     generation: AtomicU64,
     active_frame: AtomicU64,
@@ -60,11 +70,20 @@ pub(crate) enum LocalTextureStatus {
 impl Default for LocalImageLoader {
     fn default() -> Self {
         let (result_tx, result_rx) = mpsc::channel();
+        let (invalidation_tx, invalidation_rx) = mpsc::sync_channel(INVALIDATION_QUEUE_CAPACITY);
         Self {
             inner: Arc::new(Inner {
                 result_rx: Mutex::new(result_rx),
                 result_tx,
+                invalidation_rx: Mutex::new(invalidation_rx),
+                invalidation_tx,
+                invalidation_overflow: std::sync::atomic::AtomicBool::new(false),
+                repaint_context: Mutex::new(None),
                 pending: Mutex::new(HashSet::new()),
+                path_revisions: Mutex::new(HashMap::new()),
+                watched_paths: Mutex::new(HashSet::new()),
+                watch_pending: Mutex::new(HashSet::new()),
+                watch_errors: Mutex::new(HashMap::new()),
                 cache: Mutex::new(Cache {
                     ready: HashMap::new(),
                     textures: HashMap::new(),
@@ -82,12 +101,14 @@ impl Default for LocalImageLoader {
 impl LocalImageLoader {
     pub(crate) fn poll(&self, frame: u64) -> bool {
         self.advance_active_frame(frame);
+        let mut changed = self.poll_invalidations();
         let Ok(rx) = self.inner.result_rx.lock() else {
             return false;
         };
-        let mut changed = false;
         while let Ok(result) = rx.try_recv() {
-            if result.generation != self.generation() {
+            if result.generation != self.generation()
+                || result.revision != self.path_revision(&result.key.path)
+            {
                 continue;
             }
             changed = true;
@@ -105,59 +126,18 @@ impl LocalImageLoader {
         if let Some(status) = self.cached_status(&key) {
             return status;
         }
+        if let Some(error) = self.watch_error(&key.path) {
+            return LocalImageStatus::Failed(error);
+        }
+        match self.ensure_watched(&key.path) {
+            Ok(true) => {}
+            Ok(false) => return LocalImageStatus::Pending,
+            Err(error) => return LocalImageStatus::Failed(error),
+        }
         if self.is_pending(&key) {
             return LocalImageStatus::Pending;
         }
         self.enqueue(key)
-    }
-
-    pub(crate) fn texture(
-        &self,
-        ctx: &egui::Context,
-        path: &Path,
-        background: egui::Color32,
-        id: usize,
-    ) -> LocalTextureStatus {
-        let key = RequestKey {
-            path: path.to_path_buf(),
-            background,
-        };
-        if let Ok(cache) = self.inner.cache.lock()
-            && let Some(texture) = cache.textures.get(&key)
-        {
-            return LocalTextureStatus::Ready(texture.clone());
-        }
-        if let Ok(mut cache) = self.inner.cache.lock()
-            && let Some((texture, seen)) = cache.active_textures.get_mut(&key)
-        {
-            *seen = self.inner.active_frame.load(Ordering::Acquire);
-            return LocalTextureStatus::Ready(texture.clone());
-        }
-        match self.request(path, background) {
-            LocalImageStatus::Ready(image) => self.build_texture(ctx, key, image, id),
-            LocalImageStatus::Pending => LocalTextureStatus::Pending,
-            LocalImageStatus::Failed(error) => LocalTextureStatus::Failed(error),
-        }
-    }
-
-    pub(crate) fn reset(&self) {
-        self.inner.generation.fetch_add(1, Ordering::AcqRel);
-        let Ok(mut pending) = self.inner.pending.lock() else {
-            return;
-        };
-        pending.clear();
-        let Ok(mut cache) = self.inner.cache.lock() else {
-            return;
-        };
-        cache.ready.clear();
-        cache.textures.clear();
-        cache.active_images.clear();
-        cache.active_textures.clear();
-        cache.bytes = 0;
-    }
-
-    fn generation(&self) -> u64 {
-        self.inner.generation.load(Ordering::Acquire)
     }
 
     fn enqueue(&self, key: RequestKey) -> LocalImageStatus {
@@ -165,6 +145,7 @@ impl LocalImageLoader {
             return LocalImageStatus::Failed("image loader unavailable".to_owned());
         };
         let generation = self.generation();
+        let revision = self.path_revision(&key.path);
         let Ok(mut pending) = self.inner.pending.lock() else {
             return LocalImageStatus::Failed("image loader unavailable".to_owned());
         };
@@ -175,14 +156,19 @@ impl LocalImageLoader {
             result_tx: self.inner.result_tx.clone(),
             key: key.clone(),
             generation,
+            revision,
         };
         if pool.request_tx.try_send(work).is_err() {
             self.remove_pending(&key);
-            return LocalImageStatus::Pending;
+            return LocalImageStatus::Failed("image loader queue is full".to_owned());
         }
         LocalImageStatus::Pending
     }
 }
 
 #[cfg(test)]
+mod gui_tests;
+#[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod watcher_tests;

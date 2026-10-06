@@ -51,6 +51,14 @@ impl ViewerTextureIdentity {
             content_hash: stable_path_hash(path),
         }
     }
+
+    pub(crate) fn local_file_revision(path: &Path, revision: u64) -> Self {
+        let mut identity = Self::local_file(path);
+        if revision != 0 {
+            identity.content_hash = stable_hash_u64(identity.content_hash, revision);
+        }
+        identity
+    }
 }
 
 impl ViewerState {
