@@ -9,6 +9,7 @@ use std::sync::{
 };
 use std::time::Duration;
 
+mod directory_recovery;
 mod events;
 mod registration;
 
@@ -111,7 +112,15 @@ fn run(request_rx: mpsc::Receiver<WatchCommand>) {
             notify_overflow(&targets);
         }
         match event_rx.recv_timeout(Duration::from_millis(25)) {
-            Ok(Ok(event)) => notify_event(event, &mut targets),
+            Ok(Ok(event)) => {
+                directory_recovery::DirectoryRecovery::recover(
+                    &event,
+                    &mut watcher,
+                    &mut watched_dirs,
+                    &targets,
+                );
+                notify_event(event, &mut targets);
+            }
             Ok(Err(error)) => notify_error(&mut targets, error.to_string()),
             Err(mpsc::RecvTimeoutError::Timeout) => {}
             Err(mpsc::RecvTimeoutError::Disconnected) => return,
@@ -164,6 +173,10 @@ fn clear_owner(
     unwatch_unused_dirs(watcher, watched_dirs, targets);
 }
 
+#[cfg(test)]
+mod directory_lifecycle_tests;
+#[cfg(all(test, target_os = "linux"))]
+mod directory_recovery_tests;
 #[cfg(test)]
 mod event_path_tests;
 #[cfg(test)]
