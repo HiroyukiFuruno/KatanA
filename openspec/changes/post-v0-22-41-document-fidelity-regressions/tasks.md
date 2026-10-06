@@ -1,5 +1,9 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 削除parent通知修復を通常hook/署名G 624cbefb769a154cc21883afc40b9899addc4892（68105 actual0）へ正式統合。最終loader33/AST23/strictClippy/fmt/diffcheck全成功、EN19:35:08UTC/JA04:35:08JST同期。通常docscommit/push/newgraph currentreview・全CI/coverage/全配布受入/公開後処理を継続し、旧68dbCI失敗/error未記録と旧package/coverageを区別する。
+
+- [/] current68db Ubuntu CI37516676587/job112452170844は画像watch overflowのwatch_error.is_none失敗（1132PASS1FAILignore2）。exact error未記録のため因果断定せず、別途削除済みparent通知が無関係livePNGをFailedにする旧製品31409 assertionREDを実証。通知path限定invalidate/正式backend error保持後、最終18386全loader33PASS actual0。元5秒/assert/cache/API維持。静的検査90382・通常統合push・新HEAD全CI/coverage/実配布・公開後処理は継続。evidence/deleted-parent-image-notification-2026-10-07.md。
+
 - [/] workspace P2修復を通常hook/署名Gの3c777614cf0339832b43326baf6415daee1b5a78（53167 actual0）へ正式統合。workspace16/URL27/AST23/strictClippy/fmt-check全成功、private284行。EN/JAは実commit18:51:55UTC/03:51:55JSTへ同期。docs通常commit/normalpush・各replyresolve/fresh/newgraph全gate/実配布/公開後処理は継続、旧068CIの流用無し。
 
 - [/] workspace generation P2を17440 actual101/15PASS1assertFAILで再現（20674 fixture compile errorは別保存）。成功Openのdocumentset置換でSome requestだけ取消・None保持/is_loading再計算を実装、74603全workspace16PASS・87861全URL27PASS/actual0。Refresh/error/unfinished保持、Settings/GlobalWorkspace InMemory隔離・本人app非操作。公式static46428実行中、通常統合push/replyresolve/fresh/newgraph全gate/配布公開は未完。evidence/workspace-url-generation-review-2026-10-07.md。
