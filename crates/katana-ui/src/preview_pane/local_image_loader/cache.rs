@@ -41,10 +41,9 @@ impl LocalImageLoader {
             image,
             egui::TextureOptions::LINEAR,
         );
+        self.store_active_texture(key.clone(), texture.clone());
         if bytes <= IMAGE_CACHE_LIMIT {
             self.store_texture(key, texture.clone());
-        } else {
-            self.store_active_texture(key, texture.clone());
         }
         super::LocalTextureStatus::Ready(texture)
     }

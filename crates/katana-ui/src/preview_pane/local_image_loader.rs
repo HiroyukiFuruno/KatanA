@@ -170,5 +170,8 @@ impl LocalImageLoader {
 mod gui_tests;
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod display_tests;
 #[cfg(test)]
 mod watcher_tests;

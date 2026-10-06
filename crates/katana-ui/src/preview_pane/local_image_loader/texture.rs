@@ -23,7 +23,8 @@ impl LocalImageLoader {
             background,
         };
         if let Some(texture) = self.cached_texture(&key) {
-            return LocalTextureStatus::Ready(texture.clone());
+            self.store_active_texture(key, texture.clone());
+            return LocalTextureStatus::Ready(texture);
         }
         if let Some(texture) = self.active_texture(&key) {
             return LocalTextureStatus::Ready(texture.clone());
