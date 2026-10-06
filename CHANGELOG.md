@@ -2,7 +2,7 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
-## [0.22.42] - 2026-10-06 20:23:39 (UTC)
+## [0.22.42] - 2026-10-06 21:23:39 (UTC)
 
 ### 🚀 Features
 
@@ -27,6 +27,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Missing image recovery**: If an image folder is temporarily unavailable, the preview retries in the background and recovers after the folder and image become available, without reopening the workspace.
 - **Readable images without file watching**: Images still load when background file-change monitoring is unavailable.
 - **Image folder changes**: Notifications from a deleted image folder no longer mark unrelated image previews as failed; recreating the folder restores monitoring of subsequent image updates.
+- **Image updates after fullscreen**: Closing a full-screen image keeps normal previews monitoring external image updates.
 - **Custom cursor updates**: Custom cursors retain the correct size and click position when their appearance changes.
 - **Excel sheet tabs**: Bottom tabs remain visible and clickable without overlapping document diagnostics.
 - **Excel font styles**: Bold and italic cells retain the requested font family when only a regular or partially matching style is installed.
