@@ -1,5 +1,10 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 新P2二件を通常hook/署名G source29778148（画像）・345c095b（HTML summary）へ関心別統合。93025全loader38/summary6/AST23/strictClippy/fmt actual0、関連method最終8595 summary6/AST23/strictClippy/fmt actual0、通常commit45089/57116 actual0。EN22:05:40UTC/JA07:05:40JST同期。normaldocscommit/push→各replyresolve/fresh→newcurrentreview/全CI/coverage/package/全5実受入/公開後処理を継続、旧0fa証跡の流用無し。
+
+- [/] current0fa review5434903489/P2 PRRT_kwDORm09y86pq2FP・4200733415: watch登録失敗中Failed cache永続化は53394 runtime RED101/1PASS1FAIL→期限到達時だけ同path失敗decode除去。成功Arc/bytes/別path/元backoff/診断保持、93025全loader38PASS/AST23/strictClippy/fmt actual0。初回37PASS1FAILは画像復旧とwatch登録完了の非同期競合で、実pixel+登録を同一元5秒でawaitし最終assert保持。正式統合/push/replyresolve/new全gate/実配布は未完。evidence/failed-image-retry-and-bounded-html-summary-2026-10-07.md。
+- [/] current0fa review5434903489/P2 PRRT_kwDORm09y86pq2FU・4200733425: DEBUG全HTML複製は98960 TailGuard runtime RED101/3PASS1FAIL→visible80/raw4096 bounded private summary。Unicode/改行/80境界/巨大word・空白の6回帰成功、AST207行/testliteral/色直指定3FAILを保持し責務分離/escape/theme補正後93025 AST23/strictClippy/fmt actual0。main手動規約の関連method補正を8595で再検証中。通常統合/push/replyresolve/new全gate/実配布未完。元renderer/品質/本人app/上流には変更無し。
+
 - [/] current5beb review5434657962/P2 PRRT_kwDORm09y86pqT_j・4200513146: fullscreen終了の共有loader.resetで通常texture保持中に監視喪失、実caller3719元generation0→1 assertionRED。共有resetだけ削除/fullscreen texture既存reset・文書全体cleanup維持。43629 loader36PASS/ASTmagicnumber1FAILを保持、定数補正後85443 loader36/AST23/strictClippy/fmt/diffcheck actual0。通常hook/署名G334bcadf2f4a90491bbd9592c16fc36eff32c536へ正式統合（99439actual0）。push/replyresolve/新graph全gate/実配布は未完。evidence/fullscreen-shared-image-watch-2026-10-07.md。
 - [x] 公開5beb公式coverage7835 actual0: UI1158/native18/実export13(258.65秒)/parallel143/serial18、meaningful成功・strict document100%未カバー0。tmp/5bebef75-current-coverage.log、report40451 actual0/独立checker0・JSON SHA2568d12a758190937ffb59ab88902ad3e05d883b42eb94fcfe4a040243e5d8a2baf。後続fullscreen修復へ流用しない。
 
