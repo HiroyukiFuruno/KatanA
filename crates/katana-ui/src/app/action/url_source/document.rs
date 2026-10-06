@@ -18,7 +18,14 @@ impl KatanaApp {
         match source {
             FetchedUrlSource::Html(source) => {
                 let document_path = target_document
+                    .as_ref()
+                    .filter(|path| {
+                        katana_core::document_source::BinaryDocumentFormat::from_path(path)
+                            .is_none()
+                    })
+                    .cloned()
                     .unwrap_or_else(|| remote_document_path(&source.source_url, "html"));
+                self.migrate_binary_url_target(target_document.as_deref(), &document_path);
                 self.state
                     .url_tab
                     .open_source(source.clone(), document_path.clone());

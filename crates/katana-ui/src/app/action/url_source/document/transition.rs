@@ -31,6 +31,12 @@ impl KatanaApp {
         document.is_reference = true;
         self.state.document.open_documents[index] = document;
         self.state.document.replace_path_references(previous, next);
+        /* WHY: 実際に移行したタブだけ後続応答を追従させ、閉じたタブへの応答拒否は維持する。 */
+        for request in &mut self.state.url_tab.pending_url_requests {
+            if request.target_document.as_deref() == Some(previous) {
+                request.target_document = Some(next.to_path_buf());
+            }
+        }
         self.tab_previews.retain(|preview| preview.path != previous);
         self.state
             .url_tab

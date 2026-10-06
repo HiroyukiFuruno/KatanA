@@ -17,17 +17,23 @@ fn app() -> KatanaApp {
 }
 
 fn source(format: BinaryDocumentFormat) -> FetchedUrlSource {
+    source_at(format, "https://example.test/download")
+}
+
+fn source_at(format: BinaryDocumentFormat, source_url: &str) -> FetchedUrlSource {
     FetchedUrlSource::Document(BinaryUrlSource {
         bytes: if format == BinaryDocumentFormat::Pdf {
             b"%PDF-1.7".to_vec()
         } else {
             vec![0x50, 0x4b, 0x05, 0x06]
         },
-        source_url: "https://example.test/download".to_owned(),
+        source_url: source_url.to_owned(),
         mime: format.mime().to_owned(),
         format,
     })
 }
+
+mod queued_navigation_tests;
 
 #[test]
 fn binary_navigation_retags_html_target_without_reordering_or_unpinning() {
