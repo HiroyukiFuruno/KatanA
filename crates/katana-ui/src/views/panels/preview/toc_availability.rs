@@ -14,7 +14,7 @@ pub(crate) struct PreviewMenuAvailability;
 impl PreviewMenuAvailability {
     pub(crate) fn for_path(path: Option<&std::path::Path>, menu: PreviewMenu) -> bool {
         let Some(path) = path else {
-            return true;
+            return !matches!(menu, PreviewMenu::Slideshow);
         };
         let is_office = matches!(
             katana_core::document_source::BinaryDocumentFormat::from_path(path),

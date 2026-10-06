@@ -10,6 +10,11 @@ impl KatanaApp {
                 .map(|document| document.path.as_path()),
             crate::views::panels::preview::PreviewMenu::Slideshow,
         ) {
+            if self.state.layout.show_slideshow
+                && !self.state.layout.was_os_fullscreen_before_slideshow
+            {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(false));
+            }
             self.state.layout.show_slideshow = false;
             return;
         }

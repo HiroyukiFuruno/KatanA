@@ -54,6 +54,12 @@ impl<'a> PreviewSidePanels<'a> {
             self.app.state.layout.show_tools_panel = false;
         }
         if !slideshow_available {
+            if self.app.state.layout.show_slideshow
+                && !self.app.state.layout.was_os_fullscreen_before_slideshow
+            {
+                ui.ctx()
+                    .send_viewport_cmd(egui::ViewportCommand::Fullscreen(false));
+            }
             self.app.state.layout.show_slideshow = false;
         }
         self.render_sidebar(ui);
@@ -63,3 +69,7 @@ impl<'a> PreviewSidePanels<'a> {
         self.render_toc(ui);
     }
 }
+
+#[cfg(test)]
+#[path = "side_panels/slideshow_tests.rs"]
+mod slideshow_tests;
