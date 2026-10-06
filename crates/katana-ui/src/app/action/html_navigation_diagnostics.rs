@@ -159,6 +159,8 @@ mod tests {
     fn sample_captures_owned_child_pid_to_workspace_failure_directory() {
         use super::{capture_process_sample, sample_output_directory};
 
+        /* WHY: 実プロファイラの負荷を初回描画の時間制約と競合させない。 */
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
         let mut child = ProcessService::create_command("sleep")
             .arg("10")
             .spawn()
