@@ -53,6 +53,23 @@ mod tests {
     }
 
     #[test]
+    fn mathjax_backend_preserves_physics_on_small_stack() {
+        for (formula, block_width, inline_width) in [
+            (r"\qty{1}{m}", "5.757ex", "5.757ex"),
+            (r"\dv{f}{x}", "3.548ex", "2.8ex"),
+        ] {
+            for inline in [false, true] {
+                let svg = render_on_small_stack(formula, inline);
+                let width = if inline { inline_width } else { block_width };
+                assert!(svg.contains(&format!("data-latex=\"{formula}\"")));
+                assert!(svg.contains(&format!("width=\"{width}\"")));
+                assert!(!svg.contains("data-mjx-error"));
+                assert!(!svg.contains("merror"));
+            }
+        }
+    }
+
+    #[test]
     fn mathjax_backend_matches_concurrent_requests_to_their_replies() {
         let formulas = [
             ("x", false),

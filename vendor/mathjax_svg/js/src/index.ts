@@ -62,6 +62,7 @@ const PACKAGES = [
 	"newcommand",
 	"noerrors",
 	"noundefined",
+	"physics",
 	"upgreek",
 	"unicode",
 	"verb",

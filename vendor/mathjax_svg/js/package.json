@@ -6,6 +6,7 @@
   "scripts": {
     "prepare": "bun build --outfile=out/index.mjs --minify --target=browser src/index.ts",
     "build": "bun run prepare",
+    "test": "bun test",
     "typecheck": "tsc"
   },
   "devDependencies": {
