@@ -1,5 +1,6 @@
 pub mod anchor_map;
 pub mod background;
+mod cancellable_read;
 pub mod core_render;
 mod core_render_diagram;
 mod core_render_html_document;

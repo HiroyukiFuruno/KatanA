@@ -86,7 +86,9 @@ impl IntakeWorkerOps {
                 return;
             }
         };
-        let result = DocumentSurfaceSource::local(&request.path);
+        let result = DocumentSurfaceSource::local_with_cancellation(&request.path, || {
+            request.is_cancelled()
+        });
         Self::deliver(shared, request, sender, result);
     }
 

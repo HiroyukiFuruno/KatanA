@@ -38,6 +38,7 @@ pub(super) fn file_url(
         })
 }
 
+#[cfg(test)]
 pub(super) fn read_bounded(
     path: &Path,
     format: Option<BinaryDocumentFormat>,
@@ -49,6 +50,7 @@ pub(super) fn read_bounded(
     )
 }
 
+#[cfg(test)]
 pub(super) fn read_bounded_with_limit(
     path: &Path,
     format: Option<BinaryDocumentFormat>,
@@ -73,7 +75,7 @@ pub(super) fn read_bounded_with_limit(
     result
 }
 
-fn read_limited(
+pub(super) fn read_limited(
     reader: impl Read,
     path: &Path,
     format: Option<BinaryDocumentFormat>,
@@ -97,7 +99,7 @@ fn read_limited(
     Ok(bytes)
 }
 
-fn opened_file_capacity(
+pub(super) fn opened_file_capacity(
     metadata: std::io::Result<std::fs::Metadata>,
     path: &Path,
     format: Option<BinaryDocumentFormat>,

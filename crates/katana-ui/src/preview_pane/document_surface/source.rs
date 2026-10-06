@@ -5,9 +5,13 @@ use katana_document_viewer::{
 };
 use std::path::{Path, PathBuf};
 
-use super::source_io::{enforce_remote_size, file_url, read_bounded, revision};
+use super::super::cancellable_read::ReadCancellation;
+use super::source_io::{enforce_remote_size, revision};
 use super::types::{DocumentFailure, DocumentFailureLayer};
-use super::worker_memory::{DOCUMENT_WORKER_MEMORY, IntakeMemoryLease};
+use super::worker_memory::IntakeMemoryLease;
+
+#[path = "source_local.rs"]
+mod local;
 
 #[derive(Debug, Clone)]
 pub(crate) struct DocumentSurfaceSource {
@@ -21,50 +25,17 @@ pub(crate) struct DocumentSurfaceSource {
 }
 
 impl DocumentSurfaceSource {
+    #[cfg(test)]
     pub(crate) fn local(path: &Path) -> Result<Self, DocumentFailure> {
-        let intake_memory = std::sync::Arc::new(DOCUMENT_WORKER_MEMORY.retain_intake());
-        let started_at = std::time::Instant::now();
-        let canonical = path.canonicalize().map_err(|error| {
-            DocumentFailure::intake("canonicalize", path, None, error.to_string())
-        })?;
-        let canonical_ms = started_at.elapsed().as_millis();
-        let format = BinaryDocumentFormat::from_path(&canonical).ok_or_else(|| {
-            DocumentFailure::intake(
-                "classify",
-                &canonical,
-                None,
-                "document extension is not supported",
-            )
-        })?;
-        let bytes = read_bounded(&canonical, Some(format))?;
-        let read_ms = started_at.elapsed().as_millis();
-        BinaryDocumentFormat::detect(&canonical, Some(format.mime()), &bytes).map_err(|error| {
-            DocumentFailure::intake("validate", &canonical, Some(format), error.to_string())
-        })?;
-        let validate_ms = started_at.elapsed().as_millis();
-        let uri = file_url(&canonical, format)?;
-        let source = Self {
-            uri,
-            format,
-            mime: format.mime().to_owned(),
-            revision: revision(&bytes),
-            bytes,
-            _intake_memory: Some(intake_memory),
-        };
-        super::debug_log::DebugLog::write(
-            "document_source_intake",
-            format_args!(
-                "kind=local format={} bytes={} elapsed_ms={} canonical_ms={} read_ms={} validate_ms={} uri={}",
-                source.format.extension(),
-                source.bytes.len(),
-                started_at.elapsed().as_millis(),
-                canonical_ms,
-                read_ms.saturating_sub(canonical_ms),
-                validate_ms.saturating_sub(read_ms),
-                source.uri
-            ),
-        );
-        Ok(source)
+        Self::local_with_cancellation(path, || false)
+    }
+
+    pub(super) fn local_with_cancellation(
+        path: &Path,
+        cancelled: impl Fn() -> bool,
+    ) -> Result<Self, DocumentFailure> {
+        let cancellation = ReadCancellation::new(cancelled);
+        local::SourceLocalOps::load(path, &cancellation)
     }
 
     pub(crate) fn remote(
