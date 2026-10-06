@@ -1,6 +1,8 @@
 use crate::alerts::AlertBundle;
 use egui::{RichText, TextBuffer, TextStyle, Ui, text::LayoutJob};
 use std::collections::HashMap;
+#[cfg(feature = "better_syntax_highlighting")]
+use std::sync::OnceLock;
 
 use crate::pulldown::ScrollableCache;
 
@@ -494,12 +496,13 @@ impl CodeBlock {
         ui: &Ui,
         text: &str,
     ) -> egui::text::LayoutJob {
-        if let Some(syntax) = cache.ps.find_syntax_by_extension(extension) {
+        let syntaxes = cache.ps.get_or_init(SyntaxSet::load_defaults_newlines);
+        if let Some(syntax) = syntaxes.find_syntax_by_extension(extension) {
             let mut job = egui::text::LayoutJob::default();
             let mut h = HighlightLines::new(syntax, cache.curr_theme(ui, options));
 
             for line in LinesWithEndings::from(text) {
-                let ranges = h.highlight_line(line, &cache.ps).unwrap();
+                let ranges = h.highlight_line(line, syntaxes).unwrap();
                 for v in ranges {
                     let front = v.0.foreground;
                     job.append(
@@ -563,10 +566,11 @@ pub struct CommonMarkCache {
     // Everything stored in `CommonMarkCache` must take into account that
     // the cache is for multiple `CommonMarkviewer`s with different source_ids.
     #[cfg(feature = "better_syntax_highlighting")]
-    ps: SyntaxSet,
+    // 画像やOfficeのpreview生成ではコード用の辞書を読み込む必要がない。
+    ps: OnceLock<SyntaxSet>,
 
     #[cfg(feature = "better_syntax_highlighting")]
-    ts: ThemeSet,
+    ts: OnceLock<ThemeSet>,
 
     link_hooks: HashMap<String, bool>,
 
@@ -579,9 +583,9 @@ impl Default for CommonMarkCache {
     fn default() -> Self {
         Self {
             #[cfg(feature = "better_syntax_highlighting")]
-            ps: SyntaxSet::load_defaults_newlines(),
+            ps: OnceLock::new(),
             #[cfg(feature = "better_syntax_highlighting")]
-            ts: ThemeSet::load_defaults(),
+            ts: OnceLock::new(),
             link_hooks: HashMap::new(),
             scroll: Default::default(),
             has_installed_loaders: false,
@@ -592,9 +596,13 @@ impl Default for CommonMarkCache {
 impl CommonMarkCache {
     #[cfg(feature = "better_syntax_highlighting")]
     pub fn add_syntax_from_folder(&mut self, path: &str) {
-        let mut builder = self.ps.clone().into_builder();
+        let mut builder = self
+            .ps
+            .get_or_init(SyntaxSet::load_defaults_newlines)
+            .clone()
+            .into_builder();
         let _ = builder.add_from_folder(path, true);
-        self.ps = builder.build();
+        self.ps = OnceLock::from(builder.build());
     }
 
     #[cfg(feature = "better_syntax_highlighting")]
@@ -603,9 +611,13 @@ impl CommonMarkCache {
         s: &str,
         fallback_name: Option<&str>,
     ) -> Result<(), syntect::parsing::ParseSyntaxError> {
-        let mut builder = self.ps.clone().into_builder();
+        let mut builder = self
+            .ps
+            .get_or_init(SyntaxSet::load_defaults_newlines)
+            .clone()
+            .into_builder();
         SyntaxDefinition::load_from_str(s, true, fallback_name).map(|d| builder.add(d))?;
-        self.ps = builder.build();
+        self.ps = OnceLock::from(builder.build());
         Ok(())
     }
 
@@ -617,7 +629,11 @@ impl CommonMarkCache {
         &mut self,
         path: impl AsRef<std::path::Path>,
     ) -> Result<(), syntect::LoadingError> {
-        self.ts.add_from_folder(path)
+        let mut themes = self.ts.take().unwrap_or_else(ThemeSet::load_defaults);
+        let result = themes.add_from_folder(path);
+        // 読込エラー時も既定テーマと既に追加したテーマを失わない。
+        self.ts = OnceLock::from(themes);
+        result
     }
 
     #[cfg(feature = "better_syntax_highlighting")]
@@ -630,10 +646,13 @@ impl CommonMarkCache {
         bytes: &[u8],
     ) -> Result<(), syntect::LoadingError> {
         let mut cursor = std::io::Cursor::new(bytes);
-        self.ts
-            .themes
-            .insert(name.into(), ThemeSet::load_from_reader(&mut cursor)?);
-        Ok(())
+        let mut themes = self.ts.take().unwrap_or_else(ThemeSet::load_defaults);
+        let name = name.into();
+        let result = ThemeSet::load_from_reader(&mut cursor).map(|theme| {
+            themes.themes.insert(name, theme);
+        });
+        self.ts = OnceLock::from(themes);
+        result
     }
 
     /// Clear the cache for all scrollable elements
@@ -712,13 +731,18 @@ impl CommonMarkCache {
 
     #[cfg(feature = "better_syntax_highlighting")]
     fn curr_theme(&self, ui: &Ui, options: &CommonMarkOptions) -> &Theme {
-        self.ts
+        let themes = self.ts.get_or_init(ThemeSet::load_defaults);
+        themes
             .themes
             .get(options.curr_theme(ui))
             // Since we have called load_defaults, the default theme *should* always be available..
-            .unwrap_or_else(|| &self.ts.themes[default_theme(ui)])
+            .unwrap_or_else(|| &themes.themes[default_theme(ui)])
     }
 }
+
+#[cfg(test)]
+#[path = "misc/lazy_highlighting_tests.rs"]
+mod lazy_highlighting_tests;
 
 pub fn scroll_cache<'a>(cache: &'a mut CommonMarkCache, id: &egui::Id) -> &'a mut ScrollableCache {
     if !cache.scroll.contains_key(id) {
