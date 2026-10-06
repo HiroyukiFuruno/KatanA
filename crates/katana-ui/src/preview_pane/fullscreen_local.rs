@@ -44,6 +44,7 @@ pub(super) fn show_fullscreen_local(
                             egui::TextureOptions::LINEAR,
                         ));
                         viewer_state.texture_background = Some(background);
+                        loader.release_active_image(path, background);
                     }
                     super::local_image_loader::LocalImageStatus::Pending => {
                         ctx.request_repaint_after(std::time::Duration::from_millis(

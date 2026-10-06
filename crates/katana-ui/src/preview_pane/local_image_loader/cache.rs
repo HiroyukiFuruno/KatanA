@@ -1,18 +1,65 @@
 use super::{Arc, CACHE_ENTRY_LIMIT, Cache, IMAGE_CACHE_LIMIT, LocalImageLoader, RequestKey, egui};
+use std::sync::atomic::Ordering;
 
 fn image_bytes(image: &Result<egui::ColorImage, String>) -> usize {
-    image
-        .as_ref()
-        .map_or(0, LocalImageLoader::color_image_bytes)
+    image.as_ref().map_or(0, |image| {
+        image.pixels.len() * std::mem::size_of::<egui::Color32>()
+    })
 }
 
 fn result_bytes(image: &Result<Arc<egui::ColorImage>, String>) -> usize {
-    image
-        .as_ref()
-        .map_or(0, |image| LocalImageLoader::color_image_bytes(image))
+    image.as_ref().map_or(0, |image| {
+        image.pixels.len() * std::mem::size_of::<egui::Color32>()
+    })
 }
 
 impl LocalImageLoader {
+    pub(super) fn advance_active_frame(&self, frame: u64) {
+        let previous = self.inner.active_frame.swap(frame, Ordering::AcqRel);
+        if previous == frame {
+            return;
+        }
+        let Ok(mut cache) = self.inner.cache.lock() else {
+            return;
+        };
+        /* WHY: 同じframeの複数描画では破棄せず、前frameに表示された画像にも一回の猶予を与える。 */
+        let oldest = frame.saturating_sub(1);
+        cache.active_images.retain(|_, (_, seen)| *seen >= oldest);
+        cache.active_textures.retain(|_, (_, seen)| *seen >= oldest);
+    }
+
+    pub(super) fn build_texture(
+        &self,
+        ctx: &egui::Context,
+        key: RequestKey,
+        image: Arc<egui::ColorImage>,
+        id: usize,
+    ) -> super::LocalTextureStatus {
+        let bytes = image.pixels.len() * std::mem::size_of::<egui::Color32>();
+        let texture = ctx.load_texture(
+            format!("local_image_{id}"),
+            image,
+            egui::TextureOptions::LINEAR,
+        );
+        if bytes <= IMAGE_CACHE_LIMIT {
+            self.store_texture(key, texture.clone());
+        } else {
+            self.store_active_texture(key, texture.clone());
+        }
+        super::LocalTextureStatus::Ready(texture)
+    }
+
+    pub(crate) fn release_active_image(&self, path: &std::path::Path, background: egui::Color32) {
+        let key = RequestKey {
+            path: path.to_path_buf(),
+            background,
+        };
+        let Ok(mut cache) = self.inner.cache.lock() else {
+            return;
+        };
+        cache.active_images.remove(&key);
+    }
+
     pub(super) fn is_pending(&self, key: &RequestKey) -> bool {
         let Ok(pending) = self.inner.pending.lock() else {
             return false;
@@ -28,10 +75,17 @@ impl LocalImageLoader {
     }
 
     pub(super) fn cached_status(&self, key: &RequestKey) -> Option<super::LocalImageStatus> {
-        let cache = self.inner.cache.lock().ok()?;
-        cache.ready.get(key).map(|image| match image {
-            Ok(image) => super::LocalImageStatus::Ready(Arc::clone(image)),
-            Err(error) => super::LocalImageStatus::Failed(error.clone()),
+        let mut cache = self.inner.cache.lock().ok()?;
+        if let Some(image) = cache.ready.get(key) {
+            return Some(match image {
+                Ok(image) => super::LocalImageStatus::Ready(Arc::clone(image)),
+                Err(error) => super::LocalImageStatus::Failed(error.clone()),
+            });
+        }
+        let frame = self.inner.active_frame.load(Ordering::Acquire);
+        cache.active_images.get_mut(key).map(|(image, seen)| {
+            *seen = frame;
+            super::LocalImageStatus::Ready(Arc::clone(image))
         })
     }
 
@@ -45,9 +99,13 @@ impl LocalImageLoader {
                 cache.bytes = cache.bytes.saturating_sub(result_bytes(&old));
             }
             cache.textures.remove(&key);
-            cache
-                .ready
-                .insert(key, Err("image exceeds cache limit".to_owned()));
+            cache.active_textures.remove(&key);
+            let Ok(image) = image else {
+                return;
+            };
+            let frame = self.inner.active_frame.load(Ordering::Acquire);
+            cache.active_images.insert(key, (Arc::new(image), frame));
+            trim_active_images(&mut cache);
             trim_cache(&mut cache);
             return;
         }
@@ -65,6 +123,34 @@ impl LocalImageLoader {
         };
         cache.textures.insert(key, texture);
         trim_cache(&mut cache);
+    }
+
+    pub(super) fn store_active_texture(&self, key: RequestKey, texture: egui::TextureHandle) {
+        let Ok(mut cache) = self.inner.cache.lock() else {
+            return;
+        };
+        cache.active_images.remove(&key);
+        let frame = self.inner.active_frame.load(Ordering::Acquire);
+        cache.active_textures.insert(key, (texture, frame));
+        trim_active_textures(&mut cache);
+    }
+}
+
+fn trim_active_images(cache: &mut Cache) {
+    while cache.active_images.len() > CACHE_ENTRY_LIMIT {
+        let Some(key) = cache.active_images.keys().next().cloned() else {
+            break;
+        };
+        cache.active_images.remove(&key);
+    }
+}
+
+fn trim_active_textures(cache: &mut Cache) {
+    while cache.active_textures.len() > CACHE_ENTRY_LIMIT {
+        let Some(key) = cache.active_textures.keys().next().cloned() else {
+            break;
+        };
+        cache.active_textures.remove(&key);
     }
 }
 

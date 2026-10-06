@@ -42,7 +42,7 @@ impl PreviewPane {
 
     pub(crate) fn poll_renders(&mut self, ctx: &egui::Context) {
         self.poll_html_browser(ctx);
-        if self.local_image_loader.poll() {
+        if self.local_image_loader.poll(ctx.cumulative_frame_nr()) {
             ctx.request_repaint();
         }
 

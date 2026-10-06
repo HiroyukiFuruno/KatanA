@@ -26,6 +26,8 @@ struct RequestKey {
 struct Cache {
     ready: HashMap<RequestKey, Result<Arc<egui::ColorImage>, String>>,
     textures: HashMap<RequestKey, egui::TextureHandle>,
+    active_images: HashMap<RequestKey, (Arc<egui::ColorImage>, u64)>,
+    active_textures: HashMap<RequestKey, (egui::TextureHandle, u64)>,
     bytes: usize,
 }
 
@@ -35,6 +37,7 @@ struct Inner {
     pending: Mutex<HashSet<RequestKey>>,
     cache: Mutex<Cache>,
     generation: AtomicU64,
+    active_frame: AtomicU64,
 }
 
 #[derive(Clone)]
@@ -65,16 +68,20 @@ impl Default for LocalImageLoader {
                 cache: Mutex::new(Cache {
                     ready: HashMap::new(),
                     textures: HashMap::new(),
+                    active_images: HashMap::new(),
+                    active_textures: HashMap::new(),
                     bytes: 0,
                 }),
                 generation: AtomicU64::new(0),
+                active_frame: AtomicU64::new(0),
             }),
         }
     }
 }
 
 impl LocalImageLoader {
-    pub(crate) fn poll(&self) -> bool {
+    pub(crate) fn poll(&self, frame: u64) -> bool {
+        self.advance_active_frame(frame);
         let Ok(rx) = self.inner.result_rx.lock() else {
             return false;
         };
@@ -120,6 +127,12 @@ impl LocalImageLoader {
         {
             return LocalTextureStatus::Ready(texture.clone());
         }
+        if let Ok(mut cache) = self.inner.cache.lock()
+            && let Some((texture, seen)) = cache.active_textures.get_mut(&key)
+        {
+            *seen = self.inner.active_frame.load(Ordering::Acquire);
+            return LocalTextureStatus::Ready(texture.clone());
+        }
         match self.request(path, background) {
             LocalImageStatus::Ready(image) => self.build_texture(ctx, key, image, id),
             LocalImageStatus::Pending => LocalTextureStatus::Pending,
@@ -138,33 +151,13 @@ impl LocalImageLoader {
         };
         cache.ready.clear();
         cache.textures.clear();
+        cache.active_images.clear();
+        cache.active_textures.clear();
         cache.bytes = 0;
     }
 
     fn generation(&self) -> u64 {
         self.inner.generation.load(Ordering::Acquire)
-    }
-
-    fn build_texture(
-        &self,
-        ctx: &egui::Context,
-        key: RequestKey,
-        image: Arc<egui::ColorImage>,
-        id: usize,
-    ) -> LocalTextureStatus {
-        let texture = ctx.load_texture(
-            format!("local_image_{id}"),
-            (*image).clone(),
-            egui::TextureOptions::LINEAR,
-        );
-        if Self::color_image_bytes(&image) <= IMAGE_CACHE_LIMIT {
-            self.store_texture(key, texture.clone());
-        }
-        LocalTextureStatus::Ready(texture)
-    }
-
-    fn color_image_bytes(image: &egui::ColorImage) -> usize {
-        image.pixels.len() * std::mem::size_of::<egui::Color32>()
     }
 
     fn enqueue(&self, key: RequestKey) -> LocalImageStatus {

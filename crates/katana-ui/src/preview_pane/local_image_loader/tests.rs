@@ -2,6 +2,7 @@ use super::*;
 use std::time::Duration;
 
 const TEST_BACKGROUND: egui::Color32 = crate::theme_bridge::WHITE;
+const LARGE_IMAGE_SIZE: [usize; 2] = [6000, 4000];
 
 fn test_png_path(name: &str) -> PathBuf {
     std::env::temp_dir().join(format!(
@@ -12,8 +13,8 @@ fn test_png_path(name: &str) -> PathBuf {
 }
 
 fn wait_for(loader: &LocalImageLoader, path: &Path) -> LocalImageStatus {
-    for _ in 0..100 {
-        loader.poll();
+    for frame in 0..100 {
+        loader.poll(frame);
         let status = loader.request(path, TEST_BACKGROUND);
         if !matches!(status, LocalImageStatus::Pending) {
             return status;
@@ -84,8 +85,8 @@ fn reset_discards_old_generation_result() {
         LocalImageStatus::Pending
     ));
     loader.reset();
-    for _ in 0..20 {
-        loader.poll();
+    for frame in 0..20 {
+        loader.poll(frame);
         std::thread::sleep(Duration::from_millis(2));
     }
     assert!(matches!(
@@ -96,7 +97,7 @@ fn reset_discards_old_generation_result() {
 }
 
 #[test]
-fn cache_does_not_keep_oversized_images() {
+fn oversized_images_are_active_but_not_cached() {
     let loader = LocalImageLoader::default();
     let key = RequestKey {
         path: PathBuf::from("oversized"),
@@ -105,22 +106,96 @@ fn cache_does_not_keep_oversized_images() {
     loader.store_result(
         key.clone(),
         Ok(egui::ColorImage::new(
-            [IMAGE_CACHE_LIMIT / 4 + 1, 1],
-            vec![TEST_BACKGROUND; IMAGE_CACHE_LIMIT / 4 + 1],
+            LARGE_IMAGE_SIZE,
+            vec![TEST_BACKGROUND; LARGE_IMAGE_SIZE[0] * LARGE_IMAGE_SIZE[1]],
         )),
     );
-    assert!(matches!(
+    let cache = loader.inner.cache.lock().expect("cache lock");
+    assert!(!cache.ready.contains_key(&key));
+    assert!(cache.active_images.contains_key(&key));
+    drop(cache);
+    let ctx = egui::Context::default();
+    ctx.input_mut(|input| input.max_texture_side = 8192);
+    let LocalTextureStatus::Ready(texture) = loader.texture(&ctx, &key.path, key.background, 1)
+    else {
+        panic!("oversized image should remain displayable")
+    };
+    assert_eq!(texture.size(), LARGE_IMAGE_SIZE);
+    for frame in 1..5 {
+        loader.poll(frame);
+        loader.poll(frame);
+        let LocalTextureStatus::Ready(current) = loader.texture(&ctx, &key.path, key.background, 1)
+        else {
+            panic!("displayed texture must not be decoded again")
+        };
+        assert_eq!(current.id(), texture.id());
+    }
+    let small_key = RequestKey {
+        path: PathBuf::from("small"),
+        background: TEST_BACKGROUND,
+    };
+    loader.store_result(
+        small_key.clone(),
+        Ok(egui::ColorImage::new([1, 1], vec![TEST_BACKGROUND])),
+    );
+    {
+        let cache = loader.inner.cache.lock().expect("cache lock");
+        assert!(!cache.active_images.contains_key(&key));
+        assert!(cache.active_textures.contains_key(&key));
+        assert!(cache.ready.contains_key(&small_key));
+        assert!(cache.bytes <= IMAGE_CACHE_LIMIT);
+    }
+    loader.poll(5);
+    assert!(
         loader
             .inner
             .cache
             .lock()
             .expect("cache lock")
-            .ready
-            .get(&key),
-        Some(Err(error)) if error == "image exceeds cache limit"
-    ));
-    assert!(matches!(
-        loader.request(&key.path, key.background),
-        LocalImageStatus::Failed(error) if error == "image exceeds cache limit"
-    ));
+            .active_textures
+            .contains_key(&key)
+    );
+    loader.poll(6);
+    assert!(
+        !loader
+            .inner
+            .cache
+            .lock()
+            .expect("cache lock")
+            .active_textures
+            .contains_key(&key)
+    );
+    assert_eq!(texture.size(), LARGE_IMAGE_SIZE);
+}
+
+#[test]
+fn active_display_entries_are_bounded_and_reset() {
+    let loader = LocalImageLoader::default();
+    let ctx = egui::Context::default();
+    for index in 0..=CACHE_ENTRY_LIMIT {
+        let key = RequestKey {
+            path: PathBuf::from(format!("active-{index}")),
+            background: TEST_BACKGROUND,
+        };
+        let texture = ctx.load_texture(
+            format!("active-{index}"),
+            egui::ColorImage::new([1, 1], vec![TEST_BACKGROUND]),
+            egui::TextureOptions::LINEAR,
+        );
+        loader.store_active_texture(key, texture);
+    }
+    assert_eq!(
+        loader
+            .inner
+            .cache
+            .lock()
+            .expect("cache lock")
+            .active_textures
+            .len(),
+        CACHE_ENTRY_LIMIT
+    );
+    loader.reset();
+    let cache = loader.inner.cache.lock().expect("cache lock");
+    assert!(cache.active_images.is_empty());
+    assert!(cache.active_textures.is_empty());
 }

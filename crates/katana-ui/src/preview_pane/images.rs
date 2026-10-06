@@ -27,10 +27,11 @@ impl ImageLogicOps {
                     super::local_image_loader::LocalImageStatus::Ready(image) => {
                         state.texture = Some(ui.ctx().load_texture(
                             format!("local_image_{id}"),
-                            (*image).clone(),
+                            image,
                             egui::TextureOptions::LINEAR,
                         ));
                         state.texture_background = Some(preview_background);
+                        loader.release_active_image(path, preview_background);
                     }
                     super::local_image_loader::LocalImageStatus::Pending => {
                         ui.ctx()
