@@ -102,6 +102,8 @@ fn main() -> eframe::Result<()> {
             katana_ui::i18n::I18nOps::set_language(&runtime_language);
             katana_ui::shell_ui::ShellUiOps::update_native_menu_strings_from_i18n();
 
+            /* WHY: 更新元の整理は実アプリ起動の責務とし、文書検査用の生成では実行しない。 */
+            katana_core::update::UpdateCleanupOps::perform_background_cleanup();
             let mut app = KatanaApp::new(state);
 
             let icon_png = include_bytes!("../../../assets/icon.iconset/icon_128x128.png");
@@ -132,6 +134,27 @@ use gui_setup::GuiSetupOps;
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn update_cleanup_belongs_to_native_host_not_app_constructor() {
+        let constructor = include_str!("shell/mod.rs");
+        assert!(!constructor.contains("UpdateCleanupOps::perform_background_cleanup"));
+        let host = include_str!("main.rs")
+            .split("Box::new(|cc| {")
+            .nth(1)
+            .expect("native AppCreator")
+            .split("Ok(Box::new(app))")
+            .next()
+            .expect("native AppCreator body");
+        let cleanup = "UpdateCleanupOps::perform_background_cleanup";
+        assert_eq!(host.matches(cleanup).count(), 1);
+        assert!(
+            host.find(cleanup).expect("host cleanup")
+                < host
+                    .find("KatanaApp::new(state)")
+                    .expect("host app creation")
+        );
+    }
 
     fn init_tracing() {
         let _ = tracing_subscriber::fmt().with_test_writer().try_init();

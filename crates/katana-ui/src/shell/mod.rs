@@ -104,8 +104,6 @@ impl KatanaApp {
         }
 
         app.clear_transient_workspace_restore_state();
-        katana_core::update::UpdateCleanupOps::perform_background_cleanup();
-        tracing::debug!("KatanaApp::new: Background cleanup done");
         tracing::debug!("KatanaApp::new: End");
 
         startup_workspace::WorkspaceStartupOps::restore_workspace(&mut app);
