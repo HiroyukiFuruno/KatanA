@@ -36,6 +36,11 @@ fn viewer_state_entry_repaints_and_replaces_texture_after_atomic_write() {
     }
     let initial_identity = state.texture_identity.expect("initial viewer texture");
     let initial_texture = state.texture.as_ref().expect("initial texture").id();
+    assert!(
+        !context.has_requested_repaint(),
+        "initial image must settle before testing an idle GUI wakeup: {}",
+        super::watcher_overflow_tests::watch_state(&loader, &path)
+    );
     let repaint = Arc::new(AtomicBool::new(false));
     let callback_repaint = Arc::clone(&repaint);
     context.set_request_repaint_callback(move |_| {
@@ -54,7 +59,9 @@ fn viewer_state_entry_repaints_and_replaces_texture_after_atomic_write() {
     }
     assert!(
         repaint.load(Ordering::Acquire),
-        "idle watcher must wake the GUI"
+        "idle watcher must wake the GUI: egui_pending={}, {}",
+        context.has_requested_repaint(),
+        super::watcher_overflow_tests::watch_state(&loader, &path)
     );
     while Instant::now() < deadline {
         loader.poll(0);
