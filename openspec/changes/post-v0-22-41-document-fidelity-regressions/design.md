@@ -6,6 +6,10 @@ Office の ZIP、フィルター、表示品質、変換時間は KDV/office2pdf
 
 ## Goals / Non-Goals
 
+### 今回公開範囲の後発決定（2026-10-06）
+
+本人がKDV/KRR不備の採用を次期と決定したため、今回の公開判定はKatanA所有の改善を対象とする。上流のChrome一致性・変換遅延・再起動artifact不足はIssue付きの未解決事項として残す。KatanAのsource/input/描画所有、scroll/reload、メニュー、正常close、資源・UI進行、現在HEADの品質検査、実packaged/全5配布assetの条件は除外しない。歴史的な全owner-layer改善目標と今回公開範囲を混同しない。具体的な分類と機械ゲートの未対応は [公開範囲の整合](evidence/release-scope-reconciliation-2026-10-06.md) に記録する。
+
 **Goals:**
 
 - 指摘された9項目を独立した受入項目として追跡し、未検証項目を完了扱いしない。
