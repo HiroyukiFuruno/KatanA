@@ -169,9 +169,10 @@ fn oversized_images_are_active_but_not_cached() {
 }
 
 #[test]
-fn active_display_entries_are_bounded_and_reset() {
+fn active_display_entries_keep_same_frame_ownership_and_prune_afterward() {
     let loader = LocalImageLoader::default();
     let ctx = egui::Context::default();
+    let mut textures = Vec::new();
     for index in 0..=CACHE_ENTRY_LIMIT {
         let key = RequestKey {
             path: PathBuf::from(format!("active-{index}")),
@@ -182,6 +183,7 @@ fn active_display_entries_are_bounded_and_reset() {
             egui::ColorImage::new([1, 1], vec![TEST_BACKGROUND]),
             egui::TextureOptions::LINEAR,
         );
+        textures.push((key.clone(), texture.clone()));
         loader.store_active_texture(key, texture);
     }
     assert_eq!(
@@ -192,8 +194,64 @@ fn active_display_entries_are_bounded_and_reset() {
             .expect("cache lock")
             .active_textures
             .len(),
-        CACHE_ENTRY_LIMIT
+        CACHE_ENTRY_LIMIT + 1
     );
+    for (key, expected) in &textures {
+        let LocalTextureStatus::Ready(actual) = loader.texture(&ctx, &key.path, key.background, 1)
+        else {
+            panic!("same-frame active texture must remain available")
+        };
+        assert_eq!(actual.id(), expected.id());
+    }
+    loader.poll(1);
+    assert_eq!(
+        loader
+            .inner
+            .cache
+            .lock()
+            .expect("cache lock")
+            .active_textures
+            .len(),
+        CACHE_ENTRY_LIMIT + 1
+    );
+    let next_key = RequestKey {
+        path: PathBuf::from("active-next"),
+        background: TEST_BACKGROUND,
+    };
+    let next_texture = ctx.load_texture(
+        "active-next",
+        egui::ColorImage::new([1, 1], vec![TEST_BACKGROUND]),
+        egui::TextureOptions::LINEAR,
+    );
+    loader.store_active_texture(next_key.clone(), next_texture.clone());
+    for (key, expected) in &textures {
+        let LocalTextureStatus::Ready(actual) = loader.texture(&ctx, &key.path, key.background, 1)
+        else {
+            panic!("grace-frame active texture must remain available")
+        };
+        assert_eq!(actual.id(), expected.id());
+    }
+    let LocalTextureStatus::Ready(actual) =
+        loader.texture(&ctx, &next_key.path, next_key.background, 1)
+    else {
+        panic!("new active texture must remain available")
+    };
+    assert_eq!(actual.id(), next_texture.id());
+    loader.poll(2);
+    assert_eq!(
+        loader
+            .inner
+            .cache
+            .lock()
+            .expect("cache lock")
+            .active_textures
+            .len(),
+        CACHE_ENTRY_LIMIT + 2
+    );
+    loader.poll(3);
+    let cache = loader.inner.cache.lock().expect("cache lock");
+    assert!(cache.active_textures.is_empty());
+    drop(cache);
     loader.reset();
     let cache = loader.inner.cache.lock().expect("cache lock");
     assert!(cache.active_images.is_empty());

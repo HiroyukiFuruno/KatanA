@@ -105,7 +105,6 @@ impl LocalImageLoader {
             };
             let frame = self.inner.active_frame.load(Ordering::Acquire);
             cache.active_images.insert(key, (Arc::new(image), frame));
-            trim_active_images(&mut cache);
             trim_cache(&mut cache);
             return;
         }
@@ -132,25 +131,6 @@ impl LocalImageLoader {
         cache.active_images.remove(&key);
         let frame = self.inner.active_frame.load(Ordering::Acquire);
         cache.active_textures.insert(key, (texture, frame));
-        trim_active_textures(&mut cache);
-    }
-}
-
-fn trim_active_images(cache: &mut Cache) {
-    while cache.active_images.len() > CACHE_ENTRY_LIMIT {
-        let Some(key) = cache.active_images.keys().next().cloned() else {
-            break;
-        };
-        cache.active_images.remove(&key);
-    }
-}
-
-fn trim_active_textures(cache: &mut Cache) {
-    while cache.active_textures.len() > CACHE_ENTRY_LIMIT {
-        let Some(key) = cache.active_textures.keys().next().cloned() else {
-            break;
-        };
-        cache.active_textures.remove(&key);
     }
 }
 
