@@ -1,5 +1,8 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] current8f7 review5433854835/P2 PRRT_kwDORm09y86popFe・4199818144: 登録済みparent削除→再作成→後続overwriteを実Linux17331 genuineRED→81431 GREENで修復。最終native35810全loader34PASS/Linux84146全35PASS、正式36706 AST23/strictClippy/fmt-checkactual0。該当directoryとsubscriberだけ既存bounded再登録へ戻し、通常fileRemove/別dir監視/genuineFailed/FSEvents通知補完を維持。通常署名G8f461241c18c5eff045eb3d081c13f6b48c680abへ正式統合、push・個別reply/resolve/fresh・新graph全gateは未完。evidence/registered-directory-image-recovery-2026-10-07.md。
+- [x] 公開8f7ae2b0公式coverage78303 actualexit0: UI1156/native18/export13/parallel143（既存ignore2）/serial18成功、meaningful成功・strict document100%未カバー0。raw tmp/8f7ae2b0-current-coverage.log、report-only JSON SHA2562a77f302e7f33ac9feee825345e1098ac3744ba9787bff154b91e65bdbd93033・独立strict checkeractual0。後続directory復旧修正へ流用しない。
+
 - [/] 削除parent通知修復を通常hook/署名G 624cbefb769a154cc21883afc40b9899addc4892（68105 actual0）へ正式統合。最終loader33/AST23/strictClippy/fmt/diffcheck全成功、EN19:35:08UTC/JA04:35:08JST同期。通常docscommit/push/newgraph currentreview・全CI/coverage/全配布受入/公開後処理を継続し、旧68dbCI失敗/error未記録と旧package/coverageを区別する。
 
 - [/] current68db Ubuntu CI37516676587/job112452170844は画像watch overflowのwatch_error.is_none失敗（1132PASS1FAILignore2）。exact error未記録のため因果断定せず、別途削除済みparent通知が無関係livePNGをFailedにする旧製品31409 assertionREDを実証。通知path限定invalidate/正式backend error保持後、最終18386全loader33PASS actual0。元5秒/assert/cache/API維持。静的検査90382・通常統合push・新HEAD全CI/coverage/実配布・公開後処理は継続。evidence/deleted-parent-image-notification-2026-10-07.md。
