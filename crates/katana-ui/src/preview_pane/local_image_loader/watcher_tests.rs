@@ -1,5 +1,6 @@
 use super::*;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 const TEST_BACKGROUND: egui::Color32 = crate::theme_bridge::WHITE;
@@ -158,7 +159,7 @@ fn successful_registration_clears_prior_watch_failure() {
     loader.poll(0);
     assert!(matches!(
         loader.request(&path, TEST_BACKGROUND),
-        LocalImageStatus::Failed(_)
+        LocalImageStatus::Ready(_)
     ));
     loader
         .inner
@@ -168,7 +169,7 @@ fn successful_registration_clears_prior_watch_failure() {
     assert!(loader.watch_error(&path).is_some());
     assert!(matches!(
         loader.request(&path, TEST_BACKGROUND),
-        LocalImageStatus::Failed(_)
+        LocalImageStatus::Ready(_)
     ));
     loader
         .inner
@@ -178,4 +179,100 @@ fn successful_registration_clears_prior_watch_failure() {
     loader.poll(0);
     assert!(loader.watch_error(&path).is_none());
     wait_ready(&loader, &path, TEST_BACKGROUND, RED_PIXEL);
+}
+
+#[test]
+fn watch_registration_failure_does_not_block_readable_image_request() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
+    let (_root, path) = fixture_path();
+    image::RgbaImage::from_pixel(1, 1, image::Rgba(RED_PIXEL))
+        .save(&path)
+        .expect("initial PNG");
+    let loader = LocalImageLoader::default();
+    let generation = loader.generation();
+    loader
+        .inner
+        .invalidation_tx
+        .send(WatchEvent::Failed(
+            path.clone(),
+            "watch registration failed".to_owned(),
+            generation,
+        ))
+        .expect("failure event");
+    loader.poll(0);
+
+    loader
+        .inner
+        .watch_errors
+        .lock()
+        .expect("watch failures lock")
+        .get_mut(&path)
+        .expect("watch failure")
+        .deadline = Instant::now() + Duration::from_secs(WAIT_SECONDS * 2);
+
+    wait_ready(&loader, &path, TEST_BACKGROUND, RED_PIXEL);
+    assert!(loader.watch_error(&path).is_some());
+}
+
+#[test]
+fn repeated_watch_failures_preserve_ready_until_reregistered() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
+    let (_root, path) = fixture_path();
+    image::RgbaImage::from_pixel(1, 1, image::Rgba(RED_PIXEL))
+        .save(&path)
+        .expect("initial PNG");
+    let loader = LocalImageLoader::default();
+    wait_ready(&loader, &path, TEST_BACKGROUND, RED_PIXEL);
+    let LocalImageStatus::Ready(initial) = loader.request(&path, TEST_BACKGROUND) else {
+        panic!("initial image must be ready");
+    };
+    let generation = loader.generation();
+    let old_revision = loader.path_revision(&path);
+    for error in ["first failure", "second failure"] {
+        loader
+            .inner
+            .invalidation_tx
+            .send(WatchEvent::Failed(
+                path.clone(),
+                error.to_owned(),
+                generation,
+            ))
+            .expect("failure event");
+        loader.poll(0);
+        let LocalImageStatus::Ready(current) = loader.request(&path, TEST_BACKGROUND) else {
+            panic!("watch failure must not hide ready image");
+        };
+        assert!(Arc::ptr_eq(&initial, &current));
+    }
+    assert_eq!(loader.watch_error(&path).as_deref(), Some("second failure"));
+
+    image::RgbaImage::from_pixel(1, 1, image::Rgba(GREEN_PIXEL))
+        .save(&path)
+        .expect("updated PNG");
+    loader
+        .inner
+        .invalidation_tx
+        .send(WatchEvent::Registered(path.clone(), generation))
+        .expect("registration event");
+    loader.poll(0);
+    assert!(loader.watch_error(&path).is_none());
+    assert!(loader.path_revision(&path) > old_revision);
+    loader
+        .inner
+        .result_tx
+        .send(ResultMessage {
+            key: RequestKey {
+                path: path.clone(),
+                background: TEST_BACKGROUND,
+            },
+            generation,
+            revision: old_revision,
+            image: Ok(egui::ColorImage::new(
+                [1, 1],
+                vec![egui::Color32::from_rgba_unmultiplied(255, 0, 0, 255)],
+            )),
+        })
+        .expect("stale result");
+    loader.poll(0);
+    wait_ready(&loader, &path, TEST_BACKGROUND, GREEN_PIXEL);
 }

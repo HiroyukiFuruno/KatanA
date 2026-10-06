@@ -149,8 +149,9 @@ fn subscriber_overflow_preserves_dropped_registration_failure() {
     );
     assert!(matches!(
         loader.request(&path, TEST_BACKGROUND),
-        super::super::LocalImageStatus::Failed(_)
+        super::super::LocalImageStatus::Pending | super::super::LocalImageStatus::Ready(_)
     ));
+    wait_ready(&loader, &path, TEST_BACKGROUND, RED_PIXEL);
     send_event(
         &loader.inner,
         WatchEvent::Registered(path.clone(), loader.generation()),

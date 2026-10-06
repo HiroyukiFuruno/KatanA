@@ -149,7 +149,6 @@ impl LocalImageLoader {
                 if generation != self.generation() {
                     return false;
                 }
-                self.invalidate_path(&path);
                 self.clear_watch_state(&path);
                 self.store_watch_error(path.clone(), error, generation);
                 self.schedule_watch_retry(path, generation);
@@ -159,6 +158,15 @@ impl LocalImageLoader {
     }
 
     pub(super) fn register_watched(&self, path: PathBuf) {
+        let had_error = self
+            .inner
+            .watch_errors
+            .lock()
+            .ok()
+            .is_some_and(|mut errors| errors.remove(&path).is_some());
+        if had_error {
+            self.invalidate_path(&path);
+        }
         let Ok(mut pending) = self.inner.watch_pending.lock() else {
             return;
         };
@@ -169,11 +177,6 @@ impl LocalImageLoader {
         watched.insert(path.clone());
         drop(watched);
         drop(pending);
-        let Ok(mut errors) = self.inner.watch_errors.lock() else {
-            return;
-        };
-        errors.remove(&path);
-        drop(errors);
     }
 
     pub(super) fn store_watch_error(&self, path: PathBuf, error: String, generation: u64) {

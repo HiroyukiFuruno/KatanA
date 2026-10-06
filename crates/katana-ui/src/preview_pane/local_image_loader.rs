@@ -129,17 +129,23 @@ impl LocalImageLoader {
             path: path.to_path_buf(),
             background,
         };
+        let watch_failed = self.watch_error(&key.path).is_some();
+        if watch_failed {
+            self.retry_watch(&key.path);
+        }
         if let Some(status) = self.cached_status(&key) {
             return status;
         }
-        if let Some(error) = self.watch_error(&key.path) {
-            self.retry_watch(&key.path);
-            return LocalImageStatus::Failed(error);
-        }
-        match self.ensure_watched(&key.path) {
-            Ok(true) => {}
-            Ok(false) => return LocalImageStatus::Pending,
-            Err(error) => return LocalImageStatus::Failed(error),
+        if !watch_failed {
+            match self.ensure_watched(&key.path) {
+                Ok(true) => {}
+                Ok(false) => return LocalImageStatus::Pending,
+                Err(error) => {
+                    let generation = self.generation();
+                    self.store_watch_error(key.path.clone(), error, generation);
+                    self.schedule_watch_retry(key.path.clone(), generation);
+                }
+            }
         }
         if self.is_pending(&key) {
             return LocalImageStatus::Pending;

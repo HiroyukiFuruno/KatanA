@@ -89,6 +89,7 @@ fn later_failed_event_replaces_deferred_failure_after_capacity_returns() {
     assert_eq!(loader.watch_error(&path).as_deref(), Some("latest failure"));
     assert!(matches!(
         loader.request(&path, TEST_BACKGROUND),
-        LocalImageStatus::Failed(_)
+        LocalImageStatus::Pending | LocalImageStatus::Ready(_)
     ));
+    wait_ready(&loader, &path, TEST_BACKGROUND, RED_PIXEL);
 }
