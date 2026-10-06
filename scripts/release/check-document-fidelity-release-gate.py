@@ -19,6 +19,7 @@ MODES = {
     "pr-bootstrap",
     "release-artifact-pending",
     "post-release-evidence",
+    "post-release-host",
 }
 BOOTSTRAP_ALLOWED = {
     "1.2",
@@ -62,6 +63,9 @@ PACKAGED_HOST_ALLOWED = (
     SOURCE_UPSTREAM_DEFERRED
     | set(SOURCE_HOST_IMPLEMENTATION_MARKERS)
     | SOURCE_POST_PUBLICATION
+)
+POST_RELEASE_HOST_ALLOWED = (
+    SOURCE_UPSTREAM_DEFERRED | set(SOURCE_HOST_IMPLEMENTATION_MARKERS)
 )
 SOURCE_ALLOWED = (
     SOURCE_UPSTREAM_DEFERRED
@@ -126,7 +130,7 @@ def completed_task_ids(tasks: Path) -> set[str]:
 
 
 def verify_host_implementation_markers(tasks: Path, mode: str) -> None:
-    if mode not in {"source", "packaged-host"}:
+    if mode not in {"source", "packaged-host", "post-release-host"}:
         return
     declared = declared_task_ids(tasks)
     completed = completed_task_ids(tasks)
@@ -156,6 +160,7 @@ def run_task_checker(tasks: Path, mode: str) -> int:
         "pr-bootstrap": BOOTSTRAP_ALLOWED,
         "source": SOURCE_ALLOWED,
         "packaged-host": PACKAGED_HOST_ALLOWED,
+        "post-release-host": POST_RELEASE_HOST_ALLOWED,
     }.get(mode)
     if allowed is not None:
         for task_id in sorted(allowed):
@@ -215,7 +220,7 @@ def verify(version: str, mode: str, repository_root: Path) -> int:
     task_result = run_task_checker(tasks, mode)
     if task_result != 0 or mode in {"pr-bootstrap", "source"}:
         return task_result
-    if mode == "packaged-host":
+    if mode in {"packaged-host", "post-release-host"}:
         return run_acceptance_evidence_checker(repository_root, host_scope=True)
     evidence_result = run_acceptance_evidence_checker(repository_root)
     return evidence_result

@@ -452,6 +452,47 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
         self.assertEqual(result, 0, output)
         acceptance_checker.assert_not_called()
 
+    def test_post_release_host_allows_only_upstream_task_and_implemented_pairs(self) -> None:
+        self.assertSetEqual(
+            MODULE.POST_RELEASE_HOST_ALLOWED,
+            MODULE.SOURCE_UPSTREAM_DEFERRED
+            | set(MODULE.SOURCE_HOST_IMPLEMENTATION_MARKERS),
+        )
+        self.assertFalse(
+            MODULE.POST_RELEASE_HOST_ALLOWED & MODULE.SOURCE_POST_PUBLICATION
+        )
+        self.assertFalse(
+            MODULE.POST_RELEASE_HOST_ALLOWED & MODULE.SOURCE_EVIDENCE_GENERATION
+        )
+
+        tasks = self.required_tasks_with_pending(*MODULE.POST_RELEASE_HOST_ALLOWED)
+        with self.repository(tasks, with_evidence=True, with_host_actions=True) as directory:
+            result, output = self.run_gate(Path(directory), mode="post-release-host")
+        self.assertEqual(result, 0, output)
+
+    def test_post_release_host_requires_implementation_markers_for_mixed_tasks(self) -> None:
+        tasks = self.required_tasks_with_pending(*MODULE.POST_RELEASE_HOST_ALLOWED)
+        tasks = tasks.replace("- [x] 3.9 complete\n", "")
+        with self.repository(tasks) as directory:
+            result, output = self.run_gate(Path(directory), mode="post-release-host")
+        self.assertNotEqual(result, 0)
+        self.assertIn("3.9", output)
+
+    def test_post_release_host_rejects_evidence_and_post_publication_tasks(self) -> None:
+        for task_id in ("1.2", "4.3", "4.8", "4.9", "5.3", "6.3", "9.1"):
+            with self.subTest(task_id=task_id):
+                tasks = self.required_tasks_with_pending(
+                    *MODULE.POST_RELEASE_HOST_ALLOWED, task_id
+                )
+                if f"- [/] {task_id} pending\n" not in tasks:
+                    tasks += f"- [ ] {task_id} pending\n"
+                with self.repository(tasks) as directory:
+                    result, output = self.run_gate(
+                        Path(directory), mode="post-release-host"
+                    )
+                self.assertNotEqual(result, 0)
+                self.assertIn(task_id, output)
+
     def test_source_rejects_incomplete_or_missing_host_implementation_markers(self) -> None:
         for task_id, marker in MODULE.SOURCE_HOST_IMPLEMENTATION_MARKERS.items():
             with self.subTest(task_id=task_id, marker=marker):
@@ -555,6 +596,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                 legacy_command = run.call_args.args[0]
                 self.assertNotIn("--scope", legacy_command)
 
+    def test_post_release_host_uses_packaged_host_scope(self) -> None:
+        with self.repository(self.completed_required_tasks()) as directory:
+            root = Path(directory)
+            completed = subprocess.CompletedProcess([], 0, stdout="", stderr="")
+            with mock.patch.object(
+                MODULE.subprocess, "run", return_value=completed
+            ) as run:
+                result = MODULE.run_acceptance_evidence_checker(root, host_scope=True)
+        self.assertEqual(result, 0)
+        command = run.call_args.args[0]
+        self.assertEqual(command[-2:], ["--scope", "katana-host"])
+
     def test_owner_source_task_cannot_be_removed(self) -> None:
         tasks = self.completed_required_tasks().replace("- [x] 2.6 complete\n", "")
         for mode in ("source", "packaged-host", "strict"):
@@ -596,17 +649,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             "release-artifact-pending",
             "post-release-evidence",
             "packaged-host",
+            "post-release-host",
         ):
             with self.repository(
                 self.completed_required_tasks(),
                 with_evidence=True,
-                with_host_actions=mode == "packaged-host",
+                with_host_actions=mode in {"packaged-host", "post-release-host"},
             ) as directory:
                 result, output = self.run_gate(Path(directory), mode=mode)
             self.assertEqual(result, 0, (mode, output))
 
     def test_completed_tasks_without_evidence_fail_closed(self) -> None:
-        for mode in ("strict", "packaged-host"):
+        for mode in ("strict", "packaged-host", "post-release-host"):
             with self.subTest(mode=mode):
                 with self.repository(self.completed_required_tasks()) as directory:
                     result, output = self.run_gate(Path(directory), mode=mode)

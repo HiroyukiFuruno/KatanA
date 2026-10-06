@@ -57,6 +57,25 @@ def verify_document_phase_order(workflow: str) -> None:
 
 
 class WorkflowContractTests(unittest.TestCase):
+    def test_post_release_host_mode_is_opt_in(self) -> None:
+        check_pr_ready = (ROOT / "scripts/release/check-pr-ready.sh").read_text(
+            encoding="utf-8"
+        )
+        readiness = (ROOT / ".github/workflows/release-readiness.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            "--post-release-host) TASK_GATE_MODE=\"post-release-host\" ;;",
+            check_pr_ready,
+        )
+        self.assertIn(
+            'if [[ "$TASK_GATE_MODE" == "post-release-evidence" || '
+            '"$TASK_GATE_MODE" == "post-release-host" ]]; then',
+            check_pr_ready,
+        )
+        self.assertIn("--post-release-evidence", readiness)
+        self.assertNotIn("--post-release-host", readiness)
+
     def test_real_workflow_requires_packaged_host_before_publication(self) -> None:
         workflow = (ROOT / ".github/workflows/build-and-release.yml").read_text(encoding="utf-8")
         verify_document_phase_order(workflow)
