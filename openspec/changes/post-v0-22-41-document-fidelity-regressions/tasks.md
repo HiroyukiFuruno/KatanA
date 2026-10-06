@@ -1,5 +1,11 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] current04e mac失敗sampleに65thread中59のUpdateCleanupOps→brew status待ちを確認。文書fixtureごとのKatanaApp::newでOS更新元整理を開始していたため、既存cleanup実装を実native AppCreatorへ移し汎用constructorの副作用を除去。契約1assertRED84951 actual101→native全18GREEN80361/AST23・strictClippy・fmt26510 actual0、通常署名G bc78503aへ統合。evidence/native-host-update-cleanup-2026-10-07.md。元2秒失敗の因果未確定/newHEAD全gate未完、正常host非同期cleanup維持、app操作/Terms代行無し。
+
+- [/] current04e596f0 review5431243615本文P2: pending URLのtarget close後完了で閉鎖tabを再生成する。実close成立時targeted request取消/直接poll closed guard/同path再open旧応答拒否/dirty確認中・open pinned・ユーザー入力維持を実装。元assertRED7→URL全23GREEN37652、AST23/strictClippy/fmt3159 actual0。通常署名G ad264741へ統合、evidence/url-review-routing-2026-10-07.md。push・本文個別返信/fresh全レビューは未完。inline thread無し。
+- [/] 同review本文P2: HTML targetへPDF/Office応答適用時のpath分類を検出形式へ移行し、order/pinned/split/group/refresh URL・dirty元文書・既存target衝突を保持。上記RED→GREEN/静的検査成功、通常署名G3b4e2770へ統合。typed intake経路の証拠でcontainer表示成功・実機確認と混同しない。push/current review回答は継続する。
+- [/] current04e通常push51518/公式coverage34332/package25354と署名検査85126 actual0。UI1135/parallel143/serial18、meaningful0/strict文書100%、mac universal/minos13/ad-hoc。tmp/04e596f0-package-verification.md。新URL修正へ旧source検査を流用しない。同HEADmacOS CI112364501947 Run tests失敗を確認、raw取得/原因切分けを継続。Ubuntu/全lint/CodeQL/供給網success、Windows未完。本人app/Terms非操作、全5配布/native/clean-machine/公開後処理は未完。
+
 - [ ] 公開181391e5 macCI112323232248はHTML初frame2041ms/acceptedtrue/idlefalse/genNone、1127PASS/1FAIL/ignore2。raw tmp/181391e5-macos-job-112323232248.log、original PID22676 sampleはsymbol処理の5秒制限でactualfile0bytes、後続別process159.312ms成功を原失敗へ代用しない。tmp/181391e5-current-ci-audit/analysis.md。現runでは隣接診断childsampleが約0.65秒重複、旧4a/683は非重複でも失敗したため反復根因ではない。実診断テストだけ既存RenderEnvLockで隔離する候補を追加、原2秒・assert・skip・製品コード不変。候補検証/newHEAD全gateは未完。
 
 - [/] 公開181391e5 current review5430016913の新P2 PRRT_kwDORm09y86pg4Qo/4196609706・PRRT_kwDORm09y86pg4Qv/4196609713: sidebar/直接actionの終了時fullscreen復元と無文書Slideshow拒否をe2d3d361へ通常署名Gで統合。旧製品分岐+同fixtureで2PASS/5assertFAIL actual101→main正式worker入口7PASS actual0。元fullscreen維持/反復復元/Noneと5非対応形式/Markdown・PPTX可用性、188行のprivate cfg(test)だけで検証。evidence/slideshow-fullscreen-review-2026-10-07.md。通常push/各reply-resolve-fresh/newHEAD全gate・本人packaged受入は未完、既存manual-target選択二件と別。
