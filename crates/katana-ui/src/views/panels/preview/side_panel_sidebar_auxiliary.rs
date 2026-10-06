@@ -278,4 +278,36 @@ mod tests {
             AppAction::RefreshDocument { is_manual: true }
         ));
     }
+
+    fn render_primary_controls_for_test(
+        ctx: &egui::Context,
+        app: &mut crate::shell::KatanaApp,
+        input: egui::RawInput,
+    ) {
+        let mut output = ctx.run_ui(input, |ui| {
+            PreviewSidePanels::new(app).render_primary_controls(ui);
+        });
+        output.textures_delta.clear();
+    }
+
+    #[test]
+    fn primary_sidebar_pointer_click_queues_manual_refresh() {
+        let mut app = test_app();
+        let ctx = egui::Context::default();
+        app.pending_action = AppAction::None;
+        assert!(matches!(app.pending_action, AppAction::None));
+        let pointer = render_action_button_for_test(
+            &ctx,
+            &mut app,
+            egui::RawInput::default(),
+            AppAction::RefreshDocument { is_manual: true },
+        )
+        .center();
+        render_primary_controls_for_test(&ctx, &mut app, pointer_input(pointer, true));
+        render_primary_controls_for_test(&ctx, &mut app, pointer_input(pointer, false));
+        assert!(matches!(
+            app.pending_action,
+            AppAction::RefreshDocument { is_manual: true }
+        ));
+    }
 }
