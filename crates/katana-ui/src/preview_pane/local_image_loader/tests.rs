@@ -36,7 +36,11 @@ fn local_png_is_decoded_off_request_and_composited() {
     ));
     let status = wait_for(&loader, &path);
     let LocalImageStatus::Ready(image) = status else {
-        panic!("PNG should load")
+        match status {
+            LocalImageStatus::Failed(error) => panic!("PNG decode failed: {error}"),
+            LocalImageStatus::Pending => panic!("PNG decode remained pending"),
+            LocalImageStatus::Ready(_) => unreachable!(),
+        }
     };
     assert_eq!(image.size, [1, 1]);
     assert_ne!(

@@ -103,24 +103,26 @@ impl LocalImageLoader {
                 return;
             };
             let frame = self.inner.active_frame.load(Ordering::Acquire);
-            cache.active_images.insert(key, (Arc::new(image), frame));
-            trim_cache(&mut cache);
+            cache
+                .active_images
+                .insert(key.clone(), (Arc::new(image), frame));
+            trim_cache(&mut cache, &key);
             return;
         }
         cache.bytes = cache
             .bytes
             .saturating_sub(cache.ready.get(&key).map_or(0, result_bytes));
         cache.bytes += bytes;
-        cache.ready.insert(key, image.map(Arc::new));
-        trim_cache(&mut cache);
+        cache.ready.insert(key.clone(), image.map(Arc::new));
+        trim_cache(&mut cache, &key);
     }
 
     pub(super) fn store_texture(&self, key: RequestKey, texture: egui::TextureHandle) {
         let Ok(mut cache) = self.inner.cache.lock() else {
             return;
         };
-        cache.textures.insert(key, texture);
-        trim_cache(&mut cache);
+        cache.textures.insert(key.clone(), texture);
+        trim_cache(&mut cache, &key);
     }
 
     pub(super) fn store_active_texture(&self, key: RequestKey, texture: egui::TextureHandle) {
@@ -133,11 +135,12 @@ impl LocalImageLoader {
     }
 }
 
-fn trim_cache(cache: &mut Cache) {
+fn trim_cache(cache: &mut Cache, retained: &RequestKey) {
     while (cache.bytes > IMAGE_CACHE_LIMIT || cache.ready.len() > CACHE_ENTRY_LIMIT)
         && cache.ready.len() > 1
     {
-        let Some(key) = cache.ready.keys().next().cloned() else {
+        /* WHY: 受信直後の結果を即座に退避すると初描画前に再読込が必要になる。 */
+        let Some(key) = cache.ready.keys().find(|key| *key != retained).cloned() else {
             break;
         };
         if let Some(old) = cache.ready.remove(&key) {

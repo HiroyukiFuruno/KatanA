@@ -12,11 +12,12 @@ fn small_displayed_textures_survive_reuse_cache_eviction() {
             path: PathBuf::from(format!("visible-small-{index}.png")),
             background: TEST_BACKGROUND,
         };
-        let image = egui::ColorImage::new([1, 1], vec![TEST_BACKGROUND]);
-        loader.store_result(key.clone(), Ok(image.clone()));
-        /* WHY: 再利用cacheの任意退避とは独立に、実描画済みtextureの所有期間を検証する。 */
+        loader.store_result(
+            key.clone(),
+            Ok(egui::ColorImage::new([1, 1], vec![TEST_BACKGROUND])),
+        );
         let LocalTextureStatus::Ready(texture) =
-            loader.build_texture(&context, key.clone(), Arc::new(image), index)
+            loader.texture(&context, &key.path, key.background, index)
         else {
             panic!("first display must produce a texture")
         };
