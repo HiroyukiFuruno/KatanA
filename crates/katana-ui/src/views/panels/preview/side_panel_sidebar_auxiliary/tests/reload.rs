@@ -70,10 +70,10 @@ fn load_initial_preview(
     path: &std::path::Path,
 ) -> TestResult<u64> {
     let url = url::Url::from_file_path(path).map_err(|_| "file URL")?;
-    app.process_action(&ctx, AppAction::OpenUrl(url.to_string()));
+    app.process_action(ctx, AppAction::OpenUrl(url.to_string()));
     start_pending_browser_sessions(app)?;
     app.wait_for_html_browser_frame_for_test(ctx, BROWSER_UPDATE_TIMEOUT)?;
-    let previous_session_generation = active_preview_session_generation(&app)?;
+    let previous_session_generation = active_preview_session_generation(app)?;
     assert!(
         app.html_browser_frame_matching_rgb_pixels_for_test(RED_RGB)
             .is_some_and(|pixels| pixels > 0)
