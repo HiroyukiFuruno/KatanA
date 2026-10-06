@@ -21,6 +21,28 @@ def step_block(job, name):
 
 
 class CiResourceContractTest(unittest.TestCase):
+    def test_html_failure_trace_preserves_the_original_gate(self):
+        job = current_test_job()
+        tests = step_block(job, "Run tests")
+        self.assertIn("id: workspace_tests", tests)
+        self.assertNotIn("continue-on-error", tests)
+        self.assertNotIn("DEBUG", tests)
+        diagnostic = step_block(job, "Trace failed HTML startup (macOS)")
+        self.assertIn("failure()", diagnostic)
+        self.assertIn("steps.workspace_tests.outcome == 'failure'", diagnostic)
+        self.assertIn("runner.os == 'macOS'", diagnostic)
+        self.assertIn("DEBUG: 'true'", diagnostic)
+        self.assertIn("scripts/ci/with-office-test-worker.sh", diagnostic)
+        self.assertIn("cargo test --locked -p katana-ui --lib", diagnostic)
+        self.assertIn(
+            "app::action::html_navigation::tests::"
+            "file_navigation_to_an_open_dirty_target_preserves_target_state",
+            diagnostic,
+        )
+        self.assertIn("-- --exact --nocapture", diagnostic)
+        self.assertNotIn("continue-on-error", diagnostic)
+        self.assertLess(job.index("- name: Run tests"), job.index("- name: Trace failed HTML startup (macOS)"))
+
     def test_test_concurrency_is_bounded_without_skipping_tests(self):
         root = Path(__file__).resolve().parents[2]
         justfile = (root / "Justfile").read_text(encoding="utf-8")

@@ -119,8 +119,21 @@ jobs:
           -- --exact --nocapture
 
       - name: Run tests
+        id: workspace_tests
         shell: bash
         run: bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
+
+      # WHY: 通常検査の失敗を維持し、描画phaseの診断だけを別実行へ隔離する。
+      - name: Trace failed HTML startup (macOS)
+        if: failure() && runner.os == 'macOS' && steps.workspace_tests.outcome == 'failure'
+        shell: bash
+        env:
+          DEBUG: 'true'
+        run: >-
+          bash scripts/ci/with-office-test-worker.sh
+          'cargo test --locked -p katana-ui --lib
+          app::action::html_navigation::tests::file_navigation_to_an_open_dirty_target_preserves_target_state
+          -- --exact --nocapture'
 
       - name: Test screenshot harness contracts
         if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
