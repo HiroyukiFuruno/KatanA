@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use skrifa::FontRef;
 
+use super::FontFamilyIdentity;
 use super::face_payload::FacePayload;
 use super::font_metadata::{FaceMetadata, face_metadata, matches_request, weight_distance};
 use super::types::{FontFaceRequest, FontFaceResolutionDiagnostic, ResolvedFontFace};
@@ -132,5 +133,9 @@ fn should_replace(current: Option<&SelectedFace>, distance: u16) -> bool {
 }
 
 pub(super) fn request_key(request: &FontFaceRequest) -> RequestKey {
-    (request.family.to_lowercase(), request.bold, request.italic)
+    (
+        FontFamilyIdentity::key(&request.family),
+        request.bold,
+        request.italic,
+    )
 }

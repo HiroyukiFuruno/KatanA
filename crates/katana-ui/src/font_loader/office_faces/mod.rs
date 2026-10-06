@@ -29,10 +29,24 @@ mod metadata_alias_tests;
 mod sfnt_fixture;
 
 #[cfg(test)]
+mod unicode_sfnt_fixture;
+
+#[cfg(test)]
 mod cancellation_tests;
 
 #[cfg(test)]
 mod installed_font_tests;
+
+use caseless::Caseless;
+use unicode_normalization::UnicodeNormalization;
+
+pub(crate) struct FontFamilyIdentity;
+
+impl FontFamilyIdentity {
+    pub(crate) fn key(family: &str) -> String {
+        family.nfd().default_case_fold().nfd().collect()
+    }
+}
 
 pub(crate) use resolver::FontFaceResolver;
 pub(crate) use types::{

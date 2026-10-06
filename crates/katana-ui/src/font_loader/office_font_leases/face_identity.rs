@@ -1,4 +1,4 @@
-use super::super::office_faces::{FontPayloadDigest, ResolvedFontFace};
+use super::super::office_faces::{FontFamilyIdentity, FontPayloadDigest, ResolvedFontFace};
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub(super) struct FaceIdentity {
@@ -19,7 +19,7 @@ pub(super) fn identity(face: &ResolvedFontFace) -> FaceIdentity {
         payload_index: face.payload.index,
         tweak: format!("{:?}", face.payload.tweak),
         face_index: face.face_index,
-        family: face.family.to_lowercase(),
+        family: FontFamilyIdentity::key(&face.family),
         weight: face.weight,
         bold: face.bold,
         italic: face.italic,

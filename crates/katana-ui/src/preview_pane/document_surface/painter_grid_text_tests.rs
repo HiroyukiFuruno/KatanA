@@ -63,6 +63,24 @@ fn grid_text_honors_registered_family_without_expanding_font_resources() {
 }
 
 #[test]
+fn grid_text_honors_canonically_equivalent_registered_family() {
+    let context = crate::test_ui::Context::default();
+    let mut definitions = egui::FontDefinitions::default();
+    let registered = egui::FontFamily::Name("École".into());
+    let proportional = definitions.families[&egui::FontFamily::Proportional].clone();
+    definitions
+        .families
+        .insert(registered.clone(), proportional);
+    context.set_fonts(definitions);
+
+    let mut cell = grid_cell();
+    cell.appearance.font_family = "E\u{301}cole".to_owned();
+    let galleys = paint_and_galleys(&context, &cell);
+
+    assert_eq!(galleys[0].job.sections[0].format.font_id.family, registered);
+}
+
+#[test]
 fn grid_text_keeps_existing_fallback_for_unregistered_families() {
     let context = crate::test_ui::Context::default();
     for (name, expected) in [

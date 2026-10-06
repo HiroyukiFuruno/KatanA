@@ -18,7 +18,7 @@ pub(super) fn face_metadata(face: &FontRef<'_>) -> Option<FaceMetadata> {
     let family = family_aliases.first()?.clone();
     let normalized_family_aliases = family_aliases
         .iter()
-        .map(|alias| alias.to_lowercase())
+        .map(|alias| super::FontFamilyIdentity::key(alias))
         .collect();
     let attributes = face.attributes();
     let weight = attributes
@@ -50,7 +50,7 @@ pub(super) fn matches_request(
     bold: bool,
     italic: bool,
 ) -> bool {
-    let normalized_family = family.to_lowercase();
+    let normalized_family = super::FontFamilyIdentity::key(family);
     metadata
         .normalized_family_aliases
         .iter()
@@ -93,10 +93,12 @@ fn family_names(face: &FontRef<'_>) -> Option<Vec<String>> {
 
 fn add_valid_name(names: &mut Vec<String>, raw: String) {
     let name = raw.trim();
-    let normalized = name.to_lowercase();
+    let normalized = super::FontFamilyIdentity::key(name);
     if !name.is_empty()
         && !name.chars().any(char::is_control)
-        && !names.iter().any(|known| known.to_lowercase() == normalized)
+        && !names
+            .iter()
+            .any(|known| super::FontFamilyIdentity::key(known) == normalized)
     {
         names.push(name.to_owned());
     }

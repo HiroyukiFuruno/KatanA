@@ -51,38 +51,6 @@ pub(super) fn family_names_for_id(font: &FontRef<'_>, id: StringId) -> Vec<Strin
         .collect()
 }
 
-pub(super) fn with_ecole_family_aliases(mut bytes: Vec<u8>) -> Vec<u8> {
-    let font = FontRef::new(&bytes).expect("embedded font");
-    let (table_offset, table, count, storage_offset) = name_table_layout(&font);
-    for index in 0..count {
-        let offset = NAME_HEADER_LENGTH + index * NAME_RECORD_LENGTH;
-        let platform = u16::from_be_bytes([table[offset], table[offset + 1]]);
-        let name_id = name_id(&table, offset);
-        if !matches!(name_id, FAMILY_NAME_ID | TYPOGRAPHIC_FAMILY_NAME_ID)
-            || platform != PLATFORM_UNICODE
-        {
-            continue;
-        }
-        let length = record_length(&table, offset);
-        let string_offset = string_offset(&table, offset);
-        assert!(
-            length >= "École".encode_utf16().count() * UTF16_CODE_UNIT_BYTES,
-            "family name record is too short for the Unicode fixture"
-        );
-        assert!(length.is_multiple_of(UTF16_CODE_UNIT_BYTES));
-        let mut encoded = "École".encode_utf16().collect::<Vec<_>>();
-        encoded.resize(length / UTF16_CODE_UNIT_BYTES, u16::from(b' '));
-        let start = table_offset + storage_offset + string_offset;
-        for (chunk, code_unit) in bytes[start..start + length]
-            .chunks_exact_mut(UTF16_CODE_UNIT_BYTES)
-            .zip(encoded)
-        {
-            chunk.copy_from_slice(&code_unit.to_be_bytes());
-        }
-    }
-    bytes
-}
-
 pub(super) fn with_distinct_family_aliases(mut bytes: Vec<u8>) -> Vec<u8> {
     let font = FontRef::new(&bytes).expect("embedded font");
     let (table_offset, table, count, storage_offset) = name_table_layout(&font);
@@ -155,7 +123,7 @@ pub(super) fn with_distinct_family_aliases(mut bytes: Vec<u8>) -> Vec<u8> {
     bytes
 }
 
-fn name_table_layout(font: &FontRef<'_>) -> (usize, Vec<u8>, usize, usize) {
+pub(super) fn name_table_layout(font: &FontRef<'_>) -> (usize, Vec<u8>, usize, usize) {
     let record = font
         .table_directory()
         .table_records()

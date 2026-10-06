@@ -125,14 +125,15 @@ fn font_id(
 }
 
 fn font_family(ui: &egui::Ui, family: &str) -> egui::FontFamily {
-    let normalized = family.to_lowercase();
+    let normalized = crate::font_loader::office_faces::FontFamilyIdentity::key(family);
     let registered = ui.fonts(|fonts| {
         fonts
             .definitions()
             .families
             .keys()
             .find(|candidate| {
-                matches!(candidate, egui::FontFamily::Name(name) if name.to_lowercase() == normalized)
+                matches!(candidate, egui::FontFamily::Name(name)
+                    if crate::font_loader::office_faces::FontFamilyIdentity::key(name) == normalized)
             })
             .cloned()
     });

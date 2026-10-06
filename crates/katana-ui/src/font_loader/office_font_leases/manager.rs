@@ -1,4 +1,4 @@
-use super::super::office_faces::ResolvedFontFace;
+use super::super::office_faces::{FontFamilyIdentity, ResolvedFontFace};
 use super::definitions::{
     LeaseFaces, ManagerState, add_lease, compose, remove_references, same_base, same_faces,
     same_shared, shared_snapshot,
@@ -133,13 +133,13 @@ impl DocumentFontLease {
     pub(crate) fn family_for(&self, family: &str, bold: bool, italic: bool) -> Option<FontFamily> {
         let state = self.manager.lock_state();
         let lease = state.leases.get(&self.id)?;
-        let normalized_family = family.to_lowercase();
+        let normalized_family = FontFamilyIdentity::key(family);
         lease
             .faces
             .iter()
             .zip(&lease.families)
             .find(|(face, _)| {
-                face.request.family.to_lowercase() == normalized_family
+                FontFamilyIdentity::key(&face.request.family) == normalized_family
                     && face.request.bold == bold
                     && face.request.italic == italic
             })

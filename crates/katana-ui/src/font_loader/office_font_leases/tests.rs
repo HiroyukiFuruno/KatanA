@@ -77,8 +77,22 @@ fn unicode_family_lookup_preserves_style_matching() {
         Some(regular.clone())
     );
     assert_eq!(lease.family_for("école", true, false), Some(bold.clone()));
+    assert_eq!(
+        lease.family_for("E\u{301}cole", false, false),
+        Some(regular.clone())
+    );
     assert_ne!(regular, bold);
     assert!(lease.family_for("École", false, true).is_none());
+}
+
+#[test]
+fn unicode_default_case_fold_preserves_sharp_s_identity() {
+    let (context, manager, base) = installed_context();
+    let payload = base.font_data["Ubuntu-Light"].clone();
+    let mut lease = manager.lease(&context);
+    lease.replace_faces(&[face_with(&payload, "Straße", false, false, false)]);
+
+    assert!(lease.family_for("STRASSE", false, false).is_some());
 }
 
 #[test]

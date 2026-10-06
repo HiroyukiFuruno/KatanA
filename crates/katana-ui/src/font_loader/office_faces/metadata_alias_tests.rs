@@ -6,9 +6,9 @@ use skrifa::{FontRef, string::StringId};
 use super::resolver::FontFaceResolver;
 use super::sfnt_fixture::{
     embedded_font, family_names_for_id, preferred_family_name, with_distinct_family_aliases,
-    with_ecole_family_aliases,
 };
 use super::types::{FontFaceRequest, FontFaceResolutionDiagnostic};
+use super::unicode_sfnt_fixture::{with_ecole_family_aliases, with_strasse_family_aliases};
 
 #[test]
 fn resolver_accepts_legacy_family_alias_from_real_font_metadata() {
@@ -112,4 +112,51 @@ fn resolver_matches_unicode_case_family_aliases_from_real_sfnt_metadata() {
     assert!(report.faces.iter().all(|face| face.family == canonical));
     assert_eq!(report.faces[0].request.family, "école");
     assert!(report.faces.iter().all(|face| !face.bold && !face.italic));
+}
+
+#[test]
+fn resolver_matches_canonically_decomposed_unicode_family_aliases() {
+    let bytes = with_ecole_family_aliases(embedded_font());
+    let temporary = tempfile::tempdir().expect("temporary directory");
+    let path = temporary.path().join("ecole-decomposed.ttf");
+    fs::write(&path, bytes).expect("write real font fixture");
+    let candidates = [(
+        "unrelated filename stem".into(),
+        path.to_string_lossy().into_owned(),
+    )];
+    let requests = [FontFaceRequest {
+        family: "E\u{301}cole".into(),
+        bold: false,
+        italic: false,
+    }];
+
+    let report = FontFaceResolver::resolve(&candidates, &requests, &AtomicBool::new(false));
+
+    assert!(report.diagnostics.is_empty());
+    assert_eq!(report.faces.len(), 1);
+    assert_eq!(report.faces[0].family, "École");
+    assert_eq!(report.faces[0].request.family, "E\u{301}cole");
+}
+
+#[test]
+fn resolver_matches_default_case_folded_sharp_s_family_aliases() {
+    let bytes = with_strasse_family_aliases(embedded_font());
+    let temporary = tempfile::tempdir().expect("temporary directory");
+    let path = temporary.path().join("strasse.ttf");
+    fs::write(&path, bytes).expect("write real font fixture");
+    let candidates = [(
+        "unrelated filename stem".into(),
+        path.to_string_lossy().into_owned(),
+    )];
+    let requests = [FontFaceRequest {
+        family: "STRASSE".into(),
+        bold: false,
+        italic: false,
+    }];
+
+    let report = FontFaceResolver::resolve(&candidates, &requests, &AtomicBool::new(false));
+
+    assert!(report.diagnostics.is_empty());
+    assert_eq!(report.faces.len(), 1);
+    assert_eq!(report.faces[0].family, "Straße");
 }

@@ -4,6 +4,7 @@ use std::sync::Arc;
 use skrifa::MetadataProvider;
 
 use super::FontFaceRequest;
+use super::FontFamilyIdentity;
 use super::font_metadata::{face_metadata, matches_request};
 use super::types::{FontFaceResolution, ResolvedFontFace};
 const GLYPH_BOUNDS_COMPONENTS: usize = 4;
@@ -42,13 +43,16 @@ fn expected_indices(
 ) -> BTreeMap<(String, bool, bool), u32> {
     requests
         .iter()
-        .map(|request| {
-            (
-                (request.family.to_lowercase(), request.bold, request.italic),
-                source_indices[request],
-            )
-        })
+        .map(|request| (request_identity(request), source_indices[request]))
         .collect()
+}
+
+fn request_identity(request: &FontFaceRequest) -> (String, bool, bool) {
+    (
+        FontFamilyIdentity::key(&request.family),
+        request.bold,
+        request.italic,
+    )
 }
 
 fn assert_retained_and_released(report: FontFaceResolution, bytes: &[u8]) {
@@ -82,11 +86,7 @@ fn assert_face(
     expected: &BTreeMap<(String, bool, bool), u32>,
     source: &[u8],
 ) {
-    let key = (
-        resolved.request.family.to_lowercase(),
-        resolved.request.bold,
-        resolved.request.italic,
-    );
+    let key = request_identity(&resolved.request);
     let source_index = expected[&key];
     assert_eq!(resolved.face_index, source_index);
     assert_eq!(resolved.payload.index, 0);

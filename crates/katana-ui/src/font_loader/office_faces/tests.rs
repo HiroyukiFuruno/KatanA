@@ -40,7 +40,7 @@ fn deduplicates_case_insensitive_family_requests() {
     let candidates = vec![("font".into(), path.to_string_lossy().into_owned())];
     let requests = [
         request(&family, false, false),
-        request(&family.to_lowercase(), false, false),
+        request(&super::FontFamilyIdentity::key(&family), false, false),
     ];
 
     let report = FontFaceResolver::resolve(&candidates, &requests, &AtomicBool::new(false));
