@@ -7,6 +7,7 @@ mod cache;
 mod decode;
 mod overflow;
 mod pool;
+mod retry;
 mod revision;
 mod revision_cache;
 mod texture;
@@ -47,7 +48,7 @@ struct Inner {
     path_revisions: Mutex<HashMap<PathBuf, u64>>,
     watched_paths: Mutex<HashSet<PathBuf>>,
     watch_pending: Mutex<HashSet<PathBuf>>,
-    watch_errors: Mutex<HashMap<PathBuf, String>>,
+    watch_errors: Mutex<HashMap<PathBuf, retry::WatchFailure>>,
     deferred_watch_results: Mutex<DeferredWatchResults>,
     cache: Mutex<Cache>,
     generation: AtomicU64,
@@ -132,6 +133,7 @@ impl LocalImageLoader {
             return status;
         }
         if let Some(error) = self.watch_error(&key.path) {
+            self.retry_watch(&key.path);
             return LocalImageStatus::Failed(error);
         }
         match self.ensure_watched(&key.path) {
@@ -181,6 +183,8 @@ mod batch_tests;
 
 #[cfg(test)]
 mod display_tests;
+#[cfg(test)]
+mod retry_tests;
 #[cfg(test)]
 mod watcher_overflow_tests;
 #[cfg(test)]

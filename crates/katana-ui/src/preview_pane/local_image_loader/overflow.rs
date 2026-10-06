@@ -35,7 +35,9 @@ impl LocalImageLoader {
                 Ok(()) => self.register_watched(path),
                 Err(error) => {
                     self.invalidate_path(&path);
-                    self.store_watch_error(path, error, generation);
+                    self.clear_watch_state(&path);
+                    self.store_watch_error(path.clone(), error, generation);
+                    self.schedule_watch_retry(path, generation);
                 }
             }
             changed = true;

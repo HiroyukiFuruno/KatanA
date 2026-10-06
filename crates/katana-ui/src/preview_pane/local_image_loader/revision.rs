@@ -74,7 +74,7 @@ impl LocalImageLoader {
             .watch_errors
             .lock()
             .ok()
-            .and_then(|errors| errors.get(path).cloned())
+            .and_then(|errors| errors.get(path).map(|failure| failure.error.clone()))
     }
 
     pub(super) fn ensure_watched(&self, path: &Path) -> Result<bool, String> {
@@ -150,7 +150,9 @@ impl LocalImageLoader {
                     return false;
                 }
                 self.invalidate_path(&path);
-                self.store_watch_error(path, error, generation);
+                self.clear_watch_state(&path);
+                self.store_watch_error(path.clone(), error, generation);
+                self.schedule_watch_retry(path, generation);
             }
         }
         true
@@ -171,6 +173,7 @@ impl LocalImageLoader {
             return;
         };
         errors.remove(&path);
+        drop(errors);
     }
 
     pub(super) fn store_watch_error(&self, path: PathBuf, error: String, generation: u64) {
@@ -178,7 +181,12 @@ impl LocalImageLoader {
             return;
         };
         if self.generation() == generation {
-            errors.insert(path, error);
+            if let Some(failure) = errors.get_mut(&path) {
+                failure.error = error;
+                failure.generation = generation;
+            } else {
+                errors.insert(path, super::retry::WatchFailure::new(error, generation));
+            }
         }
     }
 }

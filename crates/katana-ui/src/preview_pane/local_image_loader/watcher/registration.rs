@@ -44,6 +44,10 @@ impl Registration {
             return;
         }
         let result = Self::install(&request, watcher, watched_dirs, targets);
+        if result.is_err() {
+            Self::remove_previous(&request, targets);
+            super::events::unwatch_unused_dirs(watcher, watched_dirs, targets);
+        }
         let event = match result {
             Ok(()) => WatchEvent::Registered(request.path, request.generation),
             Err(error) => WatchEvent::Failed(request.path, error, request.generation),
@@ -57,6 +61,7 @@ impl Registration {
         watched_dirs: &mut HashSet<PathBuf>,
         targets: &mut Targets,
     ) -> Result<(), String> {
+        Self::remove_previous(request, targets);
         let paths = Self::paths(&request.path)?;
         for path in &paths {
             let parent = path.parent().ok_or("image watch path has no parent")?;
@@ -66,7 +71,6 @@ impl Registration {
             Self::watch_directory(watcher, parent, targets)?;
             watched_dirs.insert(parent.to_path_buf());
         }
-        Self::remove_previous(request, targets);
         for path in paths {
             targets.entry(path).or_default().push(WatchTarget {
                 owner: request.owner.clone(),
