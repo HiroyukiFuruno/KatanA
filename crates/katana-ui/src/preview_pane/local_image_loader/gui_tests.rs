@@ -17,6 +17,30 @@ fn show_image(
     output.textures_delta.clear();
 }
 
+fn settle_initial_repaints(context: &egui::Context) {
+    const MAX_SETTLE_FRAMES: usize = 8;
+    /* WHY: 初期texture取得だけでは登録通知などの再描画要求が残るため、idle通知の計測前に実frameで消費する。 */
+    for _ in 0..MAX_SETTLE_FRAMES {
+        if !context.has_requested_repaint() {
+            return;
+        }
+        let mut output = context.run_ui(Default::default(), |_| {});
+        output.textures_delta.clear();
+    }
+    assert!(
+        !context.has_requested_repaint(),
+        "initial egui repaint did not settle across frames"
+    );
+}
+
+#[test]
+fn initial_repaint_is_consumed_before_idle_wakeup_measurement() {
+    let context = egui::Context::default();
+    assert!(context.has_requested_repaint());
+    settle_initial_repaints(&context);
+    assert!(!context.has_requested_repaint());
+}
+
 #[test]
 fn viewer_state_entry_repaints_and_replaces_texture_after_atomic_write() {
     let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
@@ -36,6 +60,7 @@ fn viewer_state_entry_repaints_and_replaces_texture_after_atomic_write() {
     }
     let initial_identity = state.texture_identity.expect("initial viewer texture");
     let initial_texture = state.texture.as_ref().expect("initial texture").id();
+    settle_initial_repaints(&context);
     assert!(
         !context.has_requested_repaint(),
         "initial image must settle before testing an idle GUI wakeup: {}",
