@@ -204,6 +204,9 @@ mod tests {
     use crate::app_state::AppState;
     use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
 
+    #[path = "reload.rs"]
+    mod reload_tests;
+
     fn test_app() -> crate::shell::KatanaApp {
         let state = AppState::new(
             AiProviderRegistry::new(),
