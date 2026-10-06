@@ -121,7 +121,17 @@ jobs:
       - name: Run tests
         id: workspace_tests
         shell: bash
+        env:
+          KATANA_HTML_FAILURE_SAMPLE: ${{ runner.os == 'macOS' && '1' || '0' }}
         run: bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
+
+      - name: Upload original HTML failure sample (macOS)
+        if: failure() && runner.os == 'macOS' && steps.workspace_tests.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: original-html-failure-sample-${{ runner.os }}
+          path: target/html-startup-failures
+          if-no-files-found: warn
 
       # WHY: 通常検査の失敗を維持し、描画phaseの診断だけを別実行へ隔離する。
       - name: Trace failed HTML startup (macOS)

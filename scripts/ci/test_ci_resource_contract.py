@@ -21,6 +21,19 @@ def step_block(job, name):
 
 
 class CiResourceContractTest(unittest.TestCase):
+    def test_original_failure_sample_is_opt_in_and_cannot_replace_failure(self):
+        job = current_test_job()
+        tests = step_block(job, "Run tests")
+        self.assertIn("KATANA_HTML_FAILURE_SAMPLE: ${{ runner.os == 'macOS' && '1' || '0' }}", tests)
+        self.assertNotIn("DEBUG", tests)
+        self.assertNotIn("continue-on-error", tests)
+        upload = step_block(job, "Upload original HTML failure sample (macOS)")
+        self.assertIn("failure()", upload)
+        self.assertIn("steps.workspace_tests.outcome == 'failure'", upload)
+        self.assertIn("runner.os == 'macOS'", upload)
+        self.assertIn("path: target/html-startup-failures", upload)
+        self.assertNotIn("cargo test", upload)
+
     def test_html_failure_trace_preserves_the_original_gate(self):
         job = current_test_job()
         tests = step_block(job, "Run tests")

@@ -182,6 +182,10 @@ fn preserve_html_preview_session(
     }
 }
 
+#[cfg(all(test, target_os = "macos"))]
+#[path = "html_navigation_diagnostics.rs"]
+mod diagnostics;
+
 #[cfg(test)]
 mod tests {
     use super::preserve_html_preview_session;
@@ -423,14 +427,22 @@ mod tests {
             Duration::from_secs(2),
         )
         .map_err(|error| {
-            format!(
+            let original_error = format!(
                 "{error}; startup_accepted={startup_accepted}; elapsed_ms={}; idle={:?}; generation={:?}; origin_matches={}; resources={:?}",
                 startup_started.elapsed().as_millis(),
                 app.html_browser_is_idle_for_test(),
                 app.html_browser_frame_generation_for_test(),
                 app.html_browser_origin_for_test().as_deref() == Some(target_navigation_url.as_str()),
                 app.preview_resource_counts_for_test(),
-            )
+            );
+            #[cfg(target_os = "macos")]
+            if let Some(sample) = super::diagnostics::capture_if_enabled() {
+                return match sample {
+                    Ok(path) => format!("{original_error}; sample={}", path.display()),
+                    Err(error) => format!("{original_error}; sample_error={error}"),
+                };
+            }
+            original_error
         })?;
         assert!(
             app.html_browser_frame_matching_rgb_pixels_for_test([255, 0, 0])
