@@ -410,7 +410,9 @@ mod tests {
         );
         let viewport =
             katana_document_viewer::browser_session::HtmlBrowserViewport::new(320, 240, 1.0)?;
-        app.tab_previews
+        let startup_started = Instant::now();
+        let startup_accepted = app
+            .tab_previews
             .iter_mut()
             .find(|preview| preview.path == target_path)
             .ok_or("target preview missing")?
@@ -419,7 +421,17 @@ mod tests {
         app.wait_for_html_browser_frame_for_test(
             &egui::Context::default(),
             Duration::from_secs(2),
-        )?;
+        )
+        .map_err(|error| {
+            format!(
+                "{error}; startup_accepted={startup_accepted}; elapsed_ms={}; idle={:?}; generation={:?}; origin_matches={}; resources={:?}",
+                startup_started.elapsed().as_millis(),
+                app.html_browser_is_idle_for_test(),
+                app.html_browser_frame_generation_for_test(),
+                app.html_browser_origin_for_test().as_deref() == Some(target_navigation_url.as_str()),
+                app.preview_resource_counts_for_test(),
+            )
+        })?;
         assert!(
             app.html_browser_frame_matching_rgb_pixels_for_test([255, 0, 0])
                 .is_some_and(|pixels| pixels > 0),
