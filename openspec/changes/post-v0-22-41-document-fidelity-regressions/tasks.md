@@ -1,5 +1,22 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 画像監視修正2a38304bとpost-release-host契約53f754f8を通常hook/署名Gで関心別commit。画像27PASS/AST23/Clippy/fmtとgate30/flow9/divergence10/旧strict48PASSを保持。未公開候補は解消したが通常push・新HEAD CI/coverage/currentreview/実配布・公開後処理は未完。
+
+- [/] 型別名補正後watch-final-type検査はAST23PASS・strict impacted Clippy PASS・fmt PASS、各actualexit0で回収。27loader PASSと差分/callsite自己reviewを evidence/watch-overflow-self-review-2026-10-06.mdへ記録しtargeted precommit PASS。関心別通常commit/pushとreview replyresolve/newHEAD全gateを進める。live PR346はed8 Draft/BLOCKED、Windows進行/mac失敗、v0.22.42公開無し。
+
+- [/] 最終60880はAST23PASS、Clippy type_complexity 1FAILでfmt未実行。private DeferredWatchResults型別名へ補正し、限定担当watch_final_checksが最終AST/lint/fmtを回収中。失敗を成功扱いせず、元27PASSと新静的検査を区別する。製品候補と公開後host契約は別関心で通常commit/pushを継続する。
+
+- [/] root追加自己review: 適用済み監視失敗の後続Registeredがdropすると旧errorが残る新回帰96340はassertion RED exit101。登録成功ack/失敗を一つの順序付きdeferred resultへ補正後1445全loader27PASS/40suites/2.86秒 exit0。59802 lint2FAILはget_mut/immutable引数へ規約準拠で補正、最終AST/lint/fmt60880進行。正式関心別commit/push・個別replyresolve・新HEAD全gate/実配布未完。原cache上限/timeout維持。
+
+- [/] root画像watch候補: 通常全loader96878は22PASS/GUI idle通知1FAILで保持、FSEvents監視先変更のstream再起動/purgeとRescan flag取りこぼしを現物確認。topology新2回帰は旧挙動0PASS/2assertion FAIL82750、既存OS共有環境をRenderEnvLockで隔離し二つのlive loader間変更を回帰内で検証。最終70647は全loader26PASS/40suites/2.55秒、AST85507は23PASS/12.56秒、actualexit0。元5秒・cache16件64MiB・実失敗保持不変。正式lint/fmt/関心別通常commit/push・新HEAD全gate・個別replyresolve/freshは未完。証跡 evidence/current-review-three-repairs-2026-10-06.md。
+
+- [ ] ed8e35c1 macOS CI112131880008は1105PASS/1FAIL/既存ignore2、dirty HTML target初frame2062ms/idlefalse/generationNoneで失敗。元2秒条件を維持。同processPID37083のsampleは5秒上限kill/reapで出力0bytes、unit sleepPID38802のreportを失敗stackへ代用しない。raw tmp/ci-ed8e35c1-macos-job.log、tmp/ci-ed8e35c1-original-html-samples。Linux/全lint/供給網/CodeQL/Readiness成功、Windowsは未回収。原因修復・新HEAD全gateを継続。
+- [ ] 公開後のscope循環: 旧post-release-evidenceはlegacy strictで上流3.2/Chrome差分を再停止条件化する。legacy strictを維持した新post-release-host候補を追加し、固定3.2+実装済paired markersのみ許可、evidence/postpub未完は拒否、実packaged全target/Office/正常close/RSS/input/原本とChrome参照identityは維持する。新workflowへの自動切替・実証跡生成/合成はせず、回帰・正式統合を行う。
+
+- [ ] 最新current review ed8e35c1の画像監視overflow P2 PRRT_kwDORm09y86pVutU: backendとsubscriberの256件queue集中後にpersistent watch_errorが残り再登録できない。overflowと実登録失敗を区別し、失われたRegistered/pendingの回復・旧世代無視・実PNG再描画・実失敗保持を回帰し、通常統合/push/個別reply/resolve/freshを実施する。上流の問題へ移さない。
+- [x] ed8e35c1公式coverage71777 actualexit0: UI lib1106PASS/既存ignore2、parallel143PASS/既存ignore2、serial18PASS、strict document surface100%/未実行0、meaningful gate PASS。raw tmp/ed8e35c1-current-coverage.logとtmp/ed8e35c1-coverage-report.jsonを保存。後続overflow修正graphへ流用しない。
+- [/] 同一poll未消費画像P2は67841c51をed8e35c1へ通常push85912 exit0で公開し、reply4192050416→resolve→fresh全1pageで解決確認。公式loader16PASS/AST23/Clippy/fmtと16件64MiB制約を維持。実配布/本人受入は別未完。
+
 - [/] 最新通常push91452は1099PASS/1FAIL/既存ignore2でactualexit1、remote042のまま。dirty-target初frame2010ms/idlefalse/generationNoneを元2秒のまま保持し、失敗確定後だけ同一test binaryのstackを採取するdefault-off macOS test-only helperを追加。公式focused4PASS74317/AST23PASS38757/strict impacted Clippy92336/fmt86444/CI契約8PASSを確認。単独dirty-target45592は1PASSだが元全suite失敗の修復ではない。正常pushで同一process証跡回収と原因修復を続ける。
 - [x] reload受入のsession境界を補正しce3ffaa2へ通常署名commit。旧checker新契約は3ERROR、補正後scope10PASS58320/gate26PASS3424/旧strict48PASS98217。旧sessionとのframe大小比較ではなく増分session identityと新session内frameを検証し、原本hash/入力/dirty保護を維持。実配布操作の証明は別未完。
 - [/] default本人profileのTermsはreadonlyでterms_accepted_version=0.22.9、現UIはSomeを受理。再承認待ちへ戻さない。本人最終受入・隔離clean-machine profileの確認は未完、自動承認/本人app操作はしない。

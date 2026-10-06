@@ -2,6 +2,26 @@
 
 ## 最新統合と追加レビュー
 
+画像監視候補は2a38304b、公開後host契約は53f754f8へ通常hook・署名Gで関心別commitした。最終watch-final-type AST23PASS/strict impacted Clippy PASS/fmt PASS、各actualexit0。60880のtype_complexity 1FAILはprivate型別名で補正し、最終自己reviewをwatch-overflow-self-review-2026-10-06.mdに記録した。機能検査はroot1445の27PASS。通常push、新HEAD cloud/coverage、個別replyresolve、実packagedと公開は未完。
+
+画像watch overflowの最終root候補は、通知あふれと本当の監視失敗を別eventとして扱う。失われたRegisteredを含むpending登録は次pollで回復し、queue外へ保持した登録結果は後続Registered/Failedとの通知順を維持する。旧世代/resetは拒否し、既存16件/64MiBの画像結果cacheは不変。新mapはドロップした登録成功/失敗の通知用であり画像cacheではない。
+
+root自己reviewで、既に適用した実失敗後のRegistered自体がdropすると旧errorが残る境界も追加検出した。96340は新assertion RED actualexit101、tmp/watch-registration-overflow-main-red.log / RTK tee1791269964。queue外結果を成功ackも含む一つのResult通知mapへ補正し、root1445は全loader27PASS/40suites/2.86秒 actualexit0。先行59802 strict lintはmap_entry/unnecessary_mut_passedの2件FAILで保持し、get_mutによる置換とimmutable引数へ規約準拠で修正。最終AST/lint/fmtは60880で回収中。新graphへの旧26PASS/旧AST成功の流用はしない。
+
+root全loader96878は22PASS/1FAIL（idle GUI repaint5秒、tmp/watch-overflow-main-loader-failed-raw.log）。notify8.2.0の実ソースでFSEvents watch/unwatchが全streamをstop/runし未配送eventをpurgeすることを確認し、監視先追加時の既存targetと解除成功時の残存targetへOverflowを送る。解除成功分は一度にまとめ、解除失敗ごとの全画像再読込ループを追加しない。backendの明示Rescan flagも処理する。各回帰は実RecommendedWatcher/実PNG/loader pollを使用するが、topology/rescan producer契約と実GUI atomic通知を区別する。
+
+新topology2回帰は通知補正前の旧挙動で0PASS/2assertion FAIL（82750 actualexit101、tmp/watch-topology-main-red-raw.log）。最初の補正後65326は23PASS/2FAILで、同じprocessの別directory監視変更によるrevision変更が「readだけは変更しない」というテスト前提に混入した。実backendを使う回帰は既存RenderEnvLockで共有OS監視環境を隔離し、二つのlive loader間のtopology変更は追加回帰内で検証する。条件・timeout・assert・case数は削減しない。最終root70647は全26PASS/40suites/2.55秒、85507は正式AST23PASS/4suites/12.56秒、いずれもactualexit0。raw tmp/watch-topology-main-loader-final.log / watch-topology-main-ast.log。agentの推定1791269307 logは存在しないため検証証跡へ採用しない。厳格lint/fmt・通常commit/push・thread reply/resolve・fresh review・新HEAD全gateは後続であり、実配布成功と主張しない。
+
+公開後scopeの独立候補は `post-release-host` をopt-inとして追加した。旧strict/post-release-evidenceを保持し、延期を許すのは固定上流3.2と対応する実装marker完了済みの混合タスクだけ。証拠生成、公開後作業、未知タスクの未完は拒否し、既存全target/Office/原本hash/Chrome参照identity/入力/正常close/RSS条件を維持する。`check-pr-ready.sh --post-release-host` はstable GitHub Releaseの存在を要求し、既存readiness workflowを自動変更しない。
+
+既存venvでgate30、flow9、divergence10、legacy acceptance48件はそれぞれactualexit0（tmp/post-release-host-{gate,flow,divergence,acceptance}-final.log）。shell syntax/diff checkもexit0。合成unit fixtureの回帰であり実packaged receipt・公開成果物・本人受入の証明ではない。候補は未commitで、v0.22.42は未公開のため実post-release-host成功とは扱わない。
+
+最新ed8e35c1は通常push85912 actualexit0でlocal/upstream/PR346一致・ahead0/behind0。同一poll画像P2はreply4192050416→resolve→fresh全1page取得で解決確認した。AI review5424436693（chatgpt-codex-connector、ed8e35c1）は画像watch overflow P2 PRRT_kwDORm09y86pVutUを新たに指摘した。旧manual-target方針二件とこの新P2は未解決であり、Ready/公開は未完了。
+
+ed8e35c1の公式coverage71777はactualexit0。UI lib1106PASS/既存ignore2、parallel143PASS/既存ignore2、serial18PASS、strict document surface100%/未実行0、既存meaningful gate PASS。raw tmp/ed8e35c1-current-coverage.logとtmp/ed8e35c1-coverage-report.jsonを保存した。生reportの全workspace line値と文書surface/meaningfulの判定は別物であり、全workspace生値100%とは主張しない。後続overflow修正graphや実配布/本人受入には流用しない。
+
+新watch overflowは実PNGがReadyになった後、元productでwatch_errorが残るassertion REDを取得（tmp/watch-overflow-recovery-actual-red.log）。compile errorの初稿はRED証拠に数えない。二つの通知queue経路、lost Registered/pending、旧世代、genuine監視失敗保持の回帰と最小修正を継続する。
+
 旧3件は通常push48627 exit0でHEAD04269741へ公開し、各返信4191620938/4191621452/4191622006とresolve後の全1page取得で解決済みを確認した。最新042レビューのP2同一poll結果欠落(PRRT_kwDORm09y86pUrOm / discussion_r4191642495)は別指摘として対応する。
 
 同一pollに17個以上の小画像結果を受けた時、初consumer前に先行結果を退避してしまう問題を実texture経路で再現した。表示用active所有をResultへ一般化し、成功/失敗を初consumerまたはframe-graceまで保持する。新規map/allocator/公開APIは追加せず、reuse上限16件/64MiBを維持する。5追加回帰は同一poll全texture・次frame同TextureId・Failed非再queue・grace/reset/pathrevisionを検証する。実file decodeやnative GPU性能の証拠とは区別する。
