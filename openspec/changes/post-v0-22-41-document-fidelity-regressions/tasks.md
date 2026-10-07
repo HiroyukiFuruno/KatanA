@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] current3e7722ef review5435910718/P1 PRRT_kwDORm09y86ps_Lb/comment4201628411: physical_footprint_bytesのRSS独立予算判定を実装。既存cold196608KiB/steady65536KiBを増量せず、physicalのみ各+1 byteの2case RED exit1→受入51件/公開ゲート31件GREEN exit0。境界/欠落/bool/float/stringとpackaged-host経由を検査、RSS/worker/generation/identity判定維持。main差分自己review/diffcheck0、evidence/physical-footprint-budget-review-2026-10-07.md。通常統合・個別replyresolve・fresh取得は未完。REST review全ページ取得必須、先頭ページだけの空結果を未着と判断しない。Draft CI全jobs skipped実確認済み、Ready必須CIは別工程。
+
 - [/] 本人の最新公開フロー: Draftはレビュー指摘の取得・採否判断・修復と変更箇所検証に集中し、Ready PRで必須CI/CDに集中する。Draftの3OS/build/test/lint/security/readiness runnerを起動しない。ready_for_reviewで元の必須検査を起動し、converted_to_draftで同concurrencyの検査を取消す。master pushの検査と公開ゲートは維持する。既存Draft run37543761560はlive completed/cancelled確認、workflow候補の契約3件成功。通常統合・push・Ready時の実行確認は未完。アンチパターン: Draft変更のたび全CIを繰返しP2を無条件追加。正: Draftレビュー集中→P0/P1零の再取得→Ready必須CI→公開。検索語: Draft quiet / Ready required CI / review triage。
 
 - [/] 2026-10-07 本人FB「進め方が悪いなら改善」「KRR参考のフロー軽減」への運用是正を固定: 修復対象・未完DoD・現在HEADの検査ownerを先に固定する。変更箇所検証→関心別通常commit→通常push hook一回を正本とし、同HEADの手動readiness/preflight/checkを直前に重ねない。新レビューは全取得しP0/P1を必須修復するが、P2/P3は今回DoDへの影響・採否・次期化根拠を判定し、要件/互換性/DoDに影響する選択だけ本人へ相談する。全P2を無条件に実装→新HEAD→全検査→再reviewと無限拡張しない。既存品質/全gate/current reviewの条件を削減しない。アンチパターン:「進めます」の報告で停止、同HEAD gate重複、P2未triageの反復。正:結果回収→正式統合→公開のクリティカルパスを継続、終了前に未完独立作業と最新実exitを確認。検索語: release critical path / review triage / duplicate gate owner / progress is not stop。flow実装9c0fe5ae/eda9c8b3と証跡evidence/release-flow-optimization-2026-10-06.mdは別途確認済み。

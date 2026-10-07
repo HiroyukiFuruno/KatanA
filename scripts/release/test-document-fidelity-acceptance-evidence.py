@@ -883,6 +883,63 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                 with self.assertRaises(MODULE.AcceptanceEvidenceError):
                     MODULE.verify_resource_cycle(root, run, "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
 
+    def test_resource_cycle_rejects_physical_budget_breach_when_rss_is_within_budget(self) -> None:
+        def set_physical_snapshots(artifact, cold, warm, final):
+            for key, value in (("cold_snapshot", cold), ("warm_snapshot", warm), ("final_snapshot", final)):
+                artifact[key]["physical_footprint_bytes"] = value
+            for index, cycle in enumerate(artifact["cycles"]):
+                cycle["office"]["snapshot"]["physical_footprint_bytes"] = final if index == len(artifact["cycles"]) - 1 else warm
+
+        cases = (
+            ("cold", lambda artifact: set_physical_snapshots(artifact, 300_000_000, 300_000_000 + 196_608 * 1024 + 1, 300_000_000 + 196_608 * 1024 + 1)),
+            ("steady", lambda artifact: set_physical_snapshots(artifact, 300_000_000, 300_000_000, 300_000_000 + 65_536 * 1024 + 1)),
+        )
+        for case, mutate in cases:
+            with self.subTest(case=case), self.repository() as directory:
+                root = Path(directory)
+                evidence = self.valid_evidence(root)
+                self._mutate_resource_cycle(evidence, root, lambda artifact, run: mutate(artifact))
+                self.write_evidence(root, evidence)
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify(root)
+
+    def test_resource_cycle_accepts_independent_physical_budget_boundaries(self) -> None:
+        def set_physical_snapshots(artifact, cold, warm, final):
+            for key, value in (("cold_snapshot", cold), ("warm_snapshot", warm), ("final_snapshot", final)):
+                artifact[key]["physical_footprint_bytes"] = value
+            for index, cycle in enumerate(artifact["cycles"]):
+                cycle["office"]["snapshot"]["physical_footprint_bytes"] = final if index == len(artifact["cycles"]) - 1 else warm
+
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            cold = 300_000_000
+            warm = cold + 196_608 * 1024
+            final = warm + 65_536 * 1024
+            self._mutate_resource_cycle(
+                evidence,
+                root,
+                lambda artifact, run: set_physical_snapshots(artifact, cold, warm, final),
+            )
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
+
+    def test_resource_cycle_rejects_missing_and_noninteger_physical_footprint(self) -> None:
+        cases = (
+            lambda artifact: artifact["cold_snapshot"].pop("physical_footprint_bytes"),
+            lambda artifact: artifact["cold_snapshot"].update(physical_footprint_bytes=True),
+            lambda artifact: artifact["cold_snapshot"].update(physical_footprint_bytes=1.0),
+            lambda artifact: artifact["cold_snapshot"].update(physical_footprint_bytes="1"),
+        )
+        for mutate in cases:
+            with self.subTest(mutate=mutate), self.repository() as directory:
+                root = Path(directory)
+                evidence = self.valid_evidence(root)
+                self._mutate_resource_cycle(evidence, root, lambda artifact, run: mutate(artifact))
+                run = evidence["office_fixtures"][0]["packaged_run"]
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify_resource_cycle(root, run, "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
+
     def test_office_cold_rss_delta_keeps_existing_budget(self) -> None:
         with self.repository() as directory:
             root = Path(directory)

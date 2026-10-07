@@ -43,6 +43,8 @@ SHA256 = 64
 MAX_NORMAL_CLOSE_MS = 5000
 MAX_COLD_RSS_DELTA_BYTES = 196608 * 1024
 MAX_WARM_STEADY_DELTA_BYTES = 65536 * 1024
+MAX_COLD_PHYSICAL_FOOTPRINT_DELTA_BYTES = 196608 * 1024
+MAX_WARM_PHYSICAL_FOOTPRINT_DELTA_BYTES = 65536 * 1024
 SHA256_PATTERN = re.compile(r"[0-9a-fA-F]{64}")
 SOURCE_ROOTS = (
     "Cargo.toml",
@@ -722,6 +724,10 @@ def verify_cycle_measurements(artifact: dict[str, Any], run: dict[str, Any], nam
         fail(f"{name}.resource_cycle cold delta exceeds 196608 KiB")
     if final["rss_bytes"] - warm["rss_bytes"] > MAX_WARM_STEADY_DELTA_BYTES:
         fail(f"{name}.resource_cycle warm steady delta exceeds 65536 KiB")
+    if warm["physical_footprint_bytes"] - cold["physical_footprint_bytes"] > MAX_COLD_PHYSICAL_FOOTPRINT_DELTA_BYTES:
+        fail(f"{name}.resource_cycle cold physical footprint delta exceeds 196608 KiB")
+    if final["physical_footprint_bytes"] - warm["physical_footprint_bytes"] > MAX_WARM_PHYSICAL_FOOTPRINT_DELTA_BYTES:
+        fail(f"{name}.resource_cycle warm steady physical footprint delta exceeds 65536 KiB")
     if cold["rss_bytes"] != require_positive_integer(run.get("cold_rss_bytes"), f"{name}.cold_rss_bytes") or warm["rss_bytes"] != require_positive_integer(run.get("after_close_rss_bytes"), f"{name}.after_close_rss_bytes"):
         fail(f"{name}.resource_cycle RSS snapshots do not match the packaged run")
     if any(final[field] != 0 for field in ("worker_count", "frame_count", "texture_count", "cache_count")):

@@ -564,6 +564,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
         self.assertNotEqual(result, 0)
         self.assertIn("acceptance evidence", output)
 
+    def test_packaged_host_rejects_physical_budget_breach_when_rss_is_within_budget(self) -> None:
+        with self.repository(self.completed_required_tasks(), with_evidence=True, with_host_actions=True) as directory:
+            root = Path(directory)
+            evidence_path = root / "openspec" / "changes" / MODULE.CHANGE_NAME / "evidence" / "document-acceptance-v0.22.42.json"
+            evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+            run = evidence["office_fixtures"][0]["packaged_run"]
+            artifact_path = root / run["resource_cycle_artifact"]
+            artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+            cold = 300_000_000
+            warm = cold + 196_608 * 1024 + 1
+            for key, value in (("cold_snapshot", cold), ("warm_snapshot", warm), ("final_snapshot", warm)):
+                artifact[key]["physical_footprint_bytes"] = value
+            for cycle in artifact["cycles"]:
+                cycle["office"]["snapshot"]["physical_footprint_bytes"] = warm
+            artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+            run["resource_cycle_sha256"] = EVIDENCE.sha256_bytes(artifact_path.read_bytes())
+            evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+            result, output = self.run_gate(root, mode="packaged-host")
+        self.assertNotEqual(result, 0)
+        self.assertIn("physical footprint", output)
+
     def test_existing_strict_modes_do_not_require_source_markers(self) -> None:
         tasks = "".join(
             f"- [x] {task_id} complete\n" for task_id in sorted(MODULE.CRITICAL_REQUIRED)

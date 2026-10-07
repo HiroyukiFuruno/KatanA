@@ -20,6 +20,8 @@ Replacing or closing an HTML, PDF, DOCX, XLSX, or PPTX preview MUST close its wo
 - **THEN** all obsolete session generations report close completion
 - **AND THEN** live worker, frame, texture, and cache counts return to the idle bound
 - **AND THEN** the steady footprint increase remains within the recorded regression budget
+- **AND THEN** RSS and physical footprint are checked independently: the cold-to-warm increase of each is at most 196608 KiB and the warm-to-final steady increase of each is at most 65536 KiB
+- **AND THEN** a physical-footprint budget violation fails acceptance even when RSS stays below its own budget
 
 ### Requirement: Debug diagnostics are explicit and release-safe
 
