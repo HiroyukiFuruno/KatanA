@@ -63,11 +63,10 @@ fn test_json_file_repository_normalizes_empty_linter_preset_state() {
 
     let settings = repo.load();
 
-    let current = settings
-        .linter
-        .preset_state
-        .current
-        .expect("current linter preset must exist");
+    let current = match settings.linter.preset_state.current {
+        Some(current) => current,
+        None => panic!("current linter preset must exist"),
+    };
     assert_eq!(current.id, "katana");
     assert_eq!(current.label, "KatanA");
 }

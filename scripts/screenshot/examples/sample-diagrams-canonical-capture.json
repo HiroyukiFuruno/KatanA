@@ -1,0 +1,38 @@
+{
+  "schema_version": "1",
+  "name": "sample-diagrams-canonical-capture-candidate",
+  "fixture": {
+    "settings": {
+      "theme": "dark",
+      "preset": "KatanaDark",
+      "locale": "en",
+      "font_size": 14,
+      "explorer_visible": false,
+      "linter_enabled": false,
+      "preview_show_diagram_controls": false
+    },
+    "workspace_files": [
+      { "name": "sample_diagrams.md", "source": "assets/fixtures/sample_diagrams.md" }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "logical_viewport": { "width": 1282.5, "height": 2387 },
+      "wait_seconds": 3.0
+    },
+    { "type": "open_file", "file_name": "sample_diagrams.md", "wait_seconds": 8.0 },
+    { "type": "action", "action": { "set_view_mode": { "mode": "preview_only" } } },
+    { "type": "action", "action": { "hover_at": { "x": 1, "y": 1, "wait_seconds": 0.1 } } },
+    { "type": "wait", "seconds": 8.0 },
+    {
+      "type": "record_preview_geometry",
+      "output_name": "sample-diagrams-preview-geometry",
+      "full_screenshot_output_name": "sample-diagrams-full",
+      "expected_content_viewport": { "width": 1187, "height": 2225 },
+      "expected_scroll_y": 0,
+      "require_clean_interaction_state": true
+    },
+    { "type": "quit" }
+  ]
+}

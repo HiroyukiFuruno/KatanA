@@ -1,0 +1,2906 @@
+{
+  "coordinate_space": "logical_screen_points",
+  "glyph_band_kind": "unclipped_glyph_mesh_quad_bounds_not_raster_ink",
+  "pixels_per_point": 2,
+  "configured_font_size": 14,
+  "preview_geometry": {
+    "content_top_y": 134,
+    "scroll_y": 0,
+    "viewport": {
+      "height": 2225,
+      "width": 1187,
+      "x": 44,
+      "y": 134
+    }
+  },
+  "accessibility_label_rects": [
+    {
+      "label": "H1 Heading",
+      "rects": [
+        {
+          "height": 31.5,
+          "width": 122.90625,
+          "x": 44,
+          "y": 1608
+        }
+      ]
+    },
+    {
+      "label": "H2 Heading",
+      "rects": [
+        {
+          "height": 30,
+          "width": 116.125,
+          "x": 44,
+          "y": 1660.5
+        }
+      ]
+    },
+    {
+      "label": "H3 Heading",
+      "rects": [
+        {
+          "height": 28,
+          "width": 109.28125,
+          "x": 44,
+          "y": 1711.5
+        }
+      ]
+    },
+    {
+      "label": "H4 Heading",
+      "rects": [
+        {
+          "height": 26.5,
+          "width": 102.53125,
+          "x": 44,
+          "y": 1760.5
+        }
+      ]
+    }
+  ],
+  "source_anchors": [
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 31.5,
+        "width": 1187,
+        "x": 44,
+        "y": 152.375
+      },
+      "source_anchor_range_zero_based": [
+        0,
+        1
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 352.359375
+      },
+      "source_anchor_range_zero_based": [
+        12,
+        13
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 403.734375
+      },
+      "source_anchor_range_zero_based": [
+        14,
+        15
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 540.234375
+      },
+      "source_anchor_range_zero_based": [
+        20,
+        21
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 673.234375
+      },
+      "source_anchor_range_zero_based": [
+        28,
+        29
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 893.734375
+      },
+      "source_anchor_range_zero_based": [
+        42,
+        43
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 1026.734375
+      },
+      "source_anchor_range_zero_based": [
+        53,
+        54
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 1159.734375
+      },
+      "source_anchor_range_zero_based": [
+        61,
+        62
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 1505.859375
+      },
+      "source_anchor_range_zero_based": [
+        86,
+        87
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 1557.234375
+      },
+      "source_anchor_range_zero_based": [
+        88,
+        89
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 31.5,
+        "width": 1187,
+        "x": 44,
+        "y": 1605.375
+      },
+      "source_anchor_range_zero_based": [
+        90,
+        91
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 1658.359375
+      },
+      "source_anchor_range_zero_based": [
+        92,
+        93
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 1709.734375
+      },
+      "source_anchor_range_zero_based": [
+        94,
+        95
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 26.25,
+        "width": 1187,
+        "x": 44,
+        "y": 1759.25
+      },
+      "source_anchor_range_zero_based": [
+        96,
+        97
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 24.5,
+        "width": 1187,
+        "x": 44,
+        "y": 1807.125
+      },
+      "source_anchor_range_zero_based": [
+        98,
+        99
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 22.75,
+        "width": 1187,
+        "x": 44,
+        "y": 1853.125
+      },
+      "source_anchor_range_zero_based": [
+        100,
+        101
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 1895.734375
+      },
+      "source_anchor_range_zero_based": [
+        102,
+        103
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 2112.734375
+      },
+      "source_anchor_range_zero_based": [
+        112,
+        113
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 2245.734375
+      },
+      "source_anchor_range_zero_based": [
+        118,
+        119
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 2462.359375
+      },
+      "source_anchor_range_zero_based": [
+        128,
+        129
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 2513.734375
+      },
+      "source_anchor_range_zero_based": [
+        130,
+        131
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 2709.734375
+      },
+      "source_anchor_range_zero_based": [
+        139,
+        140
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 2884.734375
+      },
+      "source_anchor_range_zero_based": [
+        147,
+        148
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 3101.359375
+      },
+      "source_anchor_range_zero_based": [
+        157,
+        158
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 3152.734375
+      },
+      "source_anchor_range_zero_based": [
+        159,
+        160
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 3276.234375
+      },
+      "source_anchor_range_zero_based": [
+        167,
+        168
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 3383.234375
+      },
+      "source_anchor_range_zero_based": [
+        174,
+        175
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 3779.734375
+      },
+      "source_anchor_range_zero_based": [
+        203,
+        204
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 4090.734375
+      },
+      "source_anchor_range_zero_based": [
+        223,
+        224
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 4365.359375
+      },
+      "source_anchor_range_zero_based": [
+        239,
+        240
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 4416.734375
+      },
+      "source_anchor_range_zero_based": [
+        241,
+        242
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 4676.234375
+      },
+      "source_anchor_range_zero_based": [
+        250,
+        251
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 4861.734375
+      },
+      "source_anchor_range_zero_based": [
+        257,
+        258
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 4994.234375
+      },
+      "source_anchor_range_zero_based": [
+        263,
+        264
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 5147.734375
+      },
+      "source_anchor_range_zero_based": [
+        269,
+        270
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 5358.859375
+      },
+      "source_anchor_range_zero_based": [
+        277,
+        278
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 5410.234375
+      },
+      "source_anchor_range_zero_based": [
+        279,
+        280
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 5536.734375
+      },
+      "source_anchor_range_zero_based": [
+        284,
+        285
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 5663.234375
+      },
+      "source_anchor_range_zero_based": [
+        290,
+        291
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 5859.359375
+      },
+      "source_anchor_range_zero_based": [
+        303,
+        304
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 5910.734375
+      },
+      "source_anchor_range_zero_based": [
+        305,
+        306
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 6037.234375
+      },
+      "source_anchor_range_zero_based": [
+        310,
+        311
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 6163.734375
+      },
+      "source_anchor_range_zero_based": [
+        315,
+        316
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 6290.234375
+      },
+      "source_anchor_range_zero_based": [
+        320,
+        321
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 6416.734375
+      },
+      "source_anchor_range_zero_based": [
+        325,
+        326
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 6584.859375
+      },
+      "source_anchor_range_zero_based": [
+        332,
+        333
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 6698.859375
+      },
+      "source_anchor_range_zero_based": [
+        345,
+        346
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 6750.234375
+      },
+      "source_anchor_range_zero_based": [
+        347,
+        348
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 6902.734375
+      },
+      "source_anchor_range_zero_based": [
+        353,
+        354
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 6993.734375
+      },
+      "source_anchor_range_zero_based": [
+        357,
+        358
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 7156.359375
+      },
+      "source_anchor_range_zero_based": [
+        363,
+        364
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 7207.734375
+      },
+      "source_anchor_range_zero_based": [
+        365,
+        366
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 7707.140625
+      },
+      "source_anchor_range_zero_based": [
+        376,
+        377
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 8117.140625
+      },
+      "source_anchor_range_zero_based": [
+        390,
+        391
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 8650.140625
+      },
+      "source_anchor_range_zero_based": [
+        412,
+        413
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 8992.140625
+      },
+      "source_anchor_range_zero_based": [
+        427,
+        428
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 9258.296875
+      },
+      "source_anchor_range_zero_based": [
+        446,
+        447
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 9309.671875
+      },
+      "source_anchor_range_zero_based": [
+        448,
+        449
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 9673.671875
+      },
+      "source_anchor_range_zero_based": [
+        463,
+        464
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 10021.671875
+      },
+      "source_anchor_range_zero_based": [
+        484,
+        485
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 10538.296875
+      },
+      "source_anchor_range_zero_based": [
+        507,
+        508
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 10589.671875
+      },
+      "source_anchor_range_zero_based": [
+        509,
+        510
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 10789.671875
+      },
+      "source_anchor_range_zero_based": [
+        529,
+        530
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 11096.296875
+      },
+      "source_anchor_range_zero_based": [
+        557,
+        558
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 11189.671875
+      },
+      "source_anchor_range_zero_based": [
+        562,
+        563
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 12023.796875
+      },
+      "source_anchor_range_zero_based": [
+        611,
+        612
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 12075.171875
+      },
+      "source_anchor_range_zero_based": [
+        613,
+        614
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 12170.171875
+      },
+      "source_anchor_range_zero_based": [
+        618,
+        619
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 12282.171875
+      },
+      "source_anchor_range_zero_based": [
+        622,
+        623
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 12436.171875
+      },
+      "source_anchor_range_zero_based": [
+        629,
+        630
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 28.03125,
+        "width": 1187,
+        "x": 44,
+        "y": 12527.171875
+      },
+      "source_anchor_range_zero_based": [
+        636,
+        637
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 12863.796875
+      },
+      "source_anchor_range_zero_based": [
+        654,
+        655
+      ]
+    },
+    {
+      "kind": "heading_hit",
+      "rect": {
+        "height": 29.78125,
+        "width": 1187,
+        "x": 44,
+        "y": 13792.796875
+      },
+      "source_anchor_range_zero_based": [
+        688,
+        689
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 42,
+        "width": 1187,
+        "x": 44,
+        "y": 260
+      },
+      "source_anchor_range_zero_based": [
+        6,
+        9
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 45.5,
+        "width": 1187,
+        "x": 44,
+        "y": 444
+      },
+      "source_anchor_range_zero_based": [
+        16,
+        17
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 42,
+        "width": 1187,
+        "x": 44,
+        "y": 580.5
+      },
+      "source_anchor_range_zero_based": [
+        22,
+        25
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 45.5,
+        "width": 1187,
+        "x": 44,
+        "y": 713.5
+      },
+      "source_anchor_range_zero_based": [
+        30,
+        31
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 42,
+        "width": 1187,
+        "x": 44,
+        "y": 759
+      },
+      "source_anchor_range_zero_based": [
+        32,
+        35
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 42,
+        "width": 1187,
+        "x": 44,
+        "y": 801
+      },
+      "source_anchor_range_zero_based": [
+        36,
+        39
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 42,
+        "width": 1187,
+        "x": 44,
+        "y": 934
+      },
+      "source_anchor_range_zero_based": [
+        44,
+        49
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 42,
+        "width": 1187,
+        "x": 44,
+        "y": 1067
+      },
+      "source_anchor_range_zero_based": [
+        55,
+        58
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 42,
+        "width": 1187,
+        "x": 44,
+        "y": 1200
+      },
+      "source_anchor_range_zero_based": [
+        63,
+        66
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 45.5,
+        "width": 1187,
+        "x": 44,
+        "y": 1242
+      },
+      "source_anchor_range_zero_based": [
+        67,
+        68
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 42,
+        "width": 1187,
+        "x": 44,
+        "y": 1287.5
+      },
+      "source_anchor_range_zero_based": [
+        69,
+        72
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 42,
+        "width": 1187,
+        "x": 44,
+        "y": 1329.5
+      },
+      "source_anchor_range_zero_based": [
+        73,
+        77
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 42,
+        "width": 1187,
+        "x": 44,
+        "y": 1371.5
+      },
+      "source_anchor_range_zero_based": [
+        78,
+        81
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 53.5,
+        "width": 1187,
+        "x": 44,
+        "y": 3203.5
+      },
+      "source_anchor_range_zero_based": [
+        161,
+        165
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 37,
+        "width": 1187,
+        "x": 44,
+        "y": 3327
+      },
+      "source_anchor_range_zero_based": [
+        169,
+        172
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 37,
+        "width": 1187,
+        "x": 44,
+        "y": 3434
+      },
+      "source_anchor_range_zero_based": [
+        176,
+        179
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 53.5,
+        "width": 1187,
+        "x": 44,
+        "y": 3492
+      },
+      "source_anchor_range_zero_based": [
+        181,
+        185
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 86.5,
+        "width": 1187,
+        "x": 44,
+        "y": 3566.5
+      },
+      "source_anchor_range_zero_based": [
+        187,
+        193
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 86.5,
+        "width": 1187,
+        "x": 44,
+        "y": 3674
+      },
+      "source_anchor_range_zero_based": [
+        195,
+        201
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 25,
+        "width": 1187,
+        "x": 44,
+        "y": 3851.5
+      },
+      "source_anchor_range_zero_based": [
+        207,
+        209
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 25,
+        "width": 1187,
+        "x": 44,
+        "y": 3919.5
+      },
+      "source_anchor_range_zero_based": [
+        213,
+        215
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 37,
+        "width": 1187,
+        "x": 44,
+        "y": 4183.5
+      },
+      "source_anchor_range_zero_based": [
+        228,
+        231
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 67,
+        "width": 184.3125,
+        "x": 44,
+        "y": 5450.5
+      },
+      "source_anchor_range_zero_based": [
+        281,
+        283
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 21,
+        "width": 96.96875,
+        "x": 64,
+        "y": 5623
+      },
+      "source_anchor_range_zero_based": [
+        288,
+        289
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 44,
+        "width": 106.96875,
+        "x": 54,
+        "y": 5600
+      },
+      "source_anchor_range_zero_based": [
+        287,
+        289
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 67,
+        "width": 116.96875,
+        "x": 44,
+        "y": 5577
+      },
+      "source_anchor_range_zero_based": [
+        286,
+        289
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 25,
+        "width": 1177,
+        "x": 54,
+        "y": 5772.5
+      },
+      "source_anchor_range_zero_based": [
+        297,
+        299
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 95,
+        "width": 1187,
+        "x": 44,
+        "y": 5703.5
+      },
+      "source_anchor_range_zero_based": [
+        292,
+        300
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 67,
+        "width": 412.34375,
+        "x": 44,
+        "y": 5951
+      },
+      "source_anchor_range_zero_based": [
+        307,
+        309
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 67,
+        "width": 406.53125,
+        "x": 44,
+        "y": 6077.5
+      },
+      "source_anchor_range_zero_based": [
+        312,
+        314
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 67,
+        "width": 432.53125,
+        "x": 44,
+        "y": 6204
+      },
+      "source_anchor_range_zero_based": [
+        317,
+        319
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 67,
+        "width": 386.875,
+        "x": 44,
+        "y": 6330.5
+      },
+      "source_anchor_range_zero_based": [
+        322,
+        324
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 67,
+        "width": 290,
+        "x": 44,
+        "y": 6457
+      },
+      "source_anchor_range_zero_based": [
+        327,
+        329
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 444.40625,
+        "width": 1187,
+        "x": 44,
+        "y": 7240.5
+      },
+      "source_anchor_range_zero_based": [
+        367,
+        375
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 355,
+        "width": 1187,
+        "x": 44,
+        "y": 7739.90625
+      },
+      "source_anchor_range_zero_based": [
+        378,
+        389
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 478,
+        "width": 1187,
+        "x": 44,
+        "y": 8149.90625
+      },
+      "source_anchor_range_zero_based": [
+        392,
+        411
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 287,
+        "width": 1187,
+        "x": 44,
+        "y": 8682.90625
+      },
+      "source_anchor_range_zero_based": [
+        414,
+        426
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 190.53125,
+        "width": 1187,
+        "x": 44,
+        "y": 9024.90625
+      },
+      "source_anchor_range_zero_based": [
+        429,
+        443
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 309,
+        "width": 1187,
+        "x": 44,
+        "y": 9342.4375
+      },
+      "source_anchor_range_zero_based": [
+        450,
+        462
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 293,
+        "width": 1187,
+        "x": 44,
+        "y": 9706.4375
+      },
+      "source_anchor_range_zero_based": [
+        465,
+        483
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 441,
+        "width": 1187,
+        "x": 44,
+        "y": 10054.4375
+      },
+      "source_anchor_range_zero_based": [
+        486,
+        504
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 145,
+        "width": 1187,
+        "x": 44,
+        "y": 10622.4375
+      },
+      "source_anchor_range_zero_based": [
+        511,
+        528
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 231,
+        "width": 1187,
+        "x": 44,
+        "y": 10822.4375
+      },
+      "source_anchor_range_zero_based": [
+        531,
+        554
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 145,
+        "width": 1187,
+        "x": 44,
+        "y": 11264.4375
+      },
+      "source_anchor_range_zero_based": [
+        566,
+        572
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 136,
+        "width": 1187,
+        "x": 44,
+        "y": 11612.9375
+      },
+      "source_anchor_range_zero_based": [
+        582,
+        591
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 145,
+        "width": 1187,
+        "x": 44,
+        "y": 11793.9375
+      },
+      "source_anchor_range_zero_based": [
+        595,
+        606
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 25,
+        "width": 1187,
+        "x": 44,
+        "y": 12125.9375
+      },
+      "source_anchor_range_zero_based": [
+        615,
+        616
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 21,
+        "width": 102.5,
+        "x": 44,
+        "y": 12567.4375
+      },
+      "source_anchor_range_zero_based": [
+        638,
+        639
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 25,
+        "width": 1187,
+        "x": 44,
+        "y": 12609.4375
+      },
+      "source_anchor_range_zero_based": [
+        640,
+        642
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 450,
+        "width": 1187,
+        "x": 44,
+        "y": 12940.9375
+      },
+      "source_anchor_range_zero_based": [
+        658,
+        664
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 145,
+        "width": 1187,
+        "x": 44,
+        "y": 13396.9375
+      },
+      "source_anchor_range_zero_based": [
+        665,
+        676
+      ]
+    },
+    {
+      "kind": "block_anchor",
+      "rect": {
+        "height": 160,
+        "width": 1187,
+        "x": 44,
+        "y": 13547.9375
+      },
+      "source_anchor_range_zero_based": [
+        677,
+        683
+      ]
+    }
+  ],
+  "selected_text_shapes": [
+    {
+      "text": " ",
+      "origin": {
+        "x": 44,
+        "y": 155
+      },
+      "galley_rect": {
+        "height": 31.5,
+        "max": {
+          "x": 71.625,
+          "y": 186.5
+        },
+        "min": {
+          "x": 44,
+          "y": 155
+        },
+        "width": 27.625
+      },
+      "mesh_bounds": {
+        "height": null,
+        "max": {
+          "x": null,
+          "y": null
+        },
+        "min": {
+          "x": null,
+          "y": null
+        },
+        "width": null
+      },
+      "sections": [
+        {
+          "byte_end": 1,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 21,
+          "leading_space": 20.625,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": " ",
+          "rect": {
+            "height": 31.5,
+            "max": {
+              "x": 71.625,
+              "y": 186.5
+            },
+            "min": {
+              "x": 44,
+              "y": 155
+            },
+            "width": 27.625
+          },
+          "mesh_bounds": null,
+          "first_glyph_baseline": {
+            "x": 64.5,
+            "y": 173.5
+          },
+          "baseline_offset": 18.5
+        }
+      ]
+    },
+    {
+      "text": "KatanA ",
+      "origin": {
+        "x": 44,
+        "y": 155
+      },
+      "galley_rect": {
+        "height": 31.5,
+        "max": {
+          "x": 154.5625,
+          "y": 186.5
+        },
+        "min": {
+          "x": 44,
+          "y": 155
+        },
+        "width": 110.5625
+      },
+      "mesh_bounds": {
+        "height": 16,
+        "max": {
+          "x": 147.5,
+          "y": 179
+        },
+        "min": {
+          "x": 73,
+          "y": 163
+        },
+        "width": 74.5
+      },
+      "sections": [
+        {
+          "byte_end": 7,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 21,
+          "leading_space": 27.625,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "KatanA ",
+          "rect": {
+            "height": 31.5,
+            "max": {
+              "x": 154.5625,
+              "y": 186.5
+            },
+            "min": {
+              "x": 44,
+              "y": 155
+            },
+            "width": 110.5625
+          },
+          "mesh_bounds": {
+            "height": 16,
+            "max": {
+              "x": 147.5,
+              "y": 179
+            },
+            "min": {
+              "x": 73,
+              "y": 163
+            },
+            "width": 74.5
+          },
+          "first_glyph_baseline": {
+            "x": 71.5,
+            "y": 173.5
+          },
+          "baseline_offset": 18.5
+        }
+      ]
+    },
+    {
+      "text": "Rendering ",
+      "origin": {
+        "x": 44,
+        "y": 155
+      },
+      "galley_rect": {
+        "height": 31.5,
+        "max": {
+          "x": 268.5,
+          "y": 186.5
+        },
+        "min": {
+          "x": 44,
+          "y": 155
+        },
+        "width": 224.5
+      },
+      "mesh_bounds": {
+        "height": 20.5,
+        "max": {
+          "x": 260,
+          "y": 183.5
+        },
+        "min": {
+          "x": 156,
+          "y": 163
+        },
+        "width": 104
+      },
+      "sections": [
+        {
+          "byte_end": 10,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 21,
+          "leading_space": 110.5625,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "Rendering ",
+          "rect": {
+            "height": 31.5,
+            "max": {
+              "x": 268.5,
+              "y": 186.5
+            },
+            "min": {
+              "x": 44,
+              "y": 155
+            },
+            "width": 224.5
+          },
+          "mesh_bounds": {
+            "height": 20.5,
+            "max": {
+              "x": 260,
+              "y": 183.5
+            },
+            "min": {
+              "x": 156,
+              "y": 163
+            },
+            "width": 104
+          },
+          "first_glyph_baseline": {
+            "x": 154.5,
+            "y": 173.5
+          },
+          "baseline_offset": 18.5
+        }
+      ]
+    },
+    {
+      "text": "Regression ",
+      "origin": {
+        "x": 44,
+        "y": 155
+      },
+      "galley_rect": {
+        "height": 31.5,
+        "max": {
+          "x": 391.59375,
+          "y": 186.5
+        },
+        "min": {
+          "x": 44,
+          "y": 155
+        },
+        "width": 347.59375
+      },
+      "mesh_bounds": {
+        "height": 20.5,
+        "max": {
+          "x": 383.5,
+          "y": 183.5
+        },
+        "min": {
+          "x": 270,
+          "y": 163
+        },
+        "width": 113.5
+      },
+      "sections": [
+        {
+          "byte_end": 11,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 21,
+          "leading_space": 224.5,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "Regression ",
+          "rect": {
+            "height": 31.5,
+            "max": {
+              "x": 391.59375,
+              "y": 186.5
+            },
+            "min": {
+              "x": 44,
+              "y": 155
+            },
+            "width": 347.59375
+          },
+          "mesh_bounds": {
+            "height": 20.5,
+            "max": {
+              "x": 383.5,
+              "y": 183.5
+            },
+            "min": {
+              "x": 270,
+              "y": 163
+            },
+            "width": 113.5
+          },
+          "first_glyph_baseline": {
+            "x": 268.5,
+            "y": 173.5
+          },
+          "baseline_offset": 18.5
+        }
+      ]
+    },
+    {
+      "text": "Test",
+      "origin": {
+        "x": 44,
+        "y": 155
+      },
+      "galley_rect": {
+        "height": 31.5,
+        "max": {
+          "x": 435.1875,
+          "y": 186.5
+        },
+        "min": {
+          "x": 44,
+          "y": 155
+        },
+        "width": 391.1875
+      },
+      "mesh_bounds": {
+        "height": 16.5,
+        "max": {
+          "x": 435,
+          "y": 179
+        },
+        "min": {
+          "x": 391.5,
+          "y": 162.5
+        },
+        "width": 43.5
+      },
+      "sections": [
+        {
+          "byte_end": 4,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 21,
+          "leading_space": 347.59375,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "Test",
+          "rect": {
+            "height": 31.5,
+            "max": {
+              "x": 435.1875,
+              "y": 186.5
+            },
+            "min": {
+              "x": 44,
+              "y": 155
+            },
+            "width": 391.1875
+          },
+          "mesh_bounds": {
+            "height": 16.5,
+            "max": {
+              "x": 435,
+              "y": 179
+            },
+            "min": {
+              "x": 391.5,
+              "y": 162.5
+            },
+            "width": 43.5
+          },
+          "first_glyph_baseline": {
+            "x": 391.5,
+            "y": 173.5
+          },
+          "baseline_offset": 18.5
+        }
+      ]
+    },
+    {
+      "text": "\n",
+      "origin": {
+        "x": 44,
+        "y": 155
+      },
+      "galley_rect": {
+        "height": 52.5,
+        "max": {
+          "x": 44,
+          "y": 207.5
+        },
+        "min": {
+          "x": 44,
+          "y": 155
+        },
+        "width": 0
+      },
+      "mesh_bounds": {
+        "height": null,
+        "max": {
+          "x": null,
+          "y": null
+        },
+        "min": {
+          "x": null,
+          "y": null
+        },
+        "width": null
+      },
+      "sections": [
+        {
+          "byte_end": 1,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 14,
+          "leading_space": 391.1875,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "",
+          "rect": {
+            "height": 31.5,
+            "max": {
+              "x": 44,
+              "y": 186.5
+            },
+            "min": {
+              "x": 44,
+              "y": 155
+            },
+            "width": 0
+          },
+          "mesh_bounds": null,
+          "first_glyph_baseline": null,
+          "baseline_offset": null
+        },
+        {
+          "text": "",
+          "rect": {
+            "height": 21,
+            "max": {
+              "x": 44,
+              "y": 207.5
+            },
+            "min": {
+              "x": 44,
+              "y": 186.5
+            },
+            "width": 0
+          },
+          "mesh_bounds": null,
+          "first_glyph_baseline": null,
+          "baseline_offset": null
+        }
+      ]
+    },
+    {
+      "text": "1. HTML Centering (Past Bug: Elements Left-Aligned Instead of Centered)",
+      "origin": {
+        "x": 44,
+        "y": 354.5
+      },
+      "galley_rect": {
+        "height": 30,
+        "max": {
+          "x": 771.875,
+          "y": 384.5
+        },
+        "min": {
+          "x": 44,
+          "y": 354.5
+        },
+        "width": 727.875
+      },
+      "mesh_bounds": {
+        "height": 20.5,
+        "max": {
+          "x": 769.5,
+          "y": 381.5
+        },
+        "min": {
+          "x": 47,
+          "y": 361
+        },
+        "width": 722.5
+      },
+      "sections": [
+        {
+          "byte_end": 71,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 19.844999313354492,
+          "leading_space": 0,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "1. HTML Centering (Past Bug: Elements Left-Aligned Instead of Centered)",
+          "rect": {
+            "height": 30,
+            "max": {
+              "x": 771.875,
+              "y": 384.5
+            },
+            "min": {
+              "x": 44,
+              "y": 354.5
+            },
+            "width": 727.875
+          },
+          "mesh_bounds": {
+            "height": 20.5,
+            "max": {
+              "x": 769.5,
+              "y": 381.5
+            },
+            "min": {
+              "x": 47,
+              "y": 361
+            },
+            "width": 722.5
+          },
+          "first_glyph_baseline": {
+            "x": 44,
+            "y": 372
+          },
+          "baseline_offset": 17.5
+        }
+      ]
+    },
+    {
+      "text": " — Centered Heading",
+      "origin": {
+        "x": 44,
+        "y": 405.5
+      },
+      "galley_rect": {
+        "height": 28,
+        "max": {
+          "x": 492.5,
+          "y": 433.5
+        },
+        "min": {
+          "x": 44,
+          "y": 405.5
+        },
+        "width": 448.5
+      },
+      "mesh_bounds": {
+        "height": 18.5,
+        "max": {
+          "x": 491.5,
+          "y": 430.5
+        },
+        "min": {
+          "x": 299,
+          "y": 412
+        },
+        "width": 192.5
+      },
+      "sections": [
+        {
+          "byte_end": 21,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 18.67599868774414,
+          "leading_space": 248.875,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": " — Centered Heading",
+          "rect": {
+            "height": 28,
+            "max": {
+              "x": 492.5,
+              "y": 433.5
+            },
+            "min": {
+              "x": 44,
+              "y": 405.5
+            },
+            "width": 448.5
+          },
+          "mesh_bounds": {
+            "height": 18.5,
+            "max": {
+              "x": 491.5,
+              "y": 430.5
+            },
+            "min": {
+              "x": 299,
+              "y": 412
+            },
+            "width": 192.5
+          },
+          "first_glyph_baseline": {
+            "x": 292.5,
+            "y": 422
+          },
+          "baseline_offset": 16.5
+        }
+      ]
+    },
+    {
+      "text": " — Centered Paragraph",
+      "origin": {
+        "x": 44,
+        "y": 542
+      },
+      "galley_rect": {
+        "height": 28,
+        "max": {
+          "x": 501.1875,
+          "y": 570
+        },
+        "min": {
+          "x": 44,
+          "y": 542
+        },
+        "width": 457.1875
+      },
+      "mesh_bounds": {
+        "height": 18.5,
+        "max": {
+          "x": 500,
+          "y": 567
+        },
+        "min": {
+          "x": 287.5,
+          "y": 548.5
+        },
+        "width": 212.5
+      },
+      "sections": [
+        {
+          "byte_end": 23,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 18.67599868774414,
+          "leading_space": 237.625,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": " — Centered Paragraph",
+          "rect": {
+            "height": 28,
+            "max": {
+              "x": 501.1875,
+              "y": 570
+            },
+            "min": {
+              "x": 44,
+              "y": 542
+            },
+            "width": 457.1875
+          },
+          "mesh_bounds": {
+            "height": 18.5,
+            "max": {
+              "x": 500,
+              "y": 567
+            },
+            "min": {
+              "x": 287.5,
+              "y": 548.5
+            },
+            "width": 212.5
+          },
+          "first_glyph_baseline": {
+            "x": 281.5,
+            "y": 558.5
+          },
+          "baseline_offset": 16.5
+        }
+      ]
+    },
+    {
+      "text": "A fast, lightweight Markdown workspace for macOS — built with Rust and egui.",
+      "origin": {
+        "x": 637.5,
+        "y": 584
+      },
+      "galley_rect": {
+        "height": 21,
+        "max": {
+          "x": 913.375,
+          "y": 605
+        },
+        "min": {
+          "x": 362,
+          "y": 584
+        },
+        "width": 551.375
+      },
+      "mesh_bounds": {
+        "height": 14,
+        "max": {
+          "x": 912.5,
+          "y": 603
+        },
+        "min": {
+          "x": 362,
+          "y": 589
+        },
+        "width": 550.5
+      },
+      "sections": [
+        {
+          "byte_end": 78,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 14,
+          "leading_space": 0,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "A fast, lightweight Markdown workspace for macOS — built with Rust and egui.",
+          "rect": {
+            "height": 21,
+            "max": {
+              "x": 913.375,
+              "y": 605
+            },
+            "min": {
+              "x": 362,
+              "y": 584
+            },
+            "width": 551.375
+          },
+          "mesh_bounds": {
+            "height": 14,
+            "max": {
+              "x": 912.5,
+              "y": 603
+            },
+            "min": {
+              "x": 362,
+              "y": 589
+            },
+            "width": 550.5
+          },
+          "first_glyph_baseline": {
+            "x": 362,
+            "y": 596.5
+          },
+          "baseline_offset": 12.5
+        }
+      ]
+    },
+    {
+      "text": "Centered Heading",
+      "origin": {
+        "x": 637.515625,
+        "y": 717
+      },
+      "galley_rect": {
+        "height": 31.5,
+        "max": {
+          "x": 732.484375,
+          "y": 748.5
+        },
+        "min": {
+          "x": 543.015625,
+          "y": 717
+        },
+        "width": 189.46875
+      },
+      "mesh_bounds": {
+        "height": 20.5,
+        "max": {
+          "x": 731.015625,
+          "y": 745.5
+        },
+        "min": {
+          "x": 544.015625,
+          "y": 725
+        },
+        "width": 187
+      },
+      "sections": [
+        {
+          "byte_end": 16,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 21,
+          "leading_space": 0,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "Centered Heading",
+          "rect": {
+            "height": 31.5,
+            "max": {
+              "x": 732.484375,
+              "y": 748.5
+            },
+            "min": {
+              "x": 543.015625,
+              "y": 717
+            },
+            "width": 189.46875
+          },
+          "mesh_bounds": {
+            "height": 20.5,
+            "max": {
+              "x": 731.015625,
+              "y": 745.5
+            },
+            "min": {
+              "x": 544.015625,
+              "y": 725
+            },
+            "width": 187
+          },
+          "first_glyph_baseline": {
+            "x": 543.015625,
+            "y": 735.5
+          },
+          "baseline_offset": 18.5
+        }
+      ]
+    },
+    {
+      "text": "A fast, lightweight Markdown workspace for macOS",
+      "origin": {
+        "x": 637.5,
+        "y": 1291
+      },
+      "galley_rect": {
+        "height": 21,
+        "max": {
+          "x": 817.875,
+          "y": 1312
+        },
+        "min": {
+          "x": 457,
+          "y": 1291
+        },
+        "width": 360.875
+      },
+      "mesh_bounds": {
+        "height": 14,
+        "max": {
+          "x": 817.5,
+          "y": 1310
+        },
+        "min": {
+          "x": 457,
+          "y": 1296
+        },
+        "width": 360.5
+      },
+      "sections": [
+        {
+          "byte_end": 48,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 14,
+          "leading_space": 0,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "A fast, lightweight Markdown workspace for macOS",
+          "rect": {
+            "height": 21,
+            "max": {
+              "x": 817.875,
+              "y": 1312
+            },
+            "min": {
+              "x": 457,
+              "y": 1291
+            },
+            "width": 360.875
+          },
+          "mesh_bounds": {
+            "height": 14,
+            "max": {
+              "x": 817.5,
+              "y": 1310
+            },
+            "min": {
+              "x": 457,
+              "y": 1296
+            },
+            "width": 360.5
+          },
+          "first_glyph_baseline": {
+            "x": 457,
+            "y": 1303.5
+          },
+          "baseline_offset": 12.5
+        }
+      ]
+    },
+    {
+      "text": "H1 Heading",
+      "origin": {
+        "x": 44,
+        "y": 1608
+      },
+      "galley_rect": {
+        "height": 31.5,
+        "max": {
+          "x": 166.90625,
+          "y": 1639.5
+        },
+        "min": {
+          "x": 44,
+          "y": 1608
+        },
+        "width": 122.90625
+      },
+      "mesh_bounds": {
+        "height": 21,
+        "max": {
+          "x": 165.5,
+          "y": 1636.5
+        },
+        "min": {
+          "x": 45.5,
+          "y": 1615.5
+        },
+        "width": 120
+      },
+      "sections": [
+        {
+          "byte_end": 10,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 21,
+          "leading_space": 0,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "H1 Heading",
+          "rect": {
+            "height": 31.5,
+            "max": {
+              "x": 166.90625,
+              "y": 1639.5
+            },
+            "min": {
+              "x": 44,
+              "y": 1608
+            },
+            "width": 122.90625
+          },
+          "mesh_bounds": {
+            "height": 21,
+            "max": {
+              "x": 165.5,
+              "y": 1636.5
+            },
+            "min": {
+              "x": 45.5,
+              "y": 1615.5
+            },
+            "width": 120
+          },
+          "first_glyph_baseline": {
+            "x": 44,
+            "y": 1626.5
+          },
+          "baseline_offset": 18.5
+        }
+      ]
+    },
+    {
+      "text": "H2 Heading",
+      "origin": {
+        "x": 44,
+        "y": 1660.5
+      },
+      "galley_rect": {
+        "height": 30,
+        "max": {
+          "x": 160.125,
+          "y": 1690.5
+        },
+        "min": {
+          "x": 44,
+          "y": 1660.5
+        },
+        "width": 116.125
+      },
+      "mesh_bounds": {
+        "height": 20,
+        "max": {
+          "x": 159,
+          "y": 1687.5
+        },
+        "min": {
+          "x": 45.5,
+          "y": 1667.5
+        },
+        "width": 113.5
+      },
+      "sections": [
+        {
+          "byte_end": 10,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 19.844999313354492,
+          "leading_space": 0,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "H2 Heading",
+          "rect": {
+            "height": 30,
+            "max": {
+              "x": 160.125,
+              "y": 1690.5
+            },
+            "min": {
+              "x": 44,
+              "y": 1660.5
+            },
+            "width": 116.125
+          },
+          "mesh_bounds": {
+            "height": 20,
+            "max": {
+              "x": 159,
+              "y": 1687.5
+            },
+            "min": {
+              "x": 45.5,
+              "y": 1667.5
+            },
+            "width": 113.5
+          },
+          "first_glyph_baseline": {
+            "x": 44,
+            "y": 1678
+          },
+          "baseline_offset": 17.5
+        }
+      ]
+    },
+    {
+      "text": "H3 Heading",
+      "origin": {
+        "x": 44,
+        "y": 1711.5
+      },
+      "galley_rect": {
+        "height": 28,
+        "max": {
+          "x": 153.28125,
+          "y": 1739.5
+        },
+        "min": {
+          "x": 44,
+          "y": 1711.5
+        },
+        "width": 109.28125
+      },
+      "mesh_bounds": {
+        "height": 18.5,
+        "max": {
+          "x": 152,
+          "y": 1736.5
+        },
+        "min": {
+          "x": 45,
+          "y": 1718
+        },
+        "width": 107
+      },
+      "sections": [
+        {
+          "byte_end": 10,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 18.67599868774414,
+          "leading_space": 0,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "H3 Heading",
+          "rect": {
+            "height": 28,
+            "max": {
+              "x": 153.28125,
+              "y": 1739.5
+            },
+            "min": {
+              "x": 44,
+              "y": 1711.5
+            },
+            "width": 109.28125
+          },
+          "mesh_bounds": {
+            "height": 18.5,
+            "max": {
+              "x": 152,
+              "y": 1736.5
+            },
+            "min": {
+              "x": 45,
+              "y": 1718
+            },
+            "width": 107
+          },
+          "first_glyph_baseline": {
+            "x": 44,
+            "y": 1728
+          },
+          "baseline_offset": 16.5
+        }
+      ]
+    },
+    {
+      "text": "H4 Heading",
+      "origin": {
+        "x": 44,
+        "y": 1760.5
+      },
+      "galley_rect": {
+        "height": 26.5,
+        "max": {
+          "x": 146.53125,
+          "y": 1787
+        },
+        "min": {
+          "x": 44,
+          "y": 1760.5
+        },
+        "width": 102.53125
+      },
+      "mesh_bounds": {
+        "height": 17.5,
+        "max": {
+          "x": 145.5,
+          "y": 1784.5
+        },
+        "min": {
+          "x": 45,
+          "y": 1767
+        },
+        "width": 100.5
+      },
+      "sections": [
+        {
+          "byte_end": 10,
+          "byte_start": 0,
+          "font_family": "Proportional",
+          "font_size": 17.506999969482422,
+          "leading_space": 0,
+          "line_height": null
+        }
+      ],
+      "rows": [
+        {
+          "text": "H4 Heading",
+          "rect": {
+            "height": 26.5,
+            "max": {
+              "x": 146.53125,
+              "y": 1787
+            },
+            "min": {
+              "x": 44,
+              "y": 1760.5
+            },
+            "width": 102.53125
+          },
+          "mesh_bounds": {
+            "height": 17.5,
+            "max": {
+              "x": 145.5,
+              "y": 1784.5
+            },
+            "min": {
+              "x": 45,
+              "y": 1767
+            },
+            "width": 100.5
+          },
+          "first_glyph_baseline": {
+            "x": 44,
+            "y": 1776
+          },
+          "baseline_offset": 15.5
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "kind": "diagnostic_host_not_release_acceptance",
+    "katana_base": "af55949c4ee7ddad414ed93fa360a67e9464acf4",
+    "kdv_candidate": "3b4ecb13396c8f067e838cacb2a13087dd88309d",
+    "krr_registry": "0.4.19",
+    "kuc_registry": "0.3.7",
+    "v8_registry": "152.2.0",
+    "source": "assets/fixtures/sample.md",
+    "kdv_equivalent_source": "assets/fixtures/katana/sample.md",
+    "source_sha256": "489360a81d60af20d67f8ea47e251732a194983431ea1ab261627490cc9009e1",
+    "launch_logical_size": [
+      1282.5,
+      2387
+    ],
+    "theme": "light",
+    "limitations": [
+      "heading_hit is a synthetic anchor, not block outer bounds",
+      "accessibility labels omit surrounding Markdown block whitespace",
+      "glyph mesh quad bounds are not raster ink bounds",
+      "emoji images are not included in text-shape metrics"
+    ]
+  }
+}

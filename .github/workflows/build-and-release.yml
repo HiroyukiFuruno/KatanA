@@ -157,9 +157,15 @@ jobs:
           echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Run release preflight logic
+        # WHY: check-pr-ready が preflight を内包するため、同じ公開検査を二重実行しない。
         env:
           GH_TOKEN: ${{ github.token }}
-        run: ./scripts/release/check-pr-ready.sh "${{ steps.version.outputs.version_bare }}" --release-artifact-pending
+        run: |
+          if [[ "${{ steps.version.outputs.version_bare }}" == "0.22.42" ]]; then
+            ./scripts/release/check-pr-ready.sh "${{ steps.version.outputs.version_bare }}" --document-source
+          else
+            ./scripts/release/check-pr-ready.sh "${{ steps.version.outputs.version_bare }}" --release-artifact-pending
+          fi
 
       - name: Extract release notes from CHANGELOG.md
         run: |
@@ -186,6 +192,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
           toolchain: stable
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -203,7 +210,11 @@ jobs:
       - name: Install DMG tooling
         run: brew install create-dmg
       - name: Clean stale DMG files
-        run: rm -f target/release/KatanA-Desktop-*.dmg
+        run: |
+          STALE_DIR="$RUNNER_TEMP/katana-stale-release-assets"
+          mkdir -p "$STALE_DIR" target/release
+          find target/release -maxdepth 1 -name 'KatanA-Desktop-*.dmg' \
+            -exec mv {} "$STALE_DIR/" \;
       - name: Build macOS .app
         run: scripts/build/package-mac.sh "${{ needs.preflight.outputs.version_bare }}"
       - name: Codesign .app
@@ -217,8 +228,14 @@ jobs:
         run: |
           APP_PATH=$(find target/release/bundle/osx -name "*.app" -maxdepth 1 | head -1)
           if [[ -n "$APP_PATH" ]]; then
-            (cd "$(dirname "$APP_PATH")" && zip -r -q "../../KatanA-macOS.zip" "$(basename "$APP_PATH")")
-            echo "Successfully built target/release/KatanA-macOS.zip"
+            ZIP_PATH="$PWD/target/release/KatanA-macOS.zip"
+            STALE_DIR="$RUNNER_TEMP/katana-stale-release-assets"
+            mkdir -p "$STALE_DIR"
+            if [[ -e "$ZIP_PATH" ]]; then
+              mv "$ZIP_PATH" "$STALE_DIR/"
+            fi
+            ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
+            echo "Successfully built $ZIP_PATH"
           else
             exit 1
           fi
@@ -231,6 +248,40 @@ jobs:
           path: |
             target/release/KatanA-Desktop-*.dmg
             target/release/KatanA-macOS.zip
+
+  smoke_macos:
+    name: Smoke macOS (${{ matrix.arch }})
+    needs: [preflight, build_macos]
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'all' || github.event.inputs.target == 'macOS'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+            mode: macos-arm64
+          - arch: x86_64
+            runner: macos-15-intel
+            mode: macos-x86_64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.preflight.outputs.commit_sha }}
+      - name: Download universal macOS artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: artifacts-macos
+          path: artifacts-macos
+      - name: Native clean-runner startup smoke
+        run: |
+          APP_DIR="$RUNNER_TEMP/katana-macos-smoke"
+          mkdir -p "$APP_DIR"
+          ditto -x -k artifacts-macos/KatanA-macOS.zip "$APP_DIR"
+          cd "$APP_DIR"
+          "$GITHUB_WORKSPACE/scripts/release/smoke-launch-packaged-app.sh" \
+            "${{ matrix.mode }}" \
+            "$APP_DIR/KatanA Desktop.app/Contents/MacOS/KatanA"
 
   build_linux:
     name: Build Linux
@@ -259,13 +310,19 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev
+          sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev xvfb
       - name: Build release (Linux)
         run: cargo build --workspace --release
       - name: Package Linux Artifact
         run: scripts/build/package-linux.sh
       - name: Verify Linux asset contract
         run: scripts/release/check-release-asset-contract.sh linux
+      - name: Smoke launch packaged Linux app
+        run: |
+          TEMP_DIR=$(mktemp -d -t katana-linux-smoke.XXXXXX)
+          tar -xzf target/release/KatanA-linux-x86_64.tar.gz -C "$TEMP_DIR"
+          cd "$TEMP_DIR"
+          "$GITHUB_WORKSPACE/scripts/release/smoke-launch-packaged-app.sh" linux-x86_64 "$TEMP_DIR/KatanA"
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -310,6 +367,93 @@ jobs:
         shell: bash
         run: scripts/release/check-release-asset-contract.sh windows
 
+      - name: Smoke launch packaged Windows app
+        shell: pwsh
+        run: |
+          $archive = Join-Path $PWD "KatanA-windows-x86_64.zip"
+          $directory = Join-Path $env:RUNNER_TEMP "katana-windows-smoke"
+          Expand-Archive -Path $archive -DestinationPath $directory -Force
+          $heartbeat = New-TemporaryFile
+          $log = New-TemporaryFile
+          $config = Join-Path $directory "empty-workspace-config"
+          New-Item -ItemType Directory -Path $config -Force | Out-Null
+          $env:KATANA_CONFIG_DIR = $config
+          $env:KATANA_STARTUP_HEARTBEAT = $heartbeat.FullName
+          $env:DEBUG = "true"
+          $expectedExecutable = (Resolve-Path -LiteralPath (Join-Path $directory "KatanA.exe") -ErrorAction Stop).ProviderPath
+          $expectedSha256 = (Get-FileHash -LiteralPath $expectedExecutable -Algorithm SHA256 -ErrorAction Stop).Hash
+          $process = Start-Process -FilePath $expectedExecutable -WorkingDirectory $directory -PassThru -RedirectStandardError $log.FullName
+          try {
+            function Assert-PackagedProcessIdentity {
+              $actualProcess = Get-Process -Id $process.Id -ErrorAction Stop
+              if ([string]::IsNullOrWhiteSpace($actualProcess.Path)) {
+                throw "Cannot determine packaged process executable path"
+              }
+              $actualExecutable = (Resolve-Path -LiteralPath $actualProcess.Path -ErrorAction Stop).ProviderPath
+              if (-not [string]::Equals($actualExecutable, $expectedExecutable, [StringComparison]::OrdinalIgnoreCase)) {
+                throw "Packaged process image path mismatch: expected=$expectedExecutable; actual=$actualExecutable"
+              }
+              $actualSha256 = (Get-FileHash -LiteralPath $actualExecutable -Algorithm SHA256 -ErrorAction Stop).Hash
+              if ($actualSha256 -ne $expectedSha256) {
+                throw "Packaged process image hash changed during smoke test"
+              }
+            }
+            function Get-HeartbeatFrame {
+              param([string]$Path)
+              foreach ($attempt in 1..3) {
+                $content = [string](Get-Content $Path -Raw -ErrorAction SilentlyContinue)
+                $frameMatch = [regex]::Match($content, '(?m)^frame=(\d+)$')
+                if ($content -match '(?m)^first-frame$' -and $frameMatch.Success) {
+                  return [int64]$frameMatch.Groups[1].Value
+                }
+                Start-Sleep -Milliseconds 50
+              }
+              return $null
+            }
+            $ready = $false
+            $initialFrame = $null
+            foreach ($attempt in 1..40) {
+              $initialFrame = Get-HeartbeatFrame $heartbeat.FullName
+              if ($null -ne $initialFrame) { $ready = $true; break }
+              if ($process.HasExited) { throw "Packaged app exited before first frame. Log: $(Get-Content $log.FullName -Raw)" }
+              Start-Sleep -Milliseconds 500
+            }
+            if (-not $ready) { throw "Packaged app did not reach first frame. Log: $(Get-Content $log.FullName -Raw)" }
+            Assert-PackagedProcessIdentity
+
+            $lastFrame = $initialFrame
+
+            $peakRss = 0L
+            foreach ($attempt in 1..10) {
+              if ($process.HasExited) { throw "Packaged app exited while waiting for UI progress. Log: $(Get-Content $log.FullName -Raw)" }
+              Start-Sleep -Milliseconds 200
+              $currentFrame = Get-HeartbeatFrame $heartbeat.FullName
+              if ($null -eq $currentFrame -or $currentFrame -le $lastFrame) {
+                throw "UI heartbeat stalled after first frame: last_frame=$lastFrame; current_frame=$currentFrame"
+              }
+              $lastFrame = $currentFrame
+              $rss = (Get-Process -Id $process.Id).WorkingSet64
+              if ($rss -gt $peakRss) { $peakRss = $rss }
+            }
+            if ($peakRss -gt 512MB) { throw "Empty-workspace RSS exceeds 512 MiB: $peakRss bytes" }
+            if (Get-Process -Name "kdv-office-worker" -ErrorAction SilentlyContinue) {
+              throw "Office worker is live in an empty workspace"
+            }
+
+            $logContent = Get-Content $log.FullName -Raw
+            if ($logContent -notmatch 'event=ui_fonts_loaded .*owned_bytes=([0-9]+)') {
+              throw "UI-owned font metric was not emitted. Log: $logContent"
+            }
+            $fontBytes = [int64]$Matches[1]
+            if ($fontBytes -gt 134217728) { throw "UI-owned fonts exceed 128 MiB: $fontBytes bytes" }
+            Assert-PackagedProcessIdentity
+            Write-Host "packaged_identity_verified=true; executable=$expectedExecutable; sha256=$expectedSha256; pid=$($process.Id); last_frame=$lastFrame"
+            Write-Host "Packaged app made continued UI progress; peak_rss_bytes=$peakRss; font_bytes=$fontBytes; office_workers=0"
+          }
+          finally {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          }
+
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -320,8 +464,8 @@ jobs:
 
   publish:
     name: Publish Release
-    needs: [preflight, build_macos, build_linux, build_windows]
-    if: always() && needs.preflight.result == 'success' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    needs: [preflight, build_macos, smoke_macos, build_linux, build_windows]
+    if: always() && needs.preflight.result == 'success' && needs.build_macos.result == 'success' && needs.smoke_macos.result == 'success' && needs.build_linux.result == 'success' && needs.build_windows.result == 'success'
     runs-on: macos-latest
     permissions:
       contents: write
@@ -335,6 +479,15 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       - name: Organize Artifacts
         run: ./scripts/release/collect-artifacts.sh release-files
+      - name: Verify downloaded publication executable identities
+        if: needs.preflight.outputs.version_bare == '0.22.42'
+        run: |
+          brew install sevenzip
+          python3 -m venv tmp/release-evidence-python
+          tmp/release-evidence-python/bin/python -m pip install --disable-pip-version-check --only-binary=:all: -r scripts/release/evidence-requirements.txt
+          tmp/release-evidence-python/bin/python scripts/release/test-published-artifact-identity.py
+          tmp/release-evidence-python/bin/python scripts/release/check-document-fidelity-release-gate.py "${{ needs.preflight.outputs.version_bare }}" packaged-host --root .
+          tmp/release-evidence-python/bin/python scripts/release/check-published-artifact-identity.py --root . --assets release-files --version "${{ needs.preflight.outputs.version }}"
 
       - name: Create or Update GitHub Release
         env:

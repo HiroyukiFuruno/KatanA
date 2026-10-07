@@ -5,8 +5,8 @@ impl SectionImageOps {
     pub(crate) fn handle_local_image_section(
         ui: &mut egui::Ui,
         path: &std::path::Path,
-        alt: &str,
         i: usize,
+        loader: &crate::preview_pane::local_image_loader::LocalImageLoader,
         lines_in_section: usize,
         global_line_offset: usize,
         active_editor_line: Option<usize>,
@@ -17,12 +17,11 @@ impl SectionImageOps {
         hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         is_slideshow: bool,
     ) {
-        let allow_controls = super::section_images::preview_diagram_controls_enabled(ui)
-            && (!is_slideshow
-                || ui.ctx().data(|d| {
-                    d.get_temp(egui::Id::new("katana_slideshow_diagram_controls"))
-                        .unwrap_or(false)
-                }));
+        let allow_controls =
+            crate::preview_pane::types::SectionImageOps::interaction_controls_enabled(
+                ui,
+                is_slideshow,
+            );
         let allow_hover = !is_slideshow
             || ui.ctx().data(|d| {
                 d.get_temp(egui::Id::new("katana_slideshow_hover_highlight"))
@@ -50,8 +49,8 @@ impl SectionImageOps {
         if let Some(rect) = crate::preview_pane::ImageLogicOps::show_local_image(
             ui,
             path,
-            alt,
             i,
+            loader,
             state,
             if !allow_controls {
                 None
@@ -74,6 +73,13 @@ impl SectionImageOps {
                     highlight_rect.min.x = ui.max_rect().min.x;
                     highlight_rect.max.x = ui.max_rect().max.x;
                     ui.painter().rect_filled(highlight_rect, 0.0, color);
+                    #[cfg(feature = "screenshot-test-hooks")]
+                    crate::preview_pane::overlay_inspection::PreviewOverlayInspectionOps::increment(
+                        ui.ctx(),
+                        |inspection| {
+                            inspection.local_image_hover_background_renders += 1;
+                        },
+                    );
                 }
             },
         ) {

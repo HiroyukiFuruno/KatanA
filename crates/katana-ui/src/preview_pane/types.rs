@@ -37,6 +37,8 @@ pub struct PreviewPane {
     pub block_anchors: Vec<(std::ops::Range<usize>, egui::Rect)>,
     pub content_top_y: f32,
     pub visible_rect: Option<egui::Rect>,
+    pub markdown_viewport: Option<egui::Rect>,
+    pub markdown_scroll_offset: f32,
     pub scroll_request: Option<usize>,
     pub render_rx: Option<std::sync::mpsc::Receiver<RenderMessage>>,
     pub is_loading: bool,
@@ -48,12 +50,14 @@ pub struct PreviewPane {
     pub viewer_states: Vec<ViewerState>,
     pub fullscreen_image: Option<usize>,
     pub fullscreen_viewer_state: ViewerState,
+    pub(crate) local_image_loader: super::local_image_loader::LocalImageLoader,
     pub was_os_fullscreen_before_modal: bool,
     pub(crate) repaint_ctx: Option<egui::Context>,
     pub session_generation: u64,
     pub section_lifecycle: Vec<SectionLifecycle>,
     pub(crate) html_browser: Option<HtmlBrowserSurface>,
     pub(crate) document_surface: Option<DocumentSurface>,
+    pub(crate) document_intake: Option<super::document_surface::LocalDocumentIntake>,
     pub(crate) document_failure: Option<DocumentFailure>,
 }
 

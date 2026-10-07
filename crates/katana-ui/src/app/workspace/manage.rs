@@ -35,7 +35,7 @@ pub(super) fn remove_workspace(app: &mut KatanaApp, path: &str) {
         /* WHY: Unset the last workspace since it was removed */
         settings.workspace.last_workspace = None;
         /* WHY: Also reset tree structures since we have no open workspace */
-        app.state.workspace.data = None;
+        app.state.workspace.set_data(None);
     }
 
     if let Err(e) = app.state.config.settings.save() {

@@ -10,8 +10,9 @@ impl HtmlRegexOps {
 
     pub fn img() -> &'static Regex {
         use std::sync::LazyLock;
-        static RE: LazyLock<Regex> =
-            LazyLock::new(|| Regex::new(r#"(?is)<img\s+([^>]+)>"#).unwrap());
+        static RE: LazyLock<Regex> = LazyLock::new(|| {
+            Regex::new(r#"(?is)<img\s+((?:\"[^\"]*\"|'[^']*'|[^'\">])*)>"#).unwrap()
+        });
         &RE
     }
 

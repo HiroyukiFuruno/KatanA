@@ -1,0 +1,201 @@
+# 2026-10-01 継続検証
+
+## 対象と完了条件
+
+`release/v0.22.42` の既存document-fidelity差分を正式履歴へ統合し、Draft PR、現HEADレビュー、必要な公開上流版、全品質・実配布受入、CI公開と後処理まで進める。上流HTML未解決は最終公開の依存条件であり、独立したKatanA作業を停止する理由にはしない。新worktree、stash保全、master編集、path/gitによる未公開sibling採用は行わない。
+
+## この実行で確認済み
+
+- `just check-full`: format成功、workspace strict Clippy成功、fixture統合8件成功。coverageはレビュー担当が誤って追加したWorkspace equalityテストのE0369で終了。既存WorkspaceはPartialEqを持たず、指摘自体がTreeEntry deriveの誤読だったため、その比較追加を撤去して再実行する。coverage・platform・supply-chainの成功は未確認。
+- startup契約: exit 0、内部7件成功。identity契約: exit 0。binary architecture: 7件成功。render依存契約: 6件成功。HTML release契約: exit 0（旧v0.22.38 fixture契約であり現配布受入ではない）。
+- stash 0件、master clean、作業HEADはorigin/masterとahead/behind 0/0。リリース差分は未commit。
+- 現Cargo graphの互換lock更新、JS更新は0件。egui0.36.2 vendor同期は未実施。詳細はdependency-audit.md。
+
+## 自己レビューの修正対象
+
+- 不採用: WorkspaceのPartialEq回帰というレビュー指摘。mainが差分・元ソースを確認し、deriveはTreeEntryだけでありWorkspaceに既存PartialEqはないと確定。不要なAPI追加・比較テストは採用しない。revision独立性の既存回帰は保持する。
+- fresh configではTerms modalから早期returnし、completed-frame heartbeatへ届かない。規約を自動承認するのではなく、modalの実描画完了後にもheartbeatを記録する。
+- document workerは`open_session(source.clone())`で入力bytesを複製し、元Vecをsessionの生存期間保持する。`&mut source`からbytes所有権をsessionへ移し、metadataだけ残す修正と実PDFの回帰を追加。
+  - focused Rust testは実PDFのopen/frame/close、bytes消費、URI/revision維持を検証して1件成功（0.56秒）。
+
+## 再検証
+
+Cargo workspace・Info.plistをv0.22.42へ同期し、workspace lockを通常の`cargo update --workspace`で再生成した。外部の互換依存更新はなく、ローカル4crateのversionだけ更新。`just fmt`成功後、変更後の`just check-full`を再実行中。fresh-config heartbeat回帰は、並列UIテストが結果を汚さないようchild processの環境へ隔離する。
+
+- fresh-config heartbeatのchild-process回帰1件、test targetのstrict Clippy、fmt checkが成功。親プロセスの環境変数は変更しない。
+- 変更後の全gateはformat・workspace strict Clippy・fixture統合8件（8.38秒）が成功し、coverage workerをビルド中。
+- 独立した`just supply-chain`はexit 0。advisories/bans/licenses/sourcesの全4分類成功。推移的な重複crateの警告は残るが、検査規則は変更していない。
+- Explorer/workspaceとHTML/画像/Markdown/math差分の限定レビューを完了。誤読によるWorkspace指摘以外のP0/P1は追加なし。最終全差分レビューを代替するものではない。
+- 既存release-preflightはv0.22.42でexit 0だったが、version別globがactive post-v0-22-41 changeを拾わず、未完了の必須受入を検査していないことを確認。これは公開承認の根拠には使わない。明示的なversion/change bindingと、strict/artifact-pendingモードの未完了拒否を回帰テスト付きで修正する。
+- v0.22.42の変更履歴を日英同期で準備した。記載時刻は準備時点であり、公開時に実リリース時刻へ同期する。未解決HTMLは修正済みと記載していない。
+- 公開gateのbinding修正はmain再実行でも12回帰成功。必須IDが欠けた空/短縮台帳も拒否する。実台帳を`release-artifact-pending`で検査してexit 1となり、未完了のHTML・全品質・clean-machine受入を拒否することを確認。
+- coverage単体はcore216、linter56、platform111、UI872、worker17件が成功（UI既存ignore2件、今回追加なし）。非UI統合、UI並列143件、UI直列18件も成功。coverage集計はDEBUG出力とheartbeat書込失敗ログの2行が未実行として拒否した。環境をchild processへ隔離した実経路テストを追加し、除外・閾値は変更しない。platformと最終coverage gateはまだ未完了。
+- 長時間のsample Mermaid export統合13件は343.76秒で成功。実行中の3秒CPU sampleは`ImageExporter → KDV SurfacePainter.paint_diagram → paste_rgba_resized → image.resize`を示し、図画像のリサイズ/合成段階にいた。CPU約100%、footprint815.4MiB。coverage instrumented debug実行であり、releaseアプリの遅延・メモリ値へそのまま転用しない。生traceは`tmp/export-regression-live.sample.txt`。
+- 診断2経路のchild-process回帰追加とフォント切替修正後、UI単体875件・main17件が成功（既存ignore2件）。元gateと同一の除外/構造行判定で意味のある未実行行0、document-surfaceの独立strict検査100%。生JSONを`tmp/coverage-2026-10-01.json`へ保存。全`check-full`一括成功とは扱わず、変更後通常Clippy・platformの終端を継続確認する。
+- フォントメモリ修正の追加レビューでcustom→standard切替を復元する必要が判明。実OSフォントと実egui ContextのFontDefinitionsを比較し、初回標準の不変、custom primary、標準定義への完全復元を検証した。フラグだけを期待値とするテストにはしない。
+- Linux全workspaceテスト成功、Windowsテストコードを含むcross-check成功。追加フォントテストの最終テストハーネス修正後にもWindows成功、Linux focused回帰は実行中。clean-machine配布起動の代替にはしない。
+- release guard4ファイルを通常pre-commit経由で正式commit `783a1383`へ統合した。preflight wiringや残文書修正の統合はまだ未完了。crates.io完全一致の9回帰、version/change bindingの12回帰、実locked metadata検査が成功。
+
+## Excelフィルタ接続と追加検証
+
+公開KDV 0.5.7にはAutoFilter metadata、Candidates、ApplyValues、Clearとvisibility eventが存在するため、上流待ち扱いを解除してKatanAの薄い転送とヘッダー操作を実装中。全targetのcargo check、通常workspace strict Clippyは成功。状態回帰と実worker XLSX回帰、実クリック検証を続行する。候補数上限による打切りは明示してApplyを無効化し、空白は空文字のtyped値として送り、黙って候補を欠落させない。
+
+Linux native workerを通常ビルドして実fixtureを開く回帰が成功（0.04秒）。CandidatesにNorthが含まれ、ApplyValuesでvisible_row_count=4、Clearで7を実session/worker channelから受信した。Mock・固定待機・見かけ上のUI状態だけの検証ではない。ヘッダーボタンからの実入力、全gateと配布実行は引き続き未完了。再確認時の最新KRR公開版は0.4.21（2026-09-28公開）であり、0.4.22は採用していない。
+
+さらに実egui入力でheader→Candidates、menu→Apply/Clear、truncated時のApply無効・Clear有効、Select all後の適用を検証し、フィルタ関連11件成功。初回テストは、既定CloseOnClickで無効Applyや候補操作でもpopupが閉じる不具合を検出した。egui公開APIを確認し、フィルタ専用のCloseOnClickOutside wrapperへ修正後、同じ320x240 viewport・ボタンbounds検査・条件付きrepaint待機（Harness::run）で成功。固定wait・viewport拡大・無効化で回避していない。
+
+最新変更でLinux UI全体871件成功、既存ignore2件（追加なし）、Windowsのtestコードを含むcross-check成功。AST23件・通常workspace strict Clippy・supply-chain全4分類も成功。旧native Mac coverageは診断2行まで解消済みだが、新フィルタ分を含む全coverageの再実行は未完了。配布受入・canonical scoreも未完了のまま維持する。
+
+追加レビューで、既存NonBlank条件を開くと全候補が未選択となり、Apply時に空の値集合へ変わる問題を検出した。条件metadataと候補eventを通す回帰は修正前に `[] != [North, South]` で失敗し、非空候補を選択集合へ投影する最小修正後にフィルタ12件成功。KDVの条件評価自体をKatanAで複製した修正ではない。ヘッダーボタンと親グリッドのクリック競合は実RawInput回帰で再現せず、CandidatesのみでSelectAtなしを検証した。推測の商用コード変更は行っていない。
+
+その後のLinux全workspaceテストはexit0。長時間export回帰14件350.23秒、UI並列統合141件（既存ignore2件）、直列統合18件が成功。Windows test-inclusive cross-check、native全target strict Clippy、AST23件、format/diff、MathJax typecheck/buildも成功。generated JS SHA-256は従来通り`8352ceae524e4b592c8dd69f30caac0b64c15e72cec6e4718154c144a0faff99`。採用旧stashのnavigation回帰を含むnative修正と公開依存を通常hooks経由のcommit `a296e49e`へ正式統合した。新フィルタを含むcoverage・配布受入・canonical scoreは未完了。
+
+入力6原本Officeのhash/format、HTML原本hash、source-tree fingerprint、公開lock graph、配布main/sidecar identityとclean-machine heartbeatを照合する受入検査を追加。checker18件・release gate13件、計31件の回帰が成功。これは検査器の回帰であり、未実行の配布受入manifestは作成していない。
+
+Linux実回帰はフォント探索が入れ子ディレクトリを辿っていない不具合を検出した。ディレクトリsymlink循環を避ける再帰探索へ修正し、実filesystem回帰2件とcustom→standardの実OSフォント回帰1件が成功。Windows cross-checkも成功。通常commitは一度、並行実装中のフィルタに対する既存AST制約違反で拒否された。lint規則を緩めず修正してAST23件を成功させ、フォント探索修正を`1dd570a5`へ正式統合した。画像タグ修正はparser33件・preview42件の再実行成功後、通常hooksを通して`ae5b0baa`へ統合した。Explorer回帰29件とフィルタ接続後のworkspace strict Clippyも成功。
+
+## ハーネスのproc-macro障害（詳細）
+
+現SDK27/linker環境でtiny proc-macroを生成し、dyld_infoがstrip=debuginfo/symbolsだけをLINKEDIT不整合として拒否した。strip=noneと最適化3の組合せは成功。壊れた既存dylibはcodesign検証が成功しており、再署名で解決する障害ではない。
+
+[Rust upstream #157750](https://github.com/rust-lang/rust/issues/157750)のstrip時Mach-O alignment不具合と一致する。`.cargo/config.toml`のrelease build-overrideだけstrip=noneにし、本体opt-level/coverage/受入時間の条件は維持する。実際のscreenshot Cargo graphでserde/serde_deriveのrelease check、full release runner buildが成功した。
+
+v0.22.42 runner・release Office workerで原本HTMLの1280x900/#s15 host要求を実行。公開KDV 0.5.7/KRR 0.4.21では`open_file`段階に留まり、60秒で初期frame/typed errorなし、最大CPU88.1%、終了は外部TERM。proc-macro障害は解消したがHTML受入は失敗。生ログは`/var/folders/ql/4640yx8s22zg367pjjld7yc00000gn/T/katana-html-acceptance.sndnIz/{runner.log,evidence.txt}`。このrunnerはin-processであり配布main executableの受入とは扱わない。
+
+## 未公開上流probeとの比較
+
+既存KRR担当のJSONをmainが原本hashと照合した。原本53818bytes、SHA-256 `c02d2d7a2420e4e15e3d98a044a310c67bc75fa858c95c4867b9c3f5d7aca012`。未公開v0.4.22候補のnative runtime probeは初期frame34929ms、close0.73ms、全体35.93秒、exit0。JavaScript69.5msに対してlayout_svg32.23秒、rasterize2.16秒で、主要遅延はlayout側。単体probe成功は公開版採用、KatanA host、sticky目次、配布受入の代替にしない。証跡はKRR `tmp/pr95-real-html-initial-close.json`。
+
+`run.sh`の共有targetも分離し、各Cargo rootをlocked buildとする。これは独立した生成物管理修理であり、既に分離済みのhost scriptでも発生していたLINKEDIT障害の根因とは扱わない。
+
+## macOS release mainの空workspace診断
+
+最新のregistry lockで`cargo build --locked --release -j 2 -p katana-ui --bin KatanA`成功（51.96秒）。既存startup smokeをこのMacのrelease mainへ実行してexit0。fresh-config/Terms表示中もUI heartbeatが継続、main PID28243の実行path/hashを前後照合、peak RSS238752KiB（約233MiB）、UI font27093388bytes（約26MiB）、Office worker0。実行binary SHA-256は`8d28693e5990fa3d14c44df36792d641725d1cc27ae6ba35075a520dfb1bd184`。
+
+これは開発Mac上のnative release main診断であり、配布bundle、他CPU/OS、clean-machineの受入ではない。smoke終了は既存supervisorのTERMであり、通常終了/全resource-releaseの証拠として流用しない。1.6/6.2および必須配布manifestは未完了のまま維持する。
+
+## 実mainのOffice初回読込と非同期化
+
+commit `a296e49e`のrelease mainを既存ユーザー設定で起動し、実操作のDEBUGログを確認した。初回source intakeはPPTX 5,845,262bytes/13,083ms、XLSX 27,857bytes/13,073ms、PPTX 40,852,621bytes/13,057ms。XLSXはsession open32ms、最初のframe40msであり、KRR描画だけを原因にしない。同じファイルの再読は1〜6ms。独立read-only計測でも別の約670KB XLSXの初回読み出し13.08秒、canonicalize相当0.00秒、SHA-256相当0.01秒、直後の3回の再読0.00秒だった。OSのcold read要因は未確定で、quarantine/provenance属性だけを根因と断定しない。
+
+KatanAのUIスレッドからcanonicalize/読込/検証/hashを背景intakeへ移す修正を実装。UIは非blocking pollで結果を取得し、既存source revision比較を維持する。pending同一pathは読込を重複spawnせず更新要求をまとめ、変更通知・強制更新を保持する。HTML/Markdown移行時はpending receiverを破棄し古い結果を適用しない。既存のDEBUG=true限定helperへcanonical/read/validate段階とopen/read段階を追加した。
+
+実FIFOを使い読込を完了させない間にUI frameを実行する回帰、取消済みchannelの実結果が別画面へ適用されない回帰、同一pendingの更新併合、実PDFの未変更/内容変更/強制更新のsession generation回帰4件がLinuxで成功（0.08秒）。native全target strict Clippyは成功。追加回帰と全UI再検証を続行し、実mainの修正版再受入と配布受入は未完了のまま維持する。稼働中の旧release mainは勝手に終了・置換していない。
+
+## ハーネスと配布検査の追加レビュー
+
+背景intake修正を`437f6c81`へ通常hooks経由で統合。配布受入checkerはmainとは別の実sidecar PID、観測されたcanonical pathも必須化し`11977d02`へ統合した。checker20件、release guard13件が成功。実Office sidecarを起動する配布受入manifestを捏造・作成してはいない。
+
+現public registry graphでrelease screenshot runnerを再ビルドし、38単体テスト、release全target strict Clippy、paint-metrics2件が成功。rootのformat style editionを明示し、別Cargo rootでも同一規約の通常fmt checkを使えるようにした。
+
+実CLIで文書未選択exportを再現し、修正前はPNG未生成なのにexit0でskipした。文書必須の明示errorへ修正後、同じ実CLIのnegative contractが成功。candidate生成経路は新規absolute出力rootを要求し、`assets/reference`・既存出力への書込を拒否する。不正入力の実script contractは成功し、参照画像・95点基準は変更していない。
+
+現public graphで実canonical interaction contractが成功。controls-onを実描画から拒否し、Light typography/Dark diagrams両方で同一frameのcontrols-off、scroll0、logical1187x2225、physical crop(88,268,2374,4450)を確認した。diagrams frame1223、markdown section17、全overlay counter0。runner SHA-256 `b9fb3031a59eb356a04b1c476eb8bd6166c9ca8fd1cedd697f5f5337a58be2a7`、diagrams full PNG `f77baa764224dcc653ed0288263dab16c292d8a353933d4278e6343c8ed67bf1`、typography full PNG `394f828d1a89f89d0f15f6b4a62a6d704f4b275b9222f0e2b1225d2930ccfa3d`。生資料は`tmp/canonical-interaction-public-2026-10-01/`。これはin-process candidate evidenceでありcanonical score、baseline採用、配布main受入を完了扱いにしない。
+
+同runnerと実release Office workerで下部sheetタブの実input/geometry回帰が成功（0→1→0、初期frame1.036秒）。mixed HTML/XLSX開閉はwarm baseline167616KiBから10回後168048KiB（+432KiB）、UI frame413→485、preview/surface/worker/frame/texture/cache全0。in-process検証であり実配布main・ユーザー原本HTML受入ではない。追加レビューでcold baselineのcloseが固定waitだけだったため、条件付きidle確認への修理を継続する。
+
+追加レビューのclose条件修理後もmixed cycle実行が成功。warm167984KiBから169168KiB（+1184KiB）、UI113→183、全resource0。曖昧なviewport併記は旧CLIがexit0で受理したが、修正版実CLIはrequest load段階でexit1。新回帰を含む39件、release全target strict Clippyが成功。開閉の固定waitや入力寸法の無言優先を検証成功の根拠に残さない。
+
+最新runnerと公開KDV0.5.7の実release workerでlegal data-descriptor DOCXを開き、Page1/2の初期frame2.026秒、close→idle、exit0を確認。生candidateは`tmp/docx-descriptor-async-2026-10-01/`。従来のlocal-header size failureはこの経路で再現せず、最終配布main受入は別途残す。
+
+配布CIのcwdを展開先へ変更し、checkout内resourceへの偶然の依存を排除。別レビューでpartial targetのskipped jobが公開を許可するP1を発見し、全platform job成功を必須化。新contract assertionは修正前に失敗し修正後成功（binary architecture7件を含む）。asset collectionは5成果物を非emptyで必須化し、欠損/空/未知/衝突/symlink/hidden-entry拒否と実checksum照合が成功。実Actions/clean-machine検証は未完了。
+
+## 正式統合後の全coverage再検証
+
+HEAD `7e43924d` の全coverageでworkspaceテスト、UI parallel141件（既存ignore2件）、serial18件は成功したが、strict document surface gateは`painter_grid.rs` 179/182行（98.3516%）で失敗した。ログは`tmp/coverage-gate-20261001.log`、集計は`tmp/coverage-gate-20261001-current.json`。全coverage成功とは報告しない。
+
+未実行のinlineクリックテスト失敗分岐を、正確なCandidatesコマンド1件とResizeのみのグリッドコマンドとの等価比較へ変更した。商用コード、100%閾値、除外設定は変更していない。format/diff check、focused実テスト1件、katana-ui lib strict Clippyが成功。独立レビューでP0/P1指摘なし、クリック不発・余分なコマンド・SelectAt混入の拒否を確認した。
+
+変更後の全coverage gateは成功。UI parallel141件（既存ignore2件）、serial18件を含む全工程と集計を完了し、strict document surfaceは100%、`painter_grid.rs`は184/184行。ログは`tmp/coverage-gate-20261001-rerun.log`、JSONは`tmp/coverage-gate-20261001-rerun.json`。依存更新前のこのsource graphの結果であり、次の依存移行後の再検証・配布受入・全combined gateを完了扱いにはしない。
+
+## egui移行後の実アプリ起動と品質（2026-10-01）
+
+egui0.36.2移行を通常hookを通したcommit`886907a1`へ正式統合した。公開KDV0.5.7/KRR0.4.21/KUC0.3.17 graphのfull locked metadata、native release全target strict Clippy、paint-metrics2件、供給網4カテゴリ、全coverage gateが成功。document surface100%、painter_grid184/184。移行後の全coverageログ/JSONは`tmp/coverage-egui-0362-20261001.{log,json}`。実input/capture、platform/combined、公開は未完了。
+
+新release main SHA-256`46e618fe768abc29d65c1fd5e1f8bd565f363e905c34d68a8aa742b8a6b3f3aa`を独立した設定で起動し、PID64901、継続UI heartbeat、peak RSS253392KiB（247.45MiB）、owned fonts27093388bytes、Office worker0を確認した。原始ログ/heartbeat/configは`tmp/trash/2026-10-01-113653-startup.YMB8Av/`へ保持。これはlocal native実mainの空workspace smokeであり、全OS clean-machineやOffice入力を含む配布受入ではない。旧PID50338は終了させていない。
+
+起動テストの独立レビューでLinux wrapperのみ終了させるcleanupをP1として検出し、`f5eaadb9`で修正した。shared helperを実bash/sleep子孫で実行し、既知main/初期frame前の探索の両経路でowned main/wrapper消滅、PID clear、無関係プロセス生存を条件pollで確認。実early-exit負例と全startup contractも成功した。修正後の実main smokeはPID94562、peak RSS234976KiB、同じfont bytes、worker0で成功し、終了後PID94562は消滅、旧PID50338は保持。
+
+移行後runner SHA-256`c7a527c638db70fceff2daea1081afeb456e73ce6189ad925e0f2e0848e917cb`でcanonical interaction contractとExcelタブの実0→1→0が成功。生資料は`tmp/canonical-egui-0362-20261001/`と`tmp/xlsx-sheet-tab-input-egui-0362-20261001/`。両full PNGは移行前のhashと完全一致（typography`394f828d1a89f89d0f15f6b4a62a6d704f4b275b9222f0e2b1225d2930ccfa3d`、diagrams`f77baa764224dcc653ed0288263dab16c292d8a353933d4278e6343c8ed67bf1`）。same-frame geometry/counterも保持する。独立source-renderer95点採用や配布main入力の完了ではない。
+
+## ビルド容量の記録
+
+通常commit hookのdevチェックと別runnerの再ビルドでhost空きが857MiBまで減少した。commit hookは成功したがrunnerは1GiB閾値に従い中断し、終了済みの誤った別target `scripts/screenshot/target`のみCargo cleanで6443ファイル/2.8GiB解放。既存`target/screenshot-harness`を明示して再開する。実source/証跡/使用中アプリ/他repoは削除していない。
+
+空き容量が8.4GiBへ減ったため、使用中のroot/debug・coverage・新runner targetは残し、稼働していない旧`scripts/screenshot/target`だけをCargoのtarget-dir指定cleanで解放した。再生成可能な生成物38147ファイル、20.8GiBが対象。ソース、stash bundle、worktreeは削除していない。
+
+その後空き5.2GiBとなったため、終了済みの失敗coverage runが残した`target/llvm-cov-target`だけをCargo cleanで解放（24345ファイル、15.6GiB）。新runnerとfocused testが使用中のroot/debugは保持。次のcoverage runは同じ品質条件のまま再生成する。
+
+さらに空き4.3GiBとなった際、root/debugのfocused testとpreflightが終了済みであることを確認し、通常dev profileのKatanA workspace 4packageの生成物だけCargo cleanで解放（25483ファイル、21.4GiB）。別targetで進行中のcoverageとrunnerは削除していない。
+
+後に空き135MiBとなり、稼働cargo/rustcがない通常root/debugをCargo dev-profile cleanで解放（50040ファイル、32.8GiB）。その後、coverage全テスト/修正再テストと両集計を完了してJSONを保存し、非稼働coverage dev生成物もCargo cleanで解放した。source/release runner/Office worker、profrawと保存JSONは対象にせず、通常Clippyの再検証へ切り替えた。
+
+Linux UI全体検証後、実行中containerがないことを確認し、このrepoのLinux target volume内のcore/linter dev生成物のみCargo cleanで解放（285ファイル、26.0GiB）。Docker VM内部の再生成可能な領域であり、host APFS空き容量は約5.4GiBのまま増えていない。別repo、source、worktree、証跡、VM全体は削除していない。
+
+native `just check`再実行はworkspace testの依存ビルド中にhost空き119MiBとなり、OS error28で失敗した。終了したcargo/rustcを確認して、失敗したroot dev生成物のみCargo clean（21760ファイル、8.5GiB）し、host空き8.4GiBへ復帰した。Linux側で同じ最新sourceの全workspaceテストを実行して成功し、native Clippy/ASTも再実行成功。nativeの一括gateが成功したとは報告しない。
+
+## 実workerの検証前提と罫線追加後の再検証
+
+`4b11725d`へ実Office workerのビルド・絶対path・実行権を通常test入口の前提として統合した。Linux locked全workspaceは878 passed/2既存ignored、Windows test-inclusive cross-check、native実worker filter回帰1件、Office fixture integration8件が成功した。native全体はcoreの13 exportを含む検証後、新しい罫線コードのAST違反で停止。追加したpaint回帰もprivate helper参照でコンパイルに失敗したため、閾値や商用visibilityを緩めず責務・test配置を修正中。全native gate完了とは扱わない。
+
+nativeビルドはdebug symbolsのみ0、strip=none、incremental無効を使用し、debug assertions・最適化・test範囲・coverage閾値は変えない。再生成可能な終了済みrelease cacheを解放する前に、main/worker/runnerを`tmp/*-egui-0362-preserved`へ移動してSHA-256一致を確認した。これらは罫線追加前の候補であり、最新HEADの配布証拠ではない。
+
+## 上流のライブ確認と次の採用条件
+
+2026-10-01の確認でGitHub Release最新はKRR0.4.21、KDV0.5.7、KUC0.4.0。KRR PR99はDraft/OPEN/BLOCKEDで次版未公開。KDV担当はIssue56の借用slice罫線batch APIとKUC0.4.0採用を含む0.5.8を検証中で、公開済みとは扱わない。KatanAは公開版のregistry exact pinのみ採用し、現在のKDV0.5.7が要求するKUC0.3.17を無断で置換しない。master clean、stash0、作業branchはorigin/masterに対してahead18/behind0を確認した。
+
+## 初回source読込のdataless状態
+
+原本`libre-chat_vs_loom.pptx`（40,852,621bytes）と`shopchannel_analysis.xlsx`（27,857bytes）の`ls -lO`はともに`compressed,dataless`だった。XLSXの属性列挙は待機後に終了し、再度のflagsは`-`へ変化した。PPTXを`/usr/bin/time -l shasum -a 256`で読むと初回real2.47s/user0.12s/sys0.02s、直後の再読はreal0.13s/user0.12s/sys0.00s、flagsも`-`へ変化。両読込のSHA-256は`34f462ac1c38e581f8b286f549aaf54fe55cd45c6d28a16cfbf1ebb163b3af57`で一致した。原本の内容は編集していないが、読込によりOSが実体化するため以後の測定はcold状態ではない。
+
+[AppleのFile Provider仕様](https://developer.apple.com/documentation/FileProvider/synchronizing-the-file-provider-extension)ではdatalessはmetadataのみ、materializedは内容もローカルにある状態。[WWDC21の説明](https://developer-mdn.apple.com/videos/play/wwdc2021/10182/)ではdatalessへのread syscallは内容取得中に待機する。この観測は過去の約13s初回readをOS実体化待ちとする仮説を支持するが、その13sと同一条件の再現・provider内部traceはない。変換/renderのロジック遅延とは分け、背景intakeのUI進行回帰を維持する。
+
+## Office native診断の未達記録
+
+新ハーネスのparser/ownership回帰は成功したが、実候補main/workerでの代表XLSX restoreはexit1（worker identity未観測）。`tmp/smoke-office-restore.Gq0gM4/evidence/`へlog/config/heartbeat/samplesを保存。source intake成功、UI frame175まで進行した一方でworker handoff/frame記録がない。自然復元設定からpreview経路へ到達していない可能性を調査中。Terms承認やUI操作を迂回せず、このrunをOffice表示・性能受入成功とは扱わない。所有プロセスのcleanup後残存は検査が拒否せず、旧interactiveアプリは対象外。
+
+現行lockの`just supply-chain`はexit0でadvisories/bans/licenses/sources全てok。既存duplicate warningは残り、他の全gate成功を意味しない。生ログは`tmp/supply-chain-heartbeat-20261001.log`。
+
+native文書surface focused再実行は58 passed/38 suites/4.93s/exit0。style14種の幅、実paintの四辺・色・double gap・clip、実XLSX merged-cell frame/cache座標、stale generationでframe/cache双方の保持、実worker filter/frame cacheを検査した。生ログは`tmp/native-border-fourth-compile-20261001.log`。AST再実行は22 passed/1 failedでprojection file201行を検出したため、style責務分割を継続する。ASTや全native検証を完了扱いしない。
+
+Office native未達の原因はsource確認でTerms未承認と確定した。新settingsは`terms_accepted_version:null`、旧成功runは同version承認済み。`main_panels.rs`は未承認時にTermsModalのみを描画して戻り、`shell_ui/mod.rs`はheartbeatを継続するためframe175はOffice進行証拠ではない。ユーザーへ画面承認を依頼し、値の書換えや自動承認は行わない。
+
+style責務分割後にmodule登録漏れを実コンパイルで検出し、rootがsibling module登録/importを修正した。`tmp/native-border-full-test-repaired-20261001.log`の通常`just test`はexit0、core export13件238.63s、AST23件、UI903件/2既存ignored、UI parallel143件/2既存ignored、serial18件、main17件が成功した。`just fmt-check`とworkspace厳格Clippyもexit0。最後にchild testへ移設済みdouble定数の不要な公開visibilityを除去し、focusedコンパイルを再確認する。罫線追加後のcoverage/platform/packaged受入は未達のまま。
+
+Biome2.5.15へtool pin/config schemaを同期した。公式migration previewに従いfile-length規則をnurseryからstyleへ移動、error/max200/skipBlankLinesは保持し、function30/cognitive1等の閾値も変更しない。50 JSONのformat検査とJS設定対象のlint/format検査が成功し、Rust全体のformat/Clippyにも問題がない。Cargo直接依存dry-runは63 latest/no upgrade proposal。rootにはpackage.jsonがなく、rootでのBun outdatedはancestor packageを参照するため、過去のroot Bun零件をrepo全JS依存証明と扱わない。
+
+## 最新の正式統合と再検証
+
+- フォント追加修正`c4678022`後も全coverage gateはexit0、strict document surface100%、meaningful uncovered0。UI908件/既存ignore2、parallel143件/既存ignore2、serial18件、main17件、core export13件が成功。Linux workspaceはUI892件/既存ignore2を含み成功、Windows test-inclusive cross-checkも成功。native実fixture8件も7.80sで成功。
+- 4.23のDraft分類を明示し、同時にcritical required IDへ追加した。新規2回帰は修正前に失敗、修正後は15件すべて成功。Draft checker exit0、strict checker exit1（未完了受入を拒否）を確認。最終公開の条件緩和やfalse completionはない。
+
+- `714bbe15`: Biome2.5.15と既存ルールを保ったschema移行。
+- `dbc52b6a`: Office復元診断のevent identity、UI進行、poll別subtree resource、実子プロセスcleanup回帰。
+- `43d7043e`: セル四辺の罫線をworkerで型付き準備し、frameと同じgenerationで受信して描画。正式commit前の通常hookも成功。
+- 通常native全テストexit0、追加罫線を含むfocused62件、AST23件、format/diff検査成功。追加後の計測付きUI906件/main17件も成功。coverage集計とLinux/Windowsゲートは実行中なので完了としない。
+- 初回Termsのcompleted-frame回帰とworker source消費回帰の正式統合を確認し、4.16を完了へ更新。利用規約の承認状態は変更していない。Office実mainの表示・性能受入は4.23の外部環境依存として残す。
+- 最終集計: 最新罫線sourceのcoverage gateはexit0、meaningful uncovered0、strict document surface100%。計測付きUI906件/既存ignore2、parallel143件/既存ignore2、serial18件、main17件、core export13件が成功。Linux locked workspaceはUI890件/既存ignore2、core export14件、fixture8件、parallel141件/既存ignore2、serial18件を含み成功。Windows test-inclusive cross-checkも成功し、`just check-platforms`はexit0。
+- Draft bootstrap検査はexit1、未完了の4.23を正しく拒否。unknown task許容や受入基準緩和は行わず、利用規約の人間承認後に実アプリ計測を再開する。release/PRは未公開。
+
+## Draft PRとHTML再受入の事前準備
+
+HEAD `438ea436`は通常pre-push hookを通過し、`release/v0.22.42`を公開branchへpushした。Draft [PR #346](https://github.com/HiroyukiFuruno/KatanA/pull/346)を作成して`@codex review`を依頼。Ready/merge/releaseは未実施。上記の旧Draft拒否結果は4.23の明示分類修正で解消したが、strict公開ゲートの未完了拒否は維持する。
+
+既存HTML driverへ原本SHA/実path/1280x900/#s15/60秒初期frameの事前照合を追加した。通常testとfixture targetから6回帰を実行し、変更原本・異なるsource/viewport/fragment・時間延長を拒否する。実原本53818bytesと指定requestの`--validate-input`も成功。実行時のrunner/worker/lock identityは保存する実装を追加したが、本描画実行はまだ行っていない。sticky/連続CPU/正常close/終了後process、公表registry依存による本受入は未完了で、事前照合をその代替としない。
+
+追加準備は`da890166`へ正式統合し、通常hookを通してpush済み。最新HEADのcloud reviewを依頼した。旧HEADへのP2「MathJax package欠落」は、[公式3.2.2 AllPackages](https://github.com/mathjax/MathJax-src/blob/3.2.2/ts/input/tex/AllPackages.ts#L91-L122)と現配列を実比較して双方30件、omitted/addedとも空を確認し、不採用根拠を返信・個別resolve。全threadを再取得して未解決0を確認したが、最新HEAD review完了とは扱わない。
+
+読み取り専用監査でもHTML driverの残件を確認した。現在の`frame_or_error`は成功frameと明示errorを区別せず、CPUは最大値のみ、`close=completed`はrunner終了を示すだけで通常closeとowned descendant不在を証明しない。後続では成功frame・typed failureを区別し、poll別CPUと終了後ownershipを同じ既存driverへ統合する。既存process identity/実子process回帰を再利用し、PIDのみの無検証killや新driver増殖は行わない。これらはKatanA側で進められる未完了の受入準備である。
+
+監査後の独立修正: 既存requestに5秒以内の条件付きcloseとclosed-idle snapshotを追加し、close欠落/時間延長/snapshot欠落の3回帰をRED→GREENで確認。成功frame60秒以内と全7resource countゼロを要求し、明示failure/close欠落/遅いframe/残存frameを拒否するlog回帰も追加、全14件成功。旧実HTMLの60秒timeout生ログは新checkerでもexit1、frame/closeとも未確認として拒否。shell syntax、実原本preflight、JSON/JSゲートも成功。poll別CPUをTSVへ保存し、単なるrunner終了をnormal closeと表示する旧ラベルを廃止した。本原本での成功描画、sticky、kernel-level descendant不在、配布mainでの通常closeは未確認のまま維持する。
+
+PRの追加P2「全runnerの60秒監視が独立したHTML遷移を早期終了する」は採用した。owned runnerのstep index/typeをrequestと照合し、同じstep内では期限を更新せず、open_file60秒・open_url60秒・close5秒を別々に外部監視する。制限時間自体は増やしていない。新規3回帰は修正前ERROR、修正後GREENで、全17件成功。実原本preflight・shell syntax・JSON/JSと共有cleanupの実子process回帰も成功。観測エラー時のEXIT cleanupは親子関係と実image/hashを確認できたrunnerのみを終了する。新driverや上流repo編集は行っていない。成功原本の連続2操作での本実行は未公開KRR待ちのままであり、ここではcontroller契約と安全な終了経路の検証を記録する。
+
+## 現HEADレビューとCI前提の追加修正
+
+- `77308932`へのP2 comment4152555278: hiddenの実RawInputでzoomが1.25→1.875へ変化するREDを確認。controls-offをhover専用にし状態更新をvisibleへ限定した。hidden/visible入力とtexture回帰5件、同一identity保持1件、strict test-inclusive Clippyが成功。二重罫線の定数assertも実paint座標assertへ置換しfocused2件成功。AST23件、format/diff成功。
+- P2 comment4152555290: sleepを残期限以下へ制限し、runnerのInstantで各stepの実elapsed_nsを記録。欠落・重複・遅延を拒否する契約23件と実process-group7件が成功。専用groupをkernel PID/PGID/starttimeとlaunch parentで観測し、正常終了後の残存を成功扱いしない。Darwinの秒精度とgroup離脱子孫の対象外を明記し、全descendant保証とは扱わない。
+- screenshot runnerのlocked release buildとrelease strict Clippyがexit0。実xlsx-sheet-tab-inputは2回exit0、初期frame2.381s/0.925s、Notes/Dashboard実クリックでactive_index0→1→0。保存済み`/tmp/katana-xlsx-operation-contract.moqqJE/runner.log`の全8step実時間を同contractで検証し成功。in-processであり、原本HTML成功、正常Office close、packaged-main受入ではない。
+- 最新CIのmacOS job110250136475/Ubuntu job110250136572はworker_filter_testsで`target/debug/deps/kdv-office-worker`不在のため失敗。Run testsを全3OSでbash/既存with-office-test-worker.sh経由へ変更し、workspace範囲は維持。既存native prerequisite契約へworkflow検査を追加しRED→GREEN、root再実行もexit0。修正後cloud結果は未確認。
+- 公開版をライブ確認: KRR v0.4.21、KDV v0.5.7。必要な後続公開版の採用、残fidelity/全ゲート/配布受入/公開は未完了。cache削除・master編集・stash作成は行っていない。
+- 正式履歴: hidden入力`093efcb5`、罫線実座標検査`b52102e4`、HTML操作期限/process-group契約`3b95e7b9`、CI worker前提`7ece228b`。通常pre-commit hookは全て成功。CI helperはGit mode100644のため明示bashで起動し、直接実行を拒否する追加RED→GREENも確認。次に通常push hookを実施する。レビューへの返信・resolveはpush成功後に行い、現時点では未解決のまま保持する。

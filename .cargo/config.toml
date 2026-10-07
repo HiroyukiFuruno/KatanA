@@ -1,2 +1,10 @@
+[env]
+MACOSX_DEPLOYMENT_TARGET = { value = "13.0", force = true }
+
+# macOS 27のdyldがstrip後のproc-macroを拒否するため、ビルド用依存だけstripを止める。
+# https://github.com/rust-lang/rust/issues/157750
+[profile.release.build-override]
+strip = "none"
+
 [target.x86_64-pc-windows-msvc]
 rustflags = ["-C", "target-feature=+crt-static"]

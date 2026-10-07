@@ -6,6 +6,17 @@ use eframe::egui;
 
 impl KatanaApp {
     pub(crate) fn show_system_modals(&mut self, ctx: &egui::Context) {
+        if self.state.layout.show_slideshow
+            && !crate::views::panels::preview::PreviewMenuAvailability::for_path(
+                self.state.active_document().map(|doc| doc.path.as_path()),
+                crate::views::panels::preview::PreviewMenu::Slideshow,
+            )
+        {
+            self.state.layout.show_slideshow = false;
+            if !self.state.layout.was_os_fullscreen_before_slideshow {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(false));
+            }
+        }
         if self.state.layout.show_slideshow {
             if let Some(doc) = self.state.active_document() {
                 if let Some(preview) = self.tab_previews.iter_mut().find(|p| p.path == doc.path) {

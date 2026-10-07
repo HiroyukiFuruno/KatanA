@@ -113,6 +113,8 @@ impl<'a> PreviewContent<'a> {
                                     None
                                 };
 
+                                /* WHY: Record this to keep the actual content region distinct from window dimensions. */
+                                preview.markdown_viewport = Some(ui.available_rect_before_wrap().intersect(ui.clip_rect()));
                                 let actions = preview.show_content(
                                     ui,
                                     scroll.active_editor_line,
@@ -150,6 +152,7 @@ impl<'a> PreviewContent<'a> {
                 },
             );
 
+        preview.markdown_scroll_offset = output.inner.state.offset.y;
         if scroll_sync {
             PreviewLogicOps::update_scroll_sync(
                 scroll,

@@ -92,13 +92,9 @@ impl PreviewOps for KatanaApp {
         concurrency: usize,
     ) {
         if katana_core::workspace::TreeEntry::path_is_document(path) {
-            match crate::preview_pane::DocumentSurfaceSource::local(path) {
-                Ok(source) => self.full_refresh_document_source(path, source, force),
-                Err(error) => {
-                    self.full_refresh_document_failure(path, error.clone());
-                    self.state.layout.status_message = Some((error.to_string(), StatusType::Error));
-                }
-            }
+            let pane = Self::get_preview_pane(&mut self.tab_previews, path.to_path_buf());
+            pane.full_render_document_path(path, force);
+            update_preview_hash(&mut self.tab_previews, path, 0);
             return;
         }
         let is_html = is_html_preview_path(path);

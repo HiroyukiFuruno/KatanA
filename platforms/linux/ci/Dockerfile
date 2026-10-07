@@ -14,9 +14,10 @@ RUN apt-get update && apt-get install -y \
     fonts-dejavu-core \
     curl \
     python3 \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 RUN cargo install cargo-sweep
 
 WORKDIR /app
-CMD cargo sweep --time 7 && cargo test --workspace
+CMD cargo sweep --time 7 --dry-run && cargo test --workspace

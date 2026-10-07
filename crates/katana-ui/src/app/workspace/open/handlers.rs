@@ -62,7 +62,13 @@ impl WorkspaceOpenHandlersOps {
             ),
             crate::app_state::StatusType::Success,
         ));
-        app.state.workspace.data = Some(ws);
+        app.state.workspace.set_data(Some(ws));
+        /* WHY: 同じパスを復元しても旧ワークスペースの応答は新しい文書へ適用しない。 */
+        app.state
+            .url_tab
+            .pending_url_requests
+            .retain(|request| request.target_document.is_none());
+        app.state.url_tab.is_loading = !app.state.url_tab.pending_url_requests.is_empty();
         app.state.document.open_documents.clear();
         app.state.document.active_doc_idx = None;
         app.state.document.tab_groups.clear();

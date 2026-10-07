@@ -124,6 +124,18 @@
     "highlight_hover": "Surbrillance au Survol",
     "show_diagram_controls": "Contrôles du Diagramme",
     "toggle_slideshow": "Basculer le Diaporama",
+    "spreadsheet_filter": {
+      "open": "Ouvrir le filtre",
+      "title": "Filtrer les valeurs",
+      "loading": "Chargement des valeurs…",
+      "apply": "Appliquer",
+      "clear": "Effacer",
+      "select_all": "Tout sélectionner",
+      "blank": "Vide",
+      "non_blank": "Non vide",
+      "no_values": "Aucune valeur disponible",
+      "truncated": "Seules les premières valeurs sont affichées ; appliquer est désactivé"
+    },
     "document_controller": {
       "previous": "Page, feuille ou diapositive précédente",
       "next": "Page, feuille ou diapositive suivante",

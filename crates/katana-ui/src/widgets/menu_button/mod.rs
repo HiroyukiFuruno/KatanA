@@ -21,9 +21,38 @@ impl MenuButtonOps {
         label: impl egui::IntoAtoms<'a>,
         add_contents: impl FnOnce(&mut egui::Ui) -> R,
     ) -> egui::InnerResponse<Option<R>> {
+        Self::show_unframed_with_close_behavior(
+            ui,
+            label,
+            egui::PopupCloseBehavior::CloseOnClick,
+            add_contents,
+        )
+    }
+
+    pub fn show_unframed_interactive<'a, R>(
+        ui: &mut egui::Ui,
+        label: impl egui::IntoAtoms<'a>,
+        add_contents: impl FnOnce(&mut egui::Ui) -> R,
+    ) -> egui::InnerResponse<Option<R>> {
+        Self::show_unframed_with_close_behavior(
+            ui,
+            label,
+            egui::PopupCloseBehavior::CloseOnClickOutside,
+            add_contents,
+        )
+    }
+
+    fn show_unframed_with_close_behavior<'a, R>(
+        ui: &mut egui::Ui,
+        label: impl egui::IntoAtoms<'a>,
+        close_behavior: egui::PopupCloseBehavior,
+        add_contents: impl FnOnce(&mut egui::Ui) -> R,
+    ) -> egui::InnerResponse<Option<R>> {
         let button = egui::Button::new(label).small().frame(false);
-        let (response, inner) =
-            egui::containers::menu::MenuButton::from_button(button).ui(ui, add_contents);
+        let config = egui::containers::menu::MenuConfig::new().close_behavior(close_behavior);
+        let (response, inner) = egui::containers::menu::MenuButton::from_button(button)
+            .config(config)
+            .ui(ui, add_contents);
         egui::InnerResponse::new(inner.map(|r| r.inner), response)
     }
 }

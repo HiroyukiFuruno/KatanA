@@ -5,8 +5,13 @@ use katana_document_viewer::{
 };
 use std::path::{Path, PathBuf};
 
-use super::source_io::{enforce_remote_size, file_url, read_bounded, revision};
+use super::super::cancellable_read::ReadCancellation;
+use super::source_io::{enforce_remote_size, revision};
 use super::types::{DocumentFailure, DocumentFailureLayer};
+use super::worker_memory::IntakeMemoryLease;
+
+#[path = "source_local.rs"]
+mod local;
 
 #[derive(Debug, Clone)]
 pub(crate) struct DocumentSurfaceSource {
@@ -15,33 +20,22 @@ pub(crate) struct DocumentSurfaceSource {
     pub mime: String,
     pub revision: String,
     bytes: Vec<u8>,
+    /* WHY: bytesとその複製・送信結果が解放された後にだけ読込分の返却待機を解除する。 */
+    _intake_memory: Option<std::sync::Arc<IntakeMemoryLease<'static>>>,
 }
 
 impl DocumentSurfaceSource {
+    #[cfg(test)]
     pub(crate) fn local(path: &Path) -> Result<Self, DocumentFailure> {
-        let canonical = path.canonicalize().map_err(|error| {
-            DocumentFailure::intake("canonicalize", path, None, error.to_string())
-        })?;
-        let format = BinaryDocumentFormat::from_path(&canonical).ok_or_else(|| {
-            DocumentFailure::intake(
-                "classify",
-                &canonical,
-                None,
-                "document extension is not supported",
-            )
-        })?;
-        let bytes = read_bounded(&canonical, Some(format))?;
-        BinaryDocumentFormat::detect(&canonical, Some(format.mime()), &bytes).map_err(|error| {
-            DocumentFailure::intake("validate", &canonical, Some(format), error.to_string())
-        })?;
-        let uri = file_url(&canonical, format)?;
-        Ok(Self {
-            uri,
-            format,
-            mime: format.mime().to_owned(),
-            revision: revision(&bytes),
-            bytes,
-        })
+        Self::local_with_cancellation(path, || false)
+    }
+
+    pub(super) fn local_with_cancellation(
+        path: &Path,
+        cancelled: impl Fn() -> bool,
+    ) -> Result<Self, DocumentFailure> {
+        let cancellation = ReadCancellation::new(cancelled);
+        local::SourceLocalOps::load(path, &cancellation)
     }
 
     pub(crate) fn remote(
@@ -49,6 +43,7 @@ impl DocumentSurfaceSource {
         content_type: Option<&str>,
         bytes: Vec<u8>,
     ) -> Result<Self, DocumentFailure> {
+        let started_at = std::time::Instant::now();
         let path = url::Url::parse(&uri)
             .ok()
             .map(|url| PathBuf::from(url.path()))
@@ -64,13 +59,25 @@ impl DocumentSurfaceSource {
                     error.to_string(),
                 )
             })?;
-        Ok(Self {
+        let source = Self {
             uri,
             format,
             mime: format.mime().to_owned(),
             revision: revision(&bytes),
             bytes,
-        })
+            _intake_memory: None,
+        };
+        super::debug_log::DebugLog::write(
+            "document_source_intake",
+            format_args!(
+                "kind=remote format={} bytes={} elapsed_ms={} uri={}",
+                source.format.extension(),
+                source.bytes.len(),
+                started_at.elapsed().as_millis(),
+                source.uri
+            ),
+        );
+        Ok(source)
     }
 
     pub(super) fn descriptor(&self) -> Self {
@@ -80,7 +87,12 @@ impl DocumentSurfaceSource {
             mime: self.mime.clone(),
             revision: self.revision.clone(),
             bytes: Vec::new(),
+            _intake_memory: None,
         }
+    }
+
+    pub(super) const fn byte_len(&self) -> usize {
+        self.bytes.len()
     }
 
     pub(super) fn take_bytes(&mut self) -> Result<Vec<u8>, DocumentFailure> {
@@ -142,3 +154,7 @@ impl PartialEq for DocumentSurfaceSource {
 }
 
 impl Eq for DocumentSurfaceSource {}
+
+#[cfg(test)]
+#[path = "source_memory_tests.rs"]
+mod memory_tests;

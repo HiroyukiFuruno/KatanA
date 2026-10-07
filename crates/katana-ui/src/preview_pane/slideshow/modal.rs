@@ -48,6 +48,11 @@ impl SlideshowModalOps {
                 ui.painter().rect_filled(blocker_rect, 0.0, bg_color);
                 let content_rect = blocker_rect.shrink(FULLSCREEN_PADDING);
 
+                if pane.is_pptx_document_surface() {
+                    super::document::render(ctx, ui, layout, pane, blocker_rect, content_rect);
+                    return;
+                }
+
                 if ui.input(|i| {
                     i.key_pressed(egui::Key::ArrowRight)
                         || i.key_pressed(egui::Key::PageDown)

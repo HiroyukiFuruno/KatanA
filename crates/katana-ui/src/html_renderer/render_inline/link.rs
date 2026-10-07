@@ -3,6 +3,7 @@
 use super::super::EMOJI_INLINE_PIXEL_SIZE;
 use super::super::types::HtmlRenderer;
 use super::text::HtmlInlineTextOps;
+use super::trace::BoundedSource;
 use eframe::egui;
 use katana_core::emoji::EmojiRasterOps;
 use katana_core::html::{HtmlNode, LinkAction};
@@ -30,6 +31,17 @@ impl HtmlInlineLinkOps {
                 let response = response
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .on_hover_text(tooltip);
+                renderer.trace_layout(
+                    "linked_image_response",
+                    format_args!(
+                        "src={} response=({:.1},{:.1},{:.1},{:.1})",
+                        BoundedSource::new(src),
+                        response.rect.min.x,
+                        response.rect.min.y,
+                        response.rect.max.x,
+                        response.rect.max.y,
+                    ),
+                );
                 if response.clicked() {
                     clicked = true;
                 }

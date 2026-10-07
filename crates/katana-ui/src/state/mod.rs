@@ -5,6 +5,7 @@ pub mod command_palette_providers;
 pub mod config;
 pub mod diagnostics;
 pub mod document;
+pub(crate) mod explorer_projection;
 pub mod layout;
 pub mod scroll;
 pub mod scroll_sync;

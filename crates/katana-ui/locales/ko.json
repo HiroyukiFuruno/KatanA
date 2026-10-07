@@ -124,6 +124,18 @@
     "highlight_hover": "마우스 오버 하이라이트",
     "show_diagram_controls": "다이어그램 컨트롤",
     "toggle_slideshow": "슬라이드쇼 전환",
+    "spreadsheet_filter": {
+      "open": "필터 열기",
+      "title": "값 필터링",
+      "loading": "값을 불러오는 중…",
+      "apply": "적용",
+      "clear": "지우기",
+      "select_all": "모두 선택",
+      "blank": "빈 셀",
+      "non_blank": "비어 있지 않음",
+      "no_values": "사용 가능한 값이 없습니다",
+      "truncated": "처음 일부 값만 표시되므로 적용할 수 없습니다"
+    },
     "document_controller": {
       "previous": "이전 페이지, 시트 또는 슬라이드",
       "next": "다음 페이지, 시트 또는 슬라이드",

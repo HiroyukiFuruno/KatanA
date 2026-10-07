@@ -39,6 +39,7 @@ def determine_impacted_packages():
             or diff.startswith("scripts/")
             or diff.startswith(".github/")
             or diff.startswith(".cargo/")
+            or diff.startswith("vendor/")
         ):
             global_impact = True
             break

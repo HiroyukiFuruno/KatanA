@@ -9,6 +9,8 @@ impl PreviewPane {
         source: DocumentSurfaceSource,
         force: bool,
     ) {
+        self.document_intake = None;
+        self.is_loading = false;
         if !force
             && self
                 .document_surface
@@ -20,7 +22,6 @@ impl PreviewPane {
         self.cancel_token
             .store(true, std::sync::atomic::Ordering::Relaxed);
         self.render_rx = None;
-        self.is_loading = false;
         self.html_browser = None;
         self.document_failure = None;
         self.sections.clear();
@@ -34,18 +35,56 @@ impl PreviewPane {
     }
 
     pub(crate) fn has_document_surface(&self) -> bool {
-        self.document_surface.is_some() || self.document_failure.is_some()
+        self.document_surface.is_some()
+            || self.document_failure.is_some()
+            || self.document_intake.is_some()
+    }
+
+    pub(crate) fn is_pptx_document_surface(&self) -> bool {
+        self.document_surface
+            .as_ref()
+            .is_some_and(DocumentSurface::is_pptx)
+    }
+
+    pub(crate) fn document_slideshow_state(&self) -> Option<(usize, usize)> {
+        self.document_surface
+            .as_ref()
+            .and_then(DocumentSurface::slideshow_state)
+    }
+
+    pub(crate) fn document_slideshow_step(&mut self, next: bool) {
+        if let Some(surface) = &mut self.document_surface {
+            surface.slideshow_step(next);
+        }
+    }
+
+    pub(crate) fn document_slideshow_jump_to(&mut self, index: usize) {
+        if let Some(surface) = &mut self.document_surface {
+            surface.slideshow_jump_to(index);
+        }
+    }
+
+    pub(crate) fn show_document_slideshow(&mut self, ui: &mut egui::Ui) {
+        if let Some(surface) = &mut self.document_surface {
+            surface.show_slideshow(ui);
+        }
     }
 
     pub(crate) fn show_document_surface(&mut self, ui: &mut egui::Ui) {
+        self.poll_document_intake(ui.ctx());
         if let Some(surface) = &mut self.document_surface {
             surface.show(ui);
         } else if let Some(failure) = &self.document_failure {
             super::render_support::show_failure(ui, failure);
+        } else if self.document_intake.is_some() {
+            ui.centered_and_justified(|ui| {
+                ui.spinner();
+            });
         }
     }
 
     pub(crate) fn full_render_document_failure(&mut self, failure: super::DocumentFailure) {
+        self.document_intake = None;
         failure.log();
         self.cancel_token
             .store(true, std::sync::atomic::Ordering::Relaxed);
@@ -65,6 +104,13 @@ impl PreviewPane {
         self.document_surface.as_ref()?.frame_state_for_test()
     }
 
+    pub(crate) fn document_resource_counts_for_test(&self) -> (usize, usize, usize) {
+        self.document_surface.as_ref().map_or((0, 0, 0), |surface| {
+            let (frames, textures) = surface.resource_counts_for_test();
+            (1, frames, textures)
+        })
+    }
+
     pub(crate) fn document_failure_for_test(&self) -> Option<String> {
         self.document_failure
             .as_ref()
@@ -77,6 +123,9 @@ impl PreviewPane {
     }
 
     pub(crate) fn document_is_idle_for_test(&self) -> Option<bool> {
+        if self.document_intake.is_some() {
+            return Some(false);
+        }
         self.document_surface
             .as_ref()
             .map(DocumentSurface::is_idle_for_test)

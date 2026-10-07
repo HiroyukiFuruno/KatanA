@@ -25,6 +25,10 @@ mod keyboard;
 mod navigation;
 #[path = "image_html_surface_pane.rs"]
 mod pane;
+#[path = "image_html_surface_polling.rs"]
+mod polling;
+#[path = "image_html_surface_state.rs"]
+mod state;
 #[path = "image_html_surface_view.rs"]
 mod view;
 
@@ -104,13 +108,16 @@ impl HtmlBrowserSurface {
             self.apply_update(ctx, update);
         }
 
-        if self
-            .frame_update_deadline
-            .is_some_and(|deadline| std::time::Instant::now() < deadline)
-        {
-            ctx.request_repaint_after(FRAME_UPDATE_POLL_INTERVAL);
-        } else {
-            self.frame_update_deadline = None;
+        let worker_busy = self
+            .adapter
+            .as_ref()
+            .is_some_and(|adapter| !adapter.is_idle());
+        if let Some(delay) = polling::next_poll_delay(
+            &mut self.frame_update_deadline,
+            worker_busy,
+            std::time::Instant::now(),
+        ) {
+            ctx.request_repaint_after(delay);
         }
     }
 
@@ -200,6 +207,56 @@ mod tests {
     const FRAME_WIDTH: u32 = 200;
     const FRAME_HEIGHT: u32 = 100;
     const MAX_TEXTURE_SIDE: usize = 2048;
+
+    #[cfg(feature = "external-fixture-acceptance")]
+    #[test]
+    fn external_requirements_fragment_keeps_the_sticky_sidebar_in_the_first_frame() {
+        let Some(path) = std::env::var_os("KATANA_HTML_FIXTURE").map(std::path::PathBuf::from)
+        else {
+            return;
+        };
+        let raw_html = std::fs::read_to_string(&path).expect("external HTML fixture");
+        let mut origin = url::Url::from_file_path(path.canonicalize().expect("canonical fixture"))
+            .expect("file URL");
+        origin.set_fragment(Some("s15"));
+        let source = HtmlBrowserSource::new(raw_html, origin.as_str()).expect("HTML source");
+        let viewport = HtmlBrowserViewport::new(1_280, 900, 1.0).expect("HTML viewport");
+        let started_at = std::time::Instant::now();
+        let mut surface = HtmlBrowserSurface::start(source);
+        assert!(surface.start_pending_session(viewport));
+        let ctx = egui::Context::default();
+        surface
+            .wait_for_frame_for_test(&ctx, std::time::Duration::from_secs(60))
+            .expect("first HTML browser frame");
+        let frame = surface.frame.as_ref().expect("browser frame");
+        let sidebar_width = 232_usize.min(frame.viewport.width as usize);
+        let pixel_count = sidebar_width * frame.viewport.height as usize;
+        let matching_pixels = frame
+            .pixels
+            .chunks_exact(4)
+            .enumerate()
+            .filter(|(index, rgba)| {
+                let x = index % frame.viewport.width as usize;
+                x < sidebar_width
+                    && rgba[0].abs_diff(15) <= 4
+                    && rgba[1].abs_diff(23) <= 4
+                    && rgba[2].abs_diff(42) <= 4
+            })
+            .count();
+        let sidebar_ratio = matching_pixels as f64 / pixel_count as f64;
+        eprintln!(
+            "KATANA_HTML_ACCEPTANCE origin={} scroll_y={} content_height={} first_frame_ms={} sticky_sidebar_ratio={sidebar_ratio:.4}",
+            origin,
+            frame.scroll_y,
+            frame.content_height,
+            started_at.elapsed().as_millis()
+        );
+        assert!(frame.scroll_y > 0.0, "#s15 must scroll the initial frame");
+        assert!(
+            sidebar_ratio >= 0.60,
+            "the sticky sidebar disappeared at #s15; dark sidebar ratio was {sidebar_ratio:.4}"
+        );
+    }
 
     #[test]
     fn browser_viewport_uses_physical_pixels_for_high_density_ui() {

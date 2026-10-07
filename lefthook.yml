@@ -6,16 +6,18 @@ output:
 pre-commit:
   parallel: false
   commands:
+    release-branch-policy:
+      run: scripts/release/assert-release-work-branch.sh
     formatting:
       run: just fmt
     biome-js-lint:
       glob: "*.{js,ts}"
       run: just biome-js-lint
     clippy:
-      glob: "crates/**/*.{rs,toml,lock}"
-      run: just lint
+      glob: "{crates,vendor}/**/*.{rs,toml,lock}"
+      run: just lint-impacted
     ast-lint:
-      glob: "crates/**/*.{rs,toml,lock}"
+      glob: "{crates,vendor}/**/*.{rs,toml,lock}"
       run: just ast-lint
 
 pre-push:
@@ -27,14 +29,14 @@ pre-push:
         - ref: release/*
     check-strict:
       run: just check
-      glob: "crates/**/*.{rs,toml,lock}"
+      glob: "{crates,vendor}/**/*.{rs,toml,lock}"
       only:
         - ref: master
         - ref: release/*
 
     check-light:
       run: just check-light
-      glob: "crates/**/*.{rs,toml,lock}"
+      glob: "{crates,vendor}/**/*.{rs,toml,lock}"
       skip:
         - ref: master
         - ref: release/*

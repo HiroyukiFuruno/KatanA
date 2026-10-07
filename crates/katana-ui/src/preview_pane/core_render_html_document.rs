@@ -7,12 +7,15 @@ impl PreviewPane {
         html_file_path: &std::path::Path,
     ) {
         self.document_surface = None;
+        self.document_intake = None;
+        self.is_loading = false;
         self.document_failure = None;
         let current_origin = self.html_browser_origin();
         self.md_file_path = html_file_path.to_path_buf();
         self.outline_items.clear();
         self.anchor_map.clear();
         self.document_anchors.clear();
+        self.local_image_loader.reset();
         self.replace_html_browser(source, html_file_path, current_origin.as_deref());
     }
 
@@ -23,6 +26,7 @@ impl PreviewPane {
         force: bool,
     ) {
         self.document_surface = None;
+        self.document_intake = None;
         self.document_failure = None;
         let current_origin = self.html_browser_origin();
         if force {
@@ -41,8 +45,6 @@ impl PreviewPane {
     }
 
     fn reset_html_document_render_state(&mut self) {
-        self.image_preload_queue.clear();
-        self.image_cache.clear();
         self.render_rx = None;
         self.is_loading = false;
         self.cancel_token
@@ -73,6 +75,7 @@ impl PreviewPane {
         force: bool,
     ) {
         self.document_surface = None;
+        self.document_intake = None;
         self.document_failure = None;
         if force {
             self.viewer_states.clear();

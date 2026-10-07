@@ -12,6 +12,7 @@ on:
       - '.github/workflows/**'
   pull_request:
     branches: [master]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,6 +30,15 @@ env:
 jobs:
   test:
     name: Test and Build
+    # WHY: Draft PRでは重い検査を起動せず、pushとReady PRだけを実行する。
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.draft)
+    # 全テストを維持し、巨大なOffice/V8依存のデバッグ情報だけでrunnerを満杯にしない。
+    env:
+      RUST_TEST_THREADS: 2
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_PROFILE_TEST_DEBUG: 0
+      CARGO_PROFILE_DEV_STRIP: none
+      CARGO_PROFILE_TEST_STRIP: none
     strategy:
       fail-fast: false
       matrix:
@@ -71,9 +81,9 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/git/db
             target
-          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-test-no-debug-info-v1-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-test-
+            ${{ runner.os }}-cargo-test-no-debug-info-v1-
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
@@ -91,8 +101,67 @@ jobs:
       - name: Check types
         run: cargo check --workspace
 
+      - name: Verify CI resource contract
+        run: |
+          python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
+          python3 -B -m unittest discover -s scripts/runner -p test_impacted.py -v
+
+      - name: Install cargo-sweep
+        run: |
+          cargo install cargo-sweep --locked
+          cargo sweep --version
+
+      - name: Verify Cargo sweep safety contract
+        run: python3 -B -m unittest discover -s scripts/ci -p test_cargo_sweep_guard.py -v
+
+      - name: Measure cold real-font lookup (Windows)
+        if: runner.os == 'Windows'
+        env:
+          DEBUG: 'true'
+        run: >-
+          cargo test --locked -p katana-ui --lib
+          preview_pane::document_surface::font_lookup::tests::real_background_worker_returns_result_with_identity_while_ui_paints
+          -- --exact --nocapture
+
+      - name: Test CommonMark cache contracts
+        run: cargo test --locked -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
+
+      - name: Test patched custom cursor cache
+        run: cargo test --locked -p katana-ui -p egui-winit --lib cursor_cache::tests
+
       - name: Run tests
-        run: cargo test --workspace
+        id: workspace_tests
+        shell: bash
+        env:
+          KATANA_HTML_FAILURE_SAMPLE: ${{ runner.os == 'macOS' && '1' || '0' }}
+        run: bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
+
+      - name: Upload original HTML failure sample (macOS)
+        if: failure() && runner.os == 'macOS' && steps.workspace_tests.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: original-html-failure-sample-${{ runner.os }}
+          path: target/html-startup-failures
+          if-no-files-found: warn
+
+      # WHY: 通常検査の失敗を維持し、描画phaseの診断だけを別実行へ隔離する。
+      - name: Trace failed HTML startup (macOS)
+        if: failure() && runner.os == 'macOS' && steps.workspace_tests.outcome == 'failure'
+        shell: bash
+        env:
+          DEBUG: 'true'
+        run: >-
+          bash scripts/ci/with-office-test-worker.sh
+          'cargo test --locked -p katana-ui --lib
+          app::action::html_navigation::tests::file_navigation_to_an_open_dirty_target_preserves_target_state
+          -- --exact --nocapture'
+
+      - name: Test screenshot harness contracts
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        shell: bash
+        env:
+          CARGO_TARGET_DIR: target/screenshot-harness
+        run: cargo test --locked --release --manifest-path scripts/screenshot/Cargo.toml
 
       - name: Run multi-format headless acceptance
         if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
@@ -124,7 +193,7 @@ jobs:
 
   lint:
     name: Lint
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     strategy:
       fail-fast: false
       matrix:
@@ -178,7 +247,7 @@ jobs:
 
   supply-chain:
     name: Dependency Supply Chain
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -195,7 +264,7 @@ jobs:
   # CodeQL security scanning (Task 7.2 / 7.3).
   codeql:
     name: CodeQL Security Scan
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     permissions:
       security-events: write  # Required to upload SARIF results.

@@ -3,6 +3,7 @@ name: Release Readiness
 on:
   pull_request:
     branches: [master]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,6 +20,8 @@ env:
 jobs:
   release-check:
     name: Release Readiness
+    # WHY: 公開準備検査はReady for review後だけ実行し、Draftを副作用なく保留する。
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -31,6 +34,7 @@ jobs:
           tool: cargo-deny@0.20.2
           fallback: none
       - name: Run PR readiness check
+        # WHY: check-pr-ready が preflight を内包するため、同じ公開検査を二重実行しない。
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}

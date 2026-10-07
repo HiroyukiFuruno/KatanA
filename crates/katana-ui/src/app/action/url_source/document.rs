@@ -4,6 +4,11 @@ use crate::app_state::StatusType;
 use crate::shell::KatanaApp;
 use crate::state::{BinaryUrlSource, FetchedUrlSource, HtmlSourceError};
 
+mod transition;
+
+#[cfg(test)]
+mod format_transition_tests;
+
 impl KatanaApp {
     pub(super) fn apply_fetched_url_source(
         &mut self,
@@ -13,7 +18,14 @@ impl KatanaApp {
         match source {
             FetchedUrlSource::Html(source) => {
                 let document_path = target_document
+                    .as_ref()
+                    .filter(|path| {
+                        katana_core::document_source::BinaryDocumentFormat::from_path(path)
+                            .is_none()
+                    })
+                    .cloned()
                     .unwrap_or_else(|| remote_document_path(&source.source_url, "html"));
+                self.migrate_binary_url_target(target_document.as_deref(), &document_path);
                 self.state
                     .url_tab
                     .open_source(source.clone(), document_path.clone());
@@ -37,6 +49,11 @@ impl KatanaApp {
             format,
         } = source;
         let document_path = target_document
+            .as_ref()
+            .filter(|path| {
+                katana_core::document_source::BinaryDocumentFormat::from_path(path) == Some(format)
+            })
+            .cloned()
             .unwrap_or_else(|| remote_document_path(&source_url, format.extension()));
         let surface_source = match crate::preview_pane::DocumentSurfaceSource::remote(
             source_url.clone(),
@@ -50,6 +67,7 @@ impl KatanaApp {
                 return;
             }
         };
+        self.migrate_binary_url_target(target_document.as_deref(), &document_path);
         self.state
             .url_tab
             .open_document_source(source_url, document_path.clone());

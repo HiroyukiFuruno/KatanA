@@ -36,6 +36,7 @@ fn update_texture(
     if painter.texture_fingerprint.as_deref() == Some(&page.fingerprint) {
         return;
     }
+    let started_at = std::time::Instant::now();
     let image = egui::ColorImage::from_rgba_unmultiplied(
         [page.width as usize, page.height as usize],
         &page.rgba,
@@ -46,6 +47,17 @@ fn update_texture(
         egui::TextureOptions::LINEAR,
     ));
     painter.texture_fingerprint = Some(page.fingerprint.clone());
+    super::debug_log::DebugLog::write(
+        "document_texture_updated",
+        format_args!(
+            "width={} height={} rgba_bytes={} elapsed_ms={} fingerprint={}",
+            page.width,
+            page.height,
+            page.rgba.len(),
+            started_at.elapsed().as_millis(),
+            page.fingerprint
+        ),
+    );
 }
 
 fn paint_page(

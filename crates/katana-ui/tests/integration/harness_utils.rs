@@ -34,6 +34,10 @@ pub fn wait_for_workspace_load(harness: &mut Harness<'static, KatanaApp>) {
             std::thread::sleep(std::time::Duration::from_millis(2));
         }
     }
+    assert!(
+        !harness.state_mut().app_state_mut().workspace.is_loading,
+        "workspace loading did not finish within the existing polling budget"
+    );
 }
 
 /* WHY: Wait until the file tree has at least N entries (useful for recursive loads). */

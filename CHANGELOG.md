@@ -2,6 +2,53 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.42] - 2026-10-06 23:36:15 (UTC)
+
+### 🚀 Features
+
+- **PowerPoint slideshow**: Present supported PowerPoint files full-screen, with next/previous and first/last slide keyboard navigation.
+
+### ✨ Improvements
+
+- **Workspace explorer responsiveness**: Large workspaces reuse their file-list projection and draw visible rows without copying the entire tree on every frame.
+- **Relevant document tools**: Image, HTML and Office previews disable tools unsupported by their format; PowerPoint retains slideshow controls and PDF retains its table of contents.
+- **Local image loading**: Image decoding runs in the background with a bounded cache, avoiding synchronous reads when switching previews.
+- **Preview setup**: Image, HTML and Office previews no longer load unused code-highlighting dictionaries and themes when they are created.
+- **HTML scrolling**: Smooth scrolling continues forwarding movement after the initial wheel event instead of dropping its remaining motion.
+- **HTML diagnostics responsiveness**: When diagnostic logging is enabled, HTML layout summaries avoid copying large document bodies repeatedly.
+- **Excel filters**: Column headers provide value filters, blank-value selection, and filter clearing.
+- **Office loading responsiveness**: Initial file reads run in the background so a slow disk read does not stop the interface.
+- **Cancelled preview reads**: Closed documents and reset image previews stop further file reads at cancellation checkpoints, freeing their existing loading slots for following previews once the current operating-system read returns.
+- **Repeated large-document reads**: Reduced excess memory allocation while reading large files repeatedly; other document-memory regressions remain under investigation.
+
+### 🐛 Bug Fixes
+
+- **Document memory usage**: Removed an extra copy of document input data retained throughout a viewer session.
+- **Office tabs and memory**: Documents using the same installed font share its data across tabs instead of retaining an extra copy for every tab.
+- **Preview image stability**: Diagram and image textures remain available when image controls are hidden.
+- **Missing image recovery**: If an image folder is temporarily unavailable, the preview retries in the background and recovers after the folder and image become available, without reopening the workspace.
+- **Failed image previews**: Unavailable images show an error without leaving their preview section permanently loading, and retain document navigation positions.
+- **Readable images without file watching**: Images still load when background file-change monitoring is unavailable, and recover from earlier loading failures when the image becomes readable.
+- **Image folder changes**: Notifications from a deleted image folder no longer mark unrelated image previews as failed; recreating the folder restores monitoring of subsequent image updates.
+- **Image updates after fullscreen**: Closing a full-screen image keeps normal previews monitoring external image updates.
+- **Custom cursor updates**: Custom cursors retain the correct size and click position when their appearance changes.
+- **Excel sheet tabs**: Bottom tabs remain visible and clickable without overlapping document diagnostics.
+- **Excel font styles**: Bold and italic cells retain the requested font family when only a regular or partially matching style is installed.
+- **Unsupported display shortcuts**: HTML and Office documents cannot be switched into unsupported split or code-only views using keyboard shortcuts.
+- **Slideshow tab switching**: Switching to an unsupported tab or closing the last document exits the slideshow and restores the previous fullscreen state.
+- **Empty workspace shortcuts**: Slideshow commands are disabled when no document is active, preventing an empty workspace from entering fullscreen.
+- **Closed URL tabs**: A pending download cannot reopen a tab after you close it or replace a new document opened at the same address.
+- **Document links from HTML**: PDF and Office downloads open with their correct document tools, while retaining tab order and pinned state; unsaved HTML remains in its original tab.
+- **Consecutive document links**: Later downloads are no longer discarded when an earlier link changes the tab's document format; returning to HTML restores its normal tools.
+- **Workspace switching**: Downloads started from a previous workspace cannot replace a document restored in the newly opened workspace.
+- **Workspace diagnostics responsiveness**: Diagnostics no longer synchronously read unopened Markdown files on the interface thread.
+
+### Known limitations
+
+- **HTML compatibility**: Some HTML styles and interactions still differ from Chrome. Further rendering improvements are planned for a subsequent release.
+- **Document loading and restart caching**: Office/PDF loading can remain slow, and Office/HTML/PDF rendering is loaded again after restarting the application. Persistent render caching and additional loading improvements are planned for a subsequent release.
+- **Some PowerPoint files**: Certain presentations can still fail with a ZIP local-header error. This remains under investigation.
+
 ## [0.22.41] - 2026-08-26 06:32:56 (UTC)
 
 ### 🚀 Features

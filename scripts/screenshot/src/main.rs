@@ -2,6 +2,7 @@ mod capture;
 mod executor_harness;
 mod fixture;
 mod http_fixture;
+mod memory_observer;
 mod request;
 
 use anyhow::{Context, Result};
@@ -11,7 +12,7 @@ use std::path::PathBuf;
 #[derive(Parser)]
 #[command(
     name = "katana-screenshot",
-    about = "Generic screenshot runner for KatanA"
+    about = "In-process KatanA UI screenshot runner (not packaged-app acceptance)"
 )]
 struct Cli {
     #[arg(long, value_name = "FILE", help = "Path to request JSON file")]
@@ -19,11 +20,11 @@ struct Cli {
     #[arg(long, value_name = "DIR", help = "Output directory for PNG files")]
     output: PathBuf,
     #[arg(
-        long = "binary",
-        value_name = "PATH",
-        help = "Ignored (kept for backward compatibility)"
+        long,
+        default_value_t = false,
+        help = "Collect macOS vmmap/heap diagnostics (diagnostic only)"
     )]
-    _binary: Option<PathBuf>,
+    memory_diagnostics: bool,
 }
 
 fn main() -> Result<()> {
@@ -36,6 +37,7 @@ fn main() -> Result<()> {
         )
         .try_init();
     let cli = Cli::parse();
+    println!("[katana-screenshot] execution_mode=in_process; packaged_binary_tested=false");
 
     let request_path = cli
         .request
@@ -63,8 +65,63 @@ fn main() -> Result<()> {
         &fixture_env.config_dir,
         fixture_env.workspace_dir.as_deref(),
         &output_dir,
+        cli.memory_diagnostics,
     )?;
 
     println!("[katana-screenshot] done");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Cli;
+    use clap::{Parser, error::ErrorKind};
+
+    #[test]
+    fn rejects_packaged_binary_instead_of_silently_testing_in_process() {
+        for option in [
+            vec!["--binary", "/tmp/KatanA"],
+            vec!["--binary=/tmp/KatanA"],
+        ] {
+            let mut args = vec![
+                "katana-screenshot",
+                "--request",
+                "input.json",
+                "--output",
+                "out",
+            ];
+            args.extend(option);
+            let error = Cli::try_parse_from(args)
+                .err()
+                .expect("unsupported binary must fail");
+            assert_eq!(error.kind(), ErrorKind::UnknownArgument);
+        }
+    }
+
+    #[test]
+    fn accepts_in_process_request_without_binary() {
+        let cli = Cli::try_parse_from([
+            "katana-screenshot",
+            "--request",
+            "input.json",
+            "--output",
+            "out",
+        ])
+        .expect("in-process request should parse");
+        assert!(!cli.memory_diagnostics);
+    }
+
+    #[test]
+    fn accepts_optional_memory_diagnostics_flag() {
+        let cli = Cli::try_parse_from([
+            "katana-screenshot",
+            "--request",
+            "input.json",
+            "--output",
+            "out",
+            "--memory-diagnostics",
+        ])
+        .expect("memory diagnostics flag should parse");
+        assert!(cli.memory_diagnostics);
+    }
 }

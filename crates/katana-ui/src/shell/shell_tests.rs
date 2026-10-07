@@ -436,6 +436,124 @@ mod tests {
     }
 
     #[test]
+    fn process_action_preview_panels_stay_closed_for_office_document() {
+        let mut app = make_app();
+        app.state
+            .document
+            .open_documents
+            .push(katana_core::document::Document::new(
+                "/workspace/report.xlsx",
+                String::new(),
+            ));
+        app.state.document.active_doc_idx = Some(0);
+
+        for action in [
+            AppAction::ToggleExportPanel,
+            AppAction::ToggleStoryPanel,
+            AppAction::ToggleToolsPanel,
+            AppAction::ToggleSlideshow,
+        ] {
+            app.process_action(&egui::Context::default(), action);
+        }
+
+        assert!(!app.state.layout.show_export_panel);
+        assert!(!app.state.layout.show_story_panel);
+        assert!(!app.state.layout.show_tools_panel);
+        assert!(!app.state.layout.show_slideshow);
+    }
+
+    #[test]
+    fn process_action_preview_panels_stay_closed_for_html_document() {
+        let mut app = make_app();
+        app.state
+            .document
+            .open_documents
+            .push(katana_core::document::Document::new(
+                "/workspace/report.html",
+                String::new(),
+            ));
+        app.state.document.active_doc_idx = Some(0);
+
+        for action in [
+            AppAction::ToggleToc,
+            AppAction::ToggleExportPanel,
+            AppAction::ToggleStoryPanel,
+            AppAction::ToggleToolsPanel,
+            AppAction::ToggleSlideshow,
+        ] {
+            app.process_action(&egui::Context::default(), action);
+        }
+
+        assert!(!app.state.layout.show_toc);
+        assert!(!app.state.layout.show_export_panel);
+        assert!(!app.state.layout.show_story_panel);
+        assert!(!app.state.layout.show_tools_panel);
+        assert!(!app.state.layout.show_slideshow);
+    }
+
+    fn slideshow_app_for_tab_switch(path: &str, was_fullscreen: bool) -> KatanaApp {
+        let mut app = make_app();
+        for document_path in ["slides.md", path] {
+            app.state
+                .document
+                .open_documents
+                .push(katana_core::document::Document::new_empty(document_path));
+        }
+        app.state.document.active_doc_idx = Some(0);
+        app.tab_previews.push(TabPreviewCache {
+            path: path.into(),
+            pane: PreviewPane::default(),
+            hash: 0,
+        });
+        app.state.layout.show_slideshow = true;
+        app.state.layout.was_os_fullscreen_before_slideshow = was_fullscreen;
+        app
+    }
+
+    fn assert_slideshow_tab_switch(path: &str, action: AppAction, was_fullscreen: bool) {
+        let mut app = slideshow_app_for_tab_switch(path, was_fullscreen);
+        let ctx = egui::Context::default();
+        let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
+            app.process_action(ui.ctx(), action.clone());
+            app.show_system_modals(ui.ctx());
+        });
+        output.textures_delta.clear();
+        assert_eq!(
+            app.state.active_document().expect("active tab").path,
+            PathBuf::from(path)
+        );
+        assert!(!app.state.layout.show_slideshow, "{path} {action:?}");
+        let exits_fullscreen = output.viewport_output.values().any(|viewport| {
+            viewport
+                .commands
+                .iter()
+                .any(|command| matches!(command, egui::ViewportCommand::Fullscreen(false)))
+        });
+        assert_eq!(exits_fullscreen, !was_fullscreen, "{path} {action:?}");
+        app.process_action(&ctx, AppAction::SelectPrevTab);
+        assert_eq!(
+            app.state.active_document().expect("Markdown tab").path,
+            PathBuf::from("slides.md")
+        );
+        app.process_action(&ctx, AppAction::ToggleSlideshow);
+        assert!(
+            app.state.layout.show_slideshow,
+            "supported slideshow can restart"
+        );
+    }
+
+    #[test]
+    fn tab_switch_from_slideshow_to_unsupported_document_restores_fullscreen() {
+        for path in ["report.html", "report.docx", "book.xlsx"] {
+            for action in [AppAction::SelectNextTab, AppAction::SelectPrevTab] {
+                for was_fullscreen in [false, true] {
+                    assert_slideshow_tab_switch(path, action.clone(), was_fullscreen);
+                }
+            }
+        }
+    }
+
+    #[test]
     fn process_action_toggle_settings_toggles_flag() {
         let mut app = make_app();
         assert!(!app.state.layout.show_settings);
@@ -497,7 +615,6 @@ mod tests {
             format!("{:?}", AppAction::None)
         );
     }
-
 }
 
 #[cfg(test)]
@@ -689,7 +806,11 @@ mod tests_extra {
         fn load_workspace_state(&self, _workspace_key: &str) -> Option<String> {
             None
         }
-        fn save_workspace_state(&self, _workspace_key: &str, _state_json: &str) -> anyhow::Result<()> {
+        fn save_workspace_state(
+            &self,
+            _workspace_key: &str,
+            _state_json: &str,
+        ) -> anyhow::Result<()> {
             Ok(())
         }
     }
@@ -988,18 +1109,20 @@ mod tests_extra {
         wait_for_explorer(&mut app);
         app.save_workspace_state();
 
-        assert!(!app
-            .state
-            .global_workspace
-            .state()
-            .histories
-            .contains(&path_text));
-        assert!(!app
-            .state
-            .global_workspace
-            .state()
-            .persisted
-            .contains(&path_text));
+        assert!(
+            !app.state
+                .global_workspace
+                .state()
+                .histories
+                .contains(&path_text)
+        );
+        assert!(
+            !app.state
+                .global_workspace
+                .state()
+                .persisted
+                .contains(&path_text)
+        );
         assert_ne!(
             app.state
                 .config
@@ -1010,14 +1133,19 @@ mod tests_extra {
                 .as_deref(),
             Some(path_text.as_str())
         );
-        assert!(!app
-            .state
-            .global_workspace
-            .state()
-            .open_workspace_tabs
-            .contains(&path_text));
+        assert!(
+            !app.state
+                .global_workspace
+                .state()
+                .open_workspace_tabs
+                .contains(&path_text)
+        );
         assert_ne!(
-            app.state.global_workspace.state().active_workspace.as_deref(),
+            app.state
+                .global_workspace
+                .state()
+                .active_workspace
+                .as_deref(),
             Some(path_text.as_str())
         );
     }
@@ -1036,10 +1164,8 @@ mod tests_extra {
             Some(PathBuf::from("/workspace-a")),
         ));
         app.state.search.results = vec![PathBuf::from("/workspace-a/file.md")];
-        app.state.search.md_last_params = Some((
-            SearchParams::default(),
-            Some(PathBuf::from("/workspace-a")),
-        ));
+        app.state.search.md_last_params =
+            Some((SearchParams::default(), Some(PathBuf::from("/workspace-a"))));
         app.state.search.md_results = vec![katana_core::search::SearchResult {
             file_path: PathBuf::from("/workspace-a/file.md"),
             line_number: 0,
@@ -1097,34 +1223,38 @@ mod tests_extra {
             app.state.global_workspace.state().histories,
             vec!["/workspace/real".to_string()]
         );
-        assert!(app
-            .state
-            .config
-            .settings
-            .settings()
-            .workspace
-            .last_workspace
-            .is_none());
-        assert!(app
-            .state
-            .config
-            .settings
-            .settings()
-            .workspace
-            .open_tabs
-            .is_empty());
-        assert!(app
-            .state
-            .global_workspace
-            .state()
-            .open_workspace_tabs
-            .is_empty());
-        assert!(app
-            .state
-            .global_workspace
-            .state()
-            .active_workspace
-            .is_none());
+        assert!(
+            app.state
+                .config
+                .settings
+                .settings()
+                .workspace
+                .last_workspace
+                .is_none()
+        );
+        assert!(
+            app.state
+                .config
+                .settings
+                .settings()
+                .workspace
+                .open_tabs
+                .is_empty()
+        );
+        assert!(
+            app.state
+                .global_workspace
+                .state()
+                .open_workspace_tabs
+                .is_empty()
+        );
+        assert!(
+            app.state
+                .global_workspace
+                .state()
+                .active_workspace
+                .is_none()
+        );
         assert!(matches!(app.pending_action, AppAction::None));
     }
 
@@ -1194,12 +1324,13 @@ mod tests_extra {
             app.state.global_workspace.state().open_workspace_tabs,
             vec![existing_workspace_text.clone()]
         );
-        assert!(app
-            .state
-            .global_workspace
-            .state()
-            .active_workspace
-            .is_none());
+        assert!(
+            app.state
+                .global_workspace
+                .state()
+                .active_workspace
+                .is_none()
+        );
         assert!(matches!(
             app.pending_action,
             AppAction::OpenWorkspace(ref path)
@@ -1444,8 +1575,10 @@ mod tests_extra {
         let mut app = setup_test_app();
         app.state.update.checking = true;
         let (tx, rx) = std::sync::mpsc::channel();
-        tx.send(Err(katana_core::update::CheckUpdateError::NetworkUnreachable))
-            .unwrap();
+        tx.send(Err(
+            katana_core::update::CheckUpdateError::NetworkUnreachable,
+        ))
+        .unwrap();
         app.update_rx = Some(rx);
 
         let ctx = eframe::egui::Context::default();
@@ -1500,7 +1633,6 @@ mod tests_extra {
         assert!(app.show_update_dialog);
         assert!(app.update_notified);
     }
-
 
     #[test]
     pub(crate) fn export_html_to_tmp_writes_html_file() {
@@ -1621,7 +1753,6 @@ mod tests_extra {
         let _ = std::fs::remove_file(&path);
     }
 
-
     #[test]
     fn export_as_html_creates_task_with_open_on_complete() {
         let mut app = make_app();
@@ -1670,15 +1801,16 @@ mod tests_extra {
             .expect("export must succeed");
 
         /* WHY: On Windows, canonicalize() adds \\?\ UNC prefix and short path names
-           (RUNNER~1) remain unresolved in generated filenames, so starts_with() can
-           fail between canonical forms. Comparing parent() is the correct semantic check. */
+        (RUNNER~1) remain unresolved in generated filenames, so starts_with() can
+        fail between canonical forms. Comparing parent() is the correct semantic check. */
         let path_parent = path.parent().expect("exported file must have parent");
         let temp = std::env::temp_dir();
         assert!(
-            path_parent == temp
-                || path_parent.canonicalize().ok() == temp.canonicalize().ok(),
+            path_parent == temp || path_parent.canonicalize().ok() == temp.canonicalize().ok(),
             "path must be under temp dir, got {} (parent: {}), temp: {}",
-            path.display(), path_parent.display(), temp.display()
+            path.display(),
+            path_parent.display(),
+            temp.display()
         );
         assert!(path.exists(), "HTML file must exist at {}", path.display());
 
@@ -1760,12 +1892,16 @@ mod tests_extra {
         }
     }
 
-
     #[test]
     pub(crate) fn export_html_to_tmp_path_is_canonicalizable() {
         let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
-        let path = ShellLogicOps::export_named_html_to_tmp("# Test", "katana_canon_test.html", preset, None)
-            .expect("generation must succeed");
+        let path = ShellLogicOps::export_named_html_to_tmp(
+            "# Test",
+            "katana_canon_test.html",
+            preset,
+            None,
+        )
+        .expect("generation must succeed");
         let canonical = path
             .canonicalize()
             .unwrap_or_else(|e| panic!("path {} must be canonicalizable: {e}", path.display()));
@@ -1780,8 +1916,13 @@ mod tests_extra {
     #[test]
     fn export_html_file_url_is_valid_and_openable() {
         let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
-        let path = ShellLogicOps::export_named_html_to_tmp("# URL Test", "katana_url_test.html", preset, None)
-            .expect("generation must succeed");
+        let path = ShellLogicOps::export_named_html_to_tmp(
+            "# URL Test",
+            "katana_url_test.html",
+            preset,
+            None,
+        )
+        .expect("generation must succeed");
 
         let url = if cfg!(windows) {
             format!("file:///{}", path.display().to_string().replace('\\', "/"))

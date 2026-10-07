@@ -104,10 +104,14 @@ pub(crate) const PREVIEW_CONTENT_PADDING: i8 = 12;
 impl eframe::App for KatanaApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
+        if crate::startup_heartbeat::StartupHeartbeat::is_enabled() {
+            ctx.request_repaint_after(std::time::Duration::from_millis(100));
+        }
         crate::widgets::InteractionFacade::begin_frame(&ctx);
         let theme_colors = self.poll_and_prepare(&ctx);
 
         if !self.show_main_panels(ui, &theme_colors) {
+            crate::startup_heartbeat::StartupHeartbeat::record_completed_frame();
             return;
         }
 
@@ -129,6 +133,7 @@ impl eframe::App for KatanaApp {
         crate::views::app_frame::AppFrameOps::intercept_url_commands(&ctx, self);
 
         self.show_splash(&ctx);
+        crate::startup_heartbeat::StartupHeartbeat::record_completed_frame();
     }
 
     fn on_exit(&mut self) {

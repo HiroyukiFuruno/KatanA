@@ -1,0 +1,14 @@
+{
+  "schema_version": "1",
+  "name": "ambiguous-viewport-regression",
+  "fixture": { "workspace_files": [] },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1280, "height": 900 },
+      "logical_viewport": { "width": 1281.0, "height": 901.0 },
+      "wait_seconds": 0.0
+    },
+    { "type": "quit" }
+  ]
+}

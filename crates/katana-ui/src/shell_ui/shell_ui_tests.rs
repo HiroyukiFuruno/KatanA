@@ -49,6 +49,12 @@ mod tests {
         }
     }
 
+    fn heartbeat_frame(path: &Path) -> Option<u64> {
+        std::fs::read_to_string(path).ok()?.lines().find_map(|line| {
+            line.strip_prefix("frame=")?.parse::<u64>().ok()
+        })
+    }
+
     fn flatten_shapes<'a>(
         shapes: impl IntoIterator<Item = &'a egui::epaint::ClippedShape>,
     ) -> Vec<&'a egui::epaint::Shape> {
@@ -120,6 +126,72 @@ mod tests {
             katana_platform::workspace::InMemoryWorkspaceRepository::default(),
         ));
         KatanaApp::new(state)
+    }
+
+    #[test]
+    fn terms_modal_advances_startup_heartbeat_without_acceptance() {
+        const CHILD_SENTINEL: &str = "KATANA_UI_TERMS_HEARTBEAT_CHILD_V1";
+        if std::env::var_os(CHILD_SENTINEL).as_deref() == Some(std::ffi::OsStr::new("1")) {
+            let heartbeat_path = PathBuf::from(
+                std::env::var_os("KATANA_STARTUP_HEARTBEAT")
+                    .expect("child heartbeat path must be provided"),
+            );
+            let ctx = test_context();
+            let app_state = AppState::new(
+                Default::default(),
+                Default::default(),
+                Default::default(),
+                Arc::new(katana_platform::InMemoryCacheService::default()),
+            );
+            let mut app = KatanaApp::new(app_state);
+            let mut frame = eframe::Frame::_new_kittest();
+
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ui| {
+                app.ui(ui, &mut frame);
+            });
+            let first_frame = heartbeat_frame(&heartbeat_path)
+                .expect("Terms modal must paint a first frame");
+
+            let mut progressed = None;
+            for _ in 0..2_000 {
+                std::thread::yield_now();
+                let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ui| {
+                    app.ui(ui, &mut frame);
+                });
+                if let Some(current_frame) = heartbeat_frame(&heartbeat_path)
+                    && current_frame > first_frame
+                {
+                    progressed = Some(current_frame);
+                    break;
+                }
+            }
+
+            assert!(
+                progressed.is_some(),
+                "Terms modal heartbeat did not advance within the frame bound"
+            );
+            assert!(app.state.config.settings.settings().terms_accepted_version.is_none());
+            return;
+        }
+
+        let heartbeat = tempfile::NamedTempFile::new().unwrap();
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "shell_ui::tests::terms_modal_advances_startup_heartbeat_without_acceptance",
+                "--nocapture",
+                "--test-threads=1",
+            ])
+            .env("KATANA_STARTUP_HEARTBEAT", heartbeat.path())
+            .env(CHILD_SENTINEL, "1")
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "child UI heartbeat test failed: stdout={} stderr={}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
     }
 
     fn raw_input_with_dropped_path(path: PathBuf) -> egui::RawInput {

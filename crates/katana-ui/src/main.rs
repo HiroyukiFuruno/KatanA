@@ -102,6 +102,8 @@ fn main() -> eframe::Result<()> {
             katana_ui::i18n::I18nOps::set_language(&runtime_language);
             katana_ui::shell_ui::ShellUiOps::update_native_menu_strings_from_i18n();
 
+            /* WHY: 更新元の整理は実アプリ起動の責務とし、文書検査用の生成では実行しない。 */
+            katana_core::update::UpdateCleanupOps::perform_background_cleanup();
             let mut app = KatanaApp::new(state);
 
             let icon_png = include_bytes!("../../../assets/icon.iconset/icon_128x128.png");
@@ -132,6 +134,27 @@ use gui_setup::GuiSetupOps;
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn update_cleanup_belongs_to_native_host_not_app_constructor() {
+        let constructor = include_str!("shell/mod.rs");
+        assert!(!constructor.contains("UpdateCleanupOps::perform_background_cleanup"));
+        let host = include_str!("main.rs")
+            .split("Box::new(|cc| {")
+            .nth(1)
+            .expect("native AppCreator")
+            .split("Ok(Box::new(app))")
+            .next()
+            .expect("native AppCreator body");
+        let cleanup = "UpdateCleanupOps::perform_background_cleanup";
+        assert_eq!(host.matches(cleanup).count(), 1);
+        assert!(
+            host.find(cleanup).expect("host cleanup")
+                < host
+                    .find("KatanaApp::new(state)")
+                    .expect("host app creation")
+        );
+    }
 
     fn init_tracing() {
         let _ = tracing_subscriber::fmt().with_test_writer().try_init();
@@ -336,11 +359,13 @@ mod tests {
     }
 
     #[test]
-    fn test_emoji_font_is_not_in_proportional_family() {
+    fn test_emoji_font_size_limit_is_respected_in_proportional_family() {
         init_tracing();
-        if GuiSetupOps::load_first_font(EMOJI_CANDIDATES).is_none() {
+        let Some((emoji_name, emoji_data)) = GuiSetupOps::load_first_font(EMOJI_CANDIDATES) else {
             return;
-        }
+        };
+        let expected_present = emoji_data.len() <= 32 * 1024 * 1024;
+        drop(emoji_data);
         let fonts =
             GuiSetupOps::build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, EMOJI_CANDIDATES);
         let proportional = fonts
@@ -348,19 +373,21 @@ mod tests {
             .families
             .get(&egui::FontFamily::Proportional)
             .expect("Proportional family missing");
-        let emoji_name = GuiSetupOps::load_first_font(EMOJI_CANDIDATES).unwrap().0;
-        assert!(
+        assert_eq!(
             proportional.contains(&emoji_name),
-            "Preview emoji should be included as UI fallback fonts in Proportional family"
+            expected_present,
+            "emoji font presence must follow the 32 MiB size limit"
         );
     }
 
     #[test]
-    fn test_emoji_font_is_not_in_monospace_family() {
+    fn test_emoji_font_size_limit_is_respected_in_monospace_family() {
         init_tracing();
-        if GuiSetupOps::load_first_font(EMOJI_CANDIDATES).is_none() {
+        let Some((emoji_name, emoji_data)) = GuiSetupOps::load_first_font(EMOJI_CANDIDATES) else {
             return;
-        }
+        };
+        let expected_present = emoji_data.len() <= 32 * 1024 * 1024;
+        drop(emoji_data);
         let fonts =
             GuiSetupOps::build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, EMOJI_CANDIDATES);
         let monospace = fonts
@@ -368,10 +395,10 @@ mod tests {
             .families
             .get(&egui::FontFamily::Monospace)
             .expect("Monospace family missing");
-        let emoji_name = GuiSetupOps::load_first_font(EMOJI_CANDIDATES).unwrap().0;
-        assert!(
+        assert_eq!(
             monospace.contains(&emoji_name),
-            "Preview emoji should be included as UI fallback fonts in Monospace family"
+            expected_present,
+            "emoji font presence must follow the 32 MiB size limit"
         );
     }
 

@@ -47,6 +47,11 @@ fn setup_harness_with_json_repo(settings_path: &std::path::Path) -> Harness<'sta
             .settings_mut()
             .updates
             .previous_app_version = Some(katana_ui::about_info::APP_VERSION.to_string());
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::JsonWorkspaceRepository::new(
+                path.with_file_name("workspace.json"),
+            ),
+        ));
 
         let mut app = KatanaApp::new(state);
         app.skip_splash();
@@ -132,7 +137,7 @@ fn test_persistence_multiple_changes_accumulate() {
 fn test_ui_all_languages_load_successfully() {
     /* WHY: UI stress test: verify that the application can hot-switch between all supported languages without crashing or leaving empty UI components. */
     let _guard = crate::integration::lock_serial_test_mutex();
-    let settings_path = unique_temp_path("katana_test_langs").with_extension("json");
+    let settings_path = unique_temp_path("katana_test_langs").join("settings.json");
     let mut harness = setup_harness_with_json_repo(&settings_path);
     harness.step();
 
