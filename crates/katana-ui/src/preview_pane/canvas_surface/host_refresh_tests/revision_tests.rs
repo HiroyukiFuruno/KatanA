@@ -7,14 +7,18 @@ use super::{ActionOps, CanvasRefreshTest, CanvasTest};
 const ORIGINAL_TEXT: &str = "original canvas revision";
 const UPDATED_TEXT: &str = "updated canvas revision";
 
-struct RevisionCase;
+pub(super) struct RevisionCase;
 
 impl RevisionCase {
-    fn source(text: &str, x: i64, width: i64) -> String {
+    pub(super) fn source(text: &str, x: i64, width: i64) -> String {
         serde_json::json!({"nodes":[{"id":"a","type":"text","x":x,"y":0,"width":width,"height":80,"text":text}]}).to_string()
     }
 
-    fn app(path: &std::path::Path, source: &str, ctx: &egui::Context) -> crate::shell::KatanaApp {
+    pub(super) fn app(
+        path: &std::path::Path,
+        source: &str,
+        ctx: &egui::Context,
+    ) -> crate::shell::KatanaApp {
         std::fs::write(path, source).expect("initial Canvas file");
         let mut app = CanvasRefreshTest::app(path);
         CanvasRefreshTest::finish(&mut app, ctx);
@@ -55,13 +59,17 @@ impl RevisionCase {
         CanvasTest::frame(surface, ctx, vec![])
     }
 
-    fn assert_updated_document(app: &crate::shell::KatanaApp, text: &str, geometry: (f64, f64)) {
+    pub(super) fn assert_updated_document(
+        app: &crate::shell::KatanaApp,
+        text: &str,
+        geometry: (f64, f64),
+    ) {
         let node = &Self::ready_model(app).nodes[0];
         assert_eq!(node.content, NodeContent::Text { text: text.into() });
         assert_eq!((node.geometry.x, node.geometry.width), geometry);
     }
 
-    fn assert_updated_frame(
+    pub(super) fn assert_updated_frame(
         app: &mut crate::shell::KatanaApp,
         ctx: &egui::Context,
         visible: &str,
@@ -75,7 +83,7 @@ impl RevisionCase {
         assert!(!app.tab_previews[0].pane.is_any_pending());
     }
 
-    fn assert_failed(app: &mut crate::shell::KatanaApp, ctx: &egui::Context) {
+    pub(super) fn assert_failed(app: &mut crate::shell::KatanaApp, ctx: &egui::Context) {
         assert!(matches!(
             &Self::surface(app).state,
             CanvasLoadState::Failed(CanvasLoadError::InvalidCanvas(_))

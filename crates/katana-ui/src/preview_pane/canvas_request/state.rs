@@ -7,6 +7,9 @@ use super::input::CanvasInput;
 use eframe::egui;
 use katana_core::canvas::{CanvasDocument, CanvasError};
 
+#[cfg(test)]
+pub(super) mod refresh_test_sync;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum CanvasRequestError {
     WorkerStart(std::io::ErrorKind),

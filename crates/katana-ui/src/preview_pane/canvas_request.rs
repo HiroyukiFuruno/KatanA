@@ -12,6 +12,9 @@ mod worker;
 
 pub(crate) use state::{CanvasParseResult, CanvasRequestError};
 
+#[cfg(test)]
+pub(in crate::preview_pane) use state::refresh_test_sync::wait_until_completed;
+
 use input::CanvasInput;
 use pool::{CanvasPool, SharedPool};
 use state::RequestState;
@@ -23,6 +26,7 @@ pub(crate) struct CanvasParseRequest {
     request: Arc<RequestState>,
     receiver: Receiver<CanvasParseResult>,
     shared: Arc<SharedPool>,
+    refresh_requested: bool,
 }
 
 impl CanvasParseRequest {
@@ -68,7 +72,16 @@ impl CanvasParseRequest {
             request,
             receiver,
             shared: Arc::clone(&pool.shared),
+            refresh_requested: false,
         })
+    }
+
+    pub(crate) fn request_refresh(&mut self) {
+        self.refresh_requested = true;
+    }
+
+    pub(crate) fn refresh_requested(&self) -> bool {
+        self.refresh_requested
     }
 
     pub(crate) fn poll(&self) -> Result<Option<CanvasParseResult>, CanvasRequestError> {

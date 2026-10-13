@@ -9,7 +9,9 @@ const CANVAS_POLL_INTERVAL: std::time::Duration = std::time::Duration::from_mill
 impl PreviewPane {
     pub(crate) fn update_canvas_path(&mut self, path: &std::path::Path, force: bool) {
         let preserve = !force && self.has_canvas_surface() && self.md_file_path == path;
-        if preserve && self.canvas_request.is_some() {
+        if preserve && let Some(request) = &mut self.canvas_request {
+            /* WHY: 実workerが旧本文を読んだ後の通知も集約し、結果適用後に最新本文を再読込する。 */
+            request.request_refresh();
             return;
         }
         let previous = if preserve {
@@ -91,8 +93,7 @@ impl PreviewPane {
         if result.generation != self.session_generation {
             return;
         }
-        self.canvas_request = None;
-        self.is_loading = false;
+        let refresh_requested = self.finish_canvas_request();
         match result.result {
             Ok(document) => {
                 if let Some(surface) = &mut self.canvas_surface {
@@ -101,17 +102,32 @@ impl PreviewPane {
             }
             Err(error) => self.fail_canvas_request(error),
         }
+        self.restart_canvas_refresh(refresh_requested);
     }
 
     fn fail_canvas_request(&mut self, error: CanvasRequestError) {
-        self.canvas_request = None;
-        self.is_loading = false;
+        let refresh_requested = self.finish_canvas_request();
         if let Some(surface) = &mut self.canvas_surface {
             let error = match error {
                 CanvasRequestError::InvalidCanvas(error) => CanvasLoadError::InvalidCanvas(error),
                 error => CanvasLoadError::Request(error),
             };
             surface.set_error(error);
+        }
+        self.restart_canvas_refresh(refresh_requested);
+    }
+
+    fn finish_canvas_request(&mut self) -> bool {
+        self.is_loading = false;
+        self.canvas_request
+            .take()
+            .is_some_and(|request| request.refresh_requested())
+    }
+
+    fn restart_canvas_refresh(&mut self, refresh_requested: bool) {
+        if refresh_requested {
+            let path = self.md_file_path.clone();
+            self.update_canvas_path(&path, false);
         }
     }
 
