@@ -9,6 +9,7 @@ use std::path::Path;
 use std::time::{Duration, Instant};
 
 const CHILD_ENV: &str = "KATANA_LOCAL_IMAGE_FIFO_CHILD";
+const CHILD_ACTION_ENV: &str = "KATANA_LOCAL_IMAGE_FIFO_ACTION";
 const TEST_BACKGROUND: egui::Color32 = crate::theme_bridge::WHITE;
 const WAIT_SECONDS: u64 = 5;
 const FOLLOWUP_PIXEL: [u8; 4] = [0, 255, 0, 255];
@@ -16,6 +17,15 @@ const SOURCE_PIXEL: [u8; 4] = [255, 0, 0, 255];
 
 #[test]
 fn reset_does_not_leave_fifo_decode_blocking_followup() {
+    run_fifo_child("reset");
+}
+
+#[test]
+fn invalidate_path_does_not_leave_fifo_decode_blocking_followup() {
+    run_fifo_child("invalidate_path");
+}
+
+fn run_fifo_child(action: &str) {
     let child_test = format!(
         "{}::fifo_decode_child",
         module_path!()
@@ -26,6 +36,7 @@ fn reset_does_not_leave_fifo_decode_blocking_followup() {
     let output = ProcessService::create_command(executable.to_str().expect("executable path"))
         .args(["--exact", &child_test, "--nocapture"])
         .env(CHILD_ENV, "1")
+        .env(CHILD_ACTION_ENV, action)
         .output()
         .expect("spawn FIFO child test");
     assert!(String::from_utf8_lossy(&output.stdout).contains("running 1 test"));
@@ -50,7 +61,16 @@ fn fifo_decode_child() {
     let loader = LocalImageLoader::default();
     request_until_pending(&loader, &source);
     let mut writer = open_fifo_writer(&loader, &source);
-    loader.reset();
+    let generation = loader.generation();
+    match std::env::var(CHILD_ACTION_ENV).as_deref() {
+        Ok("reset") => loader.reset(),
+        Ok("invalidate_path") => loader.invalidate_path(&source),
+        Ok(action) => panic!("unknown FIFO child action: {action}"),
+        Err(error) => panic!("missing FIFO child action: {error}"),
+    }
+    if std::env::var(CHILD_ACTION_ENV).as_deref() == Ok("invalidate_path") {
+        assert_eq!(loader.generation(), generation);
+    }
     write_png_payload(&mut writer, &payload);
 
     image::RgbaImage::from_pixel(1, 1, image::Rgba(FOLLOWUP_PIXEL))

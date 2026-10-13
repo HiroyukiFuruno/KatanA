@@ -11,6 +11,42 @@ pub(super) struct Work {
     pub(super) revision: u64,
 }
 
+impl Work {
+    fn is_cancelled(&self) -> bool {
+        let Some(owner) = self.owner.upgrade() else {
+            return true;
+        };
+        if owner.generation.load(std::sync::atomic::Ordering::Acquire) != self.generation {
+            return true;
+        }
+        /* WHY: ファイル更新は世代を変えないため、同じ所有者の旧版読込も取り消す。 */
+        owner.path_revisions.lock().map_or(true, |revisions| {
+            revisions.get(&self.key.path).copied().unwrap_or(0) != self.revision
+        })
+    }
+
+    fn run(self) {
+        let cancellation = ReadCancellation::new(|| self.is_cancelled());
+        if cancellation.check().is_err() {
+            return;
+        }
+        let image = decode::ImageDecodeOps::load_image(
+            Path::new(&self.key.path),
+            self.key.background,
+            &cancellation,
+        );
+        if cancellation.check().is_err() {
+            return;
+        }
+        let _ = self.result_tx.send(ResultMessage {
+            key: self.key,
+            generation: self.generation,
+            revision: self.revision,
+            image,
+        });
+    }
+}
+
 pub(super) struct ResultMessage {
     pub(super) key: super::RequestKey,
     pub(super) generation: u64,
@@ -31,40 +67,7 @@ impl GlobalPool {
                 .name("katana-local-image-loader".into())
                 .spawn(move || {
                     while let Ok(work) = request_rx.recv() {
-                        let Some(owner) = work.owner.upgrade() else {
-                            continue;
-                        };
-                        if owner.generation.load(std::sync::atomic::Ordering::Acquire)
-                            != work.generation
-                        {
-                            continue;
-                        }
-                        drop(owner);
-                        let owner = work.owner.clone();
-                        let generation = work.generation;
-                        let cancellation = ReadCancellation::new(move || {
-                            owner.upgrade().is_none_or(|owner| {
-                                owner.generation.load(std::sync::atomic::Ordering::Acquire)
-                                    != generation
-                            })
-                        });
-                        if cancellation.check().is_err() {
-                            continue;
-                        }
-                        let image = decode::ImageDecodeOps::load_image(
-                            Path::new(&work.key.path),
-                            work.key.background,
-                            &cancellation,
-                        );
-                        if cancellation.check().is_err() {
-                            continue;
-                        }
-                        let _ = work.result_tx.send(ResultMessage {
-                            key: work.key,
-                            generation: work.generation,
-                            revision: work.revision,
-                            image,
-                        });
+                        work.run();
                     }
                 });
             worker.ok().map(|_| GlobalPool { request_tx })
