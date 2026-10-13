@@ -1,0 +1,46 @@
+## Definition of Ready (DoR)
+
+- **前提条件**:
+  - `desktop-viewer-polish-v0.1.0` から `v0.5.0` の内容が全て `main` ブランチに統合（マージ）されていること。
+  - v0.1.0からv0.5.0までの全てのTask（OpenSpec変更）が `archive` ディレクトリへ移行（アーカイブ完了）されていること。ただし、v1.x.x 系の change（`in-app-auto-update-v1.1.0` 等）はアーカイブ対象外とし、そのまま残す。
+- **タスクの順序性**:
+  - 全ての先行Taskがアーカイブされていることを確認した上で、リリース前最終検証を実施する。
+
+## Branch Rule
+
+Tasks Grouped by ## = Adhere unconditionally to the branching standard defined in the `/openspec-branching` workflow (`.agents/workflows/openspec-branching.md`) throughout your implementation sessions.
+
+---
+
+## 1. 最終検証 (v1.0.0 正式リリースへ)
+
+> [!CAUTION]
+> **【AIエージェントへの厳重警告】**
+> 過去のリリースにおいて、AIが以下の致命的な違反を犯しました。
+>
+> 1. `just VERSION=x.y.z release` が失敗した際、勝手に `git tag -a` などの代替コマンドを実行し、タスクを強行完了(`[ ]`)として虚偽入力した。
+> 2. `openspec` のアーカイブ(`/opsx-archive`)を忘却し、不要なディレクトリを残したままリリースに進んだ。
+> 3. カバレッジ低下（エラーハンドリングパスのテスト漏れ）を放置した。
+> 4. `process_rules.md` で指定された「日本語での報告・コミット」を無視し英語で行った。
+>
+> これらはプロセスの信頼性を根底から覆す行為です。以下の手順は**絶対に独自解釈でスキップ・代替実行せず**、一つずつ確実に完了させてください。エラー発生時は即座に中断し、人間に報告すること。
+
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
+- [ ] 1.1 アプリをビルド起動し、v0.1.0〜v0.5.0で追加した全機能を通したE2E操作（手動テスト）を実施し、表示乱れやクラッシュがないか確認する
+- [ ] 1.2 `cargo clippy --workspace -- -D warnings` と `cargo fmt --all --check` が通ることを確認する
+- [ ] 1.3 `cargo llvm-cov` などのカバレッジ計測において、**すべての追加機能・エラーパスが網羅されているか**再監査し、100%（または既存基準）をクリアしていることを確認する
+- [ ] 1.4 macOS 環境固有の挙動（メニュー、アイコン表示）に問題がないかを最終確認する
+- [ ] 1.5 **（重要）リリース・ビルドの前にアーカイブを実行:** `.agents/skills/openspec-archive-change/SKILL.md` またはそれに準ずる手法で、この `v1.0.0` ディレクトリを解放（退避・コミット）する。
+- [ ] 1.6 Run `just VERSION=1.0.0 release` to prepare versions, commit with GPG signature, and create a PR to master (Release will be automated on merge)
+
+### Definition of Done (DoD)
+
+- [ ] 全機能を通した手動検証で致命的なバグがなく、利用に耐えうることが確認されている。
+- [ ] `just check-local` （フォーマット、リント、テスト、カバレッジ）が警告なし・exit 0 で完全にパスしている。
+- [ ] プロダクション利用可能な DMG ビルドが作成でき、GitHub Releases への登録準備が整っている。
+- [ ] （最重要）全ての先行タスクを含め、この `v1.0.0` のOpenSpecも完全に解放（`.gitignore` 解除によるGit管理下への追加）された状態になっていること。
+- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).

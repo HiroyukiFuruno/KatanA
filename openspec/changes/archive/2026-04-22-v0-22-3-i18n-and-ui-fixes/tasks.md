@@ -1,0 +1,134 @@
+## Definition of Ready (DoR)
+
+- [x] v0.22.1 のリリースに向けた致命的不具合（フィルター、フォーカス）の修正がデリバリー済みであること
+- [x] `proposal.md` と `design.md` がレビュー済みであること
+- [x] 劣後させたタスクの要件が本 tasks.md に正しく統合されていること
+
+## Branch Rule
+
+本タスクでは、以下のブランチ運用を適用します：
+
+- **標準（Base）ブランチ**: `v0-22-3-i18n-and-ui-fixes`
+- **作業ブランチ**: 標準は `v0-22-3-i18n-and-ui-fixes-task-x` (xはタスク番号)
+
+実装完了後は `/openspec-delivery` を使用して Base ブランチへPRを作成・マージしてください。
+
+---
+
+## Tasks
+
+### 1. Command Palette Scroll Behavior Fix (UI/UX)
+
+**Branch**: `v0-22-3-i18n-and-ui-fixes-task-1`
+
+- [x] 1.1 TDD (RED): `crates/katana-ui/src/views/modals/command_palette_scroll_tests.rs` 等の統合レイアウトテストを新規作成し、100件以上のダミーコマンドを表示した際、スクロール領域の `content_size` がウィンドウ制限を超え、スクロールバーが表示される（または正しく追従する）ことを IT で検証し、不具合を再現させる。
+- [x] 1.2 `crates/katana-ui/src/views/modals/command_palette.rs` のレイアウト実装（`egui::ScrollArea`）を修正。`max_height` やレイアウト制約の設定ミスを解消する。
+- [x] 1.3 TDD (GREEN): 1.1 のテストを実行し、パスすることを確認。
+- [x] 1.4 Cmd+Shift+P 押下時に `>` を付与しKatanaコマンドのみに限定する機能を追加。Cmd+P の場合はKatanaコマンドを除外するように改修。
+
+### 2. Tab Navigation Layout Truncation Fix (UI/UX)
+
+**Branch**: `release/v0.22.3-task-2`
+
+- [x] 100件以上の項目があってもリストがウィンドウを突き抜けず、スクロールが可能であること
+- [x] 全テスト（IT）がパスすること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+
+---
+
+## 3. ショートカット設定 UI の再設計 (v0.22.1 からの引継ぎ)
+
+### Definition of Ready (DoR)
+
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
+
+- [x] 2.1 `shortcuts.rs` から Edit ボタンを廃止し、行全体クリックとペンSVGアイコンによる録音トリガーに変更する
+- [x] 2.2 キー表示部分に OSネイティブキーSVGアイコン（⌘/⇧/⌥/Ctrl/Alt）を表示するロジックを実装する
+- [x] 2.3 `ShortcutCaptureModal`（録音専用モーダル）を新規実装する（Enterで確定、Escでキャンセル）
+- [x] 2.4 録音中は `egui` の `set_key_filter` を用いて Esc/Enter 以外の入力をブロックする
+- [x] 2.5 i18n キーを追加する（EN + JA 同時）: `settings.shortcuts.capture_prompt`, `settings.shortcuts.confirm_key`, `settings.shortcuts.cancel_key`
+- [x] 2.6 ショートカット設定画面に検索バーを追加する
+- [x] 2.7 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 2.8 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+
+### Definition of Done (DoD)
+
+- [x] 編集ボタンが削除され、録音モーダルが起動すること
+- [x] OSネイティブキーアイコンが正しく表示されること
+- [x] `make check` がパスすること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+
+---
+
+## 3. i18n 翻訳の完全補完
+
+### Definition of Ready (DoR)
+
+- [x] Ensure the previous task completed its full delivery cycle.
+- [x] Base branch is synced.
+
+- [x] 3.1 画像で報告された英語のままのラベルを、日本語（`ja.json`）および全11言語に翻訳追加する
+  - `Close Document`, `Restore Closed Document`, `Global Search`, `Document Search`, `Toggle Explorer Filter` 等
+- [x] 3.2 デフォルトショートカットの割り当て（Task 3.1〜3.15 の内容）
+  - `file.close_workspace` → `primary+Shift+W`
+  - `view.refresh_explorer` → `primary+Shift+R`
+  - その他 `edit.*` 系ショートカットの追加
+- [x] 3.3 割り当て後の重複チェック: `debug_assert!` による実行時重複検知の確認。
+
+### Definition of Done (DoD)
+
+- [x] コマンドパレットや設定画面で英語フォールバックが発生していないこと
+- [x] `make check` がパスすること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+
+---
+
+## 4. ShortcutAST Linter (静的重複検知) (v0.22.1 からの引継ぎ)
+
+### Definition of Ready (DoR)
+
+- [x] Ensure the previous task completed its full delivery cycle.
+
+- [x] 4.1 `katana-linter/src/rules/domains/shortcut/` を作成し、コマンド定義ファイルからショートカット重複を検知するルールを実装。
+- [x] 4.2 Makefile の `ast-lint` ターゲットに統合。
+
+### Definition of Done (DoD)
+
+- [x] `make ast-lint` でショートカットの重複が検知可能であること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+
+---
+
+## 5. ファイルタイプアイコンの改善 (UI/UX)
+
+**Branch**: `release/v0.22.3-task-6`
+
+- [x] 5.1 katana専用アイコン `html.svg`・`pdf.svg`・`image.svg` を新設
+- [x] 5.2 各ベンダーから対応アイコンをダウンロード
+- [x] 5.3 `icon/types.rs` に `Html`・`Pdf`・`Image` を登録
+- [x] 5.4 `icon/pack/mod.rs` のマクロに3アイコンを追加
+- [x] 5.5 `side_panel_export.rs` のアイコン参照を差し替え
+- [x] 5.6 `make check-light` all pass
+
+### Definition of Done (DoD)
+
+- [x] `make check-light` exit code 0
+- [x] Execute `/openspec-delivery`
+
+---
+
+## 6. Final Verification & Release Work
+
+- [x] 6.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [x] 6.2 Ensure `make check` passes with exit code 0
+- [x] 6.3 Create PR from Base Feature Branch targeting `master`
+- [x] 6.4 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
+- [x] 6.5 Merge into master (`gh pr merge --merge --delete-branch`)
+- [x] 6.6 Create `release/v0.22.3` branch from master
+- [x] 6.7 Run `make release VERSION=0.22.3` and update CHANGELOG (`changelog-writing` skill)
+- [x] 6.8 Create PR from `release/v0.22.3` targeting `master` — Ensure `Release Readiness` CI passes
+- [x] 6.9 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [x] 6.10 Verify GitHub Release completion and archive this change using `/opsx-archive`
+
+---

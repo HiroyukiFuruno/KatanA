@@ -1,0 +1,76 @@
+use anyhow::Context as _;
+use rquickjs::{CatchResultExt, Context, Ctx, Function, Object, Runtime};
+use thiserror::Error;
+
+mod worker;
+
+/// Exceptions related to this crate
+#[derive(Error, Debug)]
+pub enum Error {
+    /// Error with exception thrown from JavaScript
+    #[error("{0}")]
+    JavaScriptException(String),
+    /// Unknown error
+    #[error("unexpected JavaScript return value")]
+    UnexpectedReturnValue,
+    /// Other error
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
+}
+
+/// local shortcode of Result
+type Result<T> = std::result::Result<T, Error>;
+
+const FUNC_ID: &str = "__katana_mathjax_render";
+const QUICKJS_STACK_LIMIT_BYTES: usize = 8 * 1024 * 1024;
+
+struct MathJaxContext {
+    _runtime: Runtime,
+    context: Context,
+}
+
+/// Convert a math string to Svg
+pub fn convert_to_svg(latex: impl AsRef<str>) -> Result<String> {
+    worker::convert(latex.as_ref(), true)
+}
+
+/// Convert a math string to Svg in inline mode
+pub fn convert_to_svg_inline(latex: impl AsRef<str>) -> Result<String> {
+    worker::convert(latex.as_ref(), false)
+}
+
+fn convert_to_svg_inner(
+    context_slot: &mut Option<MathJaxContext>,
+    latex: &str,
+    display: bool,
+) -> Result<String> {
+    if context_slot.is_none() {
+        *context_slot = Some(initialize()?);
+    }
+    let context = context_slot
+        .as_ref()
+        .context("MathJax JavaScript context was not initialized")?;
+    context.context.with(|ctx| {
+        let config = catch_js(&ctx, Object::new(ctx.clone()))?;
+        catch_js(&ctx, config.set("display", display))?;
+        let render: Function = catch_js(&ctx, ctx.globals().get(FUNC_ID))?;
+        catch_js(&ctx, render.call((latex, config)))
+    })
+}
+
+fn initialize() -> Result<MathJaxContext> {
+    let runtime = Runtime::new().context("failed to create QuickJS runtime")?;
+    runtime.set_max_stack_size(QUICKJS_STACK_LIMIT_BYTES);
+    let context = Context::full(&runtime).context("failed to create QuickJS context")?;
+    context.with(|ctx| catch_js(&ctx, ctx.eval::<(), _>(include_str!("../js/out/index.mjs"))))?;
+    Ok(MathJaxContext {
+        _runtime: runtime,
+        context,
+    })
+}
+
+fn catch_js<'js, T>(ctx: &Ctx<'js>, result: rquickjs::Result<T>) -> Result<T> {
+    result
+        .catch(ctx)
+        .map_err(|error| Error::JavaScriptException(error.to_string()))
+}

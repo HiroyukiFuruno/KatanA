@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "name": "export-without-active-document-regression",
+  "fixture": {
+    "settings": { "theme": "light", "locale": "en", "linter_enabled": false },
+    "workspace_files": []
+  },
+  "steps": [
+    { "type": "launch", "viewport": { "width": 1280, "height": 800 } },
+    { "type": "export_png", "output_name": "must-not-exist" },
+    { "type": "quit" }
+  ]
+}

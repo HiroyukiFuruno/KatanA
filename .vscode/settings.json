@@ -1,0 +1,29 @@
+{
+  "files.exclude": {
+    "target": true
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "Cargo.toml": "Cargo.lock, rustfmt.toml, .clippy.toml"
+  },
+  "cSpell.words": [
+    "apdisk",
+    "donotpresent",
+    "fseventsd",
+    "Katana",
+    "MSVC",
+    "openspec",
+    "opsx",
+    "rustc",
+    "timemachine"
+  ],
+  "markdownlint.config": {
+    "MD024": {
+      "siblings_only": true
+    },
+    "MD033": {
+      "allowed_elements": ["h1", "h2", "h3", "h4", "h5", "h6", "a", "img", "p"]
+    },
+    "MD041": false
+  }
+}

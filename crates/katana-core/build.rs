@@ -1,0 +1,76 @@
+use std::env;
+use std::fs;
+use std::path::PathBuf;
+
+fn main() {
+    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("manifest dir"));
+    let lock_path = manifest_dir.join("../../Cargo.lock");
+    println!("cargo:rerun-if-changed={}", lock_path.display());
+
+    let lock = fs::read_to_string(&lock_path).expect("Cargo.lock should be readable");
+    emit_lock_package_version(
+        &lock,
+        "katana-render-runtime",
+        "KATANA_RENDER_RUNTIME_VERSION",
+    );
+    emit_lock_package_version(
+        &lock,
+        "katana-document-viewer",
+        "KATANA_DOCUMENT_VIEWER_VERSION",
+    );
+}
+
+fn emit_lock_package_version(lock: &str, package_name: &str, env_name: &str) {
+    let version = lock_package_version(lock, package_name)
+        .unwrap_or_else(|| panic!("{package_name} should exist in Cargo.lock"));
+    println!("cargo:rustc-env={env_name}={version}");
+}
+
+fn lock_package_version(lock: &str, package_name: &str) -> Option<String> {
+    for section in lock.split("[[package]]").skip(1) {
+        let mut name = None;
+        let mut version = None;
+        for line in section.lines() {
+            if line.starts_with("name = ") {
+                name = quoted_value(line);
+            }
+            if line.starts_with("version = ") {
+                version = quoted_value(line);
+            }
+        }
+        if name.as_deref() == Some(package_name) {
+            return version;
+        }
+    }
+    None
+}
+
+fn quoted_value(line: &str) -> Option<String> {
+    line.split_once('"')?
+        .1
+        .split_once('"')
+        .map(|(value, _)| value.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::lock_package_version;
+
+    #[test]
+    fn lock_package_version_reads_target_package() {
+        let lock = r#"
+[[package]]
+name = "other"
+version = "1.0.0"
+
+[[package]]
+name = "katana-render-runtime"
+version = "0.3.3"
+"#;
+
+        assert_eq!(
+            lock_package_version(lock, "katana-render-runtime"),
+            Some("0.3.3".to_string())
+        );
+    }
+}

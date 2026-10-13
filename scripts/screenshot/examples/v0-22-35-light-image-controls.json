@@ -1,0 +1,148 @@
+{
+  "schema_version": "1",
+  "name": "v0-22-35-light-image-controls",
+  "fixture": {
+    "settings": {
+      "theme": "light",
+      "locale": "en",
+      "explorer_visible": false,
+      "linter_enabled": false,
+      "preview_show_diagram_controls": true
+    },
+    "workspace_files": [
+      {
+        "name": "light-image-controls.png",
+        "source": "scripts/screenshot/fixtures/v0-22-34-light-image-controls.png"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "wait_seconds": 3.0
+    },
+    {
+      "type": "open_file",
+      "file_name": "light-image-controls.png",
+      "wait_seconds": 4.0
+    },
+    {
+      "type": "action",
+      "action": {
+        "set_view_mode": {
+          "mode": "preview_only"
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-light-image-controls"
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "01-light-image-controls",
+      "rgb": [106, 106, 106],
+      "tolerance": 3,
+      "min_pixels": 1000
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_node": {
+          "label": "Fullscreen",
+          "button": "primary",
+          "wait_seconds": 1.0
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "02-fullscreen-controls"
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_node": {
+          "label": "Zoom In",
+          "button": "primary",
+          "wait_seconds": 0.5
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "03-fullscreen-zoomed"
+    },
+    {
+      "type": "scroll",
+      "direction": "right",
+      "pixels": 320.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "screenshot",
+      "output_name": "04-fullscreen-scroll-right"
+    },
+    {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 320.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "screenshot",
+      "output_name": "05-fullscreen-scroll-down"
+    },
+    {
+      "type": "scroll",
+      "direction": "left",
+      "pixels": 320.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "screenshot",
+      "output_name": "06-fullscreen-scroll-left"
+    },
+    {
+      "type": "scroll",
+      "direction": "up",
+      "pixels": 320.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "screenshot",
+      "output_name": "07-fullscreen-scroll-up"
+    },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "03-fullscreen-zoomed",
+      "current": "04-fullscreen-scroll-right",
+      "min_changed_pixels": 1000
+    },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "04-fullscreen-scroll-right",
+      "current": "05-fullscreen-scroll-down",
+      "min_changed_pixels": 1000
+    },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "05-fullscreen-scroll-down",
+      "current": "06-fullscreen-scroll-left",
+      "min_changed_pixels": 1000
+    },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "06-fullscreen-scroll-left",
+      "current": "07-fullscreen-scroll-up",
+      "min_changed_pixels": 1000
+    },
+    {
+      "type": "quit"
+    }
+  ]
+}

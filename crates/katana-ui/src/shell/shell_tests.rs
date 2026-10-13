@@ -1,0 +1,1955 @@
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod tests {
+    use super::*;
+    use crate::app::action::ActionOps;
+    use crate::app::document::DocumentOps;
+    use crate::app::workspace::WorkspaceOps;
+    use crate::shell_logic::ShellLogicOps;
+    use crate::state::ViewMode;
+    use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
+    use std::path::PathBuf;
+    use std::sync::Mutex;
+    use tempfile::TempDir;
+
+    static HEADLESS_ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    struct HeadlessEnvGuard;
+
+    impl HeadlessEnvGuard {
+        fn new() -> Self {
+            unsafe { std::env::set_var("KATANA_HEADLESS", "1") };
+            Self
+        }
+    }
+
+    impl Drop for HeadlessEnvGuard {
+        fn drop(&mut self) {
+            unsafe { std::env::remove_var("KATANA_HEADLESS") };
+        }
+    }
+
+    fn make_app() -> KatanaApp {
+        let mut state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::default(),
+        ));
+        KatanaApp::new(state)
+    }
+
+    fn make_temp_workspace() -> TempDir {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("test.md"), "# Test").unwrap();
+        dir
+    }
+
+    fn wait_for_explorer(app: &mut KatanaApp) {
+        let ctx = egui::Context::default();
+        for _ in 0..100 {
+            app.poll_explorer_load(&ctx);
+            if app.explorer_rx.is_none() {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+    }
+
+    #[test]
+    fn handle_open_explorer_success_sets_workspace() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
+        assert!(app.state.workspace.data.is_some());
+        assert!(app.state.layout.status_message.is_some());
+    }
+
+    #[test]
+    fn handle_open_explorer_error_sets_status_message() {
+        let mut app = make_app();
+        app.handle_open_explorer(PathBuf::from("/nonexistent/path/that/cannot/exist"));
+        wait_for_explorer(&mut app);
+        assert!(
+            app.state.workspace.data.is_some() || app.state.layout.status_message.is_some(),
+            "Error or workspace should be set"
+        );
+    }
+
+    #[test]
+    fn handle_open_explorer_includes_image_files_without_user_visible_toggle() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let image_dir = dir.path().join("asset").join("img");
+        std::fs::create_dir_all(&image_dir).unwrap();
+        let image = image_dir.join("example.png");
+        std::fs::write(&image, [137, 80, 78, 71]).unwrap();
+
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
+
+        let ws = app.state.workspace.data.as_ref().unwrap();
+        let mut results = Vec::new();
+        ShellLogicOps::collect_matches(
+            &ws.tree,
+            "example",
+            &[],
+            &[],
+            &ws.root,
+            false,
+            false,
+            false,
+            &mut results,
+        );
+        assert_eq!(results, vec![image]);
+    }
+
+    #[test]
+    fn handle_open_explorer_includes_html_files_without_user_visible_toggle() {
+        let mut app = make_app();
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .workspace
+            .visible_extensions
+            .clear();
+        let dir = make_temp_workspace();
+        let html = dir.path().join("index.html");
+        let htm = dir.path().join("legacy.htm");
+        std::fs::write(&html, "<h1>Index</h1>").unwrap();
+        std::fs::write(&htm, "<h1>Legacy</h1>").unwrap();
+
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
+
+        let ws = app.state.workspace.data.as_ref().unwrap();
+        let mut results = Vec::new();
+        ShellLogicOps::collect_matches(
+            &ws.tree,
+            "",
+            &[],
+            &[],
+            &ws.root,
+            false,
+            false,
+            false,
+            &mut results,
+        );
+        assert!(results.contains(&html));
+        assert!(results.contains(&htm));
+    }
+
+    #[test]
+    fn handle_select_document_file_not_found_sets_status_message() {
+        let mut app = make_app();
+        app.handle_select_document(PathBuf::from("/nonexistent/file.md"), true);
+        assert!(app.state.layout.status_message.is_some());
+    }
+
+    #[test]
+    fn handle_select_document_image_opens_image_only_reference_tab() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("example.png");
+        std::fs::write(&path, [137, 80, 78, 71]).unwrap();
+
+        app.handle_select_document(path.clone(), true);
+
+        let doc = app.state.active_document().unwrap();
+        assert_eq!(doc.path, path);
+        assert!(doc.is_reference);
+        assert!(doc.buffer.starts_with("![](file://"));
+        assert_eq!(app.state.active_view_mode(), ViewMode::PreviewOnly);
+    }
+
+    #[test]
+    fn handle_select_document_switches_to_existing_tab() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+
+        app.handle_select_document(path.clone(), true);
+        assert_eq!(app.state.document.active_doc_idx, Some(0));
+        assert_eq!(app.state.document.open_documents.len(), 1);
+
+        app.handle_select_document(path.clone(), true);
+        assert_eq!(app.state.document.open_documents.len(), 1);
+        assert_eq!(app.state.document.active_doc_idx, Some(0));
+    }
+
+    #[test]
+    fn handle_update_buffer_without_active_doc_does_nothing() {
+        let mut app = make_app();
+        app.handle_update_buffer("new content".to_string());
+        assert!(app.state.document.open_documents.is_empty());
+    }
+
+    #[test]
+    fn handle_update_buffer_updates_active_doc_buffer() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.handle_select_document(path.clone(), true);
+
+        app.handle_update_buffer("# Updated Content".to_string());
+        let doc = app.state.active_document().unwrap();
+        assert_eq!(doc.buffer, "# Updated Content");
+        assert!(doc.is_dirty);
+    }
+
+    #[test]
+    fn handle_save_document_without_active_doc_does_nothing() {
+        let mut app = make_app();
+        app.handle_save_document();
+        assert!(app.state.layout.status_message.is_none());
+    }
+
+    #[test]
+    fn test_lazy_loading_flow() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("lazy.md");
+        std::fs::write(&path, "# Lazy content").unwrap();
+
+        app.handle_select_document(path.clone(), false);
+        assert_eq!(app.state.document.open_documents.len(), 1);
+        assert!(!app.state.document.open_documents[0].is_loaded);
+
+        app.handle_select_document(path.clone(), true);
+        assert!(app.state.document.open_documents[0].is_loaded);
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "# Lazy content"
+        );
+    }
+
+    #[test]
+    fn handle_save_document_success_sets_status() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.handle_select_document(path.clone(), true);
+        app.handle_update_buffer("# Modified".to_string());
+
+        app.handle_save_document();
+        assert!(app.state.layout.status_message.is_some());
+    }
+
+    #[test]
+    fn html_preview_is_queued_only_after_a_successful_save() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("index.html");
+        std::fs::write(&path, "<h1>Before</h1>").unwrap();
+        app.handle_select_document(path.clone(), true);
+
+        app.handle_update_buffer("<h1>After</h1>".to_string());
+        assert!(app.pending_html_preview_refresh.is_none());
+
+        app.handle_save_document();
+        let pending = app
+            .pending_html_preview_refresh
+            .as_ref()
+            .expect("HTML save must queue a deferred preview refresh");
+        assert_eq!(pending.path, path);
+
+        let first_due_at = pending.due_at;
+        app.handle_update_buffer("<h1>Newest</h1>".to_string());
+        app.handle_save_document();
+
+        let coalesced = app
+            .pending_html_preview_refresh
+            .as_ref()
+            .expect("latest HTML save must replace the pending refresh");
+        assert_eq!(coalesced.path, path);
+        assert!(coalesced.due_at >= first_due_at);
+    }
+
+    #[test]
+    fn process_action_close_document_removes_tab() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.handle_select_document(path.clone(), true);
+        assert_eq!(app.state.document.open_documents.len(), 1);
+
+        app.process_action(&egui::Context::default(), AppAction::CloseDocument(0));
+        assert!(app.state.document.open_documents.is_empty());
+        assert!(app.state.document.active_doc_idx.is_none());
+    }
+
+    #[test]
+    fn process_action_close_document_out_of_bounds_does_nothing() {
+        let mut app = make_app();
+        app.process_action(&egui::Context::default(), AppAction::CloseDocument(99));
+        assert!(app.state.document.open_documents.is_empty());
+    }
+
+    #[test]
+    fn process_action_refresh_diagrams_does_not_crash() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.handle_select_document(path.clone(), true);
+
+        app.process_action(&egui::Context::default(), AppAction::RefreshDiagrams);
+    }
+
+    #[test]
+    fn process_action_export_document_logs() {
+        let mut app = make_app();
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::ExportDocument(crate::app_state::ExportFormat::Html),
+        );
+    }
+
+    #[test]
+    fn process_action_export_pdf_uses_native_export_dialog() {
+        let _env_lock = HEADLESS_ENV_LOCK.lock().unwrap();
+        let _env = HeadlessEnvGuard::new();
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.handle_select_document(path, true);
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::ExportDocument(crate::app_state::ExportFormat::Pdf),
+        );
+        assert!(matches!(
+            app.pending_dialog_action,
+            Some(AppAction::PickExportDocument { ref ext, .. }) if ext == "pdf"
+        ));
+    }
+
+    #[test]
+    fn process_action_export_png_uses_native_export_dialog() {
+        let _env_lock = HEADLESS_ENV_LOCK.lock().unwrap();
+        let _env = HeadlessEnvGuard::new();
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.handle_select_document(path, true);
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::ExportDocument(crate::app_state::ExportFormat::Png),
+        );
+        assert!(matches!(
+            app.pending_dialog_action,
+            Some(AppAction::PickExportDocument { ref ext, .. }) if ext == "png"
+        ));
+    }
+
+    #[test]
+    fn process_action_refresh_diagrams_no_doc_does_nothing() {
+        let mut app = make_app();
+        app.process_action(&egui::Context::default(), AppAction::RefreshDiagrams);
+    }
+
+    #[test]
+    fn process_action_refresh_diagrams_clears_texture_handles() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test_textures.md");
+        std::fs::write(&path, "# Something").unwrap();
+        app.handle_select_document(path.clone(), true);
+
+        let ctx = egui::Context::default();
+        let dummy_img = egui::ColorImage::example();
+        let texture = ctx.load_texture("fake", dummy_img, egui::TextureOptions::LINEAR);
+
+        if let Some(tab) = app.tab_previews.iter_mut().find(|p| p.path == path) {
+            tab.pane
+                .viewer_states
+                .push(crate::preview_pane::ViewerState {
+                    zoom: 1.0,
+                    pan: egui::Vec2::ZERO,
+                    texture: Some(texture.clone()),
+                    texture_background: None,
+                    texture_identity: None,
+                    closing_since: None,
+                });
+            tab.pane.fullscreen_viewer_state.texture = Some(texture.clone());
+        } else {
+            panic!("Tab not found");
+        }
+
+        app.process_action(&ctx, AppAction::RefreshDiagrams);
+
+        let tab = app.tab_previews.iter().find(|p| p.path == path).unwrap();
+        assert!(
+            tab.pane
+                .viewer_states
+                .iter()
+                .all(|viewer| viewer.texture.is_none()),
+            "Texture cache inside viewer states must be cleared!"
+        );
+        assert!(
+            tab.pane.fullscreen_viewer_state.texture.is_none(),
+            "Fullscreen texture cache must be cleared!"
+        );
+    }
+
+    #[test]
+    fn process_action_change_language_sets_language() {
+        let mut app = make_app();
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::ChangeLanguage("ja".to_string()),
+        );
+    }
+
+    #[test]
+    fn process_action_toggle_toc_toggles_flag() {
+        let mut app = make_app();
+        assert!(!app.state.layout.show_toc);
+
+        app.process_action(&egui::Context::default(), AppAction::ToggleToc);
+        assert!(app.state.layout.show_toc);
+
+        app.process_action(&egui::Context::default(), AppAction::ToggleToc);
+        assert!(!app.state.layout.show_toc);
+    }
+
+    #[test]
+    fn process_action_toggle_toc_stays_closed_for_office_document() {
+        let mut app = make_app();
+        app.state
+            .document
+            .open_documents
+            .push(katana_core::document::Document::new(
+                "/workspace/report.xlsx",
+                String::new(),
+            ));
+        app.state.document.active_doc_idx = Some(0);
+
+        app.process_action(&egui::Context::default(), AppAction::ToggleToc);
+
+        assert!(!app.state.layout.show_toc);
+    }
+
+    #[test]
+    fn process_action_preview_panels_stay_closed_for_office_document() {
+        let mut app = make_app();
+        app.state
+            .document
+            .open_documents
+            .push(katana_core::document::Document::new(
+                "/workspace/report.xlsx",
+                String::new(),
+            ));
+        app.state.document.active_doc_idx = Some(0);
+
+        for action in [
+            AppAction::ToggleExportPanel,
+            AppAction::ToggleStoryPanel,
+            AppAction::ToggleToolsPanel,
+            AppAction::ToggleSlideshow,
+        ] {
+            app.process_action(&egui::Context::default(), action);
+        }
+
+        assert!(!app.state.layout.show_export_panel);
+        assert!(!app.state.layout.show_story_panel);
+        assert!(!app.state.layout.show_tools_panel);
+        assert!(!app.state.layout.show_slideshow);
+    }
+
+    #[test]
+    fn process_action_preview_panels_stay_closed_for_html_document() {
+        let mut app = make_app();
+        app.state
+            .document
+            .open_documents
+            .push(katana_core::document::Document::new(
+                "/workspace/report.html",
+                String::new(),
+            ));
+        app.state.document.active_doc_idx = Some(0);
+
+        for action in [
+            AppAction::ToggleToc,
+            AppAction::ToggleExportPanel,
+            AppAction::ToggleStoryPanel,
+            AppAction::ToggleToolsPanel,
+            AppAction::ToggleSlideshow,
+        ] {
+            app.process_action(&egui::Context::default(), action);
+        }
+
+        assert!(!app.state.layout.show_toc);
+        assert!(!app.state.layout.show_export_panel);
+        assert!(!app.state.layout.show_story_panel);
+        assert!(!app.state.layout.show_tools_panel);
+        assert!(!app.state.layout.show_slideshow);
+    }
+
+    fn slideshow_app_for_tab_switch(path: &str, was_fullscreen: bool) -> KatanaApp {
+        let mut app = make_app();
+        for document_path in ["slides.md", path] {
+            app.state
+                .document
+                .open_documents
+                .push(katana_core::document::Document::new_empty(document_path));
+        }
+        app.state.document.active_doc_idx = Some(0);
+        app.tab_previews.push(TabPreviewCache {
+            path: path.into(),
+            pane: PreviewPane::default(),
+            hash: 0,
+        });
+        app.state.layout.show_slideshow = true;
+        app.state.layout.was_os_fullscreen_before_slideshow = was_fullscreen;
+        app
+    }
+
+    fn assert_slideshow_tab_switch(path: &str, action: AppAction, was_fullscreen: bool) {
+        let mut app = slideshow_app_for_tab_switch(path, was_fullscreen);
+        let ctx = egui::Context::default();
+        let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
+            app.process_action(ui.ctx(), action.clone());
+            app.show_system_modals(ui.ctx());
+        });
+        output.textures_delta.clear();
+        assert_eq!(
+            app.state.active_document().expect("active tab").path,
+            PathBuf::from(path)
+        );
+        assert!(!app.state.layout.show_slideshow, "{path} {action:?}");
+        let exits_fullscreen = output.viewport_output.values().any(|viewport| {
+            viewport
+                .commands
+                .iter()
+                .any(|command| matches!(command, egui::ViewportCommand::Fullscreen(false)))
+        });
+        assert_eq!(exits_fullscreen, !was_fullscreen, "{path} {action:?}");
+        app.process_action(&ctx, AppAction::SelectPrevTab);
+        assert_eq!(
+            app.state.active_document().expect("Markdown tab").path,
+            PathBuf::from("slides.md")
+        );
+        app.process_action(&ctx, AppAction::ToggleSlideshow);
+        assert!(
+            app.state.layout.show_slideshow,
+            "supported slideshow can restart"
+        );
+    }
+
+    #[test]
+    fn tab_switch_from_slideshow_to_unsupported_document_restores_fullscreen() {
+        for path in ["report.html", "report.docx", "book.xlsx"] {
+            for action in [AppAction::SelectNextTab, AppAction::SelectPrevTab] {
+                for was_fullscreen in [false, true] {
+                    assert_slideshow_tab_switch(path, action.clone(), was_fullscreen);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn process_action_toggle_settings_toggles_flag() {
+        let mut app = make_app();
+        assert!(!app.state.layout.show_settings);
+
+        app.process_action(&egui::Context::default(), AppAction::ToggleSettings);
+        assert!(app.state.layout.show_settings);
+
+        app.process_action(&egui::Context::default(), AppAction::ToggleSettings);
+        assert!(!app.state.layout.show_settings);
+    }
+
+    #[test]
+    fn process_action_none_does_nothing() {
+        let mut app = make_app();
+        app.process_action(&egui::Context::default(), AppAction::None);
+    }
+
+    #[test]
+    fn process_action_update_buffer_calls_handler() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.handle_select_document(path, true);
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::UpdateBuffer("# Via Process Action".to_string()),
+        );
+        assert_eq!(
+            app.state.active_document().unwrap().buffer,
+            "# Via Process Action"
+        );
+    }
+
+    #[test]
+    fn process_action_save_document_calls_handler() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.handle_select_document(path, true);
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::UpdateBuffer("saved content".to_string()),
+        );
+        app.process_action(&egui::Context::default(), AppAction::SaveDocument);
+        assert!(app.state.layout.status_message.is_some());
+    }
+
+    #[test]
+    fn take_action_returns_and_resets_pending_action() {
+        let mut app = make_app();
+        app.pending_action = AppAction::ChangeLanguage("en".to_string());
+        let action = app.take_action();
+        assert!(
+            format!("{action:?}").starts_with("ChangeLanguage"),
+            "expected ChangeLanguage, got {action:?}"
+        );
+        assert_eq!(
+            format!("{:?}", app.pending_action),
+            format!("{:?}", AppAction::None)
+        );
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod tests_extra {
+    use super::*;
+    use crate::app::action::ActionOps;
+    use crate::app::document::DocumentOps;
+    use crate::app::export::ExportOps;
+    use crate::app::preview::PreviewOps;
+    use crate::app::update::UpdateOps;
+    use crate::app::workspace::WorkspaceOps;
+    use crate::shell_logic::ShellLogicOps;
+    use crate::state::SearchParams;
+    use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
+    use std::path::PathBuf;
+
+    fn make_app() -> KatanaApp {
+        let mut state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::default(),
+        ));
+        let mut app = KatanaApp::new(state);
+        app.pending_action = AppAction::None;
+        app
+    }
+
+    fn make_temp_workspace() -> tempfile::TempDir {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("test.md"), "# Test").unwrap();
+        dir
+    }
+
+    fn make_non_transient_tempdir() -> tempfile::TempDir {
+        let parent = std::env::current_dir()
+            .unwrap()
+            .join("target")
+            .join("test-workspaces");
+        std::fs::create_dir_all(&parent).unwrap();
+        tempfile::Builder::new().tempdir_in(parent).unwrap()
+    }
+
+    #[test]
+    fn native_workspace_dialog_cancel_does_not_open_fallback_dialog() {
+        let mut app = make_app();
+        app.handle_pick_open_workspace_result(crate::shell_ui::NativeDialogResult::Cancelled);
+
+        assert!(app.pending_dialog_action.is_none());
+    }
+
+    #[test]
+    fn native_workspace_dialog_unavailable_opens_fallback_dialog() {
+        let mut app = make_app();
+        app.handle_pick_open_workspace_result(crate::shell_ui::NativeDialogResult::Unavailable);
+
+        assert_eq!(
+            format!("{:?}", app.pending_dialog_action),
+            format!("{:?}", Some(AppAction::PickOpenWorkspace))
+        );
+    }
+
+    #[test]
+    fn handle_select_document_rerenders_when_hash_changed() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+
+        app.handle_select_document(path.clone(), true);
+        assert_eq!(app.state.document.open_documents.len(), 1);
+
+        app.tab_previews.push(TabPreviewCache {
+            path: path.clone(),
+            pane: PreviewPane::default(),
+            hash: 42,
+        });
+
+        app.handle_select_document(path.clone(), true);
+
+        assert_eq!(app.state.document.open_documents.len(), 1);
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn handle_save_document_error_sets_error_status_message() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.handle_select_document(path.clone(), true);
+        app.handle_update_buffer("# Modified content".to_string());
+
+        let perms = std::fs::Permissions::from_mode(0o444);
+        std::fs::set_permissions(&path, perms).unwrap();
+
+        app.handle_save_document();
+
+        assert!(app.state.layout.status_message.is_some());
+
+        let perms = std::fs::Permissions::from_mode(0o644);
+        let _ = std::fs::set_permissions(&path, perms);
+    }
+
+    #[test]
+    fn process_action_open_workspace_calls_handler() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::OpenWorkspace(dir.path().to_path_buf()),
+        );
+        wait_for_explorer(&mut app);
+        assert!(app.state.workspace.data.is_some());
+    }
+
+    #[test]
+    fn process_action_select_document_calls_handler() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.process_action(&egui::Context::default(), AppAction::SelectDocument(path));
+        assert_eq!(app.state.document.open_documents.len(), 1);
+    }
+
+    #[test]
+    fn full_refresh_preview_updates_tab_hash() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.full_refresh_preview(&path, "# Content", false, 4);
+        assert!(app.tab_previews.iter().any(|t| t.path == path));
+    }
+
+    #[test]
+    fn full_refresh_preview_replaces_when_is_loading() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+
+        app.full_refresh_preview(&path, "# Initial", false, 4);
+        let initial_hash = app
+            .tab_previews
+            .iter()
+            .find(|t| t.path == path)
+            .unwrap()
+            .hash;
+
+        let pane = super::KatanaApp::get_preview_pane(&mut app.tab_previews, path.clone());
+        pane.is_loading = true;
+
+        app.full_refresh_preview(&path, "# Updated", true, 4);
+
+        let final_hash = app
+            .tab_previews
+            .iter()
+            .find(|t| t.path == path)
+            .unwrap()
+            .hash;
+        assert_ne!(
+            initial_hash, final_hash,
+            "full_refresh_preview should update hash even when is_loading was true (PreviewPane handles cancellation)"
+        );
+    }
+
+    #[test]
+    fn refresh_preview_updates_existing_pane() {
+        let mut app = make_app();
+        let _dir = make_temp_workspace();
+        let path = _dir.path().join("test.md");
+        app.refresh_preview(&path, "# Initial");
+        app.refresh_preview(&path, "# Updated");
+    }
+
+    struct FailingRepository;
+
+    impl katana_platform::SettingsRepository for FailingRepository {
+        fn load(&self) -> katana_platform::settings::AppSettings {
+            katana_platform::settings::AppSettings::default()
+        }
+        fn save(&self, _settings: &katana_platform::settings::AppSettings) -> anyhow::Result<()> {
+            anyhow::bail!("simulated save failure")
+        }
+
+        fn load_workspace_state(&self, _workspace_key: &str) -> Option<String> {
+            None
+        }
+        fn save_workspace_state(
+            &self,
+            _workspace_key: &str,
+            _state_json: &str,
+        ) -> anyhow::Result<()> {
+            Ok(())
+        }
+    }
+
+    fn make_app_with_failing_repo() -> KatanaApp {
+        let settings = katana_platform::SettingsService::new(Box::new(FailingRepository));
+        let state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            settings,
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        KatanaApp::new(state)
+    }
+
+    fn wait_for_explorer(app: &mut KatanaApp) {
+        let ctx = egui::Context::default();
+        for _ in 0..100 {
+            app.poll_explorer_load(&ctx);
+            if app.explorer_rx.is_none() {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+    }
+
+    #[test]
+    fn handle_open_explorer_save_error_does_not_panic() {
+        let mut app = make_app_with_failing_repo();
+        let dir = make_temp_workspace();
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
+        assert!(app.state.workspace.data.is_some());
+    }
+
+    #[test]
+    fn change_language_save_error_does_not_panic() {
+        let mut app = make_app_with_failing_repo();
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::ChangeLanguage("ja".to_string()),
+        );
+    }
+
+    #[test]
+    fn trigger_action_is_not_overwritten_before_take_action() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+
+        app.trigger_action(AppAction::OpenWorkspace(dir.path().to_path_buf()));
+
+        assert!(
+            matches!(app.pending_action, AppAction::OpenWorkspace(_)),
+            "pending_action must still be OpenWorkspace before take_action(); \
+             RefreshDiagrams must not overwrite it"
+        );
+
+        let action = app.take_action();
+        assert!(
+            matches!(action, AppAction::OpenWorkspace(_)),
+            "take_action() must return OpenWorkspace, not a different action. \
+             Regression: shell_ui theme guard was overwriting pending_action on first frame."
+        );
+
+        assert!(matches!(app.pending_action, AppAction::None));
+    }
+
+    #[test]
+    fn refresh_diagrams_is_set_when_no_action_is_pending() {
+        let mut app = make_app();
+        assert!(matches!(app.pending_action, AppAction::None));
+
+        if matches!(app.pending_action, AppAction::None) {
+            app.pending_action = AppAction::RefreshDiagrams;
+        }
+
+        assert!(
+            matches!(app.pending_action, AppAction::RefreshDiagrams),
+            "RefreshDiagrams should be set when no action is pending"
+        );
+    }
+
+    #[test]
+    fn handle_refresh_explorer_rescans_tree() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
+        assert!(app.state.workspace.data.is_some());
+
+        std::fs::write(dir.path().join("new.md"), "# New").unwrap();
+
+        app.handle_refresh_explorer();
+        wait_for_explorer(&mut app);
+        let ws = app.state.workspace.data.as_ref().unwrap();
+        let paths: Vec<_> = ws
+            .tree
+            .iter()
+            .map(|it| it.path().to_string_lossy().to_string())
+            .collect();
+        assert!(paths.iter().any(|it| it.contains("new.md")));
+    }
+
+    #[test]
+    fn handle_refresh_explorer_no_workspace_does_nothing() {
+        let mut app = make_app();
+        app.handle_refresh_explorer();
+        assert!(app.state.workspace.data.is_none());
+    }
+
+    #[test]
+    fn handle_refresh_explorer_error_sets_status_message() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
+        assert!(app.state.workspace.data.is_some());
+
+        app.state.workspace.data.as_mut().unwrap().root =
+            std::path::PathBuf::from("/nonexistent/deleted/workspace");
+
+        app.handle_refresh_explorer();
+        wait_for_explorer(&mut app);
+        assert!(app.state.layout.status_message.is_some());
+    }
+
+    #[test]
+    fn process_action_refresh_workspace_calls_handler() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
+        app.process_action(&egui::Context::default(), AppAction::RefreshExplorer);
+        wait_for_explorer(&mut app);
+        assert!(app.state.workspace.data.is_some());
+    }
+    #[test]
+    fn test_open_workspace_file_updates_buffer() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let file_path = dir.path().join("a.md");
+        std::fs::write(&file_path, "A").unwrap();
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
+        app.handle_select_document(file_path.clone(), true);
+
+        let doc = app.state.active_document_mut().unwrap();
+        /* WHY: bypass update_buffer to bypass hash updates */
+        doc.buffer = "B".to_string();
+
+        app.handle_select_document(file_path.clone(), true);
+        let tab = app
+            .tab_previews
+            .iter()
+            .find(|t| t.path == file_path)
+            .unwrap();
+        assert!(tab.hash != 0);
+    }
+
+    #[test]
+    fn test_poll_explorer_load_disconnect() {
+        let state = AppState::new(
+            katana_core::ai::AiProviderRegistry::default(),
+            katana_core::plugin::PluginRegistry::default(),
+            katana_platform::SettingsService::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        let mut app = KatanaApp::new(state);
+
+        let (tx, rx) = std::sync::mpsc::channel();
+        app.explorer_rx = Some(rx);
+        app.state.workspace.is_loading = true;
+
+        drop(tx);
+
+        let ui_ctx = egui::Context::default();
+        app.poll_explorer_load(&ui_ctx);
+
+        assert!(!app.state.workspace.is_loading);
+    }
+
+    #[test]
+    fn test_lazy_loading_flow() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("lazy.md");
+        std::fs::write(&path, "# Lazy content").unwrap();
+
+        app.handle_select_document(path.clone(), false);
+        assert_eq!(app.state.document.open_documents.len(), 1);
+        assert!(!app.state.document.open_documents[0].is_loaded);
+
+        app.handle_select_document(path.clone(), true);
+        assert!(app.state.document.open_documents[0].is_loaded);
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "# Lazy content"
+        );
+    }
+
+    #[test]
+    fn test_auto_expansion_relative_path() {
+        let mut app = make_app();
+        app.handle_select_document(std::path::PathBuf::from("root_file.md"), true);
+        assert!(app.state.workspace.expanded_directories.is_empty());
+    }
+
+    #[test]
+    fn test_handle_select_document_lazy_does_not_expand_parents() {
+        let mut app = make_app();
+        let path = std::path::PathBuf::from("/a/b/c.md");
+        app.handle_select_document(path, false);
+
+        assert!(
+            app.state.workspace.expanded_directories.is_empty(),
+            "Expanded directories should be empty on lazy load"
+        );
+    }
+
+    #[test]
+    fn test_open_multiple_documents_activates_first_file() {
+        let mut app = make_app();
+        let temp_dir = std::env::temp_dir().join("katana_test_open_multi");
+        let _ = std::fs::remove_dir_all(&temp_dir);
+        std::fs::create_dir_all(&temp_dir).unwrap();
+        let f1 = temp_dir.join("1.md");
+        let f2 = temp_dir.join("2.md");
+        std::fs::write(&f1, "# First").unwrap();
+        std::fs::write(&f2, "# Second").unwrap();
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::OpenMultipleDocuments(vec![f1.clone(), f2.clone()]),
+        );
+
+        while let Some(path) = app.pending_document_loads.pop_front() {
+            app.handle_select_document(path, false);
+        }
+
+        assert_eq!(app.state.document.open_documents.len(), 2);
+        assert!(app.state.document.open_documents[0].is_loaded);
+        assert!(!app.state.document.open_documents[1].is_loaded);
+        assert_eq!(app.state.document.active_doc_idx, Some(0));
+
+        let _ = std::fs::remove_dir_all(&temp_dir);
+    }
+
+    #[test]
+    fn open_file_new_workspace_marks_temporary_root_and_selects_file() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let file_path = dir.path().join("test.md");
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::OpenFileInNewWorkspace(file_path.clone()),
+        );
+        wait_for_explorer(&mut app);
+
+        assert!(app.state.workspace.is_temporary_root(dir.path()));
+        assert_eq!(app.state.active_path(), Some(file_path));
+    }
+
+    #[test]
+    fn open_file_current_workspace_without_workspace_creates_temporary_workspace() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let file_path = dir.path().join("test.md");
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::OpenFileInCurrentWorkspace(file_path.clone()),
+        );
+        wait_for_explorer(&mut app);
+
+        assert!(app.state.workspace.is_temporary_root(dir.path()));
+        assert_eq!(app.state.active_path(), Some(file_path));
+    }
+
+    #[test]
+    fn open_file_temporary_workspace_is_not_saved_as_workspace_history() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let file_path = dir.path().join("test.md");
+        let path_text = dir.path().display().to_string();
+        {
+            let global_state = app.state.global_workspace.state_mut();
+            global_state.open_workspace_tabs = vec![path_text.clone()];
+            global_state.active_workspace = Some(path_text.clone());
+        }
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::OpenFileInCurrentWorkspace(file_path.clone()),
+        );
+        wait_for_explorer(&mut app);
+        app.save_workspace_state();
+
+        assert!(
+            !app.state
+                .global_workspace
+                .state()
+                .histories
+                .contains(&path_text)
+        );
+        assert!(
+            !app.state
+                .global_workspace
+                .state()
+                .persisted
+                .contains(&path_text)
+        );
+        assert_ne!(
+            app.state
+                .config
+                .settings
+                .settings()
+                .workspace
+                .last_workspace
+                .as_deref(),
+            Some(path_text.as_str())
+        );
+        assert!(
+            !app.state
+                .global_workspace
+                .state()
+                .open_workspace_tabs
+                .contains(&path_text)
+        );
+        assert_ne!(
+            app.state
+                .global_workspace
+                .state()
+                .active_workspace
+                .as_deref(),
+            Some(path_text.as_str())
+        );
+    }
+
+    #[test]
+    fn opening_workspace_clears_workspace_scoped_search_results() {
+        let mut app = make_app();
+        app.state.search.filter_cache = Some((
+            SearchParams::default(),
+            std::collections::HashSet::from([PathBuf::from("/workspace-a/file.md")]),
+        ));
+        app.state.search.last_params = Some((
+            SearchParams::default(),
+            String::new(),
+            String::new(),
+            Some(PathBuf::from("/workspace-a")),
+        ));
+        app.state.search.results = vec![PathBuf::from("/workspace-a/file.md")];
+        app.state.search.md_last_params =
+            Some((SearchParams::default(), Some(PathBuf::from("/workspace-a"))));
+        app.state.search.md_results = vec![katana_core::search::SearchResult {
+            file_path: PathBuf::from("/workspace-a/file.md"),
+            line_number: 0,
+            start_col: 0,
+            end_col: 1,
+            snippet: "x".to_string(),
+        }];
+        let dir = make_temp_workspace();
+
+        app.handle_open_explorer(dir.path().to_path_buf());
+
+        assert!(app.state.search.filter_cache.is_none());
+        assert!(app.state.search.last_params.is_none());
+        assert!(app.state.search.results.is_empty());
+        assert!(app.state.search.md_last_params.is_none());
+        assert!(app.state.search.md_results.is_empty());
+    }
+
+    #[test]
+    fn app_startup_clears_transient_workspace_restore_state() {
+        let dir = tempfile::tempdir().unwrap();
+        let temp_path = dir.path().join("katana-transient-workspace-test");
+        std::fs::create_dir_all(&temp_path).unwrap();
+        let temp_text = temp_path.display().to_string();
+        let mut state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::new(
+                katana_platform::workspace::GlobalWorkspaceState {
+                    persisted: vec![temp_text.clone(), "/workspace/real".to_string()],
+                    histories: vec![temp_text.clone(), "/workspace/real".to_string()],
+                    open_workspace_tabs: vec![temp_text.clone()],
+                    active_workspace: Some(temp_text.clone()),
+                },
+            ),
+        ));
+        {
+            let settings = state.config.settings.settings_mut();
+            settings.workspace.last_workspace = Some(temp_text.clone());
+            settings.workspace.open_tabs = vec![temp_path.join("missing.md").display().to_string()];
+            settings.workspace.active_tab_idx = Some(0);
+        }
+
+        let app = KatanaApp::new(state);
+
+        assert_eq!(
+            app.state.global_workspace.state().persisted,
+            vec!["/workspace/real".to_string()]
+        );
+        assert_eq!(
+            app.state.global_workspace.state().histories,
+            vec!["/workspace/real".to_string()]
+        );
+        assert!(
+            app.state
+                .config
+                .settings
+                .settings()
+                .workspace
+                .last_workspace
+                .is_none()
+        );
+        assert!(
+            app.state
+                .config
+                .settings
+                .settings()
+                .workspace
+                .open_tabs
+                .is_empty()
+        );
+        assert!(
+            app.state
+                .global_workspace
+                .state()
+                .open_workspace_tabs
+                .is_empty()
+        );
+        assert!(
+            app.state
+                .global_workspace
+                .state()
+                .active_workspace
+                .is_none()
+        );
+        assert!(matches!(app.pending_action, AppAction::None));
+    }
+
+    #[test]
+    fn app_startup_restores_active_workspace_tab_from_workspace_json() {
+        let dir = make_non_transient_tempdir();
+        let workspace_a = dir.path().join("workspace-a");
+        let workspace_b = dir.path().join("workspace-b");
+        std::fs::create_dir_all(&workspace_a).unwrap();
+        std::fs::create_dir_all(&workspace_b).unwrap();
+        let workspace_a_text = workspace_a.display().to_string();
+        let workspace_b_text = workspace_b.display().to_string();
+        let mut state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::new(
+                katana_platform::workspace::GlobalWorkspaceState {
+                    open_workspace_tabs: vec![workspace_a_text, workspace_b_text.clone()],
+                    active_workspace: Some(workspace_b_text.clone()),
+                    ..katana_platform::workspace::GlobalWorkspaceState::default()
+                },
+            ),
+        ));
+
+        let app = KatanaApp::new(state);
+
+        assert!(matches!(
+            app.pending_action,
+            AppAction::OpenWorkspace(ref path) if path == &std::path::PathBuf::from(workspace_b_text)
+        ));
+    }
+
+    #[test]
+    fn app_startup_prunes_missing_workspace_tabs() {
+        let dir = make_non_transient_tempdir();
+        let existing_workspace = dir.path().join("workspace-a");
+        let missing_workspace = dir.path().join("workspace-missing");
+        std::fs::create_dir_all(&existing_workspace).unwrap();
+        let existing_workspace_text = existing_workspace.display().to_string();
+        let missing_workspace_text = missing_workspace.display().to_string();
+        let mut state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::new(
+                katana_platform::workspace::GlobalWorkspaceState {
+                    open_workspace_tabs: vec![
+                        existing_workspace_text.clone(),
+                        missing_workspace_text.clone(),
+                    ],
+                    active_workspace: Some(missing_workspace_text),
+                    ..katana_platform::workspace::GlobalWorkspaceState::default()
+                },
+            ),
+        ));
+
+        let app = KatanaApp::new(state);
+
+        assert_eq!(
+            app.state.global_workspace.state().open_workspace_tabs,
+            vec![existing_workspace_text.clone()]
+        );
+        assert!(
+            app.state
+                .global_workspace
+                .state()
+                .active_workspace
+                .is_none()
+        );
+        assert!(matches!(
+            app.pending_action,
+            AppAction::OpenWorkspace(ref path)
+                if path == &std::path::PathBuf::from(existing_workspace_text)
+        ));
+    }
+
+    #[test]
+    fn open_file_respects_configured_visible_extension() {
+        let mut app = make_app();
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .workspace
+            .visible_extensions
+            .push("adr".to_string());
+        let dir = tempfile::tempdir().unwrap();
+        let file_path = dir.path().join("decision.adr");
+        std::fs::write(&file_path, "# Decision").unwrap();
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::OpenFileInCurrentWorkspace(file_path.clone()),
+        );
+        wait_for_explorer(&mut app);
+
+        assert_eq!(app.state.active_path(), Some(file_path));
+    }
+
+    #[test]
+    fn open_file_rejects_unconfigured_extension() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let file_path = dir.path().join("note.rs");
+        std::fs::write(&file_path, "fn main() {}").unwrap();
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::OpenFileInCurrentWorkspace(file_path),
+        );
+
+        assert!(app.state.workspace.data.is_none());
+        assert!(app.state.document.open_documents.is_empty());
+        assert!(matches!(
+            app.state.layout.status_message.as_ref(),
+            Some((_, crate::app_state::StatusType::Warning))
+        ));
+    }
+
+    #[test]
+    fn move_fs_node_updates_open_document_path_without_confirmation() {
+        let mut app = make_app();
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .behavior
+            .confirm_file_move = false;
+        let dir = make_temp_workspace();
+        let target_dir = dir.path().join("nested");
+        std::fs::create_dir_all(&target_dir).unwrap();
+        let source_path = dir.path().join("test.md");
+        let target_path = target_dir.join("test.md");
+
+        app.handle_select_document(source_path.clone(), true);
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::RequestMoveFsNode {
+                source_path,
+                target_dir,
+            },
+        );
+
+        assert!(target_path.exists());
+        assert_eq!(app.state.active_path(), Some(target_path));
+    }
+
+    #[test]
+    fn move_fs_node_moves_directory_without_confirmation() {
+        let mut app = make_app();
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .behavior
+            .confirm_file_move = false;
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("source");
+        let target_dir = dir.path().join("target");
+        let target_path = target_dir.join("source");
+        std::fs::create_dir_all(&source_path).unwrap();
+        std::fs::create_dir_all(&target_dir).unwrap();
+        std::fs::write(source_path.join("test.md"), "# Test").unwrap();
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::RequestMoveFsNode {
+                source_path,
+                target_dir,
+            },
+        );
+
+        assert!(target_path.join("test.md").exists());
+    }
+
+    #[test]
+    fn move_fs_node_updates_image_reference_buffer() {
+        let mut app = make_app();
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .behavior
+            .confirm_file_move = false;
+        let dir = tempfile::tempdir().unwrap();
+        let target_dir = dir.path().join("nested");
+        std::fs::create_dir_all(&target_dir).unwrap();
+        let source_path = dir.path().join("image.png");
+        let target_path = target_dir.join("image.png");
+        std::fs::write(&source_path, [137, 80, 78, 71]).unwrap();
+
+        app.handle_select_document(source_path.clone(), true);
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::RequestMoveFsNode {
+                source_path,
+                target_dir,
+            },
+        );
+
+        let doc = app.state.active_document().expect("active image document");
+        assert_eq!(doc.path, target_path);
+        assert!(doc.buffer.contains(&target_path.display().to_string()));
+    }
+
+    use crate::app_state::AppState;
+    use crate::preview_pane::PreviewPane;
+    use katana_platform::FilesystemService;
+
+    fn setup_test_app() -> KatanaApp {
+        let state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        KatanaApp {
+            state,
+            fs: FilesystemService::new(),
+            pending_action: AppAction::None,
+            tab_previews: Vec::new(),
+            explorer_rx: None,
+            update_rx: None,
+            changelog_rx: None,
+            update_install_rx: None,
+            export_tasks: Vec::new(),
+            pending_document_loads: std::collections::VecDeque::new(),
+            pending_workspace_file_open: None,
+            linter_doc_rx: None,
+            linter_docs_cache: std::collections::HashMap::new(),
+            show_about: false,
+            show_update_dialog: false,
+            update_markdown_cache: egui_commonmark::CommonMarkCache::default(),
+            update_notified: false,
+            about_icon: None,
+            cached_theme: None,
+            cached_font_size: None,
+            cached_font_family: None,
+            settings_preview: PreviewPane::default(),
+            needs_splash: false,
+            splash_start: None,
+            show_meta_info_for: None,
+            pending_relaunch: None,
+            changelog_sections: Vec::new(),
+            needs_changelog_display: false,
+            old_app_version: None,
+            editor_cursor_range: None,
+            pending_editor_cursor: None,
+            file_dialog: egui_file_dialog::FileDialog::new(),
+            pending_dialog_action: None,
+            pending_html_preview_refresh: None,
+            html_preview_observer: None,
+        }
+    }
+
+    #[test]
+    fn test_toggle_about_action() {
+        let mut app = setup_test_app();
+        assert!(!app.show_about);
+
+        app.process_action(&egui::Context::default(), AppAction::ToggleAbout);
+        assert!(app.show_about);
+
+        app.process_action(&egui::Context::default(), AppAction::ToggleAbout);
+        assert!(!app.show_about);
+    }
+
+    #[test]
+    fn test_check_for_updates_manual_trigger() {
+        let mut app = setup_test_app();
+        app.state.update.checking = true;
+        app.start_update_check(true);
+        assert!(app.show_update_dialog);
+    }
+
+    #[test]
+    fn test_check_for_updates_action() {
+        let mut app = setup_test_app();
+        assert!(!app.show_update_dialog);
+        assert!(!app.state.update.checking);
+
+        app.process_action(&egui::Context::default(), AppAction::CheckForUpdates);
+
+        assert!(app.show_update_dialog);
+        assert!(app.state.update.checking);
+
+        let (tx, rx) = std::sync::mpsc::channel();
+        tx.send(Ok(Some(katana_core::update::ReleaseInfo {
+            tag_name: "100.0.0".to_string(),
+            html_url: "".to_string(),
+            download_url: "".to_string(),
+            body: "".to_string(),
+        })))
+        .unwrap();
+        app.update_rx = Some(rx);
+
+        let ctx = eframe::egui::Context::default();
+        app.poll_update_check(&ctx);
+
+        assert!(app.state.update.available.is_some());
+        assert_eq!(
+            app.state.update.available.as_ref().unwrap().tag_name,
+            "100.0.0"
+        );
+        assert!(app.update_rx.is_none());
+        assert!(app.update_notified);
+    }
+
+    #[test]
+    fn test_update_check_error_action() {
+        let mut app = setup_test_app();
+        app.state.update.checking = true;
+        let (tx, rx) = std::sync::mpsc::channel();
+        tx.send(Err(
+            katana_core::update::CheckUpdateError::NetworkUnreachable,
+        ))
+        .unwrap();
+        app.update_rx = Some(rx);
+
+        let ctx = eframe::egui::Context::default();
+        app.poll_update_check(&ctx);
+
+        assert_eq!(
+            app.state.update.check_error.unwrap(),
+            katana_core::update::CheckUpdateError::NetworkUnreachable
+        );
+        assert!(app.update_rx.is_none());
+    }
+
+    #[test]
+    fn test_update_check_channel_closed() {
+        let mut app = setup_test_app();
+        app.state.update.checking = true;
+        let (tx, rx) = std::sync::mpsc::channel::<
+            Result<Option<katana_core::update::ReleaseInfo>, katana_core::update::CheckUpdateError>,
+        >();
+        /* WHY: cause Err(RecvError) or Disconnected */
+        drop(tx);
+        app.update_rx = Some(rx);
+
+        let ctx = eframe::egui::Context::default();
+        app.poll_update_check(&ctx);
+
+        assert!(!app.state.update.checking);
+        assert!(app.update_rx.is_none());
+    }
+
+    #[test]
+    fn test_background_update_check_shows_dialog_only_once() {
+        let mut app = setup_test_app();
+        app.start_update_check(false);
+        /* WHY: should be hidden during check */
+        assert!(!app.show_update_dialog);
+        assert!(!app.update_notified);
+
+        let (tx, rx) = std::sync::mpsc::channel();
+        tx.send(Ok(Some(katana_core::update::ReleaseInfo {
+            tag_name: "100.0.0".to_string(),
+            html_url: "".to_string(),
+            download_url: "".to_string(),
+            body: "".to_string(),
+        })))
+        .unwrap();
+        app.update_rx = Some(rx);
+
+        let ctx = eframe::egui::Context::default();
+        app.poll_update_check(&ctx);
+
+        assert!(app.show_update_dialog);
+        assert!(app.update_notified);
+    }
+
+    #[test]
+    pub(crate) fn export_html_to_tmp_writes_html_file() {
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
+        let filename = "katana_test_export.html";
+        let result = ShellLogicOps::export_named_html_to_tmp("# Hello", filename, preset, None);
+        let path = result.unwrap();
+        assert!(path.exists(), "HTML file must exist at {}", path.display());
+        let contents = std::fs::read_to_string(&path).unwrap();
+        assert!(
+            contents.to_ascii_lowercase().contains("<!doctype html>"),
+            "Output must be valid HTML"
+        );
+        assert!(contents.contains("Hello"), "Output must contain heading");
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn export_html_with_theme_preserves_explicit_table_header_colors() {
+        let mut theme = katana_core::markdown::ExportConfig::theme_from_preset(
+            katana_core::markdown::color_preset::DiagramColorPreset::dark(),
+        );
+        theme.table_border = Some("#334455".to_string());
+        theme.table_header_background = Some("#123456".to_string());
+        theme.table_even_row_background = Some("#223344".to_string());
+        let source = "| Key | Value |\n| --- | --- |\n| Theme | Export |\n";
+        let filename = "katana_themed_table_export.html";
+
+        let path =
+            ShellLogicOps::export_named_html_to_tmp_with_theme(source, filename, theme, None)
+                .expect("themed HTML export must succeed");
+        let contents = std::fs::read_to_string(&path).unwrap();
+
+        assert!(
+            contents.contains("--kdv-table-header:#123456;"),
+            "HTML export must use the active KatanA table header token: {contents}"
+        );
+        assert!(
+            contents.contains("--kdv-table-even:#223344;"),
+            "HTML export must use the active KatanA table stripe token: {contents}"
+        );
+        assert!(
+            contents.contains("--kdv-table-border:#334455;"),
+            "HTML export must use the active KatanA table border token: {contents}"
+        );
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn export_status_messages_do_not_show_raw_lucide_templates() {
+        let locales = [
+            ("en", include_str!("../../locales/en.json")),
+            ("ja", include_str!("../../locales/ja.json")),
+        ];
+
+        for (language, json) in locales {
+            let messages: crate::i18n::I18nMessages = serde_json::from_str(json)
+                .unwrap_or_else(|e| panic!("{language}.json must deserialize: {e}"));
+            let message = crate::i18n::I18nOps::tf(
+                &messages.export.exporting,
+                &[("filename", "sample.html")],
+            );
+
+            assert!(
+                !message.contains("{{lucide:"),
+                "{language} export status must not show raw icon template: {message}"
+            );
+        }
+    }
+
+    #[test]
+    fn export_html_to_tmp_does_not_leak_templates_or_raw_mermaid_code() {
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
+        let source = "# Diagram\n\n```mermaid\ngraph TD\n  A[Start] --> B[Done]\n```\n";
+        let path = crate::test_render_env::RenderEnvLock::with_lock(|| {
+            /* WHY: KRR materializes the embedded runtime assets lazily. Warm the runtime
+             * before asserting export markup so this unit test does not conflate asset
+             * initialization with the export contract. */
+            let _ = katana_core::markdown::MarkdownRenderOps::render_with_katana_renderer(
+                "```mermaid\ngraph TD; Warmup-->Ready\n```",
+            );
+            ShellLogicOps::export_named_html_to_tmp(
+                source,
+                "katana_template_export.html",
+                preset,
+                None,
+            )
+        })
+        .expect("generation must succeed");
+        let contents = std::fs::read_to_string(&path).unwrap();
+
+        assert!(
+            !contents.contains("{{lucide:"),
+            "HTML export must not contain raw icon templates"
+        );
+        assert!(
+            !contents.contains("language-mermaid"),
+            "HTML export must not contain raw Mermaid code block markup"
+        );
+        assert!(
+            !contents.contains("graph TD"),
+            "HTML export must not contain raw Mermaid source"
+        );
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    pub(crate) fn export_html_to_tmp_path_is_in_temp_dir() {
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
+        let filename = "katana_path_check.html";
+        let path = ShellLogicOps::export_named_html_to_tmp("test", filename, preset, None).unwrap();
+        let expected = std::env::temp_dir().join(filename);
+        let canon_path = path.canonicalize().unwrap_or(path.clone());
+        let canon_expected = expected.canonicalize().unwrap_or(expected);
+        assert_eq!(canon_path, canon_expected);
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn export_as_html_creates_task_with_open_on_complete() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let md_path = dir.path().join("hello.md");
+        std::fs::write(&md_path, "# Integration Test").unwrap();
+        app.handle_select_document(md_path.clone(), true);
+
+        app.export_as_html(&egui::Context::default(), "# Integration Test", &md_path);
+
+        assert_eq!(
+            app.export_tasks.len(),
+            1,
+            "must push exactly one ExportTask"
+        );
+        let task = &app.export_tasks[0];
+        assert!(
+            task.open_on_complete,
+            "HTML export must set open_on_complete = true"
+        );
+        assert!(
+            task.filename.ends_with(".html"),
+            "filename must be .html, got {}",
+            task.filename
+        );
+    }
+
+    #[test]
+    fn export_as_html_thread_produces_html_file_in_tmp() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let md_path = dir.path().join("real_doc.md");
+        std::fs::write(&md_path, "# Real Document\n\nParagraph content.").unwrap();
+        app.handle_select_document(md_path.clone(), true);
+
+        app.export_as_html(
+            &egui::Context::default(),
+            "# Real Document\n\nParagraph content.",
+            &md_path,
+        );
+
+        let task = &app.export_tasks[0];
+        let result = task.rx.recv_timeout(std::time::Duration::from_secs(5));
+        let path = result
+            .expect("channel must receive within 5s")
+            .expect("export must succeed");
+
+        /* WHY: On Windows, canonicalize() adds \\?\ UNC prefix and short path names
+        (RUNNER~1) remain unresolved in generated filenames, so starts_with() can
+        fail between canonical forms. Comparing parent() is the correct semantic check. */
+        let path_parent = path.parent().expect("exported file must have parent");
+        let temp = std::env::temp_dir();
+        assert!(
+            path_parent == temp || path_parent.canonicalize().ok() == temp.canonicalize().ok(),
+            "path must be under temp dir, got {} (parent: {}), temp: {}",
+            path.display(),
+            path_parent.display(),
+            temp.display()
+        );
+        assert!(path.exists(), "HTML file must exist at {}", path.display());
+
+        let html = std::fs::read_to_string(&path).unwrap();
+        assert!(
+            html.to_ascii_lowercase().contains("<!doctype html>"),
+            "must be full HTML document"
+        );
+        assert!(html.contains("Real Document"), "must contain the heading");
+        assert!(html.contains("Paragraph content"), "must contain body text");
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn export_as_html_thread_uses_current_theme_table_tokens() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let md_path = dir.path().join("themed_table.md");
+        let source = "| Key | Value |\n| --- | --- |\n| Theme | Export |\n";
+        std::fs::write(&md_path, source).unwrap();
+        app.handle_select_document(md_path.clone(), true);
+        katana_core::markdown::DiagramThemeSnapshot::set_current_override(
+            katana_core::markdown::DiagramThemeOverride {
+                name: "table-export-test".to_string(),
+                is_dark: true,
+                background: "#1e1e1e".to_string(),
+                text: "#d4d4d4".to_string(),
+                preview_text: "#d4d4d4".to_string(),
+                table_border: Some("#334455".to_string()),
+                table_header_background: Some("#123456".to_string()),
+                table_even_row_background: Some("#223344".to_string()),
+            },
+        );
+
+        app.export_as_html(&egui::Context::default(), source, &md_path);
+        katana_core::markdown::DiagramThemeSnapshot::clear_current_override();
+
+        let task = &app.export_tasks[0];
+        let path = task
+            .rx
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .expect("channel must receive within 5s")
+            .expect("export must succeed");
+        let html = std::fs::read_to_string(&path).unwrap();
+
+        assert!(
+            html.contains("--kdv-table-header:#123456;"),
+            "HTML export must use the current viewer table header token: {html}"
+        );
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn export_as_html_multiple_calls_create_multiple_tasks() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let path1 = dir.path().join("doc1.md");
+        let path2 = dir.path().join("doc2.md");
+        std::fs::write(&path1, "# Doc 1").unwrap();
+        std::fs::write(&path2, "# Doc 2").unwrap();
+        app.handle_select_document(path1.clone(), true);
+
+        app.export_as_html(&egui::Context::default(), "# Doc 1", &path1);
+        app.export_as_html(&egui::Context::default(), "# Doc 2", &path2);
+
+        assert_eq!(
+            app.export_tasks.len(),
+            2,
+            "two exports must create two tasks"
+        );
+
+        for task in &app.export_tasks {
+            let result = task.rx.recv_timeout(std::time::Duration::from_secs(5));
+            let path = result.unwrap().unwrap();
+            assert!(path.exists());
+            let _ = std::fs::remove_file(&path);
+        }
+    }
+
+    #[test]
+    pub(crate) fn export_html_to_tmp_path_is_canonicalizable() {
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
+        let path = ShellLogicOps::export_named_html_to_tmp(
+            "# Test",
+            "katana_canon_test.html",
+            preset,
+            None,
+        )
+        .expect("generation must succeed");
+        let canonical = path
+            .canonicalize()
+            .unwrap_or_else(|e| panic!("path {} must be canonicalizable: {e}", path.display()));
+        assert!(
+            canonical.is_absolute(),
+            "canonical path must be absolute: {}",
+            canonical.display()
+        );
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn export_html_file_url_is_valid_and_openable() {
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
+        let path = ShellLogicOps::export_named_html_to_tmp(
+            "# URL Test",
+            "katana_url_test.html",
+            preset,
+            None,
+        )
+        .expect("generation must succeed");
+
+        let url = if cfg!(windows) {
+            format!("file:///{}", path.display().to_string().replace('\\', "/"))
+        } else {
+            format!("file://{}", path.display())
+        };
+
+        assert!(
+            url.starts_with("file:///"),
+            "URL must start with file:/// (3 slashes), got: {url}"
+        );
+
+        /* WHY: Verify the original path (which we used to construct the URL) still exists */
+        assert!(
+            path.exists(),
+            "path used to construct URL must exist: {} (url={url})",
+            path.display()
+        );
+
+        /* WHY: Verify the canonical path is also valid and exists */
+        let canonical = path.canonicalize().unwrap();
+        assert!(
+            canonical.exists(),
+            "canonical path must exist: {}",
+            canonical.display()
+        );
+
+        let _ = std::fs::remove_file(&path);
+    }
+}

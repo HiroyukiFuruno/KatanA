@@ -1,0 +1,120 @@
+## 着手条件 (DoR)
+
+- [x] `proposal.md`、`design.md`、`specs` が揃っていること
+- [x] 対象バージョン 0.9.0 の変更 ID とスコープが確認されていること
+- [x] 現行のワークスペースヘッダー配置と左レール化対象（表示切替・検索・履歴）を `views/app_frame.rs` / `views/panels/workspace/ui.rs` で再確認していること
+
+## ブランチ運用ルール
+
+`##` ごとに grouped された task は、`/openspec-branching` workflow（`.agents/workflows/openspec-branching.md`）で定義された branching standard を無条件で守って実装すること。
+
+---
+
+## 1. 左アクティビティレールの実装
+
+### 着手条件 (DoR)
+
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+
+- [x] 1.1 `views/app_frame.rs` の `WorkspaceSidebar` を改修し、既存 `workspace_collapsed` 専用サイドパネルを常設レールへ置き換える
+- [x] 1.2 レールに workspace toggle / search / history を縦配置し、workspace pane 非表示時もレールが残るようにする
+- [x] 1.3 履歴ボタンを既存の `settings.workspace.paths` と `OpenWorkspace` / `RemoveWorkspace` に接続し、最近のワークスペース履歴メニューをレール側へ移す
+- [x] 1.4 履歴 0 件時は history ボタンを非活性表示で残し、レイアウトを崩さない挙動を実装する
+- [x] 1.5 左レールのアイコンを既存資産のまま一段大きく描画し、ホバー説明とアクティブ状態を整理する
+- [x] 1.5.1 `show_workspace` / `show_search_modal` 以外の新 layout state が必要と判明した場合は、実装継続前に `design.md` / `specs` / `tasks.md` を更新する
+- [x] 1.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 1.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+  - [x] 1.7.1 アクティビティレールの「履歴（切り替え）」アイコンを最上部へ配置する
+  - [x] 1.7.2 アクティビティレールの並び順をドラッグ＆ドロップで変更し、設定(`LayoutSettings`)として永続化できるようにする
+  - [x] 1.7.3 不要になったヘッダー内の一部の要素（タイトル等）は Task 2 へ先送りまたは先行対応する
+
+### 完了条件 (DoD)
+
+- [x] 左レールからワークスペース表示切り替え・検索・履歴が利用できること
+- [x] ワークスペースペインを閉じても左レールが残り、同じ導線で再表示できること
+- [x] collapsed 専用サイドパネルが不要になり、導線が `WorkspaceSidebar` 側へ一元化されていること
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+
+---
+
+## 2. ワークスペースヘッダーと表示メニューの再配置
+
+### 着手条件 (DoR)
+
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+
+- [x] 2.1 `views/panels/workspace/ui.rs` のヘッダー 1 行目から `Workspace` / `ワークスペース` 見出しと collapse ボタンを除去する
+- [x] 2.2 pane ヘッダーから search / history ボタンを除去し、refresh + filter を左グループ、expand all + collapse all を右グループへ再配置する
+- [x] 2.3 フィルタートグルと正規表現入力 UI をヘッダー内に維持し、既存の `filter_enabled` / `filter_query` / `filter_cache` の挙動が変わらないことを確認する
+- [x] 2.4 workspace 表示切り替え後も expanded directories・filter 状態・loading 表示が破綻しないよう整合を取る
+- [x] 2.5 ヘッダー末尾側に `...` メニューを追加し、`表示 -> フラット表示` の checkable toggle を提供する
+- [x] 2.6 `WorkspaceState` に workspace ごとの flat 表示フラグを持たせ、既定値を `false` として tree 表示が既定になるようにする
+- [x] 2.7 flat 表示が有効な時は `✔フラット表示` のように active 状態を示し、再度選択で tree 表示へ戻れるようにする
+- [x] 2.8 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 2.9 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+
+### 完了条件 (DoD)
+
+- [x] 見出し文言が消え、更新と全展開・全閉の配置が要求どおりになっていること
+- [x] `...` メニューから `表示 -> フラット表示` を toggle できること
+- [x] flat 表示フラグの既定値が `false` であり、初期表示が tree になること
+- [x] workspace ごとの選択状態を再読み込み後に復元できること
+- [x] フィルターの表示・入力・絞り込み結果が既存どおり動作すること
+- [x] pane ヘッダーの責務が「現 workspace 操作」に限定され、主要導線がレールへ集約されていること
+- [x] 実装対象 file (`app_frame.rs`, `workspace/ui.rs`, `workspace/logic.rs`, `scanner.rs`) と state (`show_workspace`, `settings.workspace.paths`, flat 表示フラグ) が design と一致していること
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+
+---
+
+## 3. 検索導線・表示モード・回帰確認
+
+### 着手条件 (DoR)
+
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+
+- [x] 3.1 左レールの検索ボタンから既存の検索モーダルを開けるようにし、ショートカット導線を維持する
+- [x] 3.2 レール化に伴う tooltip・i18n 文言・アクセシビリティラベルを整理する
+- [x] 3.3 version-aware sort を tree 表示と flat 表示の両方に適用し、`v0-9-x` が `v0-11-x` より先に来ることを保証する
+- [x] 3.4 flat 表示では directory node を描かず、workspace-relative path で file row を識別できるようにする
+- [x] 3.5 flat 表示フラグ `false -> true -> false` の切り替えで tree / flat / tree へ戻ることを確認する
+- [x] 3.6 workspace を閉じて再度開いた時に、最後の表示モードが復元されることを確認する
+- [x] 3.7 flat 表示中は expand all / collapse all を無効化し、refresh / filter は継続利用できるようにする
+- [x] 3.8 history 0 件・workspace 未選択・workspace collapsed・flat 表示の各状態でレールとワークスペース一覧の挙動を確認する
+- [x] 3.9 UI テストまたはハーネスで、左レール起点の表示切り替え・検索・履歴操作、tree / flat 切り替え、sort order の回帰を追加確認する
+- [x] 3.9.1 試作結果が spec の UX detail と合わない場合は、UI 微調整前に artifact を更新する
+- [x] 3.10 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 3.11 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+
+### 完了条件 (DoD)
+
+- [x] 検索はショートカットと左レールの両方から開けること
+- [x] 履歴メニューの開く・削除・ワークスペース再オープンが回帰していないこと
+- [x] tree / flat の両表示で sort order が安定し、`v0-9-x` が `v0-11-x` より先に来ること
+- [x] flat 表示フラグ `false` が既定であり、toggle 後に `false` へ戻せること
+- [x] workspace ごとの表示モードが永続化されること
+- [x] history 0 件と no workspace 状態でもレールの配置と tooltip が破綻しないこと
+- [x] flat 表示が file-only 一覧として機能し、同名 file も workspace-relative path で識別できること
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+
+---
+
+## 4. 最終確認とリリース作業
+
+### 着手条件 (DoR)
+
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+
+- [x] 4.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` を使って self-review を実施する（各 file の version 更新漏れも確認する）
+- [x] 4.2 `make check` が exit code 0 で通過することを確認する
+- [x] 4.3 中間 base branch（もともと master から派生した branch）を `master` へ merge する
+- [x] 4.4 `master` 向け PR を作成する
+- [x] 4.5 `master` へ merge する（`--admin` 許可）
+- [x] 4.6 `.agents/skills/release_workflow/SKILL.md` を使って `0.9.0` の release tagging と release 作成を実施する
+- [x] 4.7 `/opsx-archive` など OpenSpec skill を使ってこの change を archive する

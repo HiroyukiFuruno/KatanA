@@ -1,0 +1,170 @@
+use egui;
+use std::path::PathBuf;
+
+pub(crate) struct RenameModal<'a> {
+    pub modal_data: &'a mut (PathBuf, String),
+    pub pending_action: &'a mut crate::app_state::AppAction,
+}
+
+impl<'a> RenameModal<'a> {
+    pub fn new(
+        modal_data: &'a mut (PathBuf, String),
+        pending_action: &'a mut crate::app_state::AppAction,
+    ) -> Self {
+        Self {
+            modal_data,
+            pending_action,
+        }
+    }
+
+    pub fn show(self, ctx: &egui::Context) -> bool {
+        let (target_path, new_name) = self.modal_data;
+        let pending_action = self.pending_action;
+        let mut close = false;
+        let mut do_rename = false;
+
+        let mut is_open = true;
+        egui::Window::new(crate::i18n::I18nOps::get().dialog.rename_title.clone())
+            .open(&mut is_open)
+            .collapsible(false)
+            .resizable(false)
+            .max_width({
+                const MAX_MODAL_WIDTH: f32 = 300.0;
+                MAX_MODAL_WIDTH
+            })
+            .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+            .show(ctx, |ui| {
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
+                        const MODAL_INPUT_WIDTH: f32 = 200.0;
+                        let re = ui.add(
+                            egui::TextEdit::singleline(new_name)
+                                .hint_text(&crate::i18n::I18nOps::get().dialog.new_name_hint)
+                                .desired_width(MODAL_INPUT_WIDTH),
+                        );
+                        re.request_focus();
+                        if re.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                            do_rename = true;
+                        }
+                    })
+                    .show(ui);
+                const SPACING_SMALL: f32 = 8.0;
+                ui.add_space(SPACING_SMALL);
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
+                        if ui
+                            .button(crate::i18n::I18nOps::get().action.cancel.clone())
+                            .clicked()
+                        {
+                            close = true;
+                        }
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            if ui
+                                .button(crate::i18n::I18nOps::get().action.save.clone())
+                                .clicked()
+                            {
+                                do_rename = true;
+                            }
+                        });
+                    })
+                    .show(ui);
+            });
+
+        if !is_open {
+            close = true;
+        }
+        if do_rename && !new_name.is_empty() {
+            if let Some(parent) = target_path.parent() {
+                let new_path = parent.join(&*new_name);
+                *pending_action = crate::app_state::AppAction::RenameFsNode {
+                    target_path: target_path.clone(),
+                    new_path,
+                };
+            }
+            close = true;
+        }
+        close
+    }
+}
+
+pub(crate) struct DeleteModal<'a> {
+    pub target_path: &'a PathBuf,
+    pub pending_action: &'a mut crate::app_state::AppAction,
+}
+
+impl<'a> DeleteModal<'a> {
+    pub fn new(
+        target_path: &'a PathBuf,
+        pending_action: &'a mut crate::app_state::AppAction,
+    ) -> Self {
+        Self {
+            target_path,
+            pending_action,
+        }
+    }
+
+    pub fn show(self, ctx: &egui::Context) -> bool {
+        let target_path = self.target_path;
+        let pending_action = self.pending_action;
+        let mut close = false;
+
+        /* WHY: default_width is only a hint and the window expands when the label text
+        is long. max_width is a hard constraint that prevents the dialog from growing
+        beyond 300 px; the label inside uses wrap=true (egui default) so text folds
+        within the constrained width rather than being clipped. */
+        const DELETE_MODAL_WIDTH: f32 = 300.0;
+        let mut is_open = true;
+        egui::Window::new(crate::i18n::I18nOps::get().dialog.delete_title.clone())
+            .open(&mut is_open)
+            .collapsible(false)
+            .resizable(false)
+            .max_width(DELETE_MODAL_WIDTH)
+            .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+            .show(ctx, |ui| {
+                let name = target_path
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("?");
+                let msg = crate::i18n::I18nOps::tf(
+                    &crate::i18n::I18nOps::get().dialog.delete_confirm_msg,
+                    &[("name", name)],
+                );
+                ui.label(msg);
+
+                const SPACING_SMALL: f32 = 8.0;
+                ui.add_space(SPACING_SMALL);
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
+                        if ui
+                            .button(crate::i18n::I18nOps::get().action.cancel.clone())
+                            .clicked()
+                        {
+                            close = true;
+                        }
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            let del_btn = egui::Button::new(
+                                egui::RichText::new(
+                                    crate::i18n::I18nOps::get().action.delete.clone(),
+                                )
+                                .color(ui.visuals().error_fg_color),
+                            );
+                            if ui.add(del_btn).clicked() {
+                                *pending_action = crate::app_state::AppAction::DeleteFsNode {
+                                    target_path: target_path.clone(),
+                                };
+                                close = true;
+                            }
+                        });
+                    })
+                    .show(ui);
+            });
+
+        if !is_open {
+            close = true;
+        }
+        close
+    }
+}

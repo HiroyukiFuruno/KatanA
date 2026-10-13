@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 96" width="240" height="96" role="img" aria-label="External resource pipeline">
+  <rect width="240" height="96" fill="#ffffff"/>
+  <rect x="8" y="16" width="80" height="64" rx="4" fill="#26b8a6"/>
+  <path d="M88 48 H144" stroke="#173f5f" stroke-width="6"/>
+  <polygon points="144,38 164,48 144,58" fill="#173f5f"/>
+  <rect x="164" y="16" width="68" height="64" rx="4" fill="#ef4444"/>
+  <text x="24" y="54" fill="#ffffff" font-size="16">Load</text>
+  <text x="177" y="54" fill="#ffffff" font-size="16">KRR</text>
+</svg>

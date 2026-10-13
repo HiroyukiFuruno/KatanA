@@ -1,0 +1,107 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LinterTranslations {
+    pub rule_toggle: String,
+    pub docs: String,
+    pub fix: String,
+    pub fix_all: String,
+    pub disable_rule: String,
+    pub disable_rule_desc: String,
+    pub enable_linter: String,
+    pub rule_severities: String,
+    pub preset_label: String,
+    pub preset_katana: String,
+    pub preset_disabled: String,
+    pub preset_strict: String,
+    pub preset_warning: String,
+    pub workspace_rules: String,
+    pub workspace_rules_found: String,
+    pub workspace_rules_missing: String,
+    pub create_workspace_rules: String,
+    pub use_workspace_rules: String,
+    pub rule_details: String,
+    pub advanced_workspace_settings: String,
+    pub search_placeholder: String,
+    pub workspace_has_config: String,
+    pub open_config: String,
+    pub workspace_no_config: String,
+    pub create_config: String,
+    pub open_workspace_to_configure: String,
+    pub severity_ignore: String,
+    pub severity_warning: String,
+    pub severity_error: String,
+    pub use_workspace_local_config: String,
+    #[serde(default)]
+    pub view_on_github: String,
+    #[serde(default)]
+    pub fix_preview: String,
+    #[serde(default = "default_fix_preview_removed_line")]
+    pub fix_preview_removed_line: String,
+    #[serde(default = "default_fix_preview_added_line")]
+    pub fix_preview_added_line: String,
+    #[serde(default = "default_fix_preview_more")]
+    pub fix_preview_more: String,
+    #[serde(default = "default_fix_preview_missing_content")]
+    pub fix_preview_missing_content: String,
+}
+
+impl Default for LinterTranslations {
+    fn default() -> Self {
+        Self {
+            rule_toggle: "Toggle Linter Rule: {rule_code} ({rule_name})".to_string(),
+            docs: "Docs".to_string(),
+            fix: "Fix".to_string(),
+            fix_all: "Fix All".to_string(),
+            disable_rule: "Disable".to_string(),
+            disable_rule_desc: "Disable this rule".to_string(),
+            enable_linter: "Enable Markdown Linter".to_string(),
+            rule_severities: "Rule Severities".to_string(),
+            preset_label: "Common Rules".to_string(),
+            preset_katana: "KatanA".to_string(),
+            preset_disabled: "All Disabled".to_string(),
+            preset_strict: "Strict".to_string(),
+            preset_warning: "All Warnings".to_string(),
+            workspace_rules: "Workspace Rules".to_string(),
+            workspace_rules_found: "This workspace has its own rules.".to_string(),
+            workspace_rules_missing: "This workspace has no dedicated rules yet.".to_string(),
+            create_workspace_rules: "Expand to Workspace".to_string(),
+            use_workspace_rules: "Use This Workspace's Rules".to_string(),
+            rule_details: "Rule Details".to_string(),
+            advanced_workspace_settings: "Advanced Workspace Rule Settings".to_string(),
+            search_placeholder: "Search rules…".to_string(),
+            workspace_has_config: "Workspace rule set is available.".to_string(),
+            open_config: "Open Workspace Rule Settings".to_string(),
+            workspace_no_config: "No workspace rule set exists yet.".to_string(),
+            create_config: "Create Workspace Rule Set".to_string(),
+            open_workspace_to_configure:
+                "Open a workspace to configure workspace-specific lint rules.".to_string(),
+            severity_ignore: "Ignore".to_string(),
+            severity_warning: "Warning".to_string(),
+            severity_error: "Error".to_string(),
+            use_workspace_local_config: "Prefer Workspace Rule Set".to_string(),
+            view_on_github: "View on official GitHub".to_string(),
+            fix_preview: "Fix Preview".to_string(),
+            fix_preview_removed_line: default_fix_preview_removed_line(),
+            fix_preview_added_line: default_fix_preview_added_line(),
+            fix_preview_more: default_fix_preview_more(),
+            fix_preview_missing_content: default_fix_preview_missing_content(),
+        }
+    }
+}
+
+fn default_fix_preview_removed_line() -> String {
+    "- {line}".to_string()
+}
+
+fn default_fix_preview_added_line() -> String {
+    "+ {line}".to_string()
+}
+
+fn default_fix_preview_more() -> String {
+    "...".to_string()
+}
+
+fn default_fix_preview_missing_content() -> String {
+    "Original content not available for preview.".to_string()
+}

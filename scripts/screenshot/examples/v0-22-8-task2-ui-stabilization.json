@@ -1,0 +1,89 @@
+{
+  "schema_version": "1",
+  "name": "v0-22-8-task2-ui-stabilization",
+  "fixture": {
+    "settings": {
+      "theme": "dark",
+      "locale": "ja",
+      "explorer_visible": true,
+      "no_extension": true,
+      "linter_enabled": true
+    },
+    "workspace_files": [
+      {
+        "name": "README.md",
+        "content": "# Task 2 Check\n\n1. First\n1. Second\n\nSee the bundled assets.\n"
+      },
+      {
+        "name": "diagram.drawio",
+        "content": "<mxfile><diagram name=\"Page-1\"></diagram></mxfile>"
+      },
+      {
+        "name": "sample.svg",
+        "content": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"40\"><rect width=\"80\" height=\"40\" fill=\"#FFFFFF\"/></svg>"
+      },
+      {
+        "name": "plain",
+        "content": "extensionless note"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1440, "height": 900 },
+      "wait_seconds": 2.0
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-no-extension-standard-files"
+    },
+    {
+      "type": "action",
+      "action": {
+        "toggle_toc": {}
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "toggle_slideshow": {}
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "02-slideshow-toc-foreground"
+    },
+    {
+      "type": "action",
+      "action": {
+        "toggle_slideshow": {}
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "open_problems_panel": {}
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "03-problems-scope-toggle"
+    },
+    {
+      "type": "action",
+      "action": {
+        "run_global_search": {
+          "query": "sample",
+          "tab": "file_name",
+          "keystroke_delay_seconds": 0.05,
+          "pause_after_seconds": 0.6
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "04-search-options-right-aligned"
+    }
+  ]
+}

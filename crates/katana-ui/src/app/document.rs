@@ -1,0 +1,196 @@
+#![allow(unused_imports)]
+#![allow(dead_code)]
+use crate::app::*;
+use crate::shell::*;
+
+use crate::app::doc_close::DocCloseOps;
+use crate::app::doc_search::DocSearchRefresh;
+use crate::app::document_scroll::DocumentScrollOps;
+use crate::app::image_document::ImageDocumentOps;
+use crate::preview_pane::PreviewPane;
+use crate::shell_logic::ShellLogicOps;
+use katana_platform::FilesystemService;
+
+use crate::app_state::*;
+
+pub(crate) use super::document_contract::DocumentOps;
+
+#[path = "document_preview_policy.rs"]
+mod preview_policy;
+use preview_policy::DocumentPreviewPolicy;
+
+impl DocumentOps for KatanaApp {
+    fn handle_select_document(&mut self, path: std::path::PathBuf, activate: bool) {
+        let previous_active_path = self.state.active_path();
+
+        if activate {
+            let mut parent = path.parent();
+            while let Some(p) = parent {
+                if p == std::path::Path::new("") {
+                    break;
+                }
+                self.state
+                    .workspace
+                    .expanded_directories
+                    .insert(p.to_path_buf());
+                parent = p.parent();
+            }
+        }
+
+        if let Some(idx) = self
+            .state
+            .document
+            .open_documents
+            .iter()
+            .position(|d| d.path == path)
+        {
+            if activate {
+                self.state.document.active_doc_idx = Some(idx);
+                self.state.document.scroll_to_active_tab = true;
+                self.reset_scroll_for_new_active_path(&previous_active_path, &path);
+
+                if let Some(loaded_doc) =
+                    ImageDocumentOps::replacement_for_unloaded(&self.fs, &self.state, idx, &path)
+                {
+                    self.state.document.open_documents[idx] = loaded_doc;
+                }
+
+                let src = self.state.document.open_documents[idx].buffer.clone();
+                let concurrency = self
+                    .state
+                    .config
+                    .settings
+                    .settings()
+                    .performance
+                    .resolved_diagram_concurrency();
+                self.full_refresh_preview(&path, &src, false, concurrency);
+                DocumentPreviewPolicy::select(self, &path, true);
+                if self.state.search.doc_search_open {
+                    self.refresh_doc_search_matches(&src);
+                }
+                self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
+            }
+            return;
+        }
+
+        let doc = if activate {
+            match ImageDocumentOps::load_or_create(&self.fs, &path) {
+                Ok(d) => d,
+                Err(e) => {
+                    self.state.layout.status_message = Some((
+                        crate::i18n::I18nOps::tf(
+                            &crate::i18n::I18nOps::get().status.cannot_open_file,
+                            &[("error", e.to_string().as_str())],
+                        ),
+                        crate::app_state::StatusType::Error,
+                    ));
+                    return;
+                }
+            }
+        } else {
+            katana_core::document::Document::new_empty(&path)
+        };
+
+        let src = doc.buffer.clone();
+        let (concurrency, search_open) = {
+            let settings = self.state.config.settings.settings();
+            (
+                settings.performance.resolved_diagram_concurrency(),
+                self.state.search.doc_search_open,
+            )
+        };
+        self.full_refresh_preview(&path, &src, false, concurrency);
+        self.state.document.open_documents.push(doc);
+        if activate {
+            self.state.document.active_doc_idx = Some(self.state.document.open_documents.len() - 1);
+            self.state.document.scroll_to_active_tab = true;
+            self.reset_scroll_for_new_active_path(&previous_active_path, &path);
+            if search_open {
+                /* WHY: Refresh search matches only when activating a document.
+                Background loading must not disrupt the current UI state. */
+                self.refresh_doc_search_matches(&src);
+            }
+        }
+        self.state.initialize_tab_split_state(path.clone());
+        DocumentPreviewPolicy::select(self, &path, activate);
+        self.save_workspace_state();
+        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
+    }
+
+    fn force_close_document(&mut self, idx: usize) {
+        DocCloseOps::force_close_document(self, idx);
+    }
+
+    fn handle_update_buffer(&mut self, content: String) {
+        let Some(idx) = self.state.document.active_doc_idx else {
+            return;
+        };
+        if katana_core::workspace::TreeEntry::path_is_canvas(
+            &self.state.document.open_documents[idx].path,
+        ) {
+            return;
+        }
+        let (path, changed) = {
+            let doc = &mut self.state.document.open_documents[idx];
+            let before_revision = doc.revision;
+            doc.update_buffer(content.clone());
+            (doc.path.clone(), doc.revision != before_revision)
+        };
+        if !changed {
+            return;
+        }
+        DocumentPreviewPolicy::refresh_edited_markdown(self, &path, &content);
+
+        if self.state.search.doc_search_open {
+            self.refresh_doc_search_matches(&content);
+        }
+        self.state.diagnostics.last_buffer_update = Some(std::time::Instant::now());
+    }
+
+    fn handle_save_document(&mut self) {
+        let Some(idx) = self.state.document.active_doc_idx else {
+            return;
+        };
+        if katana_core::workspace::TreeEntry::path_is_canvas(
+            &self.state.document.open_documents[idx].path,
+        ) {
+            return;
+        }
+        if !self.state.document.open_documents[idx].is_dirty {
+            return;
+        }
+
+        use crate::state::document::VirtualPathExt as _;
+        if self.state.document.open_documents[idx]
+            .path
+            .is_virtual_path()
+        {
+            self.state.document.open_documents[idx].is_dirty = false;
+            return;
+        }
+
+        if let Err(e) = self
+            .fs
+            .save_document(&mut self.state.document.open_documents[idx])
+        {
+            self.state.layout.status_message = Some((
+                crate::i18n::I18nOps::tf(
+                    &crate::i18n::I18nOps::get().status.save_failed,
+                    &[("error", &e.to_string())],
+                ),
+                crate::app_state::StatusType::Error,
+            ));
+            return;
+        }
+
+        self.state.layout.status_message = Some((
+            crate::i18n::I18nOps::get().status.saved.clone(),
+            crate::app_state::StatusType::Success,
+        ));
+        let path = self.state.document.open_documents[idx].path.clone();
+        if katana_core::workspace::TreeEntry::path_is_html(&path) {
+            self.schedule_html_preview_refresh(&path);
+        }
+        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics; /* WHY: FB32 */
+    }
+}

@@ -1,0 +1,148 @@
+use crate::app::*;
+use crate::app_state::AppAction;
+use eframe::egui;
+
+mod dropped_files;
+mod shell_ui_auto;
+mod shell_ui_frame;
+mod shell_ui_shortcuts;
+mod shell_ui_update;
+mod shortcut_keys;
+mod types;
+pub use types::ShellUiOps;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum NativeDialogResult<T> {
+    Picked(T),
+    Cancelled,
+    Unavailable,
+}
+
+impl ShellUiOps {
+    pub fn update_native_menu_strings_from_i18n() {
+        crate::native_menu::NativeMenuOps::update_native_menu_strings_from_i18n();
+    }
+
+    pub(crate) fn is_headless() -> bool {
+        if std::env::var("KATANA_HEADLESS").is_ok() {
+            return true;
+        }
+        #[cfg(target_os = "linux")]
+        {
+            if std::env::var("DISPLAY").is_err() && std::env::var("WAYLAND_DISPLAY").is_err() {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub(crate) fn open_folder_dialog() -> Option<std::path::PathBuf> {
+        std::panic::catch_unwind(|| rfd::FileDialog::new().pick_folder()).unwrap_or(None)
+    }
+
+    pub(crate) fn open_folder_dialog_result() -> NativeDialogResult<std::path::PathBuf> {
+        match std::panic::catch_unwind(|| rfd::FileDialog::new().pick_folder()) {
+            Ok(Some(path)) => NativeDialogResult::Picked(path),
+            Ok(None) => NativeDialogResult::Cancelled,
+            Err(_) => NativeDialogResult::Unavailable,
+        }
+    }
+
+    pub(crate) fn open_file_dialog_result(
+        extensions: &[String],
+    ) -> NativeDialogResult<std::path::PathBuf> {
+        match std::panic::catch_unwind(|| {
+            rfd::FileDialog::new()
+                .add_filter("KatanA", extensions)
+                .pick_file()
+        }) {
+            Ok(Some(path)) => NativeDialogResult::Picked(path),
+            Ok(None) => NativeDialogResult::Cancelled,
+            Err(_) => NativeDialogResult::Unavailable,
+        }
+    }
+
+    pub(crate) fn pick_open_workspace() -> AppAction {
+        AppAction::PickOpenWorkspace
+    }
+}
+
+pub(crate) const WORKSPACE_SPINNER_OUTER_MARGIN: f32 = 10.0;
+pub(crate) const WORKSPACE_SPINNER_INNER_MARGIN: f32 = 10.0;
+pub(crate) const WORKSPACE_SPINNER_TEXT_MARGIN: f32 = 5.0;
+pub(crate) const STATUS_SUCCESS_GREEN: u8 = 200;
+pub(crate) const STATUS_BAR_ICON_SPACING: f32 = 4.0;
+
+pub(crate) const SEARCH_MODAL_WIDTH: f32 = 500.0;
+pub(crate) const SEARCH_MODAL_HEIGHT: f32 = 400.0;
+pub(crate) const TOC_PANEL_DEFAULT_WIDTH: f32 = 200.0;
+pub(crate) const TOC_PANEL_MARGIN: f32 = 8.0;
+pub(crate) const TOC_HEADING_VISIBILITY_THRESHOLD: f32 = 40.0;
+pub(crate) const TOC_INDENT_PER_LEVEL: f32 = 18.0;
+pub(crate) const LIGHT_MODE_ICON_BG: u8 = 235;
+pub(crate) const LIGHT_MODE_ICON_ACTIVE_BG: u8 = 200;
+
+pub(crate) struct TreeRenderContext<'a, 'b> {
+    pub action: &'a mut AppAction,
+    pub depth: usize,
+    pub active_path: Option<&'b std::path::Path>,
+    pub filter_set: Option<&'b std::collections::HashSet<std::path::PathBuf>>,
+    pub expanded_directories: &'a mut std::collections::HashSet<std::path::PathBuf>,
+    pub disable_context_menu: bool,
+    pub is_flat_view: bool,
+    pub ws_root: Option<&'b std::path::Path>,
+    pub tab_groups: Option<&'b [crate::state::document::TabGroup]>,
+    pub show_vertical_line: bool,
+}
+
+use crate::shell::KatanaApp;
+
+pub(crate) const SPLIT_HALF_RATIO: f32 = 0.5;
+pub(crate) const SPLIT_PANEL_MAX_RATIO: f32 = 0.7;
+pub(crate) const PREVIEW_CONTENT_PADDING: i8 = 12;
+
+impl eframe::App for KatanaApp {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        let ctx = ui.ctx().clone();
+        if crate::startup_heartbeat::StartupHeartbeat::is_enabled() {
+            ctx.request_repaint_after(std::time::Duration::from_millis(100));
+        }
+        crate::widgets::InteractionFacade::begin_frame(&ctx);
+        let theme_colors = self.poll_and_prepare(&ctx);
+
+        if !self.show_main_panels(ui, &theme_colors) {
+            crate::startup_heartbeat::StartupHeartbeat::record_completed_frame();
+            return;
+        }
+
+        if self.is_foreground_surface_active(&ctx) {
+            egui::Area::new("foreground_surface_blocker".into())
+                .order(egui::Order::Background)
+                .fixed_pos(egui::pos2(0.0, 0.0))
+                .interactable(true)
+                .show(&ctx, |ui| {
+                    ui.allocate_rect(ctx.content_rect(), egui::Sense::all());
+                });
+        }
+
+        self.show_modals(&ctx);
+        self.update_file_dialog(&ctx);
+
+        self.state.scroll.scroll_to_line = None;
+        self.state.scroll.toc_scroll_to_line = None;
+        crate::views::app_frame::AppFrameOps::intercept_url_commands(&ctx, self);
+
+        self.show_splash(&ctx);
+        crate::startup_heartbeat::StartupHeartbeat::record_completed_frame();
+    }
+
+    fn on_exit(&mut self) {
+        self.save_workspace_state();
+    }
+}
+
+#[cfg(test)]
+include!("shell_ui_tests.rs");
+
+#[cfg(all(test, feature = "external-fixture-acceptance"))]
+mod pdf_theme_tests;

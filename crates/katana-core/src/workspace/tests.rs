@@ -1,0 +1,105 @@
+use super::*;
+use std::path::PathBuf;
+
+#[test]
+fn test_workspace_collection() {
+    let root = PathBuf::from("/root");
+    let file1 = root.join("a.md");
+    let sub = root.join("sub");
+    let file2 = sub.join("b.md");
+
+    let workspace = Workspace::new(
+        root.clone(),
+        vec![
+            TreeEntry::File {
+                path: file1.clone(),
+            },
+            TreeEntry::Directory {
+                path: sub.clone(),
+                children: vec![TreeEntry::File {
+                    path: file2.clone(),
+                }],
+            },
+        ],
+    );
+
+    let mds = workspace.collect_all_markdown_file_paths();
+    assert_eq!(mds.len(), 2);
+    assert!(mds.contains(&file1));
+    assert!(mds.contains(&file2));
+
+    let dirs = workspace.collect_all_directory_paths();
+    assert_eq!(dirs.len(), 1);
+    assert!(dirs.contains(&sub));
+}
+
+#[test]
+fn test_image_extension_detection() {
+    let image = TreeEntry::File {
+        path: PathBuf::from("/root/asset/img/example.PNG"),
+    };
+    let markdown = TreeEntry::File {
+        path: PathBuf::from("/root/readme.md"),
+    };
+    let directory = TreeEntry::Directory {
+        path: PathBuf::from("/root/asset"),
+        children: Vec::new(),
+    };
+
+    assert!(image.is_image());
+    assert!(!markdown.is_image());
+    assert!(!directory.is_image());
+    assert!(TreeEntry::image_extensions().contains(&"png"));
+    assert!(TreeEntry::standard_visible_extensions().contains(&"drawio"));
+    assert!(TreeEntry::standard_visible_extensions().contains(&"svg"));
+}
+
+#[test]
+fn test_html_extension_detection() {
+    let html = TreeEntry::File {
+        path: PathBuf::from("/root/site/index.HTML"),
+    };
+    let htm = TreeEntry::File {
+        path: PathBuf::from("/root/site/legacy.htm"),
+    };
+    let markdown = TreeEntry::File {
+        path: PathBuf::from("/root/readme.md"),
+    };
+    let directory = TreeEntry::Directory {
+        path: PathBuf::from("/root/site"),
+        children: Vec::new(),
+    };
+
+    assert!(html.is_html());
+    assert!(htm.is_html());
+    assert!(!markdown.is_html());
+    assert!(!directory.is_html());
+    assert!(TreeEntry::html_extensions().contains(&"html"));
+    assert!(TreeEntry::html_extensions().contains(&"htm"));
+    assert!(TreeEntry::standard_visible_extensions().contains(&"html"));
+    assert!(TreeEntry::standard_visible_extensions().contains(&"htm"));
+}
+
+#[test]
+fn document_extension_detection_is_shared_with_visible_files() {
+    for extension in ["pdf", "docx", "xlsx", "pptx"] {
+        let document = TreeEntry::File {
+            path: PathBuf::from(format!("/root/document.{extension}")),
+        };
+        let uppercase = PathBuf::from(format!("/root/document.{}", extension.to_uppercase()));
+
+        assert!(document.is_document());
+        assert!(TreeEntry::path_is_document(&uppercase));
+        assert!(TreeEntry::document_extensions().contains(&extension));
+        assert!(TreeEntry::standard_visible_extensions().contains(&extension));
+    }
+
+    let directory = TreeEntry::Directory {
+        path: PathBuf::from("/root/document.pdf"),
+        children: Vec::new(),
+    };
+    assert!(!directory.is_document());
+    assert!(!TreeEntry::path_is_document(
+        PathBuf::from("/root/readme.md").as_path()
+    ));
+}

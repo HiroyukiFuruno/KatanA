@@ -1,0 +1,7 @@
+id: v0-22-12-document-viewer-expansion
+title: PDF/Word/Excel/PowerPoint/CSV 表示および Web ドキュメント連携機能
+version: 0.22.12
+status: drafting
+authors: ["Antigravity"]
+specs:
+  - document-viewer-integration

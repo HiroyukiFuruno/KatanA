@@ -1,0 +1,122 @@
+#![allow(unused_imports)]
+#![allow(dead_code)]
+use crate::app::*;
+use crate::shell::*;
+use katana_platform::CacheFacade;
+
+use crate::preview_pane::PreviewPane;
+use crate::shell_logic::ShellLogicOps;
+use katana_platform::FilesystemService;
+
+use crate::app_state::*;
+use std::ffi::OsStr;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use std::sync::mpsc::Receiver;
+
+pub(crate) mod manage;
+mod open;
+mod poll;
+pub(crate) mod tabs;
+
+fn append_standard_visible_extensions(extensions: &mut Vec<String>) {
+    append_extensions(
+        extensions,
+        katana_core::workspace::TreeEntry::standard_visible_extensions(),
+    );
+}
+
+fn append_extensions(extensions: &mut Vec<String>, additions: &[&str]) {
+    for ext in additions {
+        if extensions
+            .iter()
+            .any(|existing| existing.eq_ignore_ascii_case(ext))
+        {
+            continue;
+        }
+        extensions.push((*ext).to_string());
+    }
+}
+
+pub(crate) struct WorkspaceExtensionPolicy;
+
+impl WorkspaceExtensionPolicy {
+    pub(crate) fn effective(
+        settings: &katana_platform::settings::WorkspaceSettings,
+    ) -> Vec<String> {
+        let mut extensions = settings.visible_extensions.clone();
+        if settings.enable_drawio_mount {
+            extensions.push("drowio".to_string());
+        }
+        append_standard_visible_extensions(&mut extensions);
+        extensions
+    }
+
+    pub(crate) fn file_creation(
+        settings: &katana_platform::settings::WorkspaceSettings,
+    ) -> Vec<String> {
+        let mut extensions = settings.visible_extensions.clone();
+        append_extensions(
+            &mut extensions,
+            katana_core::workspace::TreeEntry::html_extensions(),
+        );
+        extensions
+    }
+}
+
+pub(crate) trait WorkspaceOps {
+    fn handle_open_explorer(&mut self, path: std::path::PathBuf);
+    fn finish_open_explorer(
+        &mut self,
+        path: std::path::PathBuf,
+        ws: katana_core::workspace::Workspace,
+    );
+    fn handle_refresh_explorer(&mut self);
+    fn poll_explorer_load(&mut self, ctx: &egui::Context);
+    fn handle_remove_explorer(&mut self, path: String);
+    fn handle_remove_workspace_history(&mut self, path: String);
+    fn handle_select_workspace_tab(&mut self, path: std::path::PathBuf);
+    fn handle_close_workspace_tab(&mut self, path: std::path::PathBuf);
+    fn handle_reorder_workspace_tab(&mut self, from: usize, to: usize);
+    fn save_workspace_state(&mut self);
+}
+
+impl WorkspaceOps for KatanaApp {
+    fn handle_open_explorer(&mut self, path: std::path::PathBuf) {
+        open::WorkspaceOpenHandlersOps::handle_open_explorer(self, path);
+    }
+    fn finish_open_explorer(
+        &mut self,
+        path: std::path::PathBuf,
+        ws: katana_core::workspace::Workspace,
+    ) {
+        open::WorkspaceOpenHandlersOps::finish_open_explorer(self, path, ws);
+    }
+    fn handle_refresh_explorer(&mut self) {
+        poll::handle_refresh_explorer(self);
+    }
+    fn poll_explorer_load(&mut self, ctx: &egui::Context) {
+        poll::poll_explorer_load(self, ctx);
+    }
+    fn handle_remove_explorer(&mut self, path: String) {
+        manage::handle_remove_explorer(self, path);
+    }
+    fn handle_remove_workspace_history(&mut self, path: String) {
+        manage::handle_remove_workspace_history(self, path);
+    }
+    fn handle_select_workspace_tab(&mut self, path: std::path::PathBuf) {
+        tabs::handle_select_workspace_tab(self, path);
+    }
+    fn handle_close_workspace_tab(&mut self, path: std::path::PathBuf) {
+        tabs::handle_close_workspace_tab(self, path);
+    }
+    fn handle_reorder_workspace_tab(&mut self, from: usize, to: usize) {
+        tabs::handle_reorder_workspace_tab(self, from, to);
+    }
+    fn save_workspace_state(&mut self) {
+        manage::save_workspace_state(self);
+    }
+}
+
+#[cfg(test)]
+mod tests;

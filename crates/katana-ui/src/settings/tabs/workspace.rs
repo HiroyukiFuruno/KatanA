@@ -1,0 +1,177 @@
+use super::types::*;
+use crate::settings::*;
+
+mod visible_extensions;
+use visible_extensions::{apply_extension_toggle, is_standard_visible_extension};
+
+impl WorkspaceTabOps {
+    pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
+        let workspace_msgs = &crate::i18n::I18nOps::get().settings.workspace;
+
+        SettingsOps::section_header(ui, &workspace_msgs.max_depth);
+        let mut max_depth = state.config.settings.settings().workspace.max_depth;
+        let slider = egui::Slider::new(&mut max_depth, 1..=100);
+        if SettingsOps::add_styled_slider(ui, slider).changed() {
+            state.config.settings.settings_mut().workspace.max_depth = max_depth;
+            let _ = state.config.try_save_settings();
+        }
+
+        ui.add_space(SECTION_SPACING);
+
+        SettingsOps::section_header(ui, &workspace_msgs.ignored_directories);
+        let mut ignored = state
+            .config
+            .settings
+            .settings()
+            .workspace
+            .ignored_directories
+            .clone();
+        if LayoutTabOps::render_string_list_editor(ui, &mut ignored) {
+            state
+                .config
+                .settings
+                .settings_mut()
+                .workspace
+                .ignored_directories = ignored;
+            let _ = state.config.try_save_settings();
+        }
+        ui.label(
+            egui::RichText::new(&workspace_msgs.ignored_directories_hint)
+                .weak()
+                .size(HINT_FONT_SIZE),
+        );
+
+        ui.add_space(SECTION_SPACING);
+
+        let mut drawio = state
+            .config
+            .settings
+            .settings()
+            .workspace
+            .enable_drawio_mount;
+        if ui
+            .add(crate::widgets::LabeledToggle::new(
+                &workspace_msgs.enable_drawio_mount,
+                &mut drawio,
+            ))
+            .changed()
+        {
+            state
+                .config
+                .settings
+                .settings_mut()
+                .workspace
+                .enable_drawio_mount = drawio;
+            let _ = state.config.try_save_settings();
+        }
+
+        ui.add_space(SECTION_SPACING);
+
+        let mut open_workspace_in_tabs = state
+            .config
+            .settings
+            .settings()
+            .workspace
+            .open_workspace_in_tabs;
+        if ui
+            .add(crate::widgets::LabeledToggle::new(
+                &workspace_msgs.open_workspace_in_tabs,
+                &mut open_workspace_in_tabs,
+            ))
+            .changed()
+        {
+            state
+                .config
+                .settings
+                .settings_mut()
+                .workspace
+                .open_workspace_in_tabs = open_workspace_in_tabs;
+            let _ = state.config.try_save_settings();
+        }
+
+        ui.add_space(SECTION_SPACING);
+
+        SettingsOps::section_header(ui, &workspace_msgs.visible_extensions);
+        let mut extensions = state
+            .config
+            .settings
+            .settings()
+            .workspace
+            .visible_extensions
+            .clone();
+        extensions.retain(|ext| !is_standard_visible_extension(ext));
+        let mut changed_ext = false;
+
+        ui.horizontal_wrapped(|ui| {
+            for ext in &["md", "markdown", "mdx", "txt", "adr", ""] {
+                let label_text = if ext.is_empty() {
+                    workspace_msgs.no_extension_label.as_str()
+                } else {
+                    *ext
+                };
+
+                let mut is_enabled = extensions.contains(&ext.to_string());
+                const ALIGNMENT_OFFSET: f32 = 8.0;
+                if ui
+                    .add(
+                        crate::widgets::LabeledToggle::new(label_text, &mut is_enabled)
+                            .alignment(crate::widgets::ToggleAlignment::Attached(ALIGNMENT_OFFSET)),
+                    )
+                    .changed()
+                {
+                    changed_ext |= apply_extension_toggle(ui, ext, is_enabled, &mut extensions);
+                }
+            }
+        });
+
+        if changed_ext {
+            state
+                .config
+                .settings
+                .settings_mut()
+                .workspace
+                .visible_extensions = extensions;
+            let _ = state.config.try_save_settings();
+        }
+
+        if state
+            .config
+            .settings
+            .settings()
+            .workspace
+            .visible_extensions
+            .contains(&"".to_string())
+        {
+            ui.add_space(SECTION_SPACING);
+
+            SettingsOps::section_header(ui, &workspace_msgs.extensionless_excludes);
+            let mut excludes = state
+                .config
+                .settings
+                .settings()
+                .workspace
+                .extensionless_excludes
+                .clone();
+            if LayoutTabOps::render_string_list_editor(ui, &mut excludes) {
+                state
+                    .config
+                    .settings
+                    .settings_mut()
+                    .workspace
+                    .extensionless_excludes = excludes;
+                let _ = state.config.try_save_settings();
+            }
+            ui.label(
+                egui::RichText::new(&workspace_msgs.extensionless_excludes_hint)
+                    .weak()
+                    .size(HINT_FONT_SIZE),
+            );
+        }
+
+        super::workspace_modal::WorkspaceModalOps::render_no_extension_warning_modal(
+            ui,
+            state,
+            workspace_msgs,
+        );
+    }
+}

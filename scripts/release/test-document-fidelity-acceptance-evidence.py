@@ -1,0 +1,1032 @@
+#!/usr/bin/env python3
+"""Regression tests for the v0.22.42 acceptance evidence checker."""
+
+from __future__ import annotations
+
+import importlib.util
+import json
+import math
+import os
+import subprocess
+import tempfile
+import unittest
+import zlib
+from unittest import mock
+from pathlib import Path
+
+
+SCRIPT = Path(__file__).with_name("check-document-fidelity-acceptance-evidence.py")
+HELPER_SPEC = importlib.util.spec_from_file_location("document_fidelity_test_artifacts", SCRIPT.with_name("document_fidelity_test_artifacts.py"))
+assert HELPER_SPEC is not None and HELPER_SPEC.loader is not None
+HELPER = importlib.util.module_from_spec(HELPER_SPEC)
+HELPER_SPEC.loader.exec_module(HELPER)
+bind_render_artifacts = HELPER.bind_render_artifacts
+png_bytes = HELPER.png_bytes
+SPEC = importlib.util.spec_from_file_location("document_acceptance_evidence", SCRIPT)
+assert SPEC is not None and SPEC.loader is not None
+MODULE = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(MODULE)
+
+
+class AcceptanceEvidenceTests(unittest.TestCase):
+    def test_source_paths_use_fixture_git_metadata_not_inherited_caller(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            caller = root / "caller"
+            caller.mkdir()
+            metadata = root / "caller-metadata"
+            clean_environment = {
+                key: value for key, value in os.environ.items() if not key.startswith("GIT_")
+            }
+            subprocess.run(
+                ["git", "init", "--separate-git-dir", str(metadata), "-q", str(caller)],
+                check=True,
+                env=clean_environment,
+            )
+            caller_source = caller / "crates" / "caller.rs"
+            caller_source.parent.mkdir()
+            caller_source.write_text("pub fn caller() {}\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "-C", str(caller), "add", "crates/caller.rs"],
+                check=True,
+                env=clean_environment,
+            )
+            config = metadata / "config"
+            before_config = config.read_bytes()
+            before_status = subprocess.run(
+                ["git", "-C", str(caller), "status", "--porcelain=v1"],
+                check=True,
+                capture_output=True,
+                env=clean_environment,
+            ).stdout
+            inherited = {
+                "GIT_DIR": str(metadata),
+                "GIT_WORK_TREE": str(caller),
+                "GIT_COMMON_DIR": str(metadata),
+            }
+            with mock.patch.dict(os.environ, {**clean_environment, **inherited}, clear=True):
+                with self.repository() as fixture_dir:
+                    fixture = Path(fixture_dir)
+                    fixture_source = fixture / "crates" / "source.rs"
+                    enumerated = MODULE.source_paths(fixture)
+            after_status = subprocess.run(
+                ["git", "-C", str(caller), "status", "--porcelain=v1"],
+                check=True,
+                capture_output=True,
+                env=clean_environment,
+            ).stdout
+            self.assertEqual(config.read_bytes(), before_config)
+            self.assertEqual(after_status, before_status)
+            self.assertIn(fixture_source, enumerated)
+            self.assertTrue(all(path.is_relative_to(fixture) for path in enumerated))
+            self.assertNotIn(caller_source, enumerated)
+
+    def repository(self) -> tempfile.TemporaryDirectory[str]:
+        directory = tempfile.TemporaryDirectory()
+        root = Path(directory.name)
+        (root / "Cargo.toml").write_text("[workspace]\nmembers = []\n", encoding="utf-8")
+        (root / "crates").mkdir()
+        (root / "crates" / "source.rs").write_text("pub fn source() {}\n", encoding="utf-8")
+        lock = """[[package]]
+name = "katana-document-viewer"
+version = "0.5.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "katana-render-runtime"
+version = "0.4.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "katana-ui-core"
+version = "0.3.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+"""
+        (root / "Cargo.lock").write_text(lock, encoding="utf-8")
+        subprocess.run(
+            ["git", "-C", str(root), "init", "-q"],
+            check=True,
+            env=MODULE.git_environment(),
+        )
+        contracts = root / "scripts/release/document-fidelity-contracts"
+        contracts.mkdir(parents=True)
+        artifacts = root / "evidence-artifacts"
+        artifacts.mkdir()
+        html_geometry = {"sticky_toc": {"x": 0, "y": 0, "width": 240, "height": 900}, "main": {"x": 240, "y": 0, "width": 1040, "height": 900}, "visible_section": {"x": 240, "y": 0, "width": 1040, "height": 900}}
+        for filename in ("html-reference.json", "html-measured.json"):
+            (artifacts / filename).write_text(json.dumps({"input_sha256": MODULE.ORIGINAL_HTML_SHA256, "geometry": html_geometry}), encoding="utf-8")
+        (contracts / "html-v0.22.42.json").write_text(json.dumps({
+            "input_sha256": MODULE.ORIGINAL_HTML_SHA256,
+            "reference_sha256": MODULE.sha256_bytes((artifacts / "html-reference.json").read_bytes()),
+            "reference_renderer": "chromeHTML",
+            "viewport": {"width": 1280, "height": 900},
+            "reference_artifact": "evidence-artifacts/html-reference.json", "geometry": {target: {"reference": rect, "tolerance": 1} for target, rect in {
+                "sticky_toc": {"x": 0, "y": 0, "width": 240, "height": 900},
+                "main": {"x": 240, "y": 0, "width": 1040, "height": 900},
+                "visible_section": {"x": 240, "y": 0, "width": 1040, "height": 900},
+            }.items()},
+        }), encoding="utf-8")
+        for index, input_sha in enumerate(MODULE.SUPPLIED_OFFICE_FIXTURES):
+            for filename in (f"office-{index}-reference.json", f"office-{index}-measured.json"):
+                (artifacts / filename).write_text(json.dumps({"input_sha256": input_sha, "geometry": {"synthetic-element": {"x": 0, "y": 0, "width": 10, "height": 10}}}), encoding="utf-8")
+            (contracts / f"office-v0.22.42-{index}.json").write_text(json.dumps({
+                "input_sha256": input_sha, "reference_sha256": MODULE.sha256_bytes((artifacts / f"office-{index}-reference.json").read_bytes()),
+                "reference_renderer": "sourceOffice", "viewport": {"width": 1280, "height": 900},
+                "reference_artifact": f"evidence-artifacts/office-{index}-reference.json",
+                "missing_elements_tolerance": 0,
+                "geometry": {"synthetic-element": {"reference": {"x": 0, "y": 0, "width": 10, "height": 10}, "tolerance": 1}},
+            }), encoding="utf-8")
+        subprocess.run(["git", "-C", str(root), "add", "-f", str(contracts)], check=True, env=MODULE.git_environment())
+        return directory
+
+    def valid_evidence(self, root: Path) -> dict[str, object]:
+        evidence = {
+            "schema_version": 1,
+            "target": "v0.22.42",
+            "runner_mode": "packaged_main",
+            "published_registry_graph": True,
+            "cargo_lock_sha256": MODULE.sha256_bytes((root / "Cargo.lock").read_bytes()),
+            "source_tree_sha256": MODULE.source_tree_sha256(root),
+            "published_dependencies": {
+                "katana-document-viewer": {"version": "0.5.7", "source": MODULE.CRATES_IO_SOURCE},
+                "katana-render-runtime": {"version": "0.4.21", "source": MODULE.CRATES_IO_SOURCE},
+                "katana-ui-core": {"version": "0.3.17", "source": MODULE.CRATES_IO_SOURCE},
+            },
+            "html": {
+                "fixture_sha256": MODULE.ORIGINAL_HTML_SHA256,
+                "runner_mode": "packaged_main",
+                "status": "passed",
+                "first_frame_ms": 1000,
+                "cpu_percent": 50.0,
+                "rss_bytes": 100000,
+                "normal_close": True,
+                "close_ms": 100,
+                "comparison": {
+                    "contract": "scripts/release/document-fidelity-contracts/html-v0.22.42.json",
+                    "reference_sha256": "c" * 64,
+                    "measured_sha256": "d" * 64,
+                    "producer_mode": "packaged_main",
+                    "viewports": {"reference": {"width": 1280, "height": 900}, "measured": {"width": 1280, "height": 900}},
+                    "input": {"fixture_sha256": MODULE.ORIGINAL_HTML_SHA256, "anchor": "#s15"},
+                    "navigation": {"from_fragment": "", "to_fragment": "#s15", "frame_before": 1, "frame_after": 2},
+                    "geometry": {
+                      "sticky_toc": {
+                        "reference": {"x": 0, "y": 0, "width": 240, "height": 900},
+                        "measured": {"x": 0, "y": 0, "width": 240, "height": 900},
+                      },
+                      "main": {
+                        "reference": {"x": 240, "y": 0, "width": 1040, "height": 900},
+                        "measured": {"x": 240, "y": 0, "width": 1040, "height": 900},
+                      },
+                      "visible_section": {
+                        "reference": {"x": 240, "y": 0, "width": 1040, "height": 900},
+                        "measured": {"x": 240, "y": 0, "width": 1040, "height": 900},
+                      },
+                    },
+                    "active_toc": {"reference": "#s15", "measured": "#s15"},
+                    "visible_section_state": {"reference": "#s15", "measured": "#s15"},
+                },
+            },
+            "packaged_targets": {
+                target: {
+                    "status": "passed",
+                    "runner_mode": "packaged_main",
+                    "clean_machine": True,
+                    "normal_close": True,
+                    "close_ms": 100,
+                    "pid": 100,
+                    "sidecar_pid": 101,
+                    "heartbeat_frame_before": 1,
+                    "heartbeat_frame_after": 2,
+                    "cpu_percent": 50.0,
+                    "rss_bytes": 100000,
+                    "main_path": "/release/KatanA",
+                    "sidecar_path": "/release/kdv-office-worker",
+                    "observed_sidecar_path": "/release/kdv-office-worker",
+                    "main_sha256": "a" * 64,
+                    "sidecar_sha256": "b" * 64,
+                    "observed_main_sha256": "a" * 64,
+                    "observed_sidecar_sha256": "b" * 64,
+                }
+                for target in MODULE.SUPPORTED_TARGETS
+            },
+            "office_fixtures": [
+                {
+                    "format": format_name,
+                    "status": "passed",
+                    "input_sha256": input_sha,
+                    "first_frame_ms": 1000,
+                    "item_count": 1,
+                    "fidelity": {
+                        "contract": f"scripts/release/document-fidelity-contracts/office-v0.22.42-{index}.json",
+                        "run_id": f"synthetic-office-run-{index}",
+                        "reference_sha256": "c" * 64,
+                        "measured_sha256": "d" * 64,
+                        "input_sha256": input_sha,
+                        "producer_mode": "packaged_main",
+                        "viewports": {"reference": {"width": 1280, "height": 900}, "measured": {"width": 1280, "height": 900}},
+                        "missing_elements": {"count": 0},
+                        "geometry": {"synthetic-element": {"reference": {"x": 0, "y": 0, "width": 10, "height": 10}, "measured": {"x": 0, "y": 0, "width": 10, "height": 10}}},
+                    },
+                    "release_worker": True,
+                    "packaged_target": "linux-x86_64",
+                    "packaged_run": {
+                        "run_id": f"synthetic-office-run-{index}",
+                        "fixture_sha256": input_sha,
+                        "status": "passed",
+                        "runner_mode": "packaged_main",
+                        "clean_machine": True,
+                        "normal_close": True,
+                        "close_ms": 100,
+                        "pid": 200 + index * 2,
+                        "sidecar_pid": 201 + index * 2,
+                        "heartbeat_frame_before": 10,
+                        "heartbeat_frame_after": 11,
+                        "cpu_percent": 50.0,
+                        "rss_bytes": 200_000_001,
+                        "main_path": "/release/KatanA",
+                        "sidecar_path": "/release/kdv-office-worker",
+                        "observed_sidecar_path": "/release/kdv-office-worker",
+                        "main_sha256": "a" * 64,
+                        "sidecar_sha256": "b" * 64,
+                        "observed_main_sha256": "a" * 64,
+                        "observed_sidecar_sha256": "b" * 64,
+                        "cold_rss_bytes": 200_000_000,
+                        "after_close_rss_bytes": 200_000_001,
+                    },
+                }
+                for index, (input_sha, format_name) in enumerate(MODULE.SUPPLIED_OFFICE_FIXTURES.items())
+            ],
+        }
+        evidence["html"]["comparison"]["contract_sha256"] = MODULE.sha256_bytes((root / "scripts/release/document-fidelity-contracts/html-v0.22.42.json").read_bytes())
+        evidence["html"]["comparison"]["reference_artifact"] = "evidence-artifacts/html-reference.json"
+        evidence["html"]["comparison"]["measured_artifact"] = "evidence-artifacts/html-measured.json"
+        evidence["html"]["comparison"]["reference_sha256"] = MODULE.sha256_bytes((root / "evidence-artifacts/html-reference.json").read_bytes())
+        evidence["html"]["comparison"]["measured_sha256"] = MODULE.sha256_bytes((root / "evidence-artifacts/html-measured.json").read_bytes())
+        for index, record in enumerate(evidence["office_fixtures"]):
+            record["fidelity"]["contract_sha256"] = MODULE.sha256_bytes((root / f"scripts/release/document-fidelity-contracts/office-v0.22.42-{index}.json").read_bytes())
+            record["fidelity"]["reference_artifact"] = f"evidence-artifacts/office-{index}-reference.json"
+            record["fidelity"]["measured_artifact"] = f"evidence-artifacts/office-{index}-measured.json"
+            record["fidelity"]["reference_sha256"] = MODULE.sha256_bytes((root / record["fidelity"]["reference_artifact"]).read_bytes())
+            record["fidelity"]["measured_sha256"] = MODULE.sha256_bytes((root / record["fidelity"]["measured_artifact"]).read_bytes())
+        bind_render_artifacts(root, evidence, MODULE)
+        return evidence
+
+    def write_evidence(self, root: Path, evidence: dict[str, object]) -> None:
+        path = root / MODULE.EVIDENCE_RELATIVE
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(evidence), encoding="utf-8")
+
+    def assert_rejected(self, mutate) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            mutate(evidence)
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root)
+
+    def test_valid_evidence_passes(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            self.write_evidence(root, self.valid_evidence(root))
+            MODULE.verify(root)
+
+    def test_missing_evidence_fails_closed(self) -> None:
+        with self.repository() as directory:
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(Path(directory))
+
+    def test_in_process_and_nonfinite_values_fail(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            evidence["runner_mode"] = "in_process"
+            evidence["html"]["cpu_percent"] = math.nan  # type: ignore[index]
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root)
+
+    def test_nonfinite_metric_fails(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            evidence["html"]["cpu_percent"] = math.nan  # type: ignore[index]
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root)
+
+    def test_invalid_hash_type_fails(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            evidence["cargo_lock_sha256"] = math.inf
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root)
+
+    def test_stale_lock_hash_fails(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            evidence["cargo_lock_sha256"] = "b" * 64
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root)
+
+    def test_unpublished_graph_fails(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            evidence["published_registry_graph"] = False
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root)
+
+    def test_invalid_identity_type_fails(self) -> None:
+        self.assert_rejected(
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(pid="100")
+        )
+
+    def test_sidecar_identity_fields_are_required(self) -> None:
+        self.assert_rejected(
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].pop("sidecar_pid")
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(sidecar_pid=0)
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(sidecar_pid=True)
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(sidecar_pid=100)
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(
+                observed_sidecar_path="/release/other-worker"
+            )
+        )
+
+    def test_source_tree_requires_git(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "Cargo.toml").write_text("[workspace]\n", encoding="utf-8")
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.source_paths(root)
+
+    def test_html_measurements_must_be_positive(self) -> None:
+        for field in ("first_frame_ms", "rss_bytes"):
+            self.assert_rejected(lambda evidence, field=field: evidence["html"].update({field: 0}))
+
+    def test_html_static_pass_does_not_replace_differential_comparison(self) -> None:
+        self.assert_rejected(lambda evidence: evidence["html"].pop("comparison"))
+        self.assert_rejected(
+            lambda evidence: evidence["html"]["comparison"].update(
+                input={"fixture_sha256": MODULE.ORIGINAL_HTML_SHA256, "anchor": "#other"}
+            )
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["html"]["comparison"]["geometry"]["sticky_toc"]["measured"].update(x=2)
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["html"]["comparison"].update(
+                active_toc={"reference": "#s15", "measured": "#s14"}
+            )
+        )
+
+    def test_office_item_count_does_not_replace_fidelity_comparison(self) -> None:
+        self.assert_rejected(lambda evidence: evidence["office_fixtures"][0].pop("fidelity"))
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0]["fidelity"].update(
+                missing_elements={"count": 1}
+            )
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0]["fidelity"].update(
+                geometry={"synthetic-element": {"reference": {"x": 0, "y": 0, "width": 10, "height": 10}, "measured": {"x": 2, "y": 0, "width": 10, "height": 10}}}
+            )
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0]["fidelity"].update(
+                contract_sha256="a" * 64
+            )
+        )
+
+    def test_comparison_contract_edges_fail_closed_and_signed_coordinates_are_valid(self) -> None:
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"].update(contract="/tmp/contract.json"))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"].update(contract="scripts/release/document-fidelity-contracts/../x.json"))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"].pop("producer_mode"))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"]["navigation"].update(to_fragment="#other"))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"]["navigation"].update(frame_after=1))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"]["navigation"].update(frame_before=True))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"]["viewports"].update(measured={"width": 1, "height": 1}))
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"].update(active_toc={"reference": None, "measured": None}))
+        self.assert_rejected(lambda evidence: evidence["office_fixtures"][0]["fidelity"].update(geometry={}))
+        self.assert_rejected(lambda evidence: evidence["office_fixtures"][0]["fidelity"].update(missing_elements={"count": -1}))
+        self.assert_rejected(lambda evidence: evidence["office_fixtures"][0]["fidelity"].update(geometry={"synthetic-element": {"reference": {"x": 0, "y": 0, "width": 10, "height": 10}, "measured": {"x": 0, "y": 0, "width": 10, "height": 10}, "delta": 999}}))
+
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            evidence["html"]["comparison"]["geometry"]["sticky_toc"]["measured"]["x"] = -0.5
+            measured_path = root / "evidence-artifacts/html-measured.json"
+            measured = json.loads(measured_path.read_text(encoding="utf-8"))
+            measured["geometry"]["sticky_toc"]["x"] = -0.5
+            measured_path.write_text(json.dumps(measured), encoding="utf-8")
+            evidence["html"]["comparison"]["measured_sha256"] = MODULE.sha256_bytes(measured_path.read_bytes())
+            evidence["html"]["packaged_run"]["render_output"]["metrics_sha256"] = evidence["html"]["comparison"]["measured_sha256"]
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
+
+    def test_contract_files_are_versioned_bound_and_not_excluded_from_source_hash(self) -> None:
+        for mutation in ("changed", "untracked", "symlink"):
+            with self.subTest(mutation=mutation), self.repository() as directory:
+                root = Path(directory)
+                evidence = self.valid_evidence(root)
+                contract = root / evidence["html"]["comparison"]["contract"]
+                if mutation == "changed":
+                    previous_hash = MODULE.source_tree_sha256(root)
+                    contract.write_text(contract.read_text() + "\n", encoding="utf-8")
+                    self.assertNotEqual(previous_hash, MODULE.source_tree_sha256(root))
+                elif mutation == "untracked":
+                    subprocess.run(["git", "-C", str(root), "rm", "--cached", "--", str(contract)], check=True, capture_output=True, env=MODULE.git_environment())
+                else:
+                    target = contract.with_name("replacement.json")
+                    contract.rename(target)
+                    contract.symlink_to(target.name)
+                self.write_evidence(root, evidence)
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify(root)
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify_html_comparison(root, evidence["html"])
+
+    def test_missing_contract_hash_is_not_repaired_and_identical_render_hashes_are_valid(self) -> None:
+        self.assert_rejected(lambda evidence: evidence["html"]["comparison"].pop("contract_sha256"))
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            comparison = evidence["html"]["comparison"]
+            self.assertEqual(evidence["html"]["packaged_run"]["render_output"]["sha256"], json.loads((root / comparison["reference_artifact"]).read_text())["render"]["sha256"])
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
+
+    def test_real_render_bytes_are_required_and_hash_bound(self) -> None:
+        for side in ("reference", "measured"):
+            for mutation in ("missing", "tampered", "json_instead_of_png", "symlink"):
+                with self.subTest(side=side, mutation=mutation), self.repository() as directory:
+                    root = Path(directory)
+                    evidence = self.valid_evidence(root)
+                    path = root / f"evidence-artifacts/html-{side}.png"
+                    if mutation == "missing":
+                        path.unlink()
+                    elif mutation == "tampered":
+                        path.write_bytes(path.read_bytes() + b"tampered")
+                    elif mutation == "json_instead_of_png":
+                        path.write_text("{}")
+                    else:
+                        target = path.with_suffix(".other.png")
+                        path.rename(target)
+                        path.symlink_to(target.name)
+                    self.write_evidence(root, evidence)
+                    with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                        MODULE.verify(root)
+
+    def test_structurally_invalid_pngs_are_rejected_with_all_digests_synced(self) -> None:
+        def corrupt_png(raw: bytes, mutation: str) -> bytes:
+            if mutation == "header_only":
+                return raw[:33]
+            if mutation == "truncated":
+                payload_end = 41 + int.from_bytes(raw[33:37], "big")
+                return raw[:payload_end - 1]
+            if mutation == "missing_iend":
+                return raw[:-12]
+            corrupted = bytearray(raw)
+            if mutation == "bad_crc":
+                corrupted[29] ^= 0x01
+                return bytes(corrupted)
+            if mutation == "invalid_deflate":
+                payload_start = 41
+                payload_end = payload_start + int.from_bytes(corrupted[33:37], "big")
+                corrupted[payload_start] ^= 0xFF
+                crc = zlib.crc32(b"IDAT" + corrupted[payload_start:payload_end])
+                corrupted[payload_end:payload_end + 4] = crc.to_bytes(4, "big")
+                return bytes(corrupted)
+            raise AssertionError(f"unknown PNG mutation: {mutation}")
+
+        for record_kind in ("html", "office"):
+            for side in ("reference", "measured"):
+                for mutation in ("header_only", "truncated", "missing_iend", "bad_crc", "invalid_deflate"):
+                    with self.subTest(kind=record_kind, side=side, mutation=mutation), self.repository() as directory:
+                        root = Path(directory)
+                        evidence = self.valid_evidence(root)
+                        record = evidence["html"] if record_kind == "html" else evidence["office_fixtures"][0]
+                        comparison = record["comparison"] if record_kind == "html" else record["fidelity"]
+                        manifest_path = root / comparison[f"{side}_artifact"]
+                        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                        render_path = root / manifest["render"]["path"]
+                        render_path.write_bytes(corrupt_png(render_path.read_bytes(), mutation))
+                        manifest["render"]["sha256"] = MODULE.sha256_bytes(render_path.read_bytes())
+                        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+                        manifest_digest = MODULE.sha256_bytes(manifest_path.read_bytes())
+                        comparison[f"{side}_sha256"] = manifest_digest
+                        if side == "reference":
+                            contract_path = root / comparison["contract"]
+                            contract = json.loads(contract_path.read_text(encoding="utf-8"))
+                            contract["reference_sha256"] = manifest_digest
+                            contract_path.write_text(json.dumps(contract), encoding="utf-8")
+                            comparison["contract_sha256"] = MODULE.sha256_bytes(contract_path.read_bytes())
+                            evidence["source_tree_sha256"] = MODULE.source_tree_sha256(root)
+                        else:
+                            record["packaged_run"]["render_output"].update(
+                                manifest["render"],
+                                metrics_path=comparison["measured_artifact"],
+                                metrics_sha256=manifest_digest,
+                            )
+                        self.write_evidence(root, evidence)
+                        with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                            MODULE.verify(root)
+
+    def test_packaged_render_output_and_metrics_cannot_be_forged(self) -> None:
+        for record_kind in ("html", "office"):
+            for mutation in ("run", "target", "geometry", "state", "viewport", "producer"):
+                with self.subTest(kind=record_kind, mutation=mutation), self.repository() as directory:
+                    root = Path(directory)
+                    evidence = self.valid_evidence(root)
+                    record = evidence["html"] if record_kind == "html" else evidence["office_fixtures"][0]
+                    comparison = record["comparison"] if record_kind == "html" else record["fidelity"]
+                    path = root / comparison["measured_artifact"]
+                    manifest = json.loads(path.read_text())
+                    if mutation == "run":
+                        manifest["run_identity"]["run_id"] = "foreign-run"
+                    elif mutation == "target":
+                        manifest["run_identity"]["target"] = "foreign-target"
+                    elif mutation == "geometry":
+                        manifest["geometry"][next(iter(manifest["geometry"]))]["x"] = 1
+                    elif mutation == "state":
+                        manifest["active_toc"] = "#s14"
+                        manifest["missing_elements"] = {"count": 1}
+                    elif mutation == "viewport":
+                        manifest["viewport"]["width"] = 1
+                    else:
+                        manifest["producer_mode"] = "in_process"
+                    path.write_text(json.dumps(manifest))
+                    digest = MODULE.sha256_bytes(path.read_bytes())
+                    comparison["measured_sha256"] = digest
+                    record["packaged_run"]["render_output"]["metrics_sha256"] = digest
+                    self.write_evidence(root, evidence)
+                    with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                        MODULE.verify(root)
+
+    def test_recorded_run_output_binding_and_receipt_immutability(self) -> None:
+        self.assert_rejected(lambda evidence: evidence["html"]["packaged_run"].pop("render_output"))
+        self.assert_rejected(lambda evidence: evidence["office_fixtures"][0]["packaged_run"]["render_output"].update(sha256="a" * 64))
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            original = json.dumps(evidence, sort_keys=True)
+            MODULE.verify_html_comparison(root, evidence["html"])
+            for index, record in enumerate(evidence["office_fixtures"]):
+                MODULE.verify_office_fidelity(root, record, index, record["input_sha256"])
+            self.assertEqual(json.dumps(evidence, sort_keys=True), original)
+
+    def test_render_dimensions_preserve_logical_viewport_at_double_pixel_ratio(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            html = evidence["html"]
+            path = root / html["comparison"]["measured_artifact"]
+            manifest = json.loads(path.read_text())
+            render = manifest["render"]
+            (root / render["path"]).write_bytes(png_bytes(2560, 1800))
+            render.update(pixel_ratio=2, sha256=MODULE.sha256_bytes((root / render["path"]).read_bytes()))
+            path.write_text(json.dumps(manifest))
+            digest = MODULE.sha256_bytes(path.read_bytes())
+            html["comparison"]["measured_sha256"] = digest
+            html["packaged_run"]["render_output"] = dict(render, metrics_path=html["comparison"]["measured_artifact"], metrics_sha256=digest)
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
+            manifest["render"]["pixel_ratio"] = 1
+            path.write_text(json.dumps(manifest))
+            digest = MODULE.sha256_bytes(path.read_bytes())
+            html["comparison"]["measured_sha256"] = digest
+            html["packaged_run"]["render_output"].update(pixel_ratio=1, metrics_sha256=digest)
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root)
+
+    def test_normal_close_requires_measured_duration_for_every_run_kind(self) -> None:
+        selectors = (
+            lambda evidence: evidence["html"],
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"],
+            lambda evidence: evidence["office_fixtures"][0]["packaged_run"],
+        )
+        for select in selectors:
+            self.assert_rejected(lambda evidence: select(evidence).pop("close_ms"))
+            for duration in (5000.1, -1, True, "100", None, math.nan, math.inf):
+                with self.subTest(select=select, duration=duration):
+                    self.assert_rejected(
+                        lambda evidence: select(evidence).update(close_ms=duration)
+                    )
+
+    def test_normal_close_accepts_exact_deadline_for_every_run_kind(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            evidence["html"]["close_ms"] = 5000
+            for record in evidence["packaged_targets"].values():
+                record["close_ms"] = 5000
+            for record in evidence["office_fixtures"]:
+                record["packaged_run"]["close_ms"] = 5000
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
+
+    def test_packaged_target_contract_fields_are_required(self) -> None:
+        mutations = (
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(runner_mode="in_process"),
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(clean_machine=False),
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(normal_close=False),
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(heartbeat_frame_after=1),
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(cpu_percent=float("nan")),
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(rss_bytes=0),
+            lambda evidence: evidence["packaged_targets"]["linux-x86_64"].update(main_path="KatanA"),
+        )
+        for mutation in mutations:
+            self.assert_rejected(mutation)
+
+    def test_office_formats_and_input_hashes_are_distinct(self) -> None:
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0].update(format="pdf")
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][1].update(
+                input_sha256=evidence["office_fixtures"][0]["input_sha256"]
+            )
+        )
+
+    def test_office_requires_six_distinct_results_and_xlsx_pptx(self) -> None:
+        self.assert_rejected(lambda evidence: evidence["office_fixtures"].pop())
+        self.assert_rejected(
+            lambda evidence: [record.update(format="docx") for record in evidence["office_fixtures"]]
+        )
+
+    def test_office_requires_the_supplied_docx_in_addition_to_original_six(self) -> None:
+        def remove_docx(evidence: dict[str, object]) -> None:
+            evidence["office_fixtures"][:] = [
+                record for record in evidence["office_fixtures"] if record["format"] != "docx"
+            ]
+
+        self.assert_rejected(remove_docx)
+
+    def test_supplied_docx_requires_hash_format_and_fidelity_bound_run(self) -> None:
+        def docx_record(evidence: dict[str, object]) -> dict[str, object]:
+            return next(record for record in evidence["office_fixtures"] if record["format"] == "docx")
+
+        self.assert_rejected(
+            lambda evidence: docx_record(evidence).update(input_sha256="c" * 64)
+        )
+        self.assert_rejected(
+            lambda evidence: docx_record(evidence).update(format="xlsx")
+        )
+        self.assert_rejected(
+            lambda evidence: docx_record(evidence).pop("fidelity")
+        )
+        self.assert_rejected(
+            lambda evidence: docx_record(evidence)["packaged_run"].update(
+                fixture_sha256="c" * 64
+            )
+        )
+
+    def test_sha_requires_exact_hex(self) -> None:
+        self.assert_rejected(
+            lambda evidence: evidence.update(cargo_lock_sha256="+" + "a" * 63)
+        )
+
+    def test_schema_version_boolean_fails(self) -> None:
+        self.assert_rejected(lambda evidence: evidence.update(schema_version=True))
+
+    def test_schema_version_float_and_string_fail(self) -> None:
+        self.assert_rejected(lambda evidence: evidence.update(schema_version=1.0))
+        self.assert_rejected(lambda evidence: evidence.update(schema_version="1"))
+
+    def test_supplied_input_format_mapping_is_enforced(self) -> None:
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0].update(format="pptx")
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0].update(input_sha256="c" * 64)
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"].pop()
+        )
+
+    def test_unexecuted_zero_measurements_fail(self) -> None:
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0].update(first_frame_ms=0)
+        )
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0].update(item_count=0)
+        )
+
+    def test_office_requires_packaged_run_instead_of_boolean_worker_claim(self) -> None:
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0].pop("packaged_run")
+        )
+
+    def test_office_packaged_run_requires_passed_packaged_main_identity(self) -> None:
+        mutations = (
+            ("in_process", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(runner_mode="in_process")),
+            ("normal_close_false", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(normal_close=False)),
+            ("clean_machine_false", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(clean_machine=False)),
+            ("heartbeat_stalled", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(heartbeat_frame_after=10)),
+            ("main_hash_mismatch", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(main_sha256="c" * 64)),
+            ("different_main_artifact", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(main_sha256="c" * 64, observed_main_sha256="c" * 64)),
+            ("different_sidecar_artifact", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(sidecar_sha256="c" * 64, observed_sidecar_sha256="c" * 64)),
+            ("different_main_path", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(main_path="/another/KatanA")),
+            ("different_sidecar_path", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(sidecar_path="/another/kdv-office-worker", observed_sidecar_path="/another/kdv-office-worker")),
+            ("fixture_hash_mismatch", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(fixture_sha256="c" * 64)),
+            ("missing_target", lambda evidence: evidence["office_fixtures"][0].pop("packaged_target")),
+            ("unknown_target", lambda evidence: evidence["office_fixtures"][0].update(packaged_target="unknown-target")),
+        )
+        for case, mutation in mutations:
+            with self.subTest(case=case):
+                self.assert_rejected(mutation)
+
+    def test_office_packaged_run_ids_are_required_and_unique(self) -> None:
+        cases = (
+            ("missing", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].pop("run_id")),
+            ("empty", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(run_id=" ")),
+            ("surrounding_whitespace", lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(run_id=" run-1 ")),
+            (
+                "duplicate",
+                lambda evidence: evidence["office_fixtures"][1]["packaged_run"].update(
+                    run_id=evidence["office_fixtures"][0]["packaged_run"]["run_id"]
+                ),
+            ),
+        )
+        for case, mutation in cases:
+            with self.subTest(case=case):
+                self.assert_rejected(mutation)
+
+    def test_office_packaged_run_requires_positive_rss_measurements(self) -> None:
+        for field in ("cold_rss_bytes", "after_close_rss_bytes"):
+            with self.subTest(field=field, case="missing"):
+                self.assert_rejected(
+                    lambda evidence, field=field: evidence["office_fixtures"][0]["packaged_run"].pop(field)
+                )
+            with self.subTest(field=field, case="zero"):
+                self.assert_rejected(
+                    lambda evidence, field=field: evidence["office_fixtures"][0]["packaged_run"].update({field: 0})
+                )
+
+    def test_resource_cycle_receipt_is_required_and_fail_closed(self) -> None:
+        mutations = (
+            lambda evidence: evidence["office_fixtures"][0]["packaged_run"].pop("resource_cycle_artifact"),
+            lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(resource_cycle_sha256="a" * 64),
+            lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(resource_cycle_sha256=math.nan),
+        )
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                self.assert_rejected(mutation)
+
+    def test_resource_cycle_requires_mixed_ten_closes_and_final_idle(self) -> None:
+        cases = (
+            ("short", lambda artifact: artifact["cycles"].pop()),
+            ("missing_html", lambda artifact: artifact["cycles"][0].pop("html")),
+            ("unclosed", lambda artifact: artifact["cycles"][0]["office"].update(close_completed=False)),
+            ("residual", lambda artifact: artifact["cycles"][0]["office"]["snapshot"].update(worker_count=1)),
+            ("oversize", lambda artifact: artifact["final_snapshot"].update(rss_bytes=200_000_100 + 65536 * 1024 + 1)),
+            ("invalid_footprint", lambda artifact: artifact["final_snapshot"].update(physical_footprint_bytes=math.nan)),
+        )
+        for case, mutation in cases:
+            with self.subTest(case=case), self.repository() as directory:
+                root = Path(directory)
+                evidence = self.valid_evidence(root)
+                run = evidence["office_fixtures"][0]["packaged_run"]
+                artifact_path = root / run["resource_cycle_artifact"]
+                artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+                mutation(artifact)
+                artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+                run["resource_cycle_sha256"] = MODULE.sha256_bytes(artifact_path.read_bytes())
+                self.write_evidence(root, evidence)
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify(root)
+
+    def _mutate_resource_cycle(self, evidence: dict[str, object], root: Path, mutate) -> None:
+        run = evidence["office_fixtures"][0]["packaged_run"]
+        artifact_path = root / run["resource_cycle_artifact"]
+        artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+        mutate(artifact, run)
+        artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+        run["resource_cycle_sha256"] = MODULE.sha256_bytes(artifact_path.read_bytes())
+
+    def test_resource_cycle_accepts_eleven_cycles_and_closed_obsolete_generation(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            def mutate(artifact, run):
+                cycle = json.loads(json.dumps(artifact["cycles"][-1]))
+                cycle["cycle"] = 11
+                cycle["html"]["session_id"] = "html-11"
+                cycle["office"]["session_id"] = "office-11"
+                for record in cycle["opened_generations"] + cycle["closed_generations"]:
+                    record["session_id"] = record["session_id"].replace("10", "11")
+                artifact["cycles"].append(cycle)
+                artifact["final_snapshot"] = cycle["office"]["snapshot"]
+            self._mutate_resource_cycle(evidence, root, mutate)
+            run = evidence["office_fixtures"][0]["packaged_run"]
+            MODULE.verify_resource_cycle(root, run, "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
+
+            evidence = self.valid_evidence(root)
+            def obsolete(artifact, run):
+                artifact["cycles"][0]["opened_generations"].append({"session_id": "old", "generation": 9})
+                artifact["cycles"][0]["closed_generations"].append({"session_id": "old", "generation": 9, "close_ms": 50})
+            self._mutate_resource_cycle(evidence, root, obsolete)
+            run = evidence["office_fixtures"][0]["packaged_run"]
+            MODULE.verify_resource_cycle(root, run, "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
+
+    def test_resource_cycle_rejects_unclosed_obsolete_and_foreign_identity(self) -> None:
+        def unclosed(artifact, run):
+            artifact["cycles"][0]["opened_generations"].append({"session_id": "old", "generation": 9})
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            self._mutate_resource_cycle(evidence, root, unclosed)
+            run = evidence["office_fixtures"][0]["packaged_run"]
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify_resource_cycle(root, run, "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
+            for field in ("run_id", "target", "main_sha256", "sidecar_sha256", "fixture_sha256"):
+                evidence = self.valid_evidence(root)
+                def foreign(artifact, run, field=field):
+                    artifact["run_identity"][field] = "f" * 64 if field not in ("run_id", "target") else "foreign"
+                self._mutate_resource_cycle(evidence, root, foreign)
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify_resource_cycle(root, evidence["office_fixtures"][0]["packaged_run"], "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
+
+    def test_resource_cycle_rejects_boolean_counts_cycle_and_nonfinite_duration(self) -> None:
+        def warm_oversize(artifact, run):
+            value = artifact["warm_snapshot"]["rss_bytes"] + 65_536 * 1024 + 1
+            artifact["final_snapshot"]["rss_bytes"] = value
+            artifact["cycles"][-1]["office"]["snapshot"]["rss_bytes"] = value
+        cases = (
+            lambda artifact, run: artifact["cycles"][0]["office"]["snapshot"].update(worker_count=True),
+            lambda artifact, run: artifact["cycles"][0].update(cycle=True),
+            lambda artifact, run: artifact["cycles"][0]["office"].update(close_ms=math.nan),
+            lambda artifact, run: artifact["warm_snapshot"].update(rss_bytes=artifact["cold_snapshot"]["rss_bytes"] + 196608 * 1024 + 1),
+            warm_oversize,
+        )
+        for mutation in cases:
+            with self.subTest(mutation=mutation), self.repository() as directory:
+                root = Path(directory)
+                evidence = self.valid_evidence(root)
+                self._mutate_resource_cycle(evidence, root, mutation)
+                run = evidence["office_fixtures"][0]["packaged_run"]
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify_resource_cycle(root, run, "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
+
+    def test_resource_cycle_rejects_physical_budget_breach_when_rss_is_within_budget(self) -> None:
+        def set_physical_snapshots(artifact, cold, warm, final):
+            for key, value in (("cold_snapshot", cold), ("warm_snapshot", warm), ("final_snapshot", final)):
+                artifact[key]["physical_footprint_bytes"] = value
+            for index, cycle in enumerate(artifact["cycles"]):
+                cycle["office"]["snapshot"]["physical_footprint_bytes"] = final if index == len(artifact["cycles"]) - 1 else warm
+
+        cases = (
+            ("cold", lambda artifact: set_physical_snapshots(artifact, 300_000_000, 300_000_000 + 196_608 * 1024 + 1, 300_000_000 + 196_608 * 1024 + 1)),
+            ("steady", lambda artifact: set_physical_snapshots(artifact, 300_000_000, 300_000_000, 300_000_000 + 65_536 * 1024 + 1)),
+        )
+        for case, mutate in cases:
+            with self.subTest(case=case), self.repository() as directory:
+                root = Path(directory)
+                evidence = self.valid_evidence(root)
+                self._mutate_resource_cycle(evidence, root, lambda artifact, run: mutate(artifact))
+                self.write_evidence(root, evidence)
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify(root)
+
+    def test_resource_cycle_accepts_independent_physical_budget_boundaries(self) -> None:
+        def set_physical_snapshots(artifact, cold, warm, final):
+            for key, value in (("cold_snapshot", cold), ("warm_snapshot", warm), ("final_snapshot", final)):
+                artifact[key]["physical_footprint_bytes"] = value
+            for index, cycle in enumerate(artifact["cycles"]):
+                cycle["office"]["snapshot"]["physical_footprint_bytes"] = final if index == len(artifact["cycles"]) - 1 else warm
+
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            cold = 300_000_000
+            warm = cold + 196_608 * 1024
+            final = warm + 65_536 * 1024
+            self._mutate_resource_cycle(
+                evidence,
+                root,
+                lambda artifact, run: set_physical_snapshots(artifact, cold, warm, final),
+            )
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
+
+    def test_resource_cycle_rejects_missing_and_noninteger_physical_footprint(self) -> None:
+        cases = (
+            lambda artifact: artifact["cold_snapshot"].pop("physical_footprint_bytes"),
+            lambda artifact: artifact["cold_snapshot"].update(physical_footprint_bytes=True),
+            lambda artifact: artifact["cold_snapshot"].update(physical_footprint_bytes=1.0),
+            lambda artifact: artifact["cold_snapshot"].update(physical_footprint_bytes="1"),
+        )
+        for mutate in cases:
+            with self.subTest(mutate=mutate), self.repository() as directory:
+                root = Path(directory)
+                evidence = self.valid_evidence(root)
+                self._mutate_resource_cycle(evidence, root, lambda artifact, run: mutate(artifact))
+                run = evidence["office_fixtures"][0]["packaged_run"]
+                with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                    MODULE.verify_resource_cycle(root, run, "linux-x86_64", evidence["office_fixtures"][0]["input_sha256"], "Office fixture 0")
+
+    def test_office_cold_rss_delta_keeps_existing_budget(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            run = evidence["office_fixtures"][0]["packaged_run"]
+            evidence["office_fixtures"][0]["packaged_run"].update(
+                cold_rss_bytes=100_000_000,
+                after_close_rss_bytes=100_000_000 + 196_608 * 1024,
+            )
+            def sync_budget(artifact, run):
+                cold = run["cold_rss_bytes"]
+                warm = run["after_close_rss_bytes"]
+                final = warm + 100
+                for key, value in (("cold_snapshot", cold), ("warm_snapshot", warm), ("final_snapshot", final)):
+                    artifact[key]["rss_bytes"] = value
+                    artifact[key]["physical_footprint_bytes"] = value
+                for index, cycle in enumerate(artifact["cycles"]):
+                    value = final if index == len(artifact["cycles"]) - 1 else warm
+                    cycle["office"]["snapshot"]["rss_bytes"] = value
+                    cycle["office"]["snapshot"]["physical_footprint_bytes"] = value
+            self._mutate_resource_cycle(evidence, root, sync_budget)
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0]["packaged_run"].update(
+                cold_rss_bytes=100_000_000,
+                after_close_rss_bytes=100_000_000 + 196_608 * 1024 + 1,
+            )
+        )
+
+    def test_resource_cycle_keeps_separate_cold_and_warm_inclusive_budgets(self) -> None:
+        for cold_delta, warm_delta in ((191 * 1024 * 1024, 10 * 1024 * 1024),
+                                      (196_608 * 1024, 65_536 * 1024)):
+            with self.subTest(cold_delta=cold_delta, warm_delta=warm_delta), self.repository() as directory:
+                root = Path(directory)
+                evidence = self.valid_evidence(root)
+                def boundary(artifact, run):
+                    cold = run["cold_rss_bytes"]
+                    warm = cold + cold_delta
+                    final = warm + warm_delta
+                    run["after_close_rss_bytes"] = warm
+                    for key, value in (("warm_snapshot", warm), ("final_snapshot", final)):
+                        artifact[key].update(rss_bytes=value, physical_footprint_bytes=value)
+                    for index, cycle in enumerate(artifact["cycles"]):
+                        value = final if index == len(artifact["cycles"]) - 1 else warm
+                        cycle["office"]["snapshot"].update(rss_bytes=value, physical_footprint_bytes=value)
+                self._mutate_resource_cycle(evidence, root, boundary)
+                self.write_evidence(root, evidence)
+                MODULE.verify(root)
+
+    def test_resource_cycle_rejects_replayed_obsolete_generation(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            def replay(artifact, run):
+                for cycle in artifact["cycles"][:2]:
+                    cycle["opened_generations"].append({"session_id": "obsolete", "generation": 9})
+                    cycle["closed_generations"].append({"session_id": "obsolete", "generation": 9, "close_ms": 50})
+            self._mutate_resource_cycle(evidence, root, replay)
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root)
+
+    def test_office_first_frame_has_15000_ms_inclusive_limit(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            evidence["office_fixtures"][0]["first_frame_ms"] = 15000
+            self.write_evidence(root, evidence)
+            MODULE.verify(root)
+
+        self.assert_rejected(
+            lambda evidence: evidence["office_fixtures"][0].update(first_frame_ms=15000.001)
+        )
+
+    def test_assets_are_in_source_tree_hash(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            assets = root / "assets"
+            assets.mkdir()
+            (assets / "fixture.bin").write_bytes(b"before")
+            evidence = self.valid_evidence(root)
+            (assets / "fixture.bin").write_bytes(b"after")
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root)
+
+
+if __name__ == "__main__":
+    unittest.main()

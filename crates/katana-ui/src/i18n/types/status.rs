@@ -1,0 +1,49 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StatusMessages {
+    pub ready: String,
+    pub saved: String,
+    pub save_failed: String,
+    pub opened_workspace: String,
+    pub cannot_open_workspace: String,
+    pub cannot_open_file: String,
+    pub move_failed: String,
+    pub moved_file: String,
+    pub refresh_success: String,
+    pub refresh_skipped_dirty: String,
+    pub refresh_no_changes: String,
+    pub refresh_failed: String,
+    pub problems_panel_title: String,
+    pub problems_panel_close: String,
+    pub no_problems_found: String,
+    pub toggle_problems_panel: String,
+    pub problems_count_format: String,
+    pub fix_file_problems: String,
+    pub fix_all_detected_problems: String,
+    #[serde(default = "default_problems_scope_open_tabs")]
+    pub problems_scope_open_tabs: String,
+    #[serde(default = "default_problems_scope_active_tab")]
+    pub problems_scope_active_tab: String,
+    pub format_markdown_success: String,
+    pub format_markdown_partial_failure: String,
+    pub format_markdown_not_markdown: String,
+    pub removed_workspace: String,
+    pub error_save_settings: String,
+    pub closed_workspace: String,
+    pub label_dirty: String,
+    pub label_loaded: String,
+    pub label_pinned: String,
+    pub label_path: String,
+    pub kind_markdown: String,
+    pub yes: String,
+    pub no: String,
+}
+
+fn default_problems_scope_open_tabs() -> String {
+    "Open tabs".to_string()
+}
+
+fn default_problems_scope_active_tab() -> String {
+    "Active tab".to_string()
+}

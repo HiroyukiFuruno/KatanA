@@ -1,0 +1,86 @@
+{
+  "schema_version": "1",
+  "name": "v0-22-8-fix-preview",
+  "fixture": {
+    "settings": {
+      "theme": "dark",
+      "locale": "ja",
+      "explorer_visible": true,
+      "linter_enabled": true
+    },
+    "workspace_files": [
+      {
+        "name": "README.md",
+        "content": "# Fix Preview Check\n\ncontext line 1\ncontext line 2\ncontext line 3\ncontext line 4\ncontext line 5\ncontext line 6\ncontext line 7\ncontext line 8\ncontext line 9\ncontext line 10\n\n1. First\n1. Second\n1. Third\n"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1280, "height": 800 },
+      "wait_seconds": 2.0
+    },
+    {
+      "type": "open_file",
+      "file_name": "README.md",
+      "wait_seconds": 1.0
+    },
+    {
+      "type": "action",
+      "action": {
+        "set_view_mode": {
+          "mode": "code_only"
+        }
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_at": {
+          "x": 250.0,
+          "y": 784.0,
+          "button": "primary",
+          "wait_seconds": 0.8
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-problems-panel"
+    },
+    {
+      "type": "action",
+      "action": {
+        "hover_at": {
+          "x": 1150.0,
+          "y": 755.0,
+          "wait_seconds": 1.2
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "02-fix-preview-tooltip"
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_at": {
+          "x": 1150.0,
+          "y": 755.0,
+          "button": "primary",
+          "wait_seconds": 1.0
+        }
+      }
+    },
+    {
+      "type": "assert_active_document",
+      "path_contains": "DiffReview"
+    },
+    {
+      "type": "screenshot",
+      "output_name": "03-file-diff-review"
+    }
+  ]
+}

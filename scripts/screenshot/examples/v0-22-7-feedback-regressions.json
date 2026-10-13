@@ -1,0 +1,215 @@
+{
+  "schema_version": "1",
+  "name": "v0-22-7-feedback-regressions",
+  "fixture": {
+    "settings": {
+      "theme": "dark",
+      "locale": "ja",
+      "explorer_visible": true,
+      "linter_enabled": true
+    },
+    "workspace_files": [
+      {
+        "name": "README.md",
+        "content": "# v0.22.7 確認\n\n### 見出しレベル飛び\n\n- [ ] 対象バージョン 0.22.7 の変更 ID とスコープが確認されていること\n\n```mermaid\ngraph TD\n    A[開始] --> B[確認]\n```\n"
+      },
+      {
+        "name": "docs/nested.md",
+        "content": "# nested\n\nformat target\n"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1280, "height": 800 },
+      "wait_seconds": 2.0
+    },
+    {
+      "type": "open_file",
+      "file_name": "README.md",
+      "wait_seconds": 1.0
+    },
+    {
+      "type": "action",
+      "action": {
+        "set_view_mode": {
+          "mode": "code_only"
+        }
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "hover_at": {
+          "x": 260.0,
+          "y": 119.0,
+          "wait_seconds": 1.2
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "00-lint-hover-popover"
+    },
+    {
+      "type": "action",
+      "action": {
+        "hover_at": {
+          "x": 1000.0,
+          "y": 700.0,
+          "wait_seconds": 0.4
+        }
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_at": {
+          "x": 690.0,
+          "y": 170.0,
+          "button": "primary",
+          "wait_seconds": 0.5
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "00-editor-authoring-toolbar"
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_at": {
+          "x": 650.0,
+          "y": 197.0,
+          "button": "primary",
+          "wait_seconds": 0.5
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "00-code-block-kind-menu"
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_at": {
+          "x": 655.0,
+          "y": 230.0,
+          "button": "primary",
+          "wait_seconds": 0.8
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "00-code-block-inserted"
+    },
+    {
+      "type": "action",
+      "action": {
+        "set_view_mode": {
+          "mode": "code_only"
+        }
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_at": {
+          "x": 780.0,
+          "y": 310.0,
+          "button": "secondary",
+          "wait_seconds": 0.6
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-editor-context-menu-format"
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_at": {
+          "x": 1100.0,
+          "y": 180.0,
+          "button": "primary",
+          "wait_seconds": 0.3
+        }
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_at": {
+          "x": 70.0,
+          "y": 68.0,
+          "button": "secondary",
+          "wait_seconds": 0.6
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "02-directory-context-menu-format"
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_at": {
+          "x": 1100.0,
+          "y": 180.0,
+          "button": "primary",
+          "wait_seconds": 0.3
+        }
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "open_settings_tab": {
+          "tab": "theme"
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "03-theme-preset-controls"
+    },
+    {
+      "type": "action",
+      "action": {
+        "force_open_accordion": {
+          "id": "custom_color_overrides_accordion"
+        }
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "force_open_accordion": {
+          "id": "コード"
+        }
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "set_scroll_offset": {
+          "id": "settings_scroll",
+          "y": 700.0
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "04-theme-color-controls"
+    },
+    {
+      "type": "quit"
+    }
+  ]
+}

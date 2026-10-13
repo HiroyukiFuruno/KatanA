@@ -1,0 +1,447 @@
+{
+  "schema_version": "1",
+  "name": "v0-22-35-html-headless-preview",
+  "fixture": {
+    "settings": {
+      "theme": "dark",
+      "locale": "en",
+      "explorer_visible": true,
+      "linter_enabled": false
+    },
+    "workspace_files": [
+      {
+        "name": "index.html",
+        "source": "scripts/screenshot/fixtures/v0-22-35-html-browser/index.html"
+      },
+      {
+        "name": "linked-panel.html",
+        "source": "scripts/screenshot/fixtures/v0-22-35-html-browser/linked-panel.html"
+      },
+      {
+        "name": "style.css",
+        "source": "scripts/screenshot/fixtures/v0-22-35-html-browser/style.css"
+      },
+      {
+        "name": "actions.js",
+        "source": "scripts/screenshot/fixtures/v0-22-35-html-browser/actions.js"
+      },
+      {
+        "name": "resource-image.svg",
+        "source": "scripts/screenshot/fixtures/v0-22-35-html-browser/resource-image.svg"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "wait_seconds": 3.0
+    },
+    {
+      "type": "screenshot",
+      "output_name": "00-workspace-restored"
+    },
+    {
+      "type": "open_file",
+      "file_name": "index.html",
+      "wait_seconds": 8.0
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-initial-render"
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "01-initial-render",
+      "rgb": [230, 245, 239],
+      "tolerance": 2,
+      "min_pixels": 500
+    },
+    {
+      "type": "assert_html_browser_frame_contains_rgb",
+      "rgb": [38, 184, 166],
+      "min_pixels": 500
+    },
+    {
+      "type": "assert_html_browser_frame_contains_rgb",
+      "rgb": [245, 158, 11],
+      "min_pixels": 500
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-resource-image"
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "01-resource-image",
+      "rgb": [38, 184, 166],
+      "tolerance": 2,
+      "min_pixels": 500
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-embedded-svg"
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "01-embedded-svg",
+      "rgb": [245, 158, 11],
+      "tolerance": 2,
+      "min_pixels": 500
+    },
+    {
+      "type": "assert_active_document",
+      "path_contains": "index.html"
+    },
+    {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 320.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_rgb_region": {
+          "rgb": [79, 157, 255],
+          "tolerance": 32,
+          "min_region_pixels": 1000,
+          "button": "primary",
+          "wait_seconds": 1.0
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "02-accordion-open"
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "02-accordion-open",
+      "rgb": [184, 242, 208],
+      "tolerance": 32,
+      "min_pixels": 500
+    },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "01-initial-render",
+      "current": "02-accordion-open",
+      "min_changed_pixels": 500
+    },
+    {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 400.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_rgb_region": {
+          "rgb": [31, 95, 139],
+          "tolerance": 32,
+          "min_region_pixels": 1000,
+          "button": "primary",
+          "wait_seconds": 1.0
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "03-button-action"
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "03-button-action",
+      "rgb": [255, 224, 138],
+      "tolerance": 32,
+      "min_pixels": 300
+    },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "02-accordion-open",
+      "current": "03-button-action",
+      "min_changed_pixels": 100
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_rgb_region": {
+          "rgb": [255, 244, 204],
+          "tolerance": 32,
+          "min_region_pixels": 1000,
+          "button": "primary",
+          "wait_seconds": 0.25
+        }
+      }
+    },
+    {
+      "type": "action",
+      "action": {
+        "type_text": {
+          "text": "日本語 IME入力",
+          "wait_seconds": 1.0
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "04-text-input"
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "04-text-input",
+      "rgb": [167, 221, 255],
+      "tolerance": 32,
+      "min_pixels": 300
+    },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "03-button-action",
+      "current": "04-text-input",
+      "min_changed_pixels": 100
+    },
+    {
+      "type": "scroll",
+      "direction": "up",
+      "pixels": 400.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_rgb_region": {
+          "rgb": [255, 182, 193],
+          "tolerance": 20,
+          "min_region_pixels": 1000,
+          "button": "primary",
+          "wait_seconds": 1.0
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "05-prevented-navigation"
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "05-prevented-navigation",
+      "rgb": [255, 209, 220],
+      "tolerance": 20,
+      "min_pixels": 300
+    },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "04-text-input",
+      "current": "05-prevented-navigation",
+      "min_changed_pixels": 100
+    },
+    {
+      "type": "assert_active_document",
+      "path_contains": "index.html"
+    },
+    {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 1700.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "screenshot",
+      "output_name": "05-scrolled-content"
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "05-scrolled-content",
+      "rgb": [198, 246, 213],
+      "tolerance": 12,
+      "min_pixels": 500
+    },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "05-prevented-navigation",
+      "current": "05-scrolled-content",
+      "min_changed_pixels": 1000
+    },
+    {
+      "type": "assert_active_document",
+      "path_contains": "index.html"
+    },
+    {
+      "type": "scroll",
+      "direction": "up",
+      "pixels": 3000.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 320.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_rgb_region": {
+          "rgb": [240, 163, 94],
+          "tolerance": 20,
+          "min_region_pixels": 1000,
+          "button": "primary",
+          "wait_seconds": 1.0
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "06-fragment-navigation"
+    },
+    {
+      "type": "assert_html_browser_origin",
+      "origin_ends_with": "index.html#fragment-target"
+    },
+    {
+      "type": "assert_html_browser_frame_contains_rgb",
+      "rgb": [214, 245, 227],
+      "min_pixels": 500
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "06-fragment-navigation",
+      "rgb": [214, 245, 227],
+      "tolerance": 12,
+      "min_pixels": 500
+    },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "05-prevented-navigation",
+      "current": "06-fragment-navigation",
+      "min_changed_pixels": 1000
+    },
+    {
+      "type": "assert_active_document",
+      "path_contains": "index.html"
+    },
+    {
+      "type": "scroll",
+      "direction": "up",
+      "pixels": 3000.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 320.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_rgb_region": {
+          "rgb": [185, 154, 255],
+          "tolerance": 32,
+          "min_region_pixels": 1000,
+          "button": "primary",
+          "wait_seconds": 2.0
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "07-link-navigation"
+    },
+    {
+      "type": "assert_html_browser_origin",
+      "origin_ends_with": "linked-panel.html#linked-target"
+    },
+    {
+      "type": "assert_html_browser_frame_contains_rgb",
+      "rgb": [232, 199, 255],
+      "min_pixels": 1000
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "07-link-navigation",
+      "rgb": [232, 199, 255],
+      "tolerance": 2,
+      "min_pixels": 1000
+    },
+    {
+      "type": "assert_screenshot_changed",
+      "baseline": "04-text-input",
+      "current": "07-link-navigation",
+      "min_changed_pixels": 1000
+    },
+    {
+      "type": "assert_active_document",
+      "path_contains": "linked-panel.html"
+    },
+    {
+      "type": "action",
+      "action": "refresh_document"
+    },
+    {
+      "type": "screenshot",
+      "output_name": "08-reloaded-linked-panel"
+    },
+    {
+      "type": "assert_html_browser_origin",
+      "origin_ends_with": "linked-panel.html#linked-target"
+    },
+    {
+      "type": "assert_html_browser_frame_contains_rgb",
+      "rgb": [232, 199, 255],
+      "min_pixels": 1000
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "08-reloaded-linked-panel",
+      "rgb": [232, 199, 255],
+      "tolerance": 2,
+      "min_pixels": 1000
+    },
+    {
+      "type": "assert_active_document",
+      "path_contains": "linked-panel.html"
+    },
+    {
+      "type": "action",
+      "action": {
+        "resize_window": {
+          "width": 1100,
+          "height": 700,
+          "wait_seconds": 2.0
+        }
+      }
+    },
+    {
+      "type": "screenshot",
+      "output_name": "09-resized-linked-panel"
+    },
+    {
+      "type": "assert_html_browser_origin",
+      "origin_ends_with": "linked-panel.html#linked-target"
+    },
+    {
+      "type": "assert_html_browser_frame_contains_rgb",
+      "rgb": [232, 199, 255],
+      "min_pixels": 1000
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "09-resized-linked-panel",
+      "rgb": [232, 199, 255],
+      "tolerance": 2,
+      "min_pixels": 1000
+    },
+    {
+      "type": "assert_active_document",
+      "path_contains": "linked-panel.html"
+    },
+    {
+      "type": "quit"
+    }
+  ]
+}

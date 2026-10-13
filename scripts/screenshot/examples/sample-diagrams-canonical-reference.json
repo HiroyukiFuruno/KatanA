@@ -1,0 +1,54 @@
+{
+  "schema_version": "1",
+  "name": "sample-diagrams-canonical-reference",
+  "fixture": {
+    "settings": {
+      "theme": "dark",
+      "preset": "KatanaDark",
+      "locale": "en",
+      "explorer_visible": false,
+      "linter_enabled": false,
+      "preview_show_diagram_controls": false
+    },
+    "workspace_files": [
+      {
+        "name": "sample_diagrams.md",
+        "source": "assets/fixtures/sample_diagrams.md"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": {
+        "width": 1280,
+        "height": 2400
+      },
+      "wait_seconds": 3.0
+    },
+    {
+      "type": "open_file",
+      "file_name": "sample_diagrams.md",
+      "wait_seconds": 8.0
+    },
+    {
+      "type": "action",
+      "action": {
+        "set_view_mode": {
+          "mode": "preview_only"
+        }
+      }
+    },
+    {
+      "type": "wait",
+      "seconds": 8.0
+    },
+    {
+      "type": "screenshot",
+      "output_name": "sample-diagrams-full"
+    },
+    {
+      "type": "quit"
+    }
+  ]
+}

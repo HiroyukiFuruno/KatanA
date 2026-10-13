@@ -1,0 +1,49 @@
+{
+  "MD007": {
+    "start_indent": 2,
+    "start_indented": false
+  },
+  "MD010": {
+    "code_blocks": true,
+    "ignore_code_languages": ["", ""]
+  },
+  "MD012": {
+    "maximum": 1
+  },
+  "MD013": false,
+  "MD022": true,
+  "MD024": false,
+  "MD026": {
+    "punctuation": ".,;:!。，；：！"
+  },
+  "MD029": {
+    "style": "one_or_ordered"
+  },
+  "MD033": {
+    "allowed_elements": []
+  },
+  "MD041": false,
+  "MD044": {
+    "names": []
+  },
+  "MD046": {
+    "style": "consistent"
+  },
+  "MD048": {
+    "style": "consistent"
+  },
+  "MD049": {
+    "style": "asterisk"
+  },
+  "MD050": {
+    "style": "asterisk"
+  },
+  "MD052": {
+    "ignored_labels": ["x", "/", "-", "?", "!", "~"],
+    "shortcut_syntax": true
+  },
+  "MD055": {
+    "style": "consistent"
+  },
+  "default": true
+}

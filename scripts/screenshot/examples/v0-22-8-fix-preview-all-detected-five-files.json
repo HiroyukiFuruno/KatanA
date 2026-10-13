@@ -1,0 +1,98 @@
+{
+  "schema_version": "1",
+  "name": "v0-22-8-fix-preview-all-detected-five-skill-files",
+  "fixture": {
+    "settings": {
+      "theme": "dark",
+      "locale": "ja",
+      "explorer_visible": true,
+      "linter_enabled": true
+    },
+    "workspace_files": [
+      {
+        "name": "skill-1/SKILL.md",
+        "content": "# File 1\n\n1. First\n1. Second\n"
+      },
+      {
+        "name": "skill-2/SKILL.md",
+        "content": "# File 2\n\n1. First\n1. Second\n"
+      },
+      {
+        "name": "skill-3/SKILL.md",
+        "content": "# File 3\n\n1. First\n1. Second\n"
+      },
+      {
+        "name": "skill-4/SKILL.md",
+        "content": "# File 4\n\n1. First\n1. Second\n"
+      },
+      {
+        "name": "skill-5/SKILL.md",
+        "content": "# File 5\n\n1. First\n1. Second\n"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1280, "height": 800 },
+      "wait_seconds": 2.0
+    },
+    {
+      "type": "open_file",
+      "file_name": "skill-1/SKILL.md",
+      "wait_seconds": 0.5
+    },
+    {
+      "type": "open_file",
+      "file_name": "skill-2/SKILL.md",
+      "wait_seconds": 0.5
+    },
+    {
+      "type": "open_file",
+      "file_name": "skill-3/SKILL.md",
+      "wait_seconds": 0.5
+    },
+    {
+      "type": "open_file",
+      "file_name": "skill-4/SKILL.md",
+      "wait_seconds": 0.5
+    },
+    {
+      "type": "open_file",
+      "file_name": "skill-5/SKILL.md",
+      "wait_seconds": 1.0
+    },
+    {
+      "type": "action",
+      "action": "open_problems_panel"
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-five-file-problems"
+    },
+    {
+      "type": "action",
+      "action": {
+        "click_at": {
+          "x": 1070.0,
+          "y": 675.0,
+          "button": "primary",
+          "wait_seconds": 1.0
+        }
+      }
+    },
+    {
+      "type": "assert_active_document",
+      "path_contains": "DiffReview"
+    },
+    {
+      "type": "assert_diff_review",
+      "file_count": 5,
+      "after_contains": "2. Second"
+    },
+    {
+      "type": "screenshot",
+      "output_name": "02-five-file-diff-review"
+    }
+  ]
+}

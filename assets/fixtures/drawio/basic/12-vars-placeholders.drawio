@@ -1,0 +1,18 @@
+<mxfile host="app.diagrams.net" agent="Katana fixture" version="29.0.0" vars='{"project":"Fixture","version":"1.0"}'>
+  <diagram id="vars-placeholders" name="Vars Placeholders">
+    <mxGraphModel dx="900" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <UserObject id="metadata-placeholder" label="Project: %project% v%version%" placeholders="1">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="100" y="80" width="220" height="72" as="geometry"/>
+          </mxCell>
+        </UserObject>
+        <mxCell id="plain-placeholder" value="Plain: %project%" style="rounded=1;whiteSpace=wrap;html=1;placeholders=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="400" y="80" width="220" height="72" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
