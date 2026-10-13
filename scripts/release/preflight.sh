@@ -33,7 +33,7 @@ python3 scripts/release/test-release-flow-contract.py
 python3 scripts/release/test-windows-registry-cache-contract.py
 python3 scripts/release/test-commit-issue-reference.py
 python3 scripts/release/test-issue-reference-live.py
-python3 -m unittest discover -s scripts/release -p 'test_downstream_*.py'
+python3 -m unittest discover -s scripts/release -p 'test_*.py'
 success "Release flow ownership contract is enforced."
 
 # 2. Version Increment Contract
