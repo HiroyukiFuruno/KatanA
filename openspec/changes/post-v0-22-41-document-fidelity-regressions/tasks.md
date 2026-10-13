@@ -1,5 +1,8 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-13 #258: JSON Canvas1.0型付きcoreモデルとfixtureを実装。24 GREEN/strict core alltarget Clippy/公式AST23/fmt成功。公開APIレビューでID名前空間・空IDの過剰拒否・整数変換前検証を実runtime RED→GREENで修復。evidence/canvas-core-model-2026-10-13.md。形式認識/非同期host読込/カード・group・edge表示/未対応状態/panzoomfit/i18n/実入力回帰は未完、モデルだけでCloseしない。
+- [/] 2026-10-13 #312/#340現在sourceの再検証: theme current overrideとtransparent文書背景各1PASS、data-URI parser1PASS/corepreview正確なtest1PASS。初previewコマンド0testsは不採用、filterを修正して実1件成功。PDF実出力contrast・sample全体export/配布受入/#345新release worker原本受入は未完でIssueCloseを保留する。
+
 - [/] 2026-10-13 #335: 非master commit-msgの同repo Issue参照チェックを実装・既存lefthookへ接続。#335x誤受理の実assert RED exit1→境界修正、15 GREEN（実Git release拒否/受理/master維持を含む）。通常precommit/prepush維持・hook install成功。evidence/issue-reference-hook-2026-10-13.md。live Issue存在/下流migration証跡/dispatcher順序/公開後safe cleanupは未完。
 
 - [/] 2026-10-13 #343: Windows CI test/lintのregistry専用exact-lock cacheを実装。旧無効化4f73b862の理由は未記録、compiled targetは復元しない。既存CDにはcacheがあり重複追加しない。cache契約RED exit1→4 GREEN、Draft5/flow9 GREEN、元build/test/lint/coverage/asset/smoke維持。evidence/windows-registry-cache-2026-10-13.md。Ready後cold/warm実測・test/coverage inventory・安全reuseは未完。
