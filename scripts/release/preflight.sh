@@ -55,6 +55,7 @@ success "Browser-equivalent HTML release contract is enforced."
 info "5/14 Verifying multi-format document release contract..."
 python3 scripts/release/check-multi-format-document-contract.py --self-test
 python3 scripts/screenshot/test_generate_data_descriptor_docx.py
+python3 scripts/screenshot/test_source_identity.py
 if [[ "$VERSION" == "0.22.41" ]]; then
     python3 scripts/release/check-multi-format-document-contract.py "$VERSION"
 fi

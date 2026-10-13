@@ -31,6 +31,7 @@ case "${OUTPUT_ROOT}" in
 esac
 
 RAW_OUTPUT_DIR="${OUTPUT_ROOT}/raw"
+SOURCE_IDENTITY="${OUTPUT_ROOT}/source-identity.json"
 CANDIDATE_OUTPUT="${OUTPUT_ROOT}/sample-diagrams-top-candidate.png"
 GEOMETRY_OUTPUT="${RAW_OUTPUT_DIR}/sample-diagrams-preview-geometry.json"
 FULL_SCREENSHOT="${RAW_OUTPUT_DIR}/sample-diagrams-full.png"
@@ -40,9 +41,18 @@ if ! command -v magick >/dev/null 2>&1; then
   exit 1
 fi
 
+mkdir -p "${RAW_OUTPUT_DIR}"
+python3 "${SCRIPT_DIR}/source_identity.py" begin \
+  --repository "${REPO_ROOT}" \
+  --identity "${SOURCE_IDENTITY}"
+
 "${SCRIPT_DIR}/run.sh" \
   --request "${SCRIPT_DIR}/examples/sample-diagrams-canonical-capture.json" \
   --output "${RAW_OUTPUT_DIR}"
+
+python3 "${SCRIPT_DIR}/source_identity.py" verify \
+  --repository "${REPO_ROOT}" \
+  --identity "${SOURCE_IDENTITY}"
 
 [[ -s "${FULL_SCREENSHOT}" && -s "${GEOMETRY_OUTPUT}" ]] || {
   echo "ERROR: clean capture did not produce the full screenshot and geometry record" >&2
