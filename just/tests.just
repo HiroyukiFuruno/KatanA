@@ -47,6 +47,10 @@ test-ui:
 test-document-fixtures: test-html-host-contract
     scripts/ci/document-fixture-acceptance.sh
 
+# WHY: テーマ設定値だけではPDFの実色を保証できないため、明示Popplerで実出力を検査する。
+test-pdf-theme:
+    {{CARGO}} test --locked -j {{JOBS}} -p katana-ui --lib --features external-fixture-acceptance shell_ui::pdf_theme_tests -- --test-threads=1 --nocapture
+
 # Execute paint-metrics coordinate extraction independently from Office/V8 integration checks.
 test-paint-metrics:
     {{CARGO}} test --locked --manifest-path scripts/paint-metrics/Cargo.toml

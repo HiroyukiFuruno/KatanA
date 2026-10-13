@@ -143,3 +143,6 @@ impl eframe::App for KatanaApp {
 
 #[cfg(test)]
 include!("shell_ui_tests.rs");
+
+#[cfg(all(test, feature = "external-fixture-acceptance"))]
+mod pdf_theme_tests;
