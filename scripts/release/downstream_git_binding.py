@@ -28,6 +28,8 @@ def _git(root: Path, arguments: list[str]) -> bytes:
 
 
 def _source_commit(root: Path, commit: str) -> None:
+    if _git(root, ["rev-parse", "--verify", commit]).strip() != commit.encode("ascii"):
+        raise GitBindingError("declared source identity is not a full commit OID")
     if _git(root, ["cat-file", "-t", commit]).strip() != b"commit":
         raise GitBindingError("declared source object is not a commit")
 
