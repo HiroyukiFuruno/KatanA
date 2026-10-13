@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 #335 Issue lookup metadata→expected actualcommit→body/schema→manifestlock実tree結合へ着手。Noneはunclassifiedで免除/成功ではない。realSHA2566境界・HIGH番号P2のactual0/-1誤受理2assertRED→既存candidate_numbersで修復、単一68PASS6.094s/actual0。実GitHub Issue335/current214commitはunclassified、実PR346はtyped拒否を各actual0確認。初fixture名衝突8errorsは製品REDと分離。HIGH最終/通常統合/live lookup orchestration/registry/logtrusted/cleanup未完。evidence/issue-commit-binding-2026-10-14.md。
+
 - [/] 2026-10-14 current0b review P2 4264041580/PRRT_kwDORm09y86sD-Iu: Git<=2.44でno-lazy-fetch未対応の検査環境問題を採用。実Git2.43を公式checksum照合後WTtmpでbuildし、新capability入口がactualexit1/案内付きでdiscovery前拒否、現Gitはexit0。開発/公開検査だけGit2.45+を明示しsetup・preflightに単一check、配布app要件は不変。unsafe旧Gitfallback無し。単一62PASS/4.817s・bash/zsh構文・diff成功、HIGH review/通常統合/push/個別replyresolve/fresh全取得未完。evidence/git-capability-prerequisite-2026-10-14.md。
 
 - [/] 2026-10-14 #335 native push metadata/range selection: Unicode合法refを実check-ref-formatで確認し旧split誤拒否REDを修復。SHA256実Gitでfast-forward/unchanged/new-ref explicitbase/deletion/tag拒否を検査。HIGH P1 graft親偽装は実A→B→CでB欠落1assertREDを再現し、trusted GIT_GRAFT_FILE=os.devnullで修復、単一58PASS/actualexit0・diffcheck0。production hook非活性、new-ref baseはcaller信頼前提で公開baseline証明ではない。通常統合・current review・liveIssue/registry/logtrusted/cleanupは未完。evidence/push-range-selection-2026-10-14.md。
