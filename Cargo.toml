@@ -47,7 +47,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Networking / Auto Update
 ureq = { version = "3.4", features = ["json"] }
 semver = "1.0"
-zip = "8.6"
+zip = "9.0"
 tar = "0.4.46"
 flate2 = "1.1.10"
 

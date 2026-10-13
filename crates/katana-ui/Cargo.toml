@@ -44,7 +44,7 @@ mathjax_svg.workspace = true
 unicode-segmentation = "1.13.3"
 unicode-normalization = "0.1.25"
 arboard = "3.6.1"
-uuid = { version = "1.27.0", features = ["v4"] }
+uuid = { version = "1.28.0", features = ["v4"] }
 egui-file-dialog = "0.15.0"
 notify.workspace = true
 url.workspace = true
