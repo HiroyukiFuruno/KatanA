@@ -19,6 +19,14 @@ GitHub Release URLは同repoのHTTPS tag参照に限定し、生の空白・制�
 - readonly独立再レビューでP0/P1残0。全5filesは200行以下、関数30行以下。SemVerの計算量懸念は未実測P2として残し、性能改善済みとしない。
 - 既存preflightへ純UT discoveryを一回だけ追加した。既存の重い検査・品質条件は変更していない。
 
+## current review修復
+
+public458fabcfのcurrent review5508460213のP2を採否判断して修復した。raw URLと一度decodeしたtagのbackslashを拒否する。同change内でrepository大小文字を同一視し、packageとversionはexactとしてtripletを一意にする。同tripletの完全重複・相反checksum・異URLは拒否するが、異versionと別changeでの再記録は許容する。Cargoには正当な複数版の共存があり、same repo/packageの全拒否は過剰制限として採用していない。
+
+未変更の公開実装で6例の誤受理を実assert RED/exit1として確認した（`tmp/issue335-current-review-runtime-red-2026-10-14.md`）。修復後の既存単一discoveryは26 PASS/exit0（`tmp/issue335-current-review-green-2026-10-14.log`）。独立ASCII識別子文法との1365ケース比較、00a/01-/-の受理、a.01の拒否、4096文字不正末尾の拒否を含む。構文/diffチェックと独立readonly再reviewも成功し、P0/P1残0。
+
+SemVerは最初の非数字より前を数字だけへ限定する同言語の2regex修復を行った。旧1024/2048/4096入力は約0.025/0.100/0.403秒、実修復sourceでは0.000054334/0.000096167/0.000198042秒で拒否した。実測環境の観測であり固定時間閾値をUTへ追加していない。意味論検査は旧regexでも成功するため、性能修復に虚偽のsemantic REDを付けていない。通常commit/pushと個別reply/resolve・fresh取得は別工程で回収する。
+
 ## 未完了
 
 実Git commit/blob/差分との結合、上流Release・registry・checksumのライブ照合、検査ログの存在/hashと信頼された実行元の照合、既存hook先行dispatcher、pre-push range/有効化、公開後の安全cleanupは未完了である。Issue335を閉じない。通常commit/push後の実hook結果・current reviewは別途回収する。全coverage/配布版受入/公開完了も主張しない。

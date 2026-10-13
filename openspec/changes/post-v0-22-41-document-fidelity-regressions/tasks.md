@@ -1,5 +1,9 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 #335 public458 review P2二件の限定採用: raw/decoded backslash拒否、repo大小文字同一視/package/version exactのtriplet重複拒否、異version/別changeは許容。実6誤受理RED→単一26PASS/1365独立文法/構文/diff成功、HIGH P0P1残0。SemVer二次探索を同言語2regexで修復し実source1024/2048/4096約0.000054/0.000096/0.000198秒。固定時間UT無し、通常commit/push/replyresolve/fresh回収へ続行。whole335未完。
+
+- [/] 2026-10-14 #338 frozen458fabcf公式producer30723actual0。同frame1223/17区画/controls0/scroll0、実cropと1280x2400検査成功。runner5046eee1/worker90d5f0cc/candidate2f998a05。旧pixel同一でも旧ad4 source driftは正当化しない。文字欠け/SVG警告残、reference未上書き・独立採点/packaged/95未完。evidence/canonical-frozen-458fabcf-2026-10-14.md。
+
 - [/] 2026-10-14 #335 mandatory commit-msg: existingwrapperへ--verify-live接続、master例外維持。wrapper直呼出しをactual temporary Git hookへ置換し旧PR346誤受理/真正照合無しを2assertRED、最終main85026actual0はroot4Git変数下17+pure19成功・HEAD/index/core.bare同一。genuine/master newHEAD、参照無し/PR拒否HEAD不変を実検証。readonlyHIGH P0/P1無し、通常hook/署名G018edb50へ正式統合（77715actual0）。docs/normalpush次、dispatcher/range/下流manifest/cleanupは未完。evidence/issue-mandatory-hook-wiring-2026-10-14.md。
 
 - [/] 2026-10-14 live OPEN9再照合: #258/#312/#335/#338/#339/#340/#343/#345に独立したKatanA残実装/検証/整理、#336だけKLE公開待ち。normalpush54556 actual0で78162c26公開、PR/remote同一/ahead0behind0/masterclean/stash0。全REST2pagesとGraphQL71threads/nested残0取得、Canvas4f27修復reply4262182797→resolve→fresh確認。残manual公開方針P2二件、新HEAD正式reviewは旧ad4レビューで代用しない。#335 mandatory flag未接続を監査し実Git hook回帰のRED→GREENに着手、#343 actual binary一覧export14/UI1242 ignore2/parallel145 ignore2採取（pass数ではない）。tmp/issue335-hook-wiring-audit-2026-10-14.md、tmp/issue343-native-export-inventory-2026-10-14.md。#338正規producer/#339packaged/335dispatcher/343全比較reuseと公開未完。
