@@ -1,5 +1,9 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 #335 mandatory commit-msg: existingwrapperへ--verify-live接続、master例外維持。wrapper直呼出しをactual temporary Git hookへ置換し旧PR346誤受理/真正照合無しを2assertRED、最終main85026actual0はroot4Git変数下17+pure19成功・HEAD/index/core.bare同一。genuine/master newHEAD、参照無し/PR拒否HEAD不変を実検証。readonlyHIGH P0/P1無し、通常hook/署名G018edb50へ正式統合（77715actual0）。docs/normalpush次、dispatcher/range/下流manifest/cleanupは未完。evidence/issue-mandatory-hook-wiring-2026-10-14.md。
+
+- [/] 2026-10-14 live OPEN9再照合: #258/#312/#335/#338/#339/#340/#343/#345に独立したKatanA残実装/検証/整理、#336だけKLE公開待ち。normalpush54556 actual0で78162c26公開、PR/remote同一/ahead0behind0/masterclean/stash0。全REST2pagesとGraphQL71threads/nested残0取得、Canvas4f27修復reply4262182797→resolve→fresh確認。残manual公開方針P2二件、新HEAD正式reviewは旧ad4レビューで代用しない。#335 mandatory flag未接続を監査し実Git hook回帰のRED→GREENに着手、#343 actual binary一覧export14/UI1242 ignore2/parallel145 ignore2採取（pass数ではない）。tmp/issue335-hook-wiring-audit-2026-10-14.md、tmp/issue343-native-export-inventory-2026-10-14.md。#338正規producer/#339packaged/335dispatcher/343全比較reuseと公開未完。
+
 - [/] 2026-10-14 hook環境隔離の実証: actual preflight prefix RED→GREEN、最終discovery13件/内側donor10件成功。37118 actual0で実hook相当4Git変数下の全preflight14項目成功、HEAD/index/core.bare before/after同一。High readonly P0/P1無し。通常修正commit/push・確定source capture・残Issue実装/公開は未完。evidence/git-hook-fixture-isolation-2026-10-14.md。
 
 - [/] 2026-10-14 agent検査不備: normalpush13839 actual1/preflightで新Git fixtureがhook GIT_DIRを継承しrealWTへae13b67 fixture commit/core.baretrueを誤作成。remotead4不変、物理source保全。High readonly監査後common barefalse/WTindex-only read-tree gooda19でtree09cd5完全一致、known2修復以外physicaldiff無し/masterclean/stash0。通常署名復旧d0542aab（19343actual0/treeexacta19）を記録。foreignGit環境隔離と実donor全suite回帰・通常fixcommit/push再回収を続行し、未検証をdoneにしない。evidence/git-hook-fixture-isolation-2026-10-14.md。
