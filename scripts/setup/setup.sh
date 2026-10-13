@@ -275,6 +275,8 @@ else
   success "git installed ($(git --version))"
 fi
 
+bash "${REPO_ROOT}/scripts/release/check-git-capability.sh"
+
 # =============================================================================
 # 2b. just
 # =============================================================================

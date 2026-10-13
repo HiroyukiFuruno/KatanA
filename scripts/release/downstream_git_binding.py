@@ -23,7 +23,11 @@ def _git(root: Path, arguments: list[str]) -> bytes:
              "-C", str(root), *arguments],
             env=environment, capture_output=True, check=True,
         )
-    except (OSError, UnicodeError, subprocess.CalledProcessError) as error:
+    except subprocess.CalledProcessError as error:
+        raise GitBindingError(
+            "Git source identity could not be read; Git 2.45+ with --no-lazy-fetch is required"
+        ) from error
+    except (OSError, UnicodeError) as error:
         raise GitBindingError("Git source identity could not be read") from error
     return result.stdout
 

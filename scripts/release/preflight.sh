@@ -26,7 +26,7 @@ fi
 VERSION="${VERSION#v}"
 
 header "Preflight checks for v${VERSION}"
-
+bash scripts/release/check-git-capability.sh
 # 1. Release flow ownership contract
 info "1/14 Verifying release flow ownership contract..."
 python3 scripts/release/test-release-flow-contract.py
