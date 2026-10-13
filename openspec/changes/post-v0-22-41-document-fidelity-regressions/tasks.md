@@ -1,5 +1,9 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 hook環境隔離の実証: actual preflight prefix RED→GREEN、最終discovery13件/内側donor10件成功。37118 actual0で実hook相当4Git変数下の全preflight14項目成功、HEAD/index/core.bare before/after同一。High readonly P0/P1無し。通常修正commit/push・確定source capture・残Issue実装/公開は未完。evidence/git-hook-fixture-isolation-2026-10-14.md。
+
+- [/] 2026-10-14 agent検査不備: normalpush13839 actual1/preflightで新Git fixtureがhook GIT_DIRを継承しrealWTへae13b67 fixture commit/core.baretrueを誤作成。remotead4不変、物理source保全。High readonly監査後common barefalse/WTindex-only read-tree gooda19でtree09cd5完全一致、known2修復以外physicaldiff無し/masterclean/stash0。通常署名復旧d0542aab（19343actual0/treeexacta19）を記録。foreignGit環境隔離と実donor全suite回帰・通常fixcommit/push再回収を続行し、未検証をdoneにしない。evidence/git-hook-fixture-isolation-2026-10-14.md。
+
 - [/] 2026-10-14 #338 guard sourceは通常hook/署名G153f32edへ統合（18762actual0）。確定sourceでnormalpush→freshreview→official captureを回収する。guard9実回帰はsource変更拒否のみで、新capture/score/packaged未実施を保持する。
 
 - [/] 2026-10-14 #338 再発防止: official generatorに開始時clean HEAD/status記録とrun.sh後・正規化前のHEAD/status再照合を接続。repo内出力は実ignored tmp/targetだけ、dirty/index/untracked/HEAD変更/不正schemaを拒否しrawを保全。main実Git9件・flow9・Python/bash/zsh構文/diff全成功、tmp/issue338-source-identity-guard-main-2026-10-14.log。途中変更後復元まで保証したと誇張しない。通常統合/push・固定graph実captureは未完。
