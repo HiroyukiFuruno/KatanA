@@ -1,5 +1,16 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-13 #343 inventory: tmp/issue343-current-test-inventory-2026-10-13.mdに36testable workspace targets・通常test/coverageのfixture/cfg/features/threads/target差・workspace外vendor2件を記録しmainが実commandsを照合。Windows font同test名は専用DEBUG/cold timing診断目的があるため無条件に削除しない。実test listの機械照合/証明付きreuse/誤skip拒否/時間比較は未完。
+
+- [x] 2026-10-13 #258 source統合: core dd38236e、host/UI dec02e313f7b9fda0e1b19604f8f1cf6d10e7221へ通常hook/署名Gでcommit。最終22229 actual0: Canvas57・既存fullscreen23・正式AST23・strict UI alltarget/externalfeature・fmt/diff成功。main自己reviewと既存high reviewerで実caller/描画境界/回帰を確認。通常push/current fullgate/公開・配布受入/IssueCloseは未完。literal text/reference labels/URL・背景未対応、浮動小数点coordinate literalを丸めず拒否する制限は残す。
+- [/] 2026-10-13 #312 実PDF検証: 独立した有効設定token照合込み4themesと背景置換負検査が最終22229 actual0/2PASS/56.41s。verifier境界underflow RED→checked_sub修復、table/contrast責務分離・元基準不変。evidence/pdf-current-theme-2026-10-13.md。検証source/入口の通常commit/push/Issue整理は未完。
+
+- [/] 2026-10-13 #258 host追加修復: 背景Canvasでactive Markdown表示modeを変更する実RED32763と、未変更file自動refreshでpanを失う実RED8902を保存。activate限定設定・worker SHA256 revision比較・非強制refreshのsurface保持へ修復し、現Canvas55件全PASS（tmp/canvas-current-host-revision-green-2026-10-13.log）。変更sourceのstrict lint/自己review・正式commit/push・公開は未完。
+- [ ] 2026-10-13 検査基盤の既存負債: crates/katana-linter/src/rules/structure/function_length.rs はstart/endを同じspan_locationから取得し、関数長差が常に0になる。AST成功だけで30行制約を検証済みとしない。独立回帰・修復を別関心事で扱い、Canvas修復に混在させない。
+- [/] 2026-10-13 #312: 実export経路→明示Poppler→custom/builtin dark/lightの実pixel検査を接続して実行中。tmp/issue312-real-pdf-current-first-2026-10-13.log。結果回収前に完了・IssueCloseとしない。本人app操作/設定承認代行無し。
+
+- [x] 2026-10-13 #345 harness現行検証: optimized release worker build44038 actual0、明示workerで原本PPTX3/XLSX3全6 first frame・exact test36230 actual0/1PASS/100.10秒。worker未指定負検査actual101/正確な拒否message、debug fallback無し。evidence/release-office-worker-acceptance-2026-10-13.md。旧版指定を最新承認registry0.5.12/0.4.23/0.4.1へ区別し、速度改善・3OS配布受入・全gate完了へ代用しない。証跡公開後にIssue整理する。
+
 - [/] 2026-10-13 #258: JSON Canvas1.0型付きcoreモデルとfixtureを実装。24 GREEN/strict core alltarget Clippy/公式AST23/fmt成功。公開APIレビューでID名前空間・空IDの過剰拒否・整数変換前検証を実runtime RED→GREENで修復。evidence/canvas-core-model-2026-10-13.md。形式認識/非同期host読込/カード・group・edge表示/未対応状態/panzoomfit/i18n/実入力回帰は未完、モデルだけでCloseしない。
 - [/] 2026-10-13 #312/#340現在sourceの再検証: theme current overrideとtransparent文書背景各1PASS、data-URI parser1PASS/corepreview正確なtest1PASS。初previewコマンド0testsは不採用、filterを修正して実1件成功。PDF実出力contrast・sample全体export/配布受入/#345新release worker原本受入は未完でIssueCloseを保留する。
 
