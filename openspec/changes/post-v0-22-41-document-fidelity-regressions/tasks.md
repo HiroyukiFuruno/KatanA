@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 #343 機械inventory parserへ着手。name/kind・件数・重複・ignoredsubset・skip条件を分離、footerless診断はexplicit/Noneで未検証。単一34PASS（既存26+新8）/実historical export14→skip13/UI1242 ignored2 subset成功。現HEAD nativepass/全inventory/coverage同等/保護CIreuse/Windows coldwarmを未証明のまま保持。evidence/test-inventory-parser-2026-10-14.md。
+
 - [/] 2026-10-14 #335 public458 review P2二件の限定採用: raw/decoded backslash拒否、repo大小文字同一視/package/version exactのtriplet重複拒否、異version/別changeは許容。実6誤受理RED→単一26PASS/1365独立文法/構文/diff成功、HIGH P0P1残0。SemVer二次探索を同言語2regexで修復し実source1024/2048/4096約0.000054/0.000096/0.000198秒。固定時間UT無し、通常commit/push/replyresolve/fresh回収へ続行。whole335未完。
 
 - [/] 2026-10-14 #338 frozen458fabcf公式producer30723actual0。同frame1223/17区画/controls0/scroll0、実cropと1280x2400検査成功。runner5046eee1/worker90d5f0cc/candidate2f998a05。旧pixel同一でも旧ad4 source driftは正当化しない。文字欠け/SVG警告残、reference未上書き・独立採点/packaged/95未完。evidence/canonical-frozen-458fabcf-2026-10-14.md。
