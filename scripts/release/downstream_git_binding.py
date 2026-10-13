@@ -14,8 +14,9 @@ class GitBindingError(EvidenceSchemaError):
 
 
 def _git(root: Path, arguments: list[str]) -> bytes:
-    # hook環境・replace参照・暗黙fetchで、別objectや未取得の証拠へ照合を逸らさない。
+    # hook環境・replace・graft・暗黙fetchによる証拠や親関係の差し替えを防ぐ。
     environment = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+    environment["GIT_GRAFT_FILE"] = os.devnull
     try:
         result = subprocess.run(
             ["git", "--no-lazy-fetch", "--no-replace-objects", "--literal-pathspecs",
