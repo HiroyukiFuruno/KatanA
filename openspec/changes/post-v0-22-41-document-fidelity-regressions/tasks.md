@@ -1,5 +1,8 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-13 #343: Windows CI test/lintのregistry専用exact-lock cacheを実装。旧無効化4f73b862の理由は未記録、compiled targetは復元しない。既存CDにはcacheがあり重複追加しない。cache契約RED exit1→4 GREEN、Draft5/flow9 GREEN、元build/test/lint/coverage/asset/smoke維持。evidence/windows-registry-cache-2026-10-13.md。Ready後cold/warm実測・test/coverage inventory・安全reuseは未完。
+- [ ] 2026-10-13 最新本人目的: 上流待ちではないOPEN9 Issueを各DoDで処理する。#312/#340/#345実装済みの検証・正式履歴/公開状態・Issue整理、#335 hook/cleanupと#343軽量化の残実装、#258 read-only Canvas MVP、#336公開KLE採用/実host E2E、#338 producer評価/#339配布受入を追跡する。Issue OPENを上流待ちと同一視せず、完了根拠不足は未完として保持。上流KDV/KRRは実装せず公開API採用境界を守る。定期確認スケジュールは本人指示で解除済み、再作成しない。
+
 - [/] current3e7722ef review5435910718/P1 PRRT_kwDORm09y86ps_Lb/comment4201628411: physical_footprint_bytesのRSS独立予算判定を実装。既存cold196608KiB/steady65536KiBを増量せず、physicalのみ各+1 byteの2case RED exit1→受入51件/公開ゲート31件GREEN exit0。境界/欠落/bool/float/stringとpackaged-host経由を検査、RSS/worker/generation/identity判定維持。main差分自己review/diffcheck0、evidence/physical-footprint-budget-review-2026-10-07.md。通常統合・個別replyresolve・fresh取得は未完。REST review全ページ取得必須、先頭ページだけの空結果を未着と判断しない。Draft CI全jobs skipped実確認済み、Ready必須CIは別工程。
 
 - [/] 本人の最新公開フロー: Draftはレビュー指摘の取得・採否判断・修復と変更箇所検証に集中し、Ready PRで必須CI/CDに集中する。Draftの3OS/build/test/lint/security/readiness runnerを起動しない。ready_for_reviewで元の必須検査を起動し、converted_to_draftで同concurrencyの検査を取消す。master pushの検査と公開ゲートは維持する。既存Draft run37543761560はlive completed/cancelled確認、workflow候補の契約3件成功。通常統合・push・Ready時の実行確認は未完。アンチパターン: Draft変更のたび全CIを繰返しP2を無条件追加。正: Draftレビュー集中→P0/P1零の再取得→Ready必須CI→公開。検索語: Draft quiet / Ready required CI / review triage。
