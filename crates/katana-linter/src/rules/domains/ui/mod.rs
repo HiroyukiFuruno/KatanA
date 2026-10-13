@@ -1,9 +1,0 @@
-/* WHY: tooltip.rs is currently orphaned and broken */
-pub mod foreground_surface;
-pub mod global_menu_parity;
-pub mod settings_alignment;
-
-/* WHY: lint_egui_tooltips is broken */
-pub use foreground_surface::ForegroundSurfaceOps;
-pub use global_menu_parity::GlobalMenuParityOps;
-pub use settings_alignment::SettingsAlignmentOps;
