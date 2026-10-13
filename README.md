@@ -154,6 +154,11 @@ KatanA features a built-in auto-updater. Once installed (whether via Homebrew or
 
 KatanA Desktop is under **active development**. See the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest) for the latest version and changelog.
 
+Development/release evidence checks require Git 2.45+ with `--no-lazy-fetch`;
+setup and preflight verify the active executable. See the
+[Development Guide](docs/development-guide.md). Distributed applications do not
+require Git for this verification mechanism.
+
 Core features available today:
 
 - Workspace-based Markdown browsing

@@ -38,6 +38,10 @@ ElectronやNode.jsを使わず、単一のネイティブバイナリにより�
 - **macOS:** [Homebrew](https://brew.sh)（セットアップスクリプトが見つからない場合はインストールします）
 - **Windows / Linux:** 標準のビルドツール（Ubuntu の `build-essential`、Windows の Visual Studio Build Tools など）
 - **コマンドランナー（just）:** ローカル開発と CI/CD のタスク実行に使います
+- **Git 2.45 以降:** 開発・リリースの証跡検査は不足objectを取得しない
+  `--no-lazy-fetch` 機能を必須とします。セットアップと公開前検査は `PATH` 上の
+  実Gitを確認し、非対応なら更新してください（macOS: `brew upgrade git`）。
+  配布アプリ実行時の要件ではありません。
 
 ### ワンコマンドセットアップ
 

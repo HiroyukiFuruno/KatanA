@@ -154,6 +154,11 @@ KatanA Desktop には自動アップデータが内蔵されています。一�
 
 KatanA Desktop は **活発に開発中** です。最新バージョンと変更履歴は [Releasesページ](https://github.com/HiroyukiFuruno/KatanA/releases/latest) をご覧ください。
 
+開発・リリースの証跡検査には `--no-lazy-fetch` 対応の Git 2.45 以降が必要です。
+セットアップと公開前検査で実際の実行ファイルを確認します。
+詳細は[開発ガイド](docs/development-guide.ja.md)をご覧ください。
+この検証機構のために配布アプリの実行時にGitを要求することはありません。
+
 現在利用可能な主な機能：
 
 - ワークスペースベースのMarkdown閲覧
