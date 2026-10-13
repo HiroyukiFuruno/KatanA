@@ -10,6 +10,9 @@ mod queue;
 mod state;
 mod worker;
 
+#[cfg(test)]
+mod active_cancellation_tests;
+
 pub(crate) use state::{CanvasParseResult, CanvasRequestError};
 
 #[cfg(test)]

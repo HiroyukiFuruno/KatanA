@@ -8,6 +8,13 @@ pub(super) struct CanvasDecoder;
 
 impl CanvasDecoder {
     pub(super) fn decode_document(raw: RawDocument) -> Result<CanvasDocument, CanvasError> {
+        Self::decode_document_with(raw, || Ok::<(), CanvasError>(()))
+    }
+
+    pub(super) fn decode_document_with<E: From<CanvasError>>(
+        raw: RawDocument,
+        checkpoint: impl Fn() -> Result<(), E>,
+    ) -> Result<CanvasDocument, E> {
         let mut document = CanvasDocument::default();
         Fields::extra_fields(
             raw.extra,
@@ -15,15 +22,18 @@ impl CanvasDecoder {
             &mut document.diagnostics,
         );
         for (index, fields) in raw.nodes.into_iter().enumerate() {
+            checkpoint()?;
             document
                 .nodes
                 .push(Self::decode_node(fields, index, &mut document.diagnostics)?);
         }
         for (index, fields) in raw.edges.into_iter().enumerate() {
+            checkpoint()?;
             document
                 .edges
                 .push(Self::decode_edge(fields, index, &mut document.diagnostics)?);
         }
+        checkpoint()?;
         Ok(document)
     }
 

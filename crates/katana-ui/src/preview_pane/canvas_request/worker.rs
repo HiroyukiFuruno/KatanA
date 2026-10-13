@@ -4,10 +4,17 @@ use std::sync::atomic::Ordering;
 use katana_core::canvas::CanvasDocument;
 use sha2::{Digest, Sha256};
 
-use super::pool::SharedPool;
 use super::state::{CanvasRequestError, RequestState};
+use super::{CanvasRevision, pool::SharedPool};
 
 pub(super) struct CanvasWorker;
+
+const REVISION_CHUNK_BYTES: usize = 64 * 1024;
+
+struct ParsedCanvas {
+    revision: CanvasRevision,
+    result: Result<Arc<CanvasDocument>, CanvasRequestError>,
+}
 
 struct WorkerExit(Arc<SharedPool>);
 
@@ -76,17 +83,36 @@ impl CanvasWorker {
             Ok(source) => source,
             Err(error) => return request.deliver(Err(error)),
         };
-        if request.is_cancelled() {
+        let Some(parsed) = Self::parse_source(&source, || request.is_cancelled()) else {
             return Ok(());
+        };
+        request.deliver_revision(parsed.result, Some(parsed.revision))
+    }
+
+    fn parse_source(source: &str, cancelled: impl Fn() -> bool) -> Option<ParsedCanvas> {
+        let revision = Self::revision(source, &cancelled)?;
+        let result = match CanvasDocument::parse_cancellable(source, cancelled) {
+            Ok(Some(document)) => Ok(Arc::new(document)),
+            Ok(None) => return None,
+            Err(error) => Err(CanvasRequestError::InvalidCanvas(error)),
+        };
+        Some(ParsedCanvas { revision, result })
+    }
+
+    fn revision(source: &str, cancelled: impl Fn() -> bool) -> Option<CanvasRevision> {
+        let mut digest = Sha256::new();
+        for chunk in source.as_bytes().chunks(REVISION_CHUNK_BYTES) {
+            if cancelled() {
+                return None;
+            }
+            digest.update(chunk);
         }
-        let revision = Sha256::digest(source.as_bytes()).into();
-        if request.is_cancelled() {
-            return Ok(());
+        if cancelled() {
+            return None;
         }
-        let result = CanvasDocument::parse(&source)
-            .map(Arc::new)
-            .map_err(CanvasRequestError::InvalidCanvas);
-        /* WHY: 同期 parser を中断せず、取消後の結果を次世代の表示へ届けない。 */
-        request.deliver_revision(result, Some(revision))
+        Some(digest.finalize().into())
     }
 }
+
+#[cfg(test)]
+mod cancellation_tests;

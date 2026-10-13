@@ -26,6 +26,10 @@ impl CanvasInput {
             Self::Text(source) => source,
             Self::File(path) => CanvasFileInput::load(&path, &cancelled)?,
         };
+        /* WHY: メモリ経由でもファイル経由と同じ上限で固定ワーカーを保護する。 */
+        if source.len() > MAX_BINARY_DOCUMENT_BYTES {
+            return Err(CanvasRequestError::SizeLimit);
+        }
         if cancelled() {
             return Err(CanvasRequestError::Cancelled);
         }

@@ -129,6 +129,15 @@ fn real_file_read_cooperatively_cancels_after_first_bounded_chunk() {
 }
 
 #[test]
+fn oversize_memory_source_uses_the_same_limit_as_file_input() {
+    let source = " ".repeat(MAX_BINARY_DOCUMENT_BYTES + 1);
+    assert!(matches!(
+        CanvasInput::Text(source).load(|| false),
+        Err(CanvasRequestError::SizeLimit)
+    ));
+}
+
+#[test]
 fn dropped_queued_file_request_releases_path_owner_and_is_not_opened() {
     let pool = CanvasPool::start().expect("worker start");
     let directory = tempfile::tempdir().expect("source directory");
