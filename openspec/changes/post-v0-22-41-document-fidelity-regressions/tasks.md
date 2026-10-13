@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 #345 current17e9d146固定の既存just test-document-fixturesはsession28186 actualexit0。strict release workerf25a1304/両lock不変、原本Office6/6 firstframeとHTML#s15 stickyの各exact1PASS、Office20.12秒/HTML10.87秒。private原本名は公開しない。in-process限定で全packaged/終了resource/95/全Issue完了へ代用しない。evidence/original-fixtures-17e9d146-2026-10-14.md。
+- [/] 2026-10-14 #343 direct screenshot入口をmacOSだけJustと同じ既定RUSTFLAGS=-D warningsへ揃える。Windows target flags上書きP2は他OSunset維持で修復、明示empty/custom/encoded不変。actual Bash4/既存全17PASS・構文/diff/HIGH P0P1無し。worker12388 actual0/3m48sはnative依存再buildあり、同入口二回目79251 actual0/1.97s/no compile・workerf25同一。全面reuse/全所要時間短縮は未証明、全inventory同等性/CIreuse/Windows coldwarm未完。evidence/macos-worker-build-flags-2026-10-14.md。
 - [/] 2026-10-14 #343 機械inventory parserへ着手。name/kind・件数・重複・ignoredsubset・skip条件を分離、footerless診断はexplicit/Noneで未検証。単一34PASS（既存26+新8）/実historical export14→skip13/UI1242 ignored2 subset成功。現HEAD nativepass/全inventory/coverage同等/保護CIreuse/Windows coldwarmを未証明のまま保持。evidence/test-inventory-parser-2026-10-14.md。
 
 - [/] 2026-10-14 #335 public458 review P2二件の限定採用: raw/decoded backslash拒否、repo大小文字同一視/package/version exactのtriplet重複拒否、異version/別changeは許容。実6誤受理RED→単一26PASS/1365独立文法/構文/diff成功、HIGH P0P1残0。SemVer二次探索を同言語2regexで修復し実source1024/2048/4096約0.000054/0.000096/0.000198秒。固定時間UT無し、通常commit/push/replyresolve/fresh回収へ続行。whole335未完。
