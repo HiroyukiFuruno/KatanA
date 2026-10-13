@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import importlib.util
 import os
+import shlex
 import subprocess
 import tempfile
 import unittest
@@ -73,29 +74,62 @@ class CommitIssueReferenceTest(unittest.TestCase):
 
 
 class RealGitBranchContractTests(unittest.TestCase):
-    def check_branch(self, branch: str, message: str) -> subprocess.CompletedProcess:
+    def git(self, arguments: list[str], directory: Path, environment: dict[str, str]) -> str:
+        result = subprocess.run(
+            ["git", *arguments], cwd=directory, env=environment,
+            capture_output=True, text=True, check=True,
+        )
+        return result.stdout.strip()
+
+    def check_branch(self, branch: str, message: str) -> tuple[subprocess.CompletedProcess, str, str]:
         environment = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
         with tempfile.TemporaryDirectory() as directory:
-            subprocess.run(["git", "init", "-q", "-b", branch, directory], env=environment, check=True)
-            message_path = Path(directory) / "COMMIT_EDITMSG"
-            message_path.write_text(message)
-            return subprocess.run(
-                ["bash", str(SCRIPT_PATH.with_suffix(".sh")), str(message_path)],
-                cwd=directory, env=environment, capture_output=True, text=True, check=False,
+            root = Path(directory)
+            hooks = root / "hooks"
+            hooks.mkdir()
+            hook = hooks / "commit-msg"
+            hook.write_text(f"#!/bin/sh\nexec bash {shlex.quote(str(SCRIPT_PATH.with_suffix('.sh')))} \"$1\"\n")
+            hook.chmod(0o755)
+            self.git(["init", "-q", "-b", "master", str(root)], root, environment)
+            for key, value in (("user.name", "KatanA Hook Test"), ("user.email", "hook-test@example.invalid"), ("commit.gpgsign", "false"), ("core.hooksPath", str(hooks))):
+                self.git(["config", "--local", key, value], root, environment)
+            (root / "source.txt").write_text("fixture\n", encoding="utf-8")
+            self.git(["add", "source.txt"], root, environment)
+            self.git(["commit", "-m", "bootstrap: fixture"], root, environment)
+            if branch != "master":
+                self.git(["switch", "-c", branch], root, environment)
+            before = self.git(["rev-parse", "HEAD"], root, environment)
+            (root / "source.txt").write_text("fixture\nchange\n", encoding="utf-8")
+            self.git(["add", "source.txt"], root, environment)
+            result = subprocess.run(
+                ["git", "commit", "-m", message], cwd=root, env=environment,
+                capture_output=True, text=True, check=False,
             )
+            after = self.git(["rev-parse", "HEAD"], root, environment)
+            return result, before, after
 
     def test_release_branch_rejects_missing_issue(self) -> None:
-        result = self.check_branch("release/v1.0.0", "fix: no reference")
+        result, before, after = self.check_branch("release/v1.0.0", "fix: no reference")
         self.assertEqual(result.returncode, 1, result.stderr)
-        self.assertIn("must reference an Issue", result.stderr)
+        self.assertIn("No genuine GitHub Issue was verified", result.stderr)
+        self.assertEqual(after, before)
 
     def test_release_branch_accepts_local_issue(self) -> None:
-        result = self.check_branch("release/v1.0.0", "fix: actual issue (#335)")
+        result, before, after = self.check_branch("release/v1.0.0", "fix: actual issue (#335)")
         self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Verified a genuine GitHub Issue", result.stdout + result.stderr)
+        self.assertNotEqual(after, before)
+
+    def test_release_branch_rejects_pull_request_reference(self) -> None:
+        result, before, after = self.check_branch("release/v1.0.0", "fix: pull request reference (#346)")
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("No genuine GitHub Issue was verified", result.stderr)
+        self.assertEqual(after, before)
 
     def test_default_branch_is_unchanged(self) -> None:
-        result = self.check_branch("master", "release: generated publication commit")
+        result, before, after = self.check_branch("master", "release: generated publication commit")
         self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotEqual(after, before)
 
 
 if __name__ == "__main__":
