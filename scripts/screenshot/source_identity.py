@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -11,9 +12,18 @@ from pathlib import Path
 SCHEMA_VERSION = 1
 
 
+def local_git_environment() -> dict[str, str]:
+    # hook環境の別repo指定より、引数で指定したrepositoryを優先する。
+    return {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+
+
 def git(repo: Path, *args: str) -> str:
     result = subprocess.run(
-        ["git", "-C", str(repo), *args], check=True, capture_output=True, text=True
+        ["git", "-C", str(repo), *args],
+        check=True,
+        capture_output=True,
+        text=True,
+        env=local_git_environment(),
     )
     return result.stdout
 
@@ -31,6 +41,7 @@ def output_root_allowed(repo: Path, identity: Path) -> None:
         check=True,
         capture_output=True,
         text=True,
+        env=local_git_environment(),
     )
 
 

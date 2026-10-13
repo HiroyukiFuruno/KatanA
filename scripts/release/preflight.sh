@@ -1,6 +1,8 @@
 #!/bin/zsh
 set -euo pipefail
 
+source "${0:A:h}/clear-git-environment.zsh"
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
@@ -54,8 +56,7 @@ success "Browser-equivalent HTML release contract is enforced."
 # 5. Multi-format document release contract
 info "5/14 Verifying multi-format document release contract..."
 python3 scripts/release/check-multi-format-document-contract.py --self-test
-python3 scripts/screenshot/test_generate_data_descriptor_docx.py
-python3 scripts/screenshot/test_source_identity.py
+python3 -m unittest discover -s scripts/screenshot -p 'test_*.py'
 if [[ "$VERSION" == "0.22.41" ]]; then
     python3 scripts/release/check-multi-format-document-contract.py "$VERSION"
 fi

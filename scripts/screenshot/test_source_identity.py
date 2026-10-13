@@ -1,11 +1,18 @@
 import json
+import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 
 SCRIPT = Path(__file__).with_name("source_identity.py")
+MODULE = "scripts.screenshot.test_source_identity"
+
+
+def sanitized_environment() -> dict[str, str]:
+    return {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
 
 
 class SourceIdentityTest(unittest.TestCase):
@@ -26,18 +33,54 @@ class SourceIdentityTest(unittest.TestCase):
         self.temp.cleanup()
 
     def git(self, *args: str) -> str:
-        return subprocess.run(
-            ["git", "-C", str(self.repo), *args],
-            check=True,
+        return self.git_at(self.repo, *args)
+
+    def git_at(self, repository: Path, *args: str) -> str:
+        result = subprocess.run(
+            ["git", "-C", str(repository), *args],
+            check=False,
             capture_output=True,
             text=True,
-        ).stdout
+            env=sanitized_environment(),
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return result.stdout
 
-    def run_guard(self, action: str) -> subprocess.CompletedProcess[str]:
+    def run_guard(
+        self, action: str, extra_environment: dict[str, str] | None = None
+    ) -> subprocess.CompletedProcess[str]:
+        environment = sanitized_environment()
+        if extra_environment:
+            environment.update(extra_environment)
         return subprocess.run(
             ["python3", str(SCRIPT), action, "--repository", str(self.repo), "--identity", str(self.identity)],
             capture_output=True,
             text=True,
+            env=environment,
+        )
+
+    def donor_repository(self) -> tuple[Path, dict[str, str]]:
+        donor = Path(self.temp.name) / "donor"
+        donor.mkdir()
+        self.git_at(donor, "init", "-q")
+        (donor / "donor.txt").write_text("donor\n", encoding="utf-8")
+        self.git_at(donor, "add", ".")
+        self.git_at(donor, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "donor")
+        git_dir = donor / ".git"
+        return donor, {
+            "GIT_DIR": str(git_dir),
+            "GIT_WORK_TREE": str(donor),
+            "GIT_INDEX_FILE": str(git_dir / "index"),
+            "GIT_COMMON_DIR": str(git_dir),
+        }
+
+    def donor_snapshot(self, donor: Path) -> tuple[str, ...]:
+        return (
+            self.git_at(donor, "rev-parse", "HEAD"),
+            self.git_at(donor, "config", "--local", "--list"),
+            self.git_at(donor, "config", "--local", "--get", "core.bare"),
+            self.git_at(donor, "ls-files", "--stage"),
+            self.git_at(donor, "ls-tree", "-r", "HEAD"),
         )
 
     def test_clean_stable_capture_in_ignored_output_succeeds(self) -> None:
@@ -107,6 +150,38 @@ class SourceIdentityTest(unittest.TestCase):
         self.identity = self.repo / "output" / "capture" / "source-identity.json"
         self.identity.parent.mkdir(parents=True)
         self.assertNotEqual(self.run_guard("begin").returncode, 0)
+
+    def test_guard_uses_requested_repo_when_hook_environment_is_injected(self) -> None:
+        donor, git_environment = self.donor_repository()
+        donor_before = self.donor_snapshot(donor)
+        self.assertEqual(self.run_guard("begin").returncode, 0)
+        (self.repo / "source.txt").write_text("dirty requested repository\n", encoding="utf-8")
+        result = self.run_guard("verify", extra_environment=git_environment)
+        self.assertNotEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Git status is not clean", result.stderr)
+        self.assertEqual(self.donor_snapshot(donor), donor_before)
+
+    def test_complete_suite_under_hook_environment_preserves_donor_repository(self) -> None:
+        donor, git_environment = self.donor_repository()
+        before = self.donor_snapshot(donor)
+        environment = sanitized_environment()
+        environment.update(git_environment)
+        test_names = sorted(
+            test.id().rsplit(".", 1)[-1]
+            for test in unittest.defaultTestLoader.loadTestsFromTestCase(type(self))
+        )
+        nested_names = [name for name in test_names if name != self._testMethodName]
+        test_ids = [f"{MODULE}.SourceIdentityTest.{name}" for name in nested_names]
+        result = subprocess.run(
+            [sys.executable, "-m", "unittest", *test_ids],
+            cwd=SCRIPT.parents[2],
+            env=environment,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}")
+        self.assertIn(f"Ran {len(test_ids)} tests", result.stderr)
+        self.assertEqual(self.donor_snapshot(donor), before)
 
 
 if __name__ == "__main__":
