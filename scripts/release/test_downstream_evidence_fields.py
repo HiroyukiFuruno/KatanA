@@ -126,6 +126,26 @@ class EvidenceFieldTests(unittest.TestCase):
                 document["changes"][0]["manifests"][0]["path"] = path
                 self.assert_invalid(document)
 
+    def test_rejects_duplicate_upstream_identity(self) -> None:
+        for field in (None, "registry_checksum", "release_url"):
+            with self.subTest(field=field):
+                document = valid_document()
+                duplicate = copy.deepcopy(document["changes"][0]["upstream"][0])
+                if field == "registry_checksum":
+                    duplicate[field] = "f" * 64
+                if field == "release_url":
+                    duplicate[field] += "/candidate"
+                document["changes"][0]["upstream"].append(duplicate)
+                self.assert_invalid(document)
+
+    def test_accepts_distinct_upstream_versions(self) -> None:
+        document = valid_document()
+        newer = copy.deepcopy(document["changes"][0]["upstream"][0])
+        newer["version"] = "0.5.13"
+        newer["release_url"] = newer["release_url"].replace("v0.5.12", "v0.5.13")
+        document["changes"][0]["upstream"].append(newer)
+        validate_evidence_document(document, REPOSITORY)
+
     def test_rejects_missing_collections_and_duplicate_commits(self) -> None:
         for field in ("upstream", "manifests", "lockfiles", "verification"):
             with self.subTest(field=field):
@@ -141,6 +161,8 @@ class EvidenceFieldTests(unittest.TestCase):
         for url in (
             " " + prefix + "v0.5.12", prefix + "\nv0.5.12", prefix + "../../other",
             prefix + "%2e%2e/other", prefix + "v0.5.12/%0aother", "https://[github.com/tag",
+            prefix + r"v1\..\..\issues\335", prefix + "v1%5c..%5cissues",
+            prefix + "v1%5C..%5Cissues",
         ):
             with self.subTest(url=url):
                 document = valid_document()

@@ -13,10 +13,11 @@ class EvidenceSchemaError(ValueError):
 
 OWNER_RE = re.compile(r"[A-Za-z0-9_.-]+")
 SHA_RE = re.compile(r"[0-9a-f]+")
+# 最初の非数字より前を数字に限定し、不正な長い識別子の二次探索を避ける。
 SEMVER_RE = re.compile(
     r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
-    r"(?:-(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)"
-    r"(?:\.(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*)?"
+    r"(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)"
+    r"(?:\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?"
     r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?\Z"
 )
 
@@ -77,13 +78,13 @@ def _release_tag(value: str) -> None:
     tag = unquote(value)
     if any(part in {"", ".", ".."} for part in tag.split("/")):
         raise EvidenceSchemaError("release_url contains unsafe tag components")
-    if any(char.isspace() or ord(char) < 32 or 127 <= ord(char) <= 159 for char in tag):
+    if "\\" in tag or any(char.isspace() or ord(char) < 32 or 127 <= ord(char) <= 159 for char in tag):
         raise EvidenceSchemaError("release_url contains unsafe tag characters")
 
 
 def _release_url(value: object, repository: str) -> str:
     url = _text(value, "release_url")
-    if any(char.isspace() or ord(char) < 32 or 127 <= ord(char) <= 159 for char in url):
+    if "\\" in url or any(char.isspace() or ord(char) < 32 or 127 <= ord(char) <= 159 for char in url):
         raise EvidenceSchemaError("release_url contains unsafe characters")
     try:
         parsed = urlsplit(url)
@@ -107,15 +108,16 @@ def _package(value: object) -> str:
     return package
 
 
-def _upstream(value: object) -> None:
+def _upstream(value: object) -> tuple[str, str, str]:
     record = _exact(value, {"repository", "package", "version", "release_url", "registry_checksum"}, "upstream")
     repository = _repository(record["repository"], "upstream.repository")
-    _package(record["package"])
+    package = _package(record["package"])
     version = _text(record["version"], "version")
     if SEMVER_RE.fullmatch(version) is None:
         raise EvidenceSchemaError("version must be SemVer")
     _release_url(record["release_url"], repository)
     _sha(record["registry_checksum"], (64,), "registry_checksum")
+    return repository.casefold(), package, version
 
 
 def _path_record(value: object, label: str) -> str:
@@ -142,8 +144,12 @@ def _change(value: object, paths: set[str], commits: set[str]) -> None:
     if commit in commits:
         raise EvidenceSchemaError("duplicate commit record")
     commits.add(commit)
+    upstream_keys: set[tuple[str, str, str]] = set()
     for upstream in _array(record["upstream"], "upstream"):
-        _upstream(upstream)
+        key = _upstream(upstream)
+        if key in upstream_keys:
+            raise EvidenceSchemaError("duplicate upstream repository/package/version")
+        upstream_keys.add(key)
     _text(record["migration_note"], "migration_note")
     for label in ("manifests", "lockfiles"):
         for entry in _array(record[label], label):
