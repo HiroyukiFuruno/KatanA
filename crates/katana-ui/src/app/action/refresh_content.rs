@@ -156,6 +156,10 @@ impl KatanaApp {
             self.full_refresh_preview(&path, &src, true, concurrency);
             return;
         }
+        if katana_core::workspace::TreeEntry::path_is_canvas(&path) {
+            self.full_refresh_preview(&path, "", is_manual, 1);
+            return;
+        }
         if katana_core::workspace::TreeEntry::path_is_document(&path) {
             /* WHY: Automatic refreshes must preserve navigation when the binary revision is
              * unchanged; manual refresh still forces a new KDV session. */

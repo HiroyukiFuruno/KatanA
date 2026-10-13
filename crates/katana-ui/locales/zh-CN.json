@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "临时工作区"
   },
   "preview": {
+    "canvas": {
+      "fit": "显示完整画布",
+      "empty": "空画布",
+      "unsupported_node": "不支持的节点",
+      "unsupported_fields": "不支持的属性",
+      "unsupported_link": "暂不支持外部链接",
+      "unsupported_background": "暂不支持背景图片",
+      "load_error": "无法加载画布",
+      "loading": "正在加载画布…"
+    },
     "preview_title": "预览",
     "refresh_diagrams": "刷新图表",
     "rendering": "正在渲染 {kind}…",

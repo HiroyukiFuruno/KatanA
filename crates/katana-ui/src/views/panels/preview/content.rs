@@ -25,7 +25,7 @@ impl<'a> PreviewContent<'a> {
         ui.set_min_width(panel_width);
         ui.set_max_width(panel_width);
 
-        if preview.has_document_surface() {
+        if preview.has_document_surface() || preview.has_canvas_surface() {
             preview.show_content(
                 ui,
                 scroll.active_editor_line,

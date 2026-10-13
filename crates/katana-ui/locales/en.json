@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "Temporary workspace"
   },
   "preview": {
+    "canvas": {
+      "fit": "Fit canvas",
+      "empty": "Empty canvas",
+      "unsupported_node": "Unsupported node",
+      "unsupported_fields": "Unsupported attributes",
+      "unsupported_link": "External links are not supported",
+      "unsupported_background": "Background images are not supported",
+      "load_error": "Cannot load canvas",
+      "loading": "Loading canvas…"
+    },
     "preview_title": "Preview",
     "refresh_diagrams": "Refresh Diagrams",
     "rendering": "Rendering {kind}…",

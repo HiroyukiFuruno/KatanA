@@ -4,6 +4,7 @@ use super::types::*;
 
 impl PreviewPane {
     pub fn update_markdown_sections(&mut self, source: &str, md_file_path: &std::path::Path) {
+        self.clear_canvas_surface();
         self.md_file_path = md_file_path.to_path_buf();
         let (outline_items, document_anchors) =
             katana_core::markdown::outline::MarkdownOutlineOps::extract_outline(source);

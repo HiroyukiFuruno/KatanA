@@ -6,6 +6,7 @@ impl PreviewPane {
         source: &str,
         html_file_path: &std::path::Path,
     ) {
+        self.clear_canvas_surface();
         self.document_surface = None;
         self.document_intake = None;
         self.is_loading = false;
@@ -25,6 +26,7 @@ impl PreviewPane {
         html_file_path: &std::path::Path,
         force: bool,
     ) {
+        self.clear_canvas_surface();
         self.document_surface = None;
         self.document_intake = None;
         self.document_failure = None;
@@ -74,6 +76,7 @@ impl PreviewPane {
         source: katana_document_viewer::browser_session::HtmlBrowserSource,
         force: bool,
     ) {
+        self.clear_canvas_surface();
         self.document_surface = None;
         self.document_intake = None;
         self.document_failure = None;

@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "Espace de travail temporaire"
   },
   "preview": {
+    "canvas": {
+      "fit": "Afficher tout le canevas",
+      "empty": "Canevas vide",
+      "unsupported_node": "Nœud non pris en charge",
+      "unsupported_fields": "Attributs non pris en charge",
+      "unsupported_link": "Les liens externes ne sont pas pris en charge",
+      "unsupported_background": "Les images de fond ne sont pas prises en charge",
+      "load_error": "Impossible de charger le canevas",
+      "loading": "Chargement du canevas…"
+    },
     "preview_title": "Aperçu",
     "refresh_diagrams": "Actualiser les diagrammes",
     "rendering": "Rendu de {kind}…",

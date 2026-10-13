@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "임시 작업 공간"
   },
   "preview": {
+    "canvas": {
+      "fit": "캔버스 전체 보기",
+      "empty": "빈 캔버스",
+      "unsupported_node": "지원하지 않는 노드",
+      "unsupported_fields": "지원하지 않는 속성",
+      "unsupported_link": "외부 링크는 지원하지 않습니다",
+      "unsupported_background": "배경 이미지는 지원하지 않습니다",
+      "load_error": "캔버스를 불러올 수 없습니다",
+      "loading": "캔버스 불러오는 중…"
+    },
     "preview_title": "미리보기",
     "refresh_diagrams": "다이어그램 새로고침",
     "rendering": "{kind} 렌더링 중…",

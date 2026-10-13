@@ -27,7 +27,9 @@ pub(super) fn update_preview_pane(
     source: &str,
     is_html: bool,
 ) {
-    if is_html {
+    if katana_core::workspace::TreeEntry::path_is_canvas(path) {
+        pane.update_canvas_source(source, path);
+    } else if is_html {
         pane.update_html_document_sections(source, path);
     } else {
         pane.update_markdown_sections(source, path);
@@ -47,7 +49,9 @@ pub(super) fn full_render_preview_pane(
     source: &str,
     options: FullPreviewRenderOptions,
 ) {
-    if options.is_html {
+    if katana_core::workspace::TreeEntry::path_is_canvas(path) {
+        pane.update_canvas_source(source, path);
+    } else if options.is_html {
         pane.full_render_html_document(source, path, options.force);
     } else {
         pane.full_render(

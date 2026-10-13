@@ -91,6 +91,12 @@ impl PreviewOps for KatanaApp {
         force: bool,
         concurrency: usize,
     ) {
+        if katana_core::workspace::TreeEntry::path_is_canvas(path) {
+            let pane = Self::get_preview_pane(&mut self.tab_previews, path.to_path_buf());
+            pane.update_canvas_path(path, force);
+            update_preview_hash(&mut self.tab_previews, path, 0);
+            return;
+        }
         if katana_core::workspace::TreeEntry::path_is_document(path) {
             let pane = Self::get_preview_pane(&mut self.tab_previews, path.to_path_buf());
             pane.full_render_document_path(path, force);

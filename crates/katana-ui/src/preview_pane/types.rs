@@ -59,6 +59,8 @@ pub struct PreviewPane {
     pub(crate) document_surface: Option<DocumentSurface>,
     pub(crate) document_intake: Option<super::document_surface::LocalDocumentIntake>,
     pub(crate) document_failure: Option<DocumentFailure>,
+    pub(crate) canvas_surface: Option<super::canvas_surface::CanvasSurface>,
+    pub(crate) canvas_request: Option<super::canvas_request::CanvasParseRequest>,
 }
 
 pub(crate) struct RenderJob {

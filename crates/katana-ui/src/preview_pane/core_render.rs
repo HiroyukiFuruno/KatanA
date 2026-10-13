@@ -12,6 +12,7 @@ impl PreviewPane {
         force: bool,
         diagram_concurrency: usize,
     ) {
+        self.clear_canvas_surface();
         self.document_surface = None;
         self.document_intake = None;
         self.document_failure = None;

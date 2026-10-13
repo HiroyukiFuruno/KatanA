@@ -41,6 +41,7 @@ impl PreviewPane {
     }
 
     pub(crate) fn poll_renders(&mut self, ctx: &egui::Context) {
+        self.poll_canvas_request(ctx);
         self.poll_html_browser(ctx);
         if self.local_image_loader.poll(ctx.cumulative_frame_nr()) {
             ctx.request_repaint();
@@ -83,7 +84,7 @@ impl PreviewPane {
                 self.finalize_disconnected_renders();
             }
         } else {
-            self.is_loading = self.document_intake.is_some();
+            self.is_loading = self.document_intake.is_some() || self.canvas_request.is_some();
         }
     }
 

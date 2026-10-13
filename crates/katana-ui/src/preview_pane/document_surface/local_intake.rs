@@ -61,6 +61,7 @@ impl Drop for LocalDocumentIntake {
 
 impl PreviewPane {
     pub(crate) fn full_render_document_path(&mut self, path: &Path, force: bool) {
+        self.clear_canvas_surface();
         if let Some(pending) = &mut self.document_intake
             && pending.path == path
         {

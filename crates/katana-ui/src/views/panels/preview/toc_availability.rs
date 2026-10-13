@@ -16,6 +16,9 @@ impl PreviewMenuAvailability {
         let Some(path) = path else {
             return !matches!(menu, PreviewMenu::Slideshow);
         };
+        if katana_core::workspace::TreeEntry::path_is_canvas(path) {
+            return false;
+        }
         let is_office = matches!(
             katana_core::document_source::BinaryDocumentFormat::from_path(path),
             Some(
@@ -138,6 +141,24 @@ mod tests {
             PreviewMenu::Slideshow,
         ] {
             assert!(!PreviewMenuAvailability::for_path(Some(path), menu));
+        }
+    }
+
+    #[test]
+    fn canvas_uses_its_own_reading_controls_not_markdown_document_menus() {
+        for name in ["graph.canvas", "GRAPH.CANVAS"] {
+            for menu in [
+                PreviewMenu::Toc,
+                PreviewMenu::Export,
+                PreviewMenu::Story,
+                PreviewMenu::Tools,
+                PreviewMenu::Slideshow,
+            ] {
+                assert!(!PreviewMenuAvailability::for_path(
+                    Some(std::path::Path::new(name)),
+                    menu,
+                ));
+            }
         }
     }
 }

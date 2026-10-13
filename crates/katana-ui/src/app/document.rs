@@ -15,6 +15,10 @@ use crate::app_state::*;
 
 pub(crate) use super::document_contract::DocumentOps;
 
+#[path = "document_preview_policy.rs"]
+mod preview_policy;
+use preview_policy::DocumentPreviewPolicy;
+
 impl DocumentOps for KatanaApp {
     fn handle_select_document(&mut self, path: std::path::PathBuf, activate: bool) {
         let previous_active_path = self.state.active_path();
@@ -60,10 +64,7 @@ impl DocumentOps for KatanaApp {
                     .performance
                     .resolved_diagram_concurrency();
                 self.full_refresh_preview(&path, &src, false, concurrency);
-                if katana_core::workspace::TreeEntry::path_is_document(&path) {
-                    self.state
-                        .set_active_view_mode(crate::state::document::ViewMode::PreviewOnly);
-                }
+                DocumentPreviewPolicy::select(self, &path, true);
                 if self.state.search.doc_search_open {
                     self.refresh_doc_search_matches(&src);
                 }
@@ -111,10 +112,7 @@ impl DocumentOps for KatanaApp {
             }
         }
         self.state.initialize_tab_split_state(path.clone());
-        if katana_core::workspace::TreeEntry::path_is_document(&path) {
-            self.state
-                .set_active_view_mode(crate::state::document::ViewMode::PreviewOnly);
-        }
+        DocumentPreviewPolicy::select(self, &path, activate);
         self.save_workspace_state();
         self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
     }
@@ -127,6 +125,11 @@ impl DocumentOps for KatanaApp {
         let Some(idx) = self.state.document.active_doc_idx else {
             return;
         };
+        if katana_core::workspace::TreeEntry::path_is_canvas(
+            &self.state.document.open_documents[idx].path,
+        ) {
+            return;
+        }
         let (path, changed) = {
             let doc = &mut self.state.document.open_documents[idx];
             let before_revision = doc.revision;
@@ -136,16 +139,7 @@ impl DocumentOps for KatanaApp {
         if !changed {
             return;
         }
-        if !katana_core::workspace::TreeEntry::path_is_html(&path) {
-            let concurrency = self
-                .state
-                .config
-                .settings
-                .settings()
-                .performance
-                .resolved_diagram_concurrency();
-            self.full_refresh_preview(&path, &content, true, concurrency);
-        }
+        DocumentPreviewPolicy::refresh_edited_markdown(self, &path, &content);
 
         if self.state.search.doc_search_open {
             self.refresh_doc_search_matches(&content);
@@ -157,6 +151,11 @@ impl DocumentOps for KatanaApp {
         let Some(idx) = self.state.document.active_doc_idx else {
             return;
         };
+        if katana_core::workspace::TreeEntry::path_is_canvas(
+            &self.state.document.open_documents[idx].path,
+        ) {
+            return;
+        }
         if !self.state.document.open_documents[idx].is_dirty {
             return;
         }

@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "Temporärer Arbeitsbereich"
   },
   "preview": {
+    "canvas": {
+      "fit": "Gesamte Zeichenfläche anzeigen",
+      "empty": "Leere Zeichenfläche",
+      "unsupported_node": "Nicht unterstützter Knoten",
+      "unsupported_fields": "Nicht unterstützte Attribute",
+      "unsupported_link": "Externe Links werden nicht unterstützt",
+      "unsupported_background": "Hintergrundbilder werden nicht unterstützt",
+      "load_error": "Zeichenfläche kann nicht geladen werden",
+      "loading": "Zeichenfläche wird geladen…"
+    },
     "preview_title": "Vorschau",
     "refresh_diagrams": "Diagramme aktualisieren",
     "rendering": "Rendere {kind}…",

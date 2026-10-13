@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "Area di lavoro temporanea"
   },
   "preview": {
+    "canvas": {
+      "fit": "Mostra l’intera tela",
+      "empty": "Tela vuota",
+      "unsupported_node": "Nodo non supportato",
+      "unsupported_fields": "Attributi non supportati",
+      "unsupported_link": "I collegamenti esterni non sono supportati",
+      "unsupported_background": "Le immagini di sfondo non sono supportate",
+      "load_error": "Impossibile caricare la tela",
+      "loading": "Caricamento della tela…"
+    },
     "preview_title": "Anteprima",
     "refresh_diagrams": "Aggiorna diagrammi",
     "rendering": "Rendering di {kind}…",

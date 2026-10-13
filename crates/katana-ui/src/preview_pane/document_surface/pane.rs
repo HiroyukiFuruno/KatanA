@@ -9,6 +9,7 @@ impl PreviewPane {
         source: DocumentSurfaceSource,
         force: bool,
     ) {
+        self.clear_canvas_surface();
         self.document_intake = None;
         self.is_loading = false;
         if !force
@@ -84,6 +85,7 @@ impl PreviewPane {
     }
 
     pub(crate) fn full_render_document_failure(&mut self, failure: super::DocumentFailure) {
+        self.clear_canvas_surface();
         self.document_intake = None;
         failure.log();
         self.cancel_token

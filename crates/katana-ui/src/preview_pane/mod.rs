@@ -1,7 +1,12 @@
 pub mod anchor_map;
 pub mod background;
 mod cancellable_read;
+mod canvas_request;
+mod canvas_surface;
 pub mod core_render;
+mod core_render_canvas;
+#[cfg(test)]
+mod core_render_canvas_tests;
 mod core_render_diagram;
 mod core_render_html_document;
 mod core_render_lifecycle;

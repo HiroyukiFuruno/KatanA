@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "Espacio de trabajo temporal"
   },
   "preview": {
+    "canvas": {
+      "fit": "Mostrar todo el lienzo",
+      "empty": "Lienzo vacío",
+      "unsupported_node": "Nodo no compatible",
+      "unsupported_fields": "Atributos no compatibles",
+      "unsupported_link": "Los enlaces externos no son compatibles",
+      "unsupported_background": "Las imágenes de fondo no son compatibles",
+      "load_error": "No se puede cargar el lienzo",
+      "loading": "Cargando el lienzo…"
+    },
     "preview_title": "Vista previa",
     "refresh_diagrams": "Actualizar diagramas",
     "rendering": "Renderizando {kind}…",

@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "Espaço de trabalho temporário"
   },
   "preview": {
+    "canvas": {
+      "fit": "Mostrar toda a tela",
+      "empty": "Tela vazia",
+      "unsupported_node": "Nó não compatível",
+      "unsupported_fields": "Atributos não compatíveis",
+      "unsupported_link": "Links externos não são compatíveis",
+      "unsupported_background": "Imagens de fundo não são compatíveis",
+      "load_error": "Não foi possível carregar a tela",
+      "loading": "Carregando a tela…"
+    },
     "preview_title": "Visualização",
     "refresh_diagrams": "Atualizar diagramas",
     "rendering": "A renderizar {kind}…",
