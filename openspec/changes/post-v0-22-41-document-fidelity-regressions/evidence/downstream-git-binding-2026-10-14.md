@@ -1,5 +1,13 @@
 # Actual Git tree binding slice
 
+## Current-review full-OID correction
+
+Public99d1381f review5509838434 / comment4263915438 / threadPRRT_kwDORm09y86sDq9_ found a P2 relevant to the explicit full-commit contract: in SHA-256 Git repositories, the schema's40-character SHA-1 length can instead resolve as an abbreviation of a64-character commit. This was adopted as a compatibility/identity correction, not an unrelated new feature.
+
+Actual `git init --object-format=sha256` regression on the unchanged helper accepted full64 and proved ordinary cat-file resolved the40-prefix as commit, but the expected rejection failed (root native command exit1,1 assertionRED, `tmp/issue335-sha256-prefix-red-2026-10-14.log`). `_source_commit` now compares the complete `rev-parse --verify` OID to the declaration before the actual commit-type check. Existing no-fetch/no-replace/literal isolation remains. Final single discovery46 passed/2.855s/root3745 actual0, syntax/diff pass; helper72 lines/maxfn23, new test55 lines/maxfn16. Raw GREEN `tmp/issue335-sha256-prefix-green-2026-10-14.log`.
+
+Normal concern commit/push and individual reply/resolve/fresh retrieval remain separate steps; this local result does not mean the public review thread is resolved yet.
+
 Issue335 now has a separate local-object validator after the existing strict Issue evidence schema. It verifies declared full commit identities are actual commit objects; literal manifest/lockfile paths resolve exactly inside those commit trees; Cargo.toml/Cargo.lock classifications are correct; regular file mode, blob OID, and actual blob object existence/type match. It never executes the Issue's declared verification commands or treats author JSON as trusted success.
 
 All inherited GIT_* variables are removed for each Git invocation. Trusted `--no-replace-objects`, `--literal-pathspecs`, and `--no-lazy-fetch` prevent local replacement, pathspec expansion, or implicit partial-clone acquisition. Git2.56.0 supported the flags in actual verification; an unsupported Git option fails closed rather than silently enabling fetch. This is not a claim that every older Git installation was tested.

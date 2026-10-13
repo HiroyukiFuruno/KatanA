@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 current99 review P2 4263915438/PRRT_kwDORm09y86sDq9_: SHA256 repoで40桁commit prefixが受理される境界は完全OID契約へ影響するため採用。actual SHA256 Git1assertRED→resolvedfullOID==declared確認を追加、3745actual0/単一46PASS・構文diff/maxfn23成功。通常commit/push・個別reply/resolve・fresh全取得を継続、全335完了とは別。evidence/downstream-git-binding-2026-10-14.md。
+
 - [/] 2026-10-14 #335 actual Git bindingへ着手: commit/tree/literalpath/regularmode/blob実在型を照合、hook Git環境・replace・lazyfetchを排除。HIGH P1のmissingblobをreal mktree--missing/commit-treeでactual18018 exit1/1assertRED→cat-file実object確認で修復。realpartialclone/離脱origin・gitlink/symlink・surrogate/hostileenvを含む最終30846 actual0/単一45PASS、構文/diff・関数最大23行・HIGH P0P1残0。通常統合/push/currentreviewとproduction dispatcher/range・registry/logtrusted・cleanup未完。evidence/downstream-git-binding-2026-10-14.md。
 
 - [/] 2026-10-14 #345 current17e9d146固定の既存just test-document-fixturesはsession28186 actualexit0。strict release workerf25a1304/両lock不変、原本Office6/6 firstframeとHTML#s15 stickyの各exact1PASS、Office20.12秒/HTML10.87秒。private原本名は公開しない。in-process限定で全packaged/終了resource/95/全Issue完了へ代用しない。evidence/original-fixtures-17e9d146-2026-10-14.md。
