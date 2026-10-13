@@ -1,5 +1,15 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 #338 guard sourceは通常hook/署名G153f32edへ統合（18762actual0）。確定sourceでnormalpush→freshreview→official captureを回収する。guard9実回帰はsource変更拒否のみで、新capture/score/packaged未実施を保持する。
+
+- [/] 2026-10-14 #338 再発防止: official generatorに開始時clean HEAD/status記録とrun.sh後・正規化前のHEAD/status再照合を接続。repo内出力は実ignored tmp/targetだけ、dirty/index/untracked/HEAD変更/不正schemaを拒否しrawを保全。main実Git9件・flow9・Python/bash/zsh構文/diff全成功、tmp/issue338-source-identity-guard-main-2026-10-14.log。途中変更後復元まで保証したと誇張しない。通常統合/push・固定graph実captureは未完。
+
+- [/] 2026-10-14 通常署名G関心別統合: 依存/ZIP互換e3da3d4d（63836actual0）、Canvas予約修復4f27c9df（39842actual0）、真正Issue optional CLI0bef2c7b（78880actual0）。実PR→Issue受理・実transport拒否exit2の追加75719actual0。normalpush/current review返信解決・#335 mandatory dispatcher/cleanup・#338確定graph再生成・残fullgate/公開は未完。
+
+- [/] 2026-10-14 最新実結果: normalpush63098 actual0でad4adb87を公開、旧57427失敗は履歴として保持。依存更新後のZIP実回帰3件成功、Canvas pending refreshは旧実worker58367 assertion RED→新5件79236 actual0、全Canvas24319 core24/UI62成功。定数補正後の正式94106はAST23・impacted strict Clippy・fmt/diff全成功。関心別通常commit/push・新HEAD review reply/resolve・全gate/公開は未完で、旧ad4 gateを新依存graphへ流用しない。
+- [/] 2026-10-14 #335 live照合slice: 11809 actual0、純19+構文16回帰、実GitHub Issue335受理・GH_HOST変更時も固定hostname・missing後真正Issue受理・PR346拒否・missing拒否。CLI --verify-liveとpreflight純UT登録のみで、default hookへの強制接続/dispatcher/下流証跡/cleanupは未完。
+- [ ] 2026-10-14 #338 source drift: capture81921 actual0/1280x2400/cleanframe1223と出力hashは実測済みだが、00:30 input記録後00:36 manifest/lock変更、00:42 captureのためimmutable ad4 source証拠には不採用。既存KDV担当へ訂正送信済み、診断候補/旧rawを保全。確定新graphで再生成し、生成前後のsource整合検査を追加する。95点/packaged/採用済みへ代用しない。
+
 - [/] 2026-10-14 normalpush57427 actualexit1: native UI1232PASS/1FAIL、capacity FIFO fixtureの不要writeが取消reader closeと競合しBrokenPipe。upload前停止/remote19e5。EOF-only修復後のexact10回は3900 actual0/10PASS、元容量制限/後続regular読込/5秒基準は不変。1178 actual0: 対象13/AST23/strict UI alltarget externalfeature Clippy/fmt/diff成功。sender取得≠OS開始barrierの潜在リスクは未解決、全schedule安定性を保証しない。evidence/fifo-capacity-eof-fixture-2026-10-14.md。通常統合/push再実行・新HEAD全gate未完。
 
 - [/] 2026-10-13 #343 inventory: tmp/issue343-current-test-inventory-2026-10-13.mdに36testable workspace targets・通常test/coverageのfixture/cfg/features/threads/target差・workspace外vendor2件を記録しmainが実commandsを照合。Windows font同test名は専用DEBUG/cold timing診断目的があるため無条件に削除しない。実test listの機械照合/証明付きreuse/誤skip拒否/時間比較は未完。
