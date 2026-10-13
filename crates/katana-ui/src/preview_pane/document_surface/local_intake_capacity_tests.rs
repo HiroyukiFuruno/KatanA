@@ -107,11 +107,9 @@ fn assert_capacity_failure(pane: &PreviewPane) {
 }
 
 fn release_fifo_reads(fifos: &[std::path::PathBuf]) {
-    use std::io::Write;
-
     for fifo in fifos {
-        let mut writer = std::fs::File::create(fifo).unwrap();
-        writer.write_all(b"%PDF-1.7").unwrap();
+        /* WHY: 取消済みreaderはopen復帰後に閉じるため、不要な書込みとの競合を避けEOFだけを通知する。 */
+        let writer = std::fs::File::create(fifo).unwrap();
         drop(writer);
     }
     let deadline = std::time::Instant::now() + TIMEOUT;

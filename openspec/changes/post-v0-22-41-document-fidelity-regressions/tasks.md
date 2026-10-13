@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 normalpush57427 actualexit1: native UI1232PASS/1FAIL、capacity FIFO fixtureの不要writeが取消reader closeと競合しBrokenPipe。upload前停止/remote19e5。EOF-only修復後のexact10回は3900 actual0/10PASS、元容量制限/後続regular読込/5秒基準は不変。1178 actual0: 対象13/AST23/strict UI alltarget externalfeature Clippy/fmt/diff成功。sender取得≠OS開始barrierの潜在リスクは未解決、全schedule安定性を保証しない。evidence/fifo-capacity-eof-fixture-2026-10-14.md。通常統合/push再実行・新HEAD全gate未完。
+
 - [/] 2026-10-13 #343 inventory: tmp/issue343-current-test-inventory-2026-10-13.mdに36testable workspace targets・通常test/coverageのfixture/cfg/features/threads/target差・workspace外vendor2件を記録しmainが実commandsを照合。Windows font同test名は専用DEBUG/cold timing診断目的があるため無条件に削除しない。実test listの機械照合/証明付きreuse/誤skip拒否/時間比較は未完。
 
 - [x] 2026-10-13 #258 source統合: core dd38236e、host/UI dec02e313f7b9fda0e1b19604f8f1cf6d10e7221へ通常hook/署名Gでcommit。最終22229 actual0: Canvas57・既存fullscreen23・正式AST23・strict UI alltarget/externalfeature・fmt/diff成功。main自己reviewと既存high reviewerで実caller/描画境界/回帰を確認。通常push/current fullgate/公開・配布受入/IssueCloseは未完。literal text/reference labels/URL・背景未対応、浮動小数点coordinate literalを丸めず拒否する制限は残す。
