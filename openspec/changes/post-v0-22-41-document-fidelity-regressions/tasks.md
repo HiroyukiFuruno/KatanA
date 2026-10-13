@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 #335 native push metadata/range selection: Unicode合法refを実check-ref-formatで確認し旧split誤拒否REDを修復。SHA256実Gitでfast-forward/unchanged/new-ref explicitbase/deletion/tag拒否を検査。HIGH P1 graft親偽装は実A→B→CでB欠落1assertREDを再現し、trusted GIT_GRAFT_FILE=os.devnullで修復、単一58PASS/actualexit0・diffcheck0。production hook非活性、new-ref baseはcaller信頼前提で公開baseline証明ではない。通常統合・current review・liveIssue/registry/logtrusted/cleanupは未完。evidence/push-range-selection-2026-10-14.md。
+
 - [/] 2026-10-14 current99 review P2 4263915438/PRRT_kwDORm09y86sDq9_: SHA256 repoで40桁commit prefixが受理される境界は完全OID契約へ影響するため採用。actual SHA256 Git1assertRED→resolvedfullOID==declared確認を追加、3745actual0/単一46PASS・構文diff/maxfn23成功。通常commit/push・個別reply/resolve・fresh全取得を継続、全335完了とは別。evidence/downstream-git-binding-2026-10-14.md。
 
 - [/] 2026-10-14 #335 actual Git bindingへ着手: commit/tree/literalpath/regularmode/blob実在型を照合、hook Git環境・replace・lazyfetchを排除。HIGH P1のmissingblobをreal mktree--missing/commit-treeでactual18018 exit1/1assertRED→cat-file実object確認で修復。realpartialclone/離脱origin・gitlink/symlink・surrogate/hostileenvを含む最終30846 actual0/単一45PASS、構文/diff・関数最大23行・HIGH P0P1残0。通常統合/push/currentreviewとproduction dispatcher/range・registry/logtrusted・cleanup未完。evidence/downstream-git-binding-2026-10-14.md。
