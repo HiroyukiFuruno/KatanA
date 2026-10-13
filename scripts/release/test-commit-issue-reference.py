@@ -20,6 +20,10 @@ SPEC.loader.exec_module(MODULE)
 
 
 class CommitIssueReferenceTest(unittest.TestCase):
+    def test_extracts_same_repository_issue_numbers_in_order_without_duplicates(self) -> None:
+        message = "fix (#335) https://github.com/HiroyukiFuruno/KatanA/issues/312 (#335)"
+        self.assertEqual(MODULE.issue_references(message, "HiroyukiFuruno/KatanA"), [335, 312])
+
     def test_accepts_local_issue_number(self) -> None:
         self.assertTrue(MODULE.has_issue_reference("fix: resolve race (#343)", "HiroyukiFuruno/KatanA"))
 
