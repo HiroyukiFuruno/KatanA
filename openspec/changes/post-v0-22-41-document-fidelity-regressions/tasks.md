@@ -1,5 +1,7 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-13 #335: 非master commit-msgの同repo Issue参照チェックを実装・既存lefthookへ接続。#335x誤受理の実assert RED exit1→境界修正、15 GREEN（実Git release拒否/受理/master維持を含む）。通常precommit/prepush維持・hook install成功。evidence/issue-reference-hook-2026-10-13.md。live Issue存在/下流migration証跡/dispatcher順序/公開後safe cleanupは未完。
+
 - [/] 2026-10-13 #343: Windows CI test/lintのregistry専用exact-lock cacheを実装。旧無効化4f73b862の理由は未記録、compiled targetは復元しない。既存CDにはcacheがあり重複追加しない。cache契約RED exit1→4 GREEN、Draft5/flow9 GREEN、元build/test/lint/coverage/asset/smoke維持。evidence/windows-registry-cache-2026-10-13.md。Ready後cold/warm実測・test/coverage inventory・安全reuseは未完。
 - [ ] 2026-10-13 最新本人目的: 上流待ちではないOPEN9 Issueを各DoDで処理する。#312/#340/#345実装済みの検証・正式履歴/公開状態・Issue整理、#335 hook/cleanupと#343軽量化の残実装、#258 read-only Canvas MVP、#336公開KLE採用/実host E2E、#338 producer評価/#339配布受入を追跡する。Issue OPENを上流待ちと同一視せず、完了根拠不足は未完として保持。上流KDV/KRRは実装せず公開API採用境界を守る。定期確認スケジュールは本人指示で解除済み、再作成しない。
 

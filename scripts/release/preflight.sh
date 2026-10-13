@@ -29,6 +29,7 @@ header "Preflight checks for v${VERSION}"
 info "1/14 Verifying release flow ownership contract..."
 python3 scripts/release/test-release-flow-contract.py
 python3 scripts/release/test-windows-registry-cache-contract.py
+python3 scripts/release/test-commit-issue-reference.py
 success "Release flow ownership contract is enforced."
 
 # 2. Version Increment Contract

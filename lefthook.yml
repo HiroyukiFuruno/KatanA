@@ -20,6 +20,11 @@ pre-commit:
       glob: "{crates,vendor}/**/*.{rs,toml,lock}"
       run: just ast-lint
 
+commit-msg:
+  commands:
+    issue-reference:
+      run: bash scripts/release/check-commit-issue-reference.sh {1}
+
 pre-push:
   commands:
     pr-ready-check:
