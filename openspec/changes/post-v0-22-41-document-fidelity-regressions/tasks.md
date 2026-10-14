@@ -29,11 +29,13 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-15 PPTX349の限定source/公式受入導線は通常署名commit17569actual0/e6292c98へ統合。下記実入力/検査結果の証明範囲を維持し、normal push・個別replyresolve・current review・全release条件は未完。画像348 source dd65b4c9/docs c334fb55とは関心分離した。
+
 - [/] 2026-10-15 #348 directory rename P2 4268050392を採用。旧製品実native22387actual101/移動元ledger残留assertRED→From/Any/Both回復、Both移動先は解除せず。最終96602local_image_loader53PASS/2.69秒、42873正式AST23PASS/23.53秒、41098全target/testinclusive/externalfixture strictClippy・fmt/diff成功、HIGH P0/P1無し。限定source通常署名commit78736actual0/dd65b4c9。evidence/image-directory-rename-recovery-2026-10-15.md。push/個別replyresolve/全OS・packaged・公開は未完。
 
 - [/] 2026-10-15 Canvas公開source3424f691/docs2a7a7107の旧push94736はhandle消失後、生ログ成功とlive remote/PR2a7一致で通常uploadを確認。終了codeは未回収のため捏造しない。Canvas reply4275069504・resolve11525actual0を回収。fresh全reviewと全gate/配布公開は未完。
 
-- [ ] 2026-10-15 PPTX未Ready時のslideshow P2 4268050397を専用Issue349へ分離。旧製品58207actual101/2assertRED、候補8945actual0/2negativePASS。usable frameを保持するnavigation/refreshまで一律停止しない。正常Ready正例/stale-tab・正式検査/通常統合/review/publicは未完であり、Issue345のworker受入完了へ混同しない。
+- [/] 2026-10-15 PPTX未Ready時のslideshow P2 4268050397を専用Issue349へ分離。旧58207actual101/2assertREDと第三consumer systemmodal70455actual101/1assertRED→Action/Sidebar/systemmodalを共通for_appへ統一。最終50444実入力付きslideshow16PASS/9.73秒、84422正式AST23PASS/23.48秒、40513全target/testinclusive/externalfixture strictClippy・fmt/diff/bashsyntax成功、HIGH P0/P1無し。公式test-document-fixtures85140はOffice原本6/6 firstframe・PPTX原本fixture0/1/2 ready/Next/stale拒否/親worker close・原HTML#s15 exact各1PASSをraw回収。navigation/同path非force refreshの既存frame利用は維持。evidence/pptx-slideshow-readiness-2026-10-15.md。通常統合/push/replyresolve/currentreview/全packaged/publicは未完、nativefullscreen/pixel95/Office子process全終了を証明したとしない。
 
 - [/] 2026-10-14 current5af review5513924147のCanvas P2 4267507147/PRRT_kwDORm09y86sMLdXを既存#258へ採用。実worker返却Arc比較99412は旧source actual101/1assertRED、同path/非force/ReadyのSHA+Arc snapshotで一致時再解析を省略。最終1137Canvas69PASS/0.53秒、14569正式AST23PASS/22.57秒、7721 UI全target/testinclusive strictClippy/fmt/diff成功、HIGH最終P0/P1残なし。旧take_source未使用/冗長closureもstrict22358actual101から除外無し修復。evidence/canvas-unchanged-worker-reuse-2026-10-14.md。UI反映後のArcだけの誤GREEN fixtureは不採用、全文read/SHAは維持しmanual/path変更/Failed/coalescing/取消を保持。通常統合/push・返信解決・全gate/packaged/publicは未完。
 
