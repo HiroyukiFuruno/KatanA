@@ -29,6 +29,10 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] 同registered-input concernは通常署名G commit2ee119579393edd1732a482f50c5baa732e2c7f8へ統合、40834 actual0。Cargo除外の子孫/明示member優先を実Cargoで2assert RED→修復、最終workspace16+snapshot7件29246 actual0/20.345秒。限定再review P0/P1残0、Python function span全30以下をmain確認。本番dispatcher4filesは別未commit、全335/公開条件は未完。最終全release Python/通常push/current HEAD reviewを回収する。
+
+- [/] 2026-10-15 #335 registered workspace/path/name/versionと全Cargo入力比較の候補を検証。native SemVer Rust4件・strict Clippy65919・fmt36237・AST57409/23件はactual0。実Cargoでversion省略0.0.0を確認して候補の誤拒否を修復。member隣接stray lockがroot内部免除を借りる欠落は実Git20526/assert RED→修復後2593/7件actual0。dispatcher/installerは既存hook先行・同HEAD・同stdinのunit25件成功だが本番未活性、checker/公開照合/cleanupは未完。最終全Python・独立review・通常統合/pushの結果を回収する。evidence/registered-workspace-dependency-inputs-2026-10-15.md。全Issue/公開完了に流用しない。
+
 - [/] 2026-10-15 #335 同commit依存contextとblob内容identityへ進行。実SHA256 path/provider/外部保持7回帰57155actual0。同サイズlooseblobはnative cat-file成功・旧reader拒否無し29634actual1を再現しGit blob hash再計算へ修復、SHA1正例込みreader13回帰58687actual0。commit/tree同サイズ改変はnative Git hash mismatch/既存reader拒否を実回帰で確認し、未再現P1候補を撤回。多数alias同target再parseは私有cacheへ補正。最終Werror全releasePython155件80502actual0/39.277秒・独立限定P0P1無し。evidence/git-dependency-context-2026-10-15.md。関心別通常統合とpushへ継続。membership/version/lock所有・liveIssue/registry/trustedgate・productionhook/cleanupと全DoDは未完。
 
 - [/] 2026-10-15 本turn sourceは関心別通常署名Gへ統合: #335 origin 0bd8b1fd/23212actual0、#350第三paint固定graph/lock cb5a6282/90851actual0。対象検査成功と独立HIGH限定P0/P1無しを確認し、通常push一回→paint thread個別replyresolve→fresh current reviewへ進む。旧42886 reviewを新HEAD承認へ流用せず、全335/350/公開条件は未完のまま維持する。
