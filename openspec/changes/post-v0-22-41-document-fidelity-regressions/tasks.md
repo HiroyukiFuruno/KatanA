@@ -29,6 +29,8 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 #335 production admission部品の追加: actual Git commit本文のIssue候補選択、genuine live lookup、manifest/lock意味差分分類。Git source delimiter衝突・common-key checksum/dependencies変更見落とし・HIGHで発見したmixed-source共通key sort P1を修復、rev-list自体へ4096+1取得上限を追加。最終main discovery32453 actual0/113件/8.917秒、旧CLI42472 actual0/17件、全11候補file<=200/function<=30 AST確認/diffcheck0。evidence/issue335-selection-classification-2026-10-14.md。workspace/internal_names/default_ref等はcaller指定で信頼根拠ではなく、production hook接続・全changedblob網羅・公開registry照合・trusted検査・cleanupは未完。
+
 - [/] 2026-10-14 #335 live Issue本文APIを追加。genuine_payloadsは既存32候補/全体30秒を維持し、404/PR除外とidentity不一致拒否、body保持を行う。既存validateの先行成功短絡は維持。root最終27UT/Werror actual0/0.002秒、実GitHub Issue335取得+PR346除外+body保持58543actual0。候補不正/期限切れ時にtransportへ進まない回帰を含む。payload取得だけ完了で、dependency分類・意味/公開照合・production pre-push接続・cleanupは未完。
 
 - [/] 2026-10-14 clean cbc19648のpackage8383は実exit0、native1m48s/ARM6m54s/Intel29m15s、Universal本体・worker両archとcodesign deep strict、Info.plist v0.22.42を独立確認。evidence/macos-package-cbc19648-2026-10-14.md。構成検証だけ完了で、本人起動・Terms・runtime/clean-machine/原本/RSS/各95/全OS/publicは未完。
