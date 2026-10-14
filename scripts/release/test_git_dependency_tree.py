@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+import zlib
 
 from downstream_git_binding import GitBindingError
 from git_dependency_tree import (MAX_DEPENDENCY_BLOB_BYTES, MAX_DEPENDENCY_FILES,
@@ -32,6 +33,67 @@ class GitDependencyTreeTests(unittest.TestCase):
         (self.root / "Cargo.toml").write_text("dirty invalid TOML", encoding="utf-8")
         records = {item.path: item for item in read_dependency_tree(self.root, self.base)}
         self.assertEqual(records["Cargo.toml"].content, expected)
+
+    def test_same_size_corrupted_loose_blob_is_rejected(self):
+        oid = git(self.root, self.environment, "rev-parse", f"{self.base}:Cargo.toml")
+        path = self.root / ".git" / "objects" / oid[:2] / oid[2:]
+        header, content = zlib.decompress(path.read_bytes()).split(b"\0", 1)
+        changed = content.replace(b"fixture", b"changed")
+        self.assertNotEqual(content, changed)
+        self.assertEqual(len(content), len(changed))
+        path.chmod(0o600)
+        path.write_bytes(zlib.compress(header + b"\0" + changed))
+        self.assertEqual(git(self.root, self.environment, "cat-file", "-s", oid), str(len(content)))
+        self.assertEqual(git(self.root, self.environment, "cat-file", "blob", oid), changed.decode().strip())
+        with self.assertRaisesRegex(GitBindingError, "identity"):
+            read_dependency_tree(self.root, self.base)
+
+    def test_sha1_blob_content_is_accepted(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            git(root, self.environment, "init", "-q", "--object-format=sha1")
+            for key, value in (("user.name", "Tree Test"), ("user.email", "tree@example.invalid"),
+                               ("commit.gpgsign", "false"), ("core.hooksPath", str(root / "hooks"))):
+                git(root, self.environment, "config", key, value)
+            content = b"[package]\nname='fixture'\n"
+            (root / "Cargo.toml").write_bytes(content)
+            git(root, self.environment, "add", ".")
+            git(root, self.environment, "commit", "-qm", "SHA1 fixture")
+            commit = git(root, self.environment, "rev-parse", "HEAD")
+            records = read_dependency_tree(root, commit)
+            self.assertEqual(len(commit), 40)
+            self.assertEqual(records[0].content, content)
+
+    def test_corrupted_commit_cannot_redirect_to_another_valid_tree(self):
+        old_tree = git(self.root, self.environment, "rev-parse", f"{self.base}^{{tree}}")
+        (self.root / "Cargo.toml").write_text("[package]\nname='changed'\n", encoding="utf-8")
+        after = self.commit()
+        new_tree = git(self.root, self.environment, "rev-parse", f"{after}^{{tree}}")
+        path = self.root / ".git" / "objects" / self.base[:2] / self.base[2:]
+        raw = zlib.decompress(path.read_bytes())
+        changed = raw.replace(old_tree.encode(), new_tree.encode(), 1)
+        self.assertNotEqual(raw, changed)
+        self.assertEqual(len(raw), len(changed))
+        path.chmod(0o600)
+        path.write_bytes(zlib.compress(changed))
+        result = subprocess.run(["git", "-C", str(self.root), "rev-parse", f"{self.base}^{{tree}}"],
+                                env=self.environment, capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("hash mismatch", result.stderr)
+        with self.assertRaises(GitBindingError):
+            read_dependency_tree(self.root, self.base)
+
+    def test_corrupted_tree_cannot_hide_dependency_manifest(self):
+        oid = git(self.root, self.environment, "rev-parse", f"{self.base}^{{tree}}")
+        path = self.root / ".git" / "objects" / oid[:2] / oid[2:]
+        raw = zlib.decompress(path.read_bytes())
+        changed = raw.replace(b"Cargo.toml", b"Other.toml", 1)
+        self.assertNotEqual(raw, changed)
+        self.assertEqual(len(raw), len(changed))
+        path.chmod(0o600)
+        path.write_bytes(zlib.compress(changed))
+        with self.assertRaises(GitBindingError):
+            read_dependency_tree(self.root, self.base)
 
     def test_add_modify_remove_and_unmentioned_nested_files_are_discovered(self):
         nested = self.root / "nested space" / "日本語"

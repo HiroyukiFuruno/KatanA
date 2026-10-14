@@ -1,6 +1,7 @@
 """Read dependency inputs from immutable regular Git blobs, not the worktree."""
 
 from dataclasses import dataclass
+import hashlib
 from pathlib import Path
 import time
 
@@ -13,6 +14,7 @@ MAX_DEPENDENCY_FILES = 4096
 MAX_DEPENDENCY_BLOB_BYTES = 1_048_576
 MAX_DEPENDENCY_TREE_BYTES = 16_777_216
 DEPENDENCY_TREE_TIMEOUT_SECONDS = 30
+SHA1_OID_LENGTH = 40
 
 
 @dataclass(frozen=True)
@@ -82,6 +84,10 @@ def _blob(root: Path, path: str, oid: str, deadline: float) -> GitDependencyFile
     content = _read(root, ["cat-file", "blob", oid], deadline, MAX_DEPENDENCY_BLOB_BYTES)
     if len(content) != int(size):
         raise GitBindingError("dependency blob size is inconsistent")
+    algorithm = "sha1" if len(oid) == SHA1_OID_LENGTH else "sha256"
+    digest = hashlib.new(algorithm, b"blob " + size + b"\0" + content).hexdigest()
+    if digest != oid:
+        raise GitBindingError("dependency blob content does not match its identity")
     return GitDependencyFile(path, oid, content)
 
 
