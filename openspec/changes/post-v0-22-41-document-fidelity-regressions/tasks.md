@@ -1,11 +1,11 @@
 ## 要件(Verbatim Requirements)
 
 > なら上流待ちじゃないものは手を動かして対応して。実装済みのIssueは検証して整理、未対応は着手して、報告だけで止まらず、上流のKDV,KRRの取り込みが完了次第、リリースできるように進めて下さい。
-
+>
 > KDV,　KRRの不備取り込みは時期とする、現状でも改善しているポイントがあること、KatanA側で対応するものが完了していればリリースする価値はあるためだ。
-
+>
 > 次期リリースではこららが解消しているか、何かしらの問題でmemory leakが起きるならsafe modeで起動するような設計にしないとですね。
-
+>
 > もちろん解消することがわかっているなら、safe modeは急務ではないですが、アプリケーションとして起動できないは致命的なので、いずれは対処しないとです。
 
 ### この要件から導出される制約(MUST)
@@ -28,6 +28,10 @@
 - 既存Draft PR #346を継続する。レビュー修復・個別reply/resolve・fresh確認後にReadyへ昇格し、元の必須CIを実行する。テンプレートの新branch/二重PR工程は本人指示により適用しない。
 
 ## 1. Reproduction and ownership evidence
+
+- [/] #335上記候補の最終修復後、94203 actual0/228件75.449秒、最終bounded public KDV/KRR batch43410 actual0、Lefthook validate/diff check成功、独立限定review P0/P1残0を回収。sourceは関心別通常commitへ統合: public0d56d696/49598 actual0/G、admission00624b78/91860 actual0/G、owner23222c20/26132 actual0。docs通常統合と一回の通常push/current HEAD reviewへ継続。本番dispatcherの活性、whole admission正常系、cleanup接続、全公開DoDは未完として維持する。
+
+- [/] 2026-10-15 #335 production admission候補を実装。既存ownerのexit0だけをfresh検査とする誤証明を実回帰でRED→修復し、private push session/nonce・fixed `just check`実行receipt・同HEAD/cleanに分離。root/nested Cargoと独立graphを通常hookの対象に含め、実Lefthook/Just wiring3件成功、skip/excludeはreceipt無し。installerのforeign hooks directory symlink誤受理は実Git RED→10件成功で修復。公開repo metadata/Release/registry checksum/crate identityとPAX/GNU前のgzip展開read境界を追加。Python対象53件67344 actual0、discovery223件9207 actual0、続く226件95494 actual0は途中候補の限定証跡で最終検査/通常統合を別回収する。live KDV0.5.12 70942/KRR runtime/assets0.4.23 34686各actual0は公開可視性追加後の照合、最終bounded reader再照合は未回収。本番installerは全既存worktree runtime互換確認まで拒否し、master編集や固定WT fallbackで迂回しない。全335の実downstream admission正常系・hook本番接続・cleanup、および全公開DoDは未完。evidence/production-push-admission-2026-10-15.mdへ証跡を集約する。
 
 - [/] 同registered-input concernは通常署名G commit2ee119579393edd1732a482f50c5baa732e2c7f8へ統合、40834 actual0。Cargo除外の子孫/明示member優先を実Cargoで2assert RED→修復、最終workspace16+snapshot7件29246 actual0/20.345秒。限定再review P0/P1残0、Python function span全30以下をmain確認。本番dispatcher4filesは別未commit、全335/公開条件は未完。最終全release Python/通常push/current HEAD reviewを回収する。
 
@@ -76,7 +80,7 @@
 
 - [/] 2026-10-14 #343 collector最終対象検証はrelease Python discovery全79件、警告error化で5.898秒/actual0（session7088）。指定cwdに存在しない ./native-list が呼出元cwdの別binaryへfallbackする境界を修復し、実ファイルfixtureの回帰を追加。POSIX限定収集・未計測条件の非等価・raw再parse照合を維持。通常commit/push・新HEAD review・全OS collectorとCIreuseのDoDは未完。
 
-- [/] 2026-10-14 原OPEN9の独立残8件に加え、current reviewで判明した画像path revision取消不備を専用 #348（https://github.com/HiroyukiFuruno/KatanA/issues/348）へ記録。KDV採用だけをDoDとする旧#339へPNG不備を混同せず、同releaseの独立source修復・通常統合・review・公開後整理として扱う。Canvas取消は既存#258で対応。新Issue作成は完了ではない。
+- [/] 2026-10-14 原OPEN9の独立残8件に加え、current reviewで判明した画像path revision取消不備を専用 #348（[Issue #348](https://github.com/HiroyukiFuruno/KatanA/issues/348)）へ記録。KDV採用だけをDoDとする旧#339へPNG不備を混同せず、同releaseの独立source修復・通常統合・review・公開後整理として扱う。Canvas取消は既存#258で対応。新Issue作成は完了ではない。
 
 - [/] 2026-10-14 取消修復の最終source対象検査: 初期Canvas候補の解析前guardのみではunknown配列途中取消より後方不正JSONへ到達しactual101/1assertRED。再帰serde seed・SHA64KiB・decode/reference checkpointへ修復し、66351は厳格設定core28/UI68でactual0。実pool最大256MiB memory input active取消→別generation実モデルReadyは4745us、旧5秒基準のまま。JSON途中開始のpool証明ではなくcore/worker callback回帰と分離。実helpers release診断は最大escaped256MiB約591ms、compound/key/whitespaceも採取し非取消Reader23倍劣化を回避、全RSS/全入力/95/packaged保証ではない。最終68863 officialAST23・impacted strictClippy・fmtactual0。通常concern commit/push・個別replyresolve・新HEAD全reviewは未完。
 
@@ -94,7 +98,7 @@
 
 - [/] 2026-10-14 #335 native push metadata/range selection: Unicode合法refを実check-ref-formatで確認し旧split誤拒否REDを修復。SHA256実Gitでfast-forward/unchanged/new-ref explicitbase/deletion/tag拒否を検査。HIGH P1 graft親偽装は実A→B→CでB欠落1assertREDを再現し、trusted GIT_GRAFT_FILE=os.devnullで修復、単一58PASS/actualexit0・diffcheck0。production hook非活性、new-ref baseはcaller信頼前提で公開baseline証明ではない。通常統合・current review・liveIssue/registry/logtrusted/cleanupは未完。evidence/push-range-selection-2026-10-14.md。
 
-- [/] 2026-10-14 current99 review P2 4263915438/PRRT_kwDORm09y86sDq9_: SHA256 repoで40桁commit prefixが受理される境界は完全OID契約へ影響するため採用。actual SHA256 Git1assertRED→resolvedfullOID==declared確認を追加、3745actual0/単一46PASS・構文diff/maxfn23成功。通常commit/push・個別reply/resolve・fresh全取得を継続、全335完了とは別。evidence/downstream-git-binding-2026-10-14.md。
+- [/] 2026-10-14 current99 review P2 4263915438/`PRRT_kwDORm09y86sDq9_`: SHA256 repoで40桁commit prefixが受理される境界は完全OID契約へ影響するため採用。actual SHA256 Git1assertRED→resolvedfullOID==declared確認を追加、3745actual0/単一46PASS・構文diff/maxfn23成功。通常commit/push・個別reply/resolve・fresh全取得を継続、全335完了とは別。evidence/downstream-git-binding-2026-10-14.md。
 
 - [/] 2026-10-14 #335 actual Git bindingへ着手: commit/tree/literalpath/regularmode/blob実在型を照合、hook Git環境・replace・lazyfetchを排除。HIGH P1のmissingblobをreal mktree--missing/commit-treeでactual18018 exit1/1assertRED→cat-file実object確認で修復。realpartialclone/離脱origin・gitlink/symlink・surrogate/hostileenvを含む最終30846 actual0/単一45PASS、構文/diff・関数最大23行・HIGH P0P1残0。通常統合/push/currentreviewとproduction dispatcher/range・registry/logtrusted・cleanup未完。evidence/downstream-git-binding-2026-10-14.md。
 
@@ -299,8 +303,8 @@
 
 - [ ] 2026-10-06 最新本人指示: 指摘をKatanA/KDV/KRRに切り分ける。KDV/KRRはIssueを立てるだけとし、この担当は上流の実装・version bump・commit/push・release作業を行わない。KatanAの既存release/v0.22.42でhost修正・公開版採用・受入を続ける。アンチパターン: 上流Issue作成を上流編集許可とみなす。正: 証跡/未確定/DoD付きIssueへ引継ぎ、host所有の修正だけ続行（検索語: upstream issue only no sibling implementation）。
   - KatanA所有: PNG同期読込/Explorer停止、未loaded Markdown診断によるUI停止、Missing画像のPending/Failed/表示経路、HTML smooth-scroll尾部転送、reloadの再読込/画面反映、PPTXスライドショーと形式/状態別メニュー。PDF native画面待ちもhost側を継続切分けする。
-  - KDV所有/調査: DOCX/PDF変換・初期描画遅延 https://github.com/HiroyukiFuruno/katana-document-viewer/issues/65 、Office/PDF再起動永続artifact公開契約 https://github.com/HiroyukiFuruno/katana-document-viewer/issues/66 、PPTX ZIP読み取りエラー https://github.com/HiroyukiFuruno/katana-document-viewer/issues/67 。原本ZIP不在、PDF native遅延原因は未確定。Issue化を実装修正/完了扱いしない。
-  - KRR所有/調査: Chrome参照HTML描画・操作互換性 https://github.com/HiroyukiFuruno/katana-render-runtime/issues/106 、HTML再起動永続artifact/操作session復元契約 https://github.com/HiroyukiFuruno/katana-render-runtime/issues/107 。hostの入力欠落をKRRへ丸投げせず、静止画cacheを操作復元と偽らない。
+  - KDV所有/調査: DOCX/PDF変換・初期描画遅延 <https://github.com/HiroyukiFuruno/katana-document-viewer/issues/65> 、Office/PDF再起動永続artifact公開契約 <https://github.com/HiroyukiFuruno/katana-document-viewer/issues/66> 、PPTX ZIP読み取りエラー <https://github.com/HiroyukiFuruno/katana-document-viewer/issues/67> 。原本ZIP不在、PDF native遅延原因は未確定。Issue化を実装修正/完了扱いしない。
+  - KRR所有/調査: Chrome参照HTML描画・操作互換性 <https://github.com/HiroyukiFuruno/katana-render-runtime/issues/106> 、HTML再起動永続artifact/操作session復元契約 <https://github.com/HiroyukiFuruno/katana-render-runtime/issues/107> 。hostの入力欠落をKRRへ丸投げせず、静止画cacheを操作復元と偽らない。
   - KatanA側cache保存場所/設定/容量/削除・上流artifact接続と再起動受入はhostタスクとして残す。公開API不足を確認、独自overrideや基準変更で回避しない。
   - 原本PDF4/DOCX2の独立harness全14操作/quit成功、PDF初回0.063–0.102秒/DOCX1.264・3.159秒。ただしnative表示/原本パスOSアクセスを含まず、本人報告を否定しない。診断loaded/dirty/未loaded実ファイル回帰はmain公式test-specific全5件成功。PNG正式lintは引数数/if形式の2件失敗で補正中、未commit/全gate未完了。
 
