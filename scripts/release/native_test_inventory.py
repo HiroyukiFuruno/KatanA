@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 import re
 
-
 ENTRY_RE = re.compile(r"(?P<name>.+): (?P<kind>test|benchmark)\Z")
 FOOTER_RE = re.compile(r"(?P<tests>[0-9]+) tests?, (?P<benchmarks>[0-9]+) benchmarks?\Z")
 
@@ -32,8 +31,6 @@ def _footer(line: str) -> tuple[int, int] | None:
         return int(match["tests"]), int(match["benchmarks"])
     except ValueError as error:
         raise InventoryFormatError("footer counts are invalid") from error
-
-
 def _entry(line: str, seen: set[str]) -> InventoryCase:
     match = ENTRY_RE.fullmatch(line)
     if match is None or not match["name"].strip():
@@ -43,8 +40,6 @@ def _entry(line: str, seen: set[str]) -> InventoryCase:
         raise InventoryFormatError("duplicate or conflicting test name")
     seen.add(name)
     return InventoryCase(name, match["kind"])
-
-
 def _check_counts(cases: list[InventoryCase], footer: tuple[int, int] | None,
                   require_footer: bool) -> None:
     if footer is None:
