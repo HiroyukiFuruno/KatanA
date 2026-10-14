@@ -1,4 +1,38 @@
+## 要件(Verbatim Requirements)
+
+> なら上流待ちじゃないものは手を動かして対応して。実装済みのIssueは検証して整理、未対応は着手して、報告だけで止まらず、上流のKDV,KRRの取り込みが完了次第、リリースできるように進めて下さい。
+
+> KDV,　KRRの不備取り込みは時期とする、現状でも改善しているポイントがあること、KatanA側で対応するものが完了していればリリースする価値はあるためだ。
+
+> 次期リリースではこららが解消しているか、何かしらの問題でmemory leakが起きるならsafe modeで起動するような設計にしないとですね。
+
+> もちろん解消することがわかっているなら、safe modeは急務ではないですが、アプリケーションとして起動できないは致命的なので、いずれは対処しないとです。
+
+### この要件から導出される制約(MUST)
+
+- 上流待ちではないKatanA作業を検証・実装・整理し、公開準備を継続する。
+- KDV/KRR不備は次期へ分離し、今回のKatanA改善と混同しない。
+- 起動不能の復旧と原因確認は次期で追跡し、Safe Modeを無条件に今回の停止条件へ追加しない。
+
+### 設計判断時の参照義務
+
+- 最新ユーザー指示と既存DoDを参照し、上記制約を満たす。既存release/*のみ・新規worktree禁止・Draftレビュー後Ready/必須CIという本人指示を優先し、新branchや二重PRを作らない。
+
+## Definition of Ready
+
+- 最新本人指示・現worktree・残DoDを確認して既存作業を継続する。OpenSpec CLIのartifact doneは実装/公開完了を意味しない。
+
+## Branch Rule
+
+- 既存統合branch `release/v0.22.42` と既存worktreeだけを使用する。master直接編集、新規worktree、通常stash、別feature branchは禁止。
+- 既存Draft PR #346を継続する。レビュー修復・個別reply/resolve・fresh確認後にReadyへ昇格し、元の必須CIを実行する。テンプレートの新branch/二重PR工程は本人指示により適用しない。
+
 ## 1. Reproduction and ownership evidence
+
+- [/] 2026-10-14 #335 live Issue本文APIを追加。genuine_payloadsは既存32候補/全体30秒を維持し、404/PR除外とidentity不一致拒否、body保持を行う。既存validateの先行成功短絡は維持。root最終27UT/Werror actual0/0.002秒、実GitHub Issue335取得+PR346除外+body保持58543actual0。候補不正/期限切れ時にtransportへ進まない回帰を含む。payload取得だけ完了で、dependency分類・意味/公開照合・production pre-push接続・cleanupは未完。
+
+- [/] 2026-10-14 clean cbc19648のpackage8383は実exit0、native1m48s/ARM6m54s/Intel29m15s、Universal本体・worker両archとcodesign deep strict、Info.plist v0.22.42を独立確認。evidence/macos-package-cbc19648-2026-10-14.md。構成検証だけ完了で、本人起動・Terms・runtime/clean-machine/原本/RSS/各95/全OS/publicは未完。
+- [ ] 次期へ明示分離: macOS Reopenを伴う起動失敗は、本人のworkspaces JSON削除+重workspace除外で復旧。memleak/個別原因/現修復の解消を未証明として、fresh-process重session再起動受入・原因切分け・条件付きsafe-start復旧導線を追跡する。evidence/next-release-startup-recovery-2026-10-14.md。本人設定/アプリ操作はしない。
 
 - [/] 2026-10-14 #343 collector最終対象検証はrelease Python discovery全79件、警告error化で5.898秒/actual0（session7088）。指定cwdに存在しない ./native-list が呼出元cwdの別binaryへfallbackする境界を修復し、実ファイルfixtureの回帰を追加。POSIX限定収集・未計測条件の非等価・raw再parse照合を維持。通常commit/push・新HEAD review・全OS collectorとCIreuseのDoDは未完。
 
@@ -500,6 +534,8 @@
 - [x] 5.4 Source graph only: both locks and exact registry KDV=0.5.12/KRR=0.4.23 adoption are integrated (000a2869/297f1f59); current public sparse index confirms non-yanked checksums4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635 and8e5e0803f343d781dc015d1fe21b052492d67579ba303cf86203f60455852e00. No unpublished sibling path/git override is allowed. This does not close deferred KDV65/66/67 or KRR106, and does not substitute for 5.2 packaged acceptance.
 
 ## 6. User Review Phase
+
+- [ ] 次期へ個別劣後した起動復旧の本人報告は evidence/next-release-startup-recovery-2026-10-14.md で追跡する。macOS Reopen+復元JSON除去後起動成功をmemleak証明や現修復の受入成功へ代用しない。次期の重session fresh-process起動/正常終了/再起動と条件付き復旧導線を検証する。今回は現DoDを変えない。
 
 - [x] 6.1 Explorer remains responsive and vertically scrollable after Office/PDF files become visible; evidence MUST include bounded frame time and zero per-frame full-tree clone.
 - [ ] 6.2 Packaged KatanA starts on every declared supported PC; evidence MUST come from clean-machine execution rather than successful CI compilation or archive inspection alone.
