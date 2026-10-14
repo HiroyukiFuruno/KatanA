@@ -29,7 +29,7 @@
 
 ## 1. Reproduction and ownership evidence
 
-- [ ] 2026-10-14 current e43 review5513716841の画像P2 4267334667を既存#348へ採用。一時sharing violation/書込途中decode失敗がhealthy watcher下でFailed cacheに残り、次のeventが無いと復旧しない指摘。元PNG切替/画像復旧のDoD内でbounded retry/expiryを再現・修復・対象検証、通常push後に個別reply/resolve/fresh全取得する。指摘だけで再現/修復済みとはしない。
+- [/] 2026-10-14 current e43 review5513716841の画像P2 4267334667を既存#348へ採用。healthy watcher下のdecode Failed永久保持は既存API repaint回帰94218actual101。別retry map案は48316で元batch全失敗保持を破壊し不採用、既存ready/activeのErrへ履歴を埋込む案へ修正。rearm片方期限不整合も54092actual101で再現し両copy同deadlineへ修復。最終99161loader49PASS/2.38秒、25379正式AST23PASS/22.36秒、37596impacted strictClippy exit0、fmt/diff成功、readonly最終P0/P1残なし。evidence/image-healthy-decode-retry-2026-10-14.md。OSイベント欠落/sharing violationそのものとqueueFull実統合経路は未実測。通常統合/push・個別reply/resolve/fresh・全gate/packaged/publicは未完。
 
 - [/] 2026-10-14 #335 actualGit入力発見を追加。全Cargo.toml/Cargo.lockのregular blob/contentを確定treeから取得、申告漏れ階層・dirty差替え・symlink・tagpeeling・重複path・件数/容量境界を検査。tag/重複pathは実RED→修復、子process取得の誤timeout/上限/EOF/relative root/reader寿命も修復しthreadless nonblockingへ。main hook4Git環境49532 actual0/全136件20.731秒、HEAD/tree/core.bare/masterclean不変、全4files<=200/functions<=30。公開e43実tree18inputs728393bytes91686actual0。evidence/issue335-git-input-discovery-2026-10-14.md。通常統合/current review、trusted workspace ownership・意味差分の証跡網羅・公開registry・trusted検査・hook/cleanup接続・Windows実行は未完。
 
