@@ -38,7 +38,7 @@ impl<'a> PreviewSidePanels<'a> {
                 super::PreviewMenuAvailability::for_path(path, super::PreviewMenu::Export),
                 super::PreviewMenuAvailability::for_path(path, super::PreviewMenu::Story),
                 super::PreviewMenuAvailability::for_path(path, super::PreviewMenu::Tools),
-                super::PreviewMenuAvailability::for_path(path, super::PreviewMenu::Slideshow),
+                super::PreviewMenuAvailability::for_app(self.app, super::PreviewMenu::Slideshow),
             )
         };
         if !toc_available {

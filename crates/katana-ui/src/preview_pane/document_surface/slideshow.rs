@@ -11,6 +11,15 @@ impl DocumentSurface {
         self.source.format == katana_core::document_source::BinaryDocumentFormat::Pptx
     }
 
+    pub(crate) fn slideshow_available(&self) -> bool {
+        self.is_pptx()
+            && self.failure.is_none()
+            && self
+                .frame
+                .as_ref()
+                .is_some_and(|frame| frame.state.item_count > 0)
+    }
+
     pub(crate) fn slideshow_state(&self) -> Option<(usize, usize)> {
         self.frame
             .as_ref()

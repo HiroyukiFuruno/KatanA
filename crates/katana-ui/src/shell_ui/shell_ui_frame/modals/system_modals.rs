@@ -7,8 +7,8 @@ use eframe::egui;
 impl KatanaApp {
     pub(crate) fn show_system_modals(&mut self, ctx: &egui::Context) {
         if self.state.layout.show_slideshow
-            && !crate::views::panels::preview::PreviewMenuAvailability::for_path(
-                self.state.active_document().map(|doc| doc.path.as_path()),
+            && !crate::views::panels::preview::PreviewMenuAvailability::for_app(
+                self,
                 crate::views::panels::preview::PreviewMenu::Slideshow,
             )
         {

@@ -12,6 +12,28 @@ pub(crate) enum PreviewMenu {
 pub(crate) struct PreviewMenuAvailability;
 
 impl PreviewMenuAvailability {
+    pub(crate) fn for_app(app: &crate::shell::KatanaApp, menu: PreviewMenu) -> bool {
+        let path = app
+            .state
+            .active_document()
+            .map(|document| document.path.as_path());
+        if !Self::for_path(path, menu) {
+            return false;
+        }
+        let is_pptx = path.is_some_and(|path| {
+            matches!(
+                katana_core::document_source::BinaryDocumentFormat::from_path(path),
+                Some(katana_core::document_source::BinaryDocumentFormat::Pptx)
+            )
+        });
+        if !matches!(menu, PreviewMenu::Slideshow) || !is_pptx {
+            return true;
+        }
+        app.tab_previews.iter().any(|preview| {
+            Some(preview.path.as_path()) == path && preview.pane.pptx_slideshow_available()
+        })
+    }
+
     pub(crate) fn for_path(path: Option<&std::path::Path>, menu: PreviewMenu) -> bool {
         let Some(path) = path else {
             return !matches!(menu, PreviewMenu::Slideshow);

@@ -7,6 +7,10 @@ use eframe::egui;
 use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
 use std::path::Path;
 
+mod pptx_intake_tests;
+#[cfg(feature = "external-fixture-acceptance")]
+mod pptx_ready_tests;
+
 fn make_app() -> KatanaApp {
     KatanaApp::new(AppState::new(
         AiProviderRegistry::new(),

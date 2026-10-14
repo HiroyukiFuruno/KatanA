@@ -47,6 +47,12 @@ impl PreviewPane {
             .is_some_and(DocumentSurface::is_pptx)
     }
 
+    pub(crate) fn pptx_slideshow_available(&self) -> bool {
+        self.document_surface
+            .as_ref()
+            .is_some_and(DocumentSurface::slideshow_available)
+    }
+
     pub(crate) fn document_slideshow_state(&self) -> Option<(usize, usize)> {
         self.document_surface
             .as_ref()
