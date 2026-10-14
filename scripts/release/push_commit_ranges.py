@@ -5,9 +5,23 @@ from pathlib import Path
 from downstream_git_binding import GitBindingError, _git, _source_commit
 from push_ref_updates import OID_RE, PushRefUpdate
 
+MAX_SELECTED_COMMITS = 4096
+
 
 class PushRangeError(GitBindingError):
     """A branch update does not have a verifiable local commit range."""
+
+
+def parse_branch_commit_listing(raw: bytes) -> tuple[str, ...]:
+    try:
+        commits = tuple(raw.decode("ascii").splitlines())
+    except UnicodeError as error:
+        raise PushRangeError("commit listing must be ASCII") from error
+    if len(commits) > MAX_SELECTED_COMMITS:
+        raise PushRangeError("pushed commit selection exceeds the limit")
+    if any(OID_RE.fullmatch(commit) is None for commit in commits):
+        raise PushRangeError("commit listing must contain full lowercase OIDs")
+    return commits
 
 
 def _commit(root: Path, oid: str) -> None:
@@ -39,8 +53,10 @@ def branch_commit_selection(root: Path, update: PushRefUpdate,
     base = _base(root, update, new_ref_base)
     _commit(root, base)
     _git(root, ["merge-base", "--is-ancestor", base, update.local_oid])
-    output = _git(root, ["rev-list", "--reverse", f"{base}..{update.local_oid}"])
-    commits = tuple(output.decode("ascii").splitlines())
+    # 出力取得後の制限だけでは、巨大履歴のメモリ消費を防げない。
+    output = _git(root, ["rev-list", f"--max-count={MAX_SELECTED_COMMITS + 1}",
+                         "--reverse", f"{base}..{update.local_oid}"])
+    commits = parse_branch_commit_listing(output)
     for commit in commits:
         _commit(root, commit)
     return commits

@@ -6,9 +6,27 @@ import tempfile
 import unittest
 
 from downstream_git_binding import GitBindingError
-from push_commit_ranges import PushRangeError, branch_commit_selection
+from push_commit_ranges import (MAX_SELECTED_COMMITS, PushRangeError,
+                                branch_commit_selection, parse_branch_commit_listing)
 from push_ref_updates import PushRefUpdate
 from test_downstream_git_object_format import create_record, git
+
+
+class CommitListingTests(unittest.TestCase):
+    def test_exact_limit_is_accepted(self):
+        raw = (("a" * 64 + "\n") * MAX_SELECTED_COMMITS).encode("ascii")
+        self.assertEqual(len(parse_branch_commit_listing(raw)), MAX_SELECTED_COMMITS)
+
+    def test_over_limit_is_rejected_before_object_validation(self):
+        raw = (("a" * 64 + "\n") * (MAX_SELECTED_COMMITS + 1)).encode("ascii")
+        with self.assertRaises(PushRangeError):
+            parse_branch_commit_listing(raw)
+
+    def test_invalid_listing_is_rejected(self):
+        for raw in (b"\xff\n", b"--help\n", b"a" * 39 + b"\n", b"A" * 64 + b"\n"):
+            with self.subTest(raw=raw), self.assertRaises(PushRangeError):
+                parse_branch_commit_listing(raw)
+        self.assertEqual(parse_branch_commit_listing(b""), ())
 
 
 class PushCommitRangeTests(unittest.TestCase):
