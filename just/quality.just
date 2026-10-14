@@ -77,5 +77,4 @@ openspec-list: openspec-require
 
 # Check advisories, licenses, duplicate/wildcard dependencies, and crate sources
 supply-chain:
-    @command -v cargo-deny >/dev/null || { echo "cargo-deny not found. Install cargo-deny 0.20.2 or use the pinned CI installer."; exit 127; }
-    {{RTK_CMD}}cargo deny check --hide-inclusion-graph
+    bash scripts/ci/check-supply-chain.sh

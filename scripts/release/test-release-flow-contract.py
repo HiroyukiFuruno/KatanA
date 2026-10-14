@@ -57,6 +57,26 @@ def verify_document_phase_order(workflow: str) -> None:
 
 
 class WorkflowContractTests(unittest.TestCase):
+    def test_supply_chain_covers_both_locked_graphs_at_all_entrypoints(self) -> None:
+        entry = "bash scripts/ci/check-supply-chain.sh"
+        checker = ROOT / "scripts/ci/check-supply-chain.sh"
+        self.assertTrue(checker.is_file(), "Both lockfiles need one shared supply-chain gate")
+        source = checker.read_text(encoding="utf-8")
+        self.assertIn("set -euo pipefail", source)
+        self.assertIn("cargo deny --locked check --hide-inclusion-graph", source)
+        self.assertIn(
+            "cargo deny --locked --manifest-path scripts/screenshot/Cargo.toml check --hide-inclusion-graph",
+            source,
+        )
+        for path in (
+            "just/quality.just", "scripts/release/preflight.sh",
+            ".github/workflows/test-and-build.yml",
+        ):
+            with self.subTest(path=path):
+                self.assertIn(entry, (ROOT / path).read_text(encoding="utf-8"))
+        recipe = (ROOT / "just/quality.just").read_text(encoding="utf-8")
+        self.assertNotIn("{{RTK_CMD}}" + entry, recipe)
+
     def test_post_release_host_mode_is_opt_in(self) -> None:
         check_pr_ready = (ROOT / "scripts/release/check-pr-ready.sh").read_text(
             encoding="utf-8"

@@ -71,11 +71,7 @@ success "Renderer dependencies are registry-published, exact, and use one V8 run
 
 # 7. Dependency and source supply chain
 info "7/14 Verifying dependency advisories, licenses, and sources..."
-if ! command -v cargo-deny >/dev/null 2>&1; then
-    error "cargo-deny is required. Install cargo-deny 0.20.2 before release preflight."
-    exit 127
-fi
-cargo deny check --hide-inclusion-graph
+bash scripts/ci/check-supply-chain.sh
 success "Dependency advisories, licenses, and sources satisfy policy."
 
 # 8. Release Asset Inspector Validation

@@ -4,6 +4,7 @@
 name = "katana-screenshot"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 description = "Generic screenshot runner for KatanA — invoked by katana-astro or other website tooling"
 
 [[bin]]
@@ -16,13 +17,13 @@ serde_json = "1"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 tempfile = "3"
-katana-ui = { path = "../../crates/katana-ui", features = ["screenshot-test-hooks"] }
-katana-platform = { path = "../../crates/katana-platform" }
-katana-core = { path = "../../crates/katana-core" }
+katana-ui = { path = "../../crates/katana-ui", version = "0.22.42", features = ["screenshot-test-hooks"] }
+katana-platform = { path = "../../crates/katana-platform", version = "0.22.42" }
+katana-core = { path = "../../crates/katana-core", version = "0.22.42" }
 katana-markdown-linter = "0.19.5"
 egui_kittest = { version = "=0.36.2", features = ["wgpu", "eframe"] }
 egui = "=0.36.2"
-katana-paint-metrics = { path = "../paint-metrics" }
+katana-paint-metrics = { path = "../paint-metrics", version = "0.1.0" }
 image = { version = "0.25", default-features = false, features = ["png"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 

@@ -281,7 +281,7 @@ jobs:
           fallback: none
 
       - name: Check advisories, licenses, and sources
-        run: cargo deny check
+        run: bash scripts/ci/check-supply-chain.sh
 
   # CodeQL security scanning (Task 7.2 / 7.3).
   codeql:
