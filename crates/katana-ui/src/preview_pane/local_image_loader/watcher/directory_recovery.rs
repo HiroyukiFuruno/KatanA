@@ -16,6 +16,9 @@ impl DirectoryRecovery {
         targets: &Targets,
     ) {
         let removed = Self::lost_directories(event, watched_dirs);
+        if removed.is_empty() {
+            return;
+        }
         let backend_changed = Self::detach(watcher, watched_dirs, &removed);
         Self::notify_removed(targets, &removed);
         if backend_changed {
