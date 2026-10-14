@@ -29,6 +29,10 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 current5af review5513924147のCanvas P2 4267507147/PRRT_kwDORm09y86sMLdXを既存#258へ採用。実worker返却Arc比較99412は旧source actual101/1assertRED、同path/非force/ReadyのSHA+Arc snapshotで一致時再解析を省略。最終1137Canvas69PASS/0.53秒、14569正式AST23PASS/22.57秒、7721 UI全target/testinclusive strictClippy/fmt/diff成功、HIGH最終P0/P1残なし。旧take_source未使用/冗長closureもstrict22358actual101から除外無し修復。evidence/canvas-unchanged-worker-reuse-2026-10-14.md。UI反映後のArcだけの誤GREEN fixtureは不採用、全文read/SHAは維持しmanual/path変更/Failed/coalescing/取消を保持。通常統合/push・返信解決・全gate/packaged/publicは未完。
+
+- [/] 2026-10-14 画像healthy decode再試行はsource d811941b/docs056b6053へ通常署名commit、normalpush57143actual0でremote/PR056b6053一致・clean0/0/masterclean。個別reply4267959286→resolveを回収。fresh全reviewと新HEAD検査/配布公開は別未完。以下の「通常統合未完」は当時の履歴であり、この限定source統合は完了。
+
 - [/] 2026-10-14 current e43 review5513716841の画像P2 4267334667を既存#348へ採用。healthy watcher下のdecode Failed永久保持は既存API repaint回帰94218actual101。別retry map案は48316で元batch全失敗保持を破壊し不採用、既存ready/activeのErrへ履歴を埋込む案へ修正。rearm片方期限不整合も54092actual101で再現し両copy同deadlineへ修復。最終99161loader49PASS/2.38秒、25379正式AST23PASS/22.36秒、37596impacted strictClippy exit0、fmt/diff成功、readonly最終P0/P1残なし。evidence/image-healthy-decode-retry-2026-10-14.md。OSイベント欠落/sharing violationそのものとqueueFull実統合経路は未実測。通常統合/push・個別reply/resolve/fresh・全gate/packaged/publicは未完。
 
 - [/] 2026-10-14 #335 actualGit入力発見を追加。全Cargo.toml/Cargo.lockのregular blob/contentを確定treeから取得、申告漏れ階層・dirty差替え・symlink・tagpeeling・重複path・件数/容量境界を検査。tag/重複pathは実RED→修復、子process取得の誤timeout/上限/EOF/relative root/reader寿命も修復しthreadless nonblockingへ。main hook4Git環境49532 actual0/全136件20.731秒、HEAD/tree/core.bare/masterclean不変、全4files<=200/functions<=30。公開e43実tree18inputs728393bytes91686actual0。evidence/issue335-git-input-discovery-2026-10-14.md。通常統合/current review、trusted workspace ownership・意味差分の証跡網羅・公開registry・trusted検査・hook/cleanup接続・Windows実行は未完。
