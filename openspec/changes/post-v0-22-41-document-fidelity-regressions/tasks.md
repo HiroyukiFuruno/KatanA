@@ -29,6 +29,10 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [ ] 2026-10-14 current e43 review5513716841の画像P2 4267334667を既存#348へ採用。一時sharing violation/書込途中decode失敗がhealthy watcher下でFailed cacheに残り、次のeventが無いと復旧しない指摘。元PNG切替/画像復旧のDoD内でbounded retry/expiryを再現・修復・対象検証、通常push後に個別reply/resolve/fresh全取得する。指摘だけで再現/修復済みとはしない。
+
+- [/] 2026-10-14 #335 actualGit入力発見を追加。全Cargo.toml/Cargo.lockのregular blob/contentを確定treeから取得、申告漏れ階層・dirty差替え・symlink・tagpeeling・重複path・件数/容量境界を検査。tag/重複pathは実RED→修復、子process取得の誤timeout/上限/EOF/relative root/reader寿命も修復しthreadless nonblockingへ。main hook4Git環境49532 actual0/全136件20.731秒、HEAD/tree/core.bare/masterclean不変、全4files<=200/functions<=30。公開e43実tree18inputs728393bytes91686actual0。evidence/issue335-git-input-discovery-2026-10-14.md。通常統合/current review、trusted workspace ownership・意味差分の証跡網羅・公開registry・trusted検査・hook/cleanup接続・Windows実行は未完。
+
 - [/] 2026-10-14 #335 production admission部品の追加: actual Git commit本文のIssue候補選択、genuine live lookup、manifest/lock意味差分分類。Git source delimiter衝突・common-key checksum/dependencies変更見落とし・HIGHで発見したmixed-source共通key sort P1を修復、rev-list自体へ4096+1取得上限を追加。最終main discovery32453 actual0/113件/8.917秒、旧CLI42472 actual0/17件、全11候補file<=200/function<=30 AST確認/diffcheck0。evidence/issue335-selection-classification-2026-10-14.md。workspace/internal_names/default_ref等はcaller指定で信頼根拠ではなく、production hook接続・全changedblob網羅・公開registry照合・trusted検査・cleanupは未完。
 
 - [/] 2026-10-14 #335 live Issue本文APIを追加。genuine_payloadsは既存32候補/全体30秒を維持し、404/PR除外とidentity不一致拒否、body保持を行う。既存validateの先行成功短絡は維持。root最終27UT/Werror actual0/0.002秒、実GitHub Issue335取得+PR346除外+body保持58543actual0。候補不正/期限切れ時にtransportへ進まない回帰を含む。payload取得だけ完了で、dependency分類・意味/公開照合・production pre-push接続・cleanupは未完。
