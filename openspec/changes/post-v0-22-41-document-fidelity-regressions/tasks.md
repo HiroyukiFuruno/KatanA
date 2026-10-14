@@ -29,6 +29,8 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-15 #335 同commit依存contextとblob内容identityへ進行。実SHA256 path/provider/外部保持7回帰57155actual0。同サイズlooseblobはnative cat-file成功・旧reader拒否無し29634actual1を再現しGit blob hash再計算へ修復、SHA1正例込みreader13回帰58687actual0。commit/tree同サイズ改変はnative Git hash mismatch/既存reader拒否を実回帰で確認し、未再現P1候補を撤回。多数alias同target再parseは私有cacheへ補正。最終Werror全releasePython155件80502actual0/39.277秒・独立限定P0P1無し。evidence/git-dependency-context-2026-10-15.md。関心別通常統合とpushへ継続。membership/version/lock所有・liveIssue/registry/trustedgate・productionhook/cleanupと全DoDは未完。
+
 - [/] 2026-10-15 本turn sourceは関心別通常署名Gへ統合: #335 origin 0bd8b1fd/23212actual0、#350第三paint固定graph/lock cb5a6282/90851actual0。対象検査成功と独立HIGH限定P0/P1無しを確認し、通常push一回→paint thread個別replyresolve→fresh current reviewへ進む。旧42886 reviewを新HEAD承認へ流用せず、全335/350/公開条件は未完のまま維持する。
 
 - [/] 2026-10-15 #335 宣言originを保持する候補を追加。全katana候補を残し、workspace継承元/直接宣言のpath/blobを分離、同名external pathを内部として免除しない。実SHA256 temporary Git6回帰61385actual0/4.533秒、Werror release Python全142件93155actual0/25.235秒、HIGH限定P0/P1無し。初missing-moduleはAPI接続errorで旧製品assert REDとは呼ばない。evidence/manifest-dependency-origins-2026-10-15.md。registered membership・同commit/provider真正結合・lock所有・全tree分類・真正Issue/publicregistry/trusted検査/既存hook先行/cleanupと全DoDは未完。
