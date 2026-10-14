@@ -27,6 +27,7 @@ class CommitIssueCandidates:
 class PushIssueSelection:
     commits: tuple[CommitIssueCandidates, ...]
     outside_branch_scope: tuple[str, ...]
+    by_branch: tuple[tuple[str, tuple[str, ...]], ...] = ()
 
 
 def _references(root: Path, commit: str, repository: str) -> CommitIssueCandidates:
@@ -57,19 +58,21 @@ def select_commit_issue_references(root: Path, updates: tuple[PushRefUpdate, ...
     _git(root, ["check-ref-format", default_ref])
     commits: dict[str, CommitIssueCandidates] = {}
     outside_scope: list[str] = []
+    by_branch: list[tuple[str, tuple[str, ...]]] = []
     for update in updates:
         if (not update.remote_ref.startswith("refs/heads/")
                 or update.deleted or update.remote_ref == default_ref):
             outside_scope.append(update.remote_ref)
             continue
         selected = branch_commit_selection(root, update, new_ref_base=new_ref_base)
+        by_branch.append((update.remote_ref, selected))
         for commit in selected:
             if commit not in commits:
                 if len(commits) >= MAX_SELECTED_COMMITS:
                     raise PushIssueSelectionError("pushed commit selection exceeds the limit")
                 commits[commit] = _references(root, commit, repository)
     # tag/default/deletionの別契約を、Issue検査の成功へすり替えない。
-    return PushIssueSelection(tuple(commits.values()), tuple(outside_scope))
+    return PushIssueSelection(tuple(commits.values()), tuple(outside_scope), tuple(by_branch))
 
 
 def lookup_selected_issues(selection: PushIssueSelection,

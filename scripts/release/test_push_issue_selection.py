@@ -52,6 +52,8 @@ class PushIssueSelectionTests(unittest.TestCase):
     def test_multiple_branch_refs_deduplicate_shared_commit(self):
         result = self.select((self.update(), self.update("refs/heads/release/other")))
         self.assertEqual(len(result.commits), 1)
+        self.assertEqual(dict(result.by_branch), {"refs/heads/release/test": (self.head,),
+                                                "refs/heads/release/other": (self.head,)})
 
     def test_missing_foreign_and_pr_url_references_are_rejected(self):
         for message in ("no Issue", "https://github.com/other/project/issues/335",

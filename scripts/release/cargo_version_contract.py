@@ -12,9 +12,9 @@ MAX_VERSION_REQUESTS = 4096
 VERSION_CONTRACT_SECONDS = 30
 
 
-def validate_versions(requests):
+def version_matches(requests):
     if not requests:
-        return
+        return []
     payload = json.dumps(requests).encode("utf-8")
     if len(payload) > MAX_VERSION_REQUEST_BYTES or len(requests) > MAX_VERSION_REQUESTS:
         raise DependencySnapshotError("version requests exceed the native contract limit")
@@ -34,5 +34,9 @@ def validate_versions(requests):
         raise DependencySnapshotError("native Cargo version contract response is invalid") from error
     if not isinstance(matches, list) or len(matches) != len(requests) or any(type(item) is not bool for item in matches):
         raise DependencySnapshotError("native Cargo version contract response does not match its requests")
-    if not all(matches):
+    return matches
+
+
+def validate_versions(requests):
+    if not all(version_matches(requests)):
         raise DependencySnapshotError("path dependency version does not match the registered package")
