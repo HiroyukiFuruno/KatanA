@@ -1,5 +1,19 @@
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-14 #343 collector最終対象検証はrelease Python discovery全79件、警告error化で5.898秒/actual0（session7088）。指定cwdに存在しない ./native-list が呼出元cwdの別binaryへfallbackする境界を修復し、実ファイルfixtureの回帰を追加。POSIX限定収集・未計測条件の非等価・raw再parse照合を維持。通常commit/push・新HEAD review・全OS collectorとCIreuseのDoDは未完。
+
+- [/] 2026-10-14 原OPEN9の独立残8件に加え、current reviewで判明した画像path revision取消不備を専用 #348（https://github.com/HiroyukiFuruno/KatanA/issues/348）へ記録。KDV採用だけをDoDとする旧#339へPNG不備を混同せず、同releaseの独立source修復・通常統合・review・公開後整理として扱う。Canvas取消は既存#258で対応。新Issue作成は完了ではない。
+
+- [/] 2026-10-14 取消修復の最終source対象検査: 初期Canvas候補の解析前guardのみではunknown配列途中取消より後方不正JSONへ到達しactual101/1assertRED。再帰serde seed・SHA64KiB・decode/reference checkpointへ修復し、66351は厳格設定core28/UI68でactual0。実pool最大256MiB memory input active取消→別generation実モデルReadyは4745us、旧5秒基準のまま。JSON途中開始のpool証明ではなくcore/worker callback回帰と分離。実helpers release診断は最大escaped256MiB約591ms、compound/key/whitespaceも採取し非取消Reader23倍劣化を回避、全RSS/全入力/95/packaged保証ではない。最終68863 officialAST23・impacted strictClippy・fmtactual0。通常concern commit/push・個別replyresolve・新HEAD全reviewは未完。
+
+- [/] 2026-10-14 #343 collector候補をparser/条件record/収集へ責務分離。未取得条件・非strSHA・truthy measured・footerless・raw改竄の境界を修復、17UT/Werror actualGREEN。実native --list1249/footer1249/raw115821bytes/hash862a6937を採取、dirty sourceなのでmeasuredFalse/completeFalseを保持。Popen/selectorsの実childでstream各1MiBと30秒deadline/killwaitを検査し、作者条件をCI成功やauto reuse資格へしない。HIGH最終・通常統合・full collector比較/coverage差/保護CIreuse/Windowscoldwarm未完。
+
+- [/] 2026-10-14 current5aa review5510719622の画像revision取消P2 4264486718とCanvas解析取消P2 4264651691をKatanA独立不備として採用。画像はgeneration不変のrealFIFO原回帰が旧source101/5秒blocked、revision照合追加と責務分離後root41PASS/actual0。Canvasは単純reader prototypeで16MiB stringが3699us→85367usと劣化したため不採用、sliceの再帰DeserializeSeedによる実JSON途中取消へ着手。正式current統合/review replyresolve/最大入力応答・通常性能/packaged受入は未完。旧5aa package94528は所有Cargo70882のみSIGINT、実exit130回収、旧native候補を完成配布や修復証明へ流用しない。
+
+- [/] 2026-10-14 #343 collectorへ着手。実native --listのraw/hash/argv・case差・conditions差を分離する候補を作成しpure12PASS。ただしrootレビューでmeasured=Trueかつ全Noneをequivalentと誤判定する境界を発見、修復中。単なるケース名一致/作者指定条件をtrusted CI再利用証明へ代用せず、full collector比較・実全OS・coverage/reuseは未完。
+
+- [/] 2026-10-14 #335 helper統合の最新照合: source3022686c/docs5aa6c15d通常Gcommit47449/2427、normalpush85273実exit0でPR/remote5aa一致・0/0。lookup binding最終68PASS/HIGH P0P1無し。native rangeは実graft/shallow mergeも修復し59PASS、capability62PASS、normalpush44802実exit0で214公開。Git2.43 P2はreply4264441064/resolve/fresh全取得済み、SHA256 P2もreply4264005177/resolve確認済み。以下の古い「統合未完」記録は当時の履歴であり、この限定統合については更新済み。live orchestration/manifest内容/registry公開/信頼検査ログ/production hook/cleanupと全Issueは未完。
+
 - [/] 2026-10-14 #335 Issue lookup metadata→expected actualcommit→body/schema→manifestlock実tree結合へ着手。Noneはunclassifiedで免除/成功ではない。realSHA2566境界・HIGH番号P2のactual0/-1誤受理2assertRED→既存candidate_numbersで修復、単一68PASS6.094s/actual0。実GitHub Issue335/current214commitはunclassified、実PR346はtyped拒否を各actual0確認。初fixture名衝突8errorsは製品REDと分離。HIGH最終/通常統合/live lookup orchestration/registry/logtrusted/cleanup未完。evidence/issue-commit-binding-2026-10-14.md。
 
 - [/] 2026-10-14 current0b review P2 4264041580/PRRT_kwDORm09y86sD-Iu: Git<=2.44でno-lazy-fetch未対応の検査環境問題を採用。実Git2.43を公式checksum照合後WTtmpでbuildし、新capability入口がactualexit1/案内付きでdiscovery前拒否、現Gitはexit0。開発/公開検査だけGit2.45+を明示しsetup・preflightに単一check、配布app要件は不変。unsafe旧Gitfallback無し。単一62PASS/4.817s・bash/zsh構文・diff成功、HIGH review/通常統合/push/個別replyresolve/fresh全取得未完。evidence/git-capability-prerequisite-2026-10-14.md。
