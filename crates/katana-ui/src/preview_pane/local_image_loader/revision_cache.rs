@@ -1,7 +1,6 @@
 use super::LocalImageLoader;
 use eframe::egui;
 use std::path::Path;
-use std::sync::Arc;
 
 impl LocalImageLoader {
     pub(super) fn invalidate_path(&self, path: &Path) {
@@ -36,7 +35,7 @@ impl LocalImageLoader {
     }
 }
 
-fn result_bytes(image: &Result<Arc<egui::ColorImage>, String>) -> usize {
+fn result_bytes(image: &super::decode_retry::CachedResult) -> usize {
     image.as_ref().map_or(0, |image| {
         image.pixels.len() * std::mem::size_of::<egui::Color32>()
     })

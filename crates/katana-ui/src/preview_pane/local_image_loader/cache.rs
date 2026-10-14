@@ -1,17 +1,8 @@
-use super::{Arc, CACHE_ENTRY_LIMIT, Cache, IMAGE_CACHE_LIMIT, LocalImageLoader, RequestKey, egui};
+use super::{
+    Arc, CACHE_ENTRY_LIMIT, Cache, IMAGE_CACHE_LIMIT, LocalImageLoader, RequestKey, decode_retry,
+    egui,
+};
 use std::sync::atomic::Ordering;
-
-fn image_bytes(image: &Result<egui::ColorImage, String>) -> usize {
-    image.as_ref().map_or(0, |image| {
-        image.pixels.len() * std::mem::size_of::<egui::Color32>()
-    })
-}
-
-fn result_bytes(image: &Result<Arc<egui::ColorImage>, String>) -> usize {
-    image.as_ref().map_or(0, |image| {
-        image.pixels.len() * std::mem::size_of::<egui::Color32>()
-    })
-}
 
 impl LocalImageLoader {
     pub(super) fn evict_failed_decodes(&self, path: &std::path::Path) {
@@ -88,53 +79,42 @@ impl LocalImageLoader {
 
     pub(super) fn cached_status(&self, key: &RequestKey) -> Option<super::LocalImageStatus> {
         let mut cache = self.inner.cache.lock().ok()?;
+        let frame = self.inner.active_frame.load(Ordering::Acquire);
+        if let Some((_, seen)) = cache.active_images.get_mut(key) {
+            *seen = frame;
+        }
+        if decode_retry::evict_if_due(&mut cache, key) {
+            return None;
+        }
         if let Some(image) = cache.ready.get(key) {
             return Some(match image {
                 Ok(image) => super::LocalImageStatus::Ready(Arc::clone(image)),
-                Err(error) => super::LocalImageStatus::Failed(error.clone()),
+                Err(error) => super::LocalImageStatus::Failed(error.error.clone()),
             });
         }
-        let frame = self.inner.active_frame.load(Ordering::Acquire);
         if let Some((image, seen)) = cache.active_images.get_mut(key) {
             *seen = frame;
             return Some(match image {
                 Ok(image) => super::LocalImageStatus::Ready(Arc::clone(image)),
-                Err(error) => super::LocalImageStatus::Failed(error.clone()),
+                Err(error) => super::LocalImageStatus::Failed(error.error.clone()),
             });
         }
         None
     }
 
     pub(super) fn store_result(&self, key: RequestKey, image: Result<egui::ColorImage, String>) {
-        let bytes = image_bytes(&image);
+        let bytes = image.as_ref().map_or(0, |image| {
+            image.pixels.len() * std::mem::size_of::<egui::Color32>()
+        });
         let Ok(mut cache) = self.inner.cache.lock() else {
             return;
         };
+        let frame = self.inner.active_frame.load(Ordering::Acquire);
         if bytes > IMAGE_CACHE_LIMIT {
-            if let Some(old) = cache.ready.remove(&key) {
-                cache.bytes = cache.bytes.saturating_sub(result_bytes(&old));
-            }
-            cache.textures.remove(&key);
-            cache.active_textures.remove(&key);
-            let Ok(image) = image else {
-                return;
-            };
-            let frame = self.inner.active_frame.load(Ordering::Acquire);
-            cache
-                .active_images
-                .insert(key.clone(), (Ok(Arc::new(image)), frame));
-            trim_cache(&mut cache, &key);
+            store_oversized(&mut cache, key, image, frame);
             return;
         }
-        cache.bytes = cache
-            .bytes
-            .saturating_sub(cache.ready.get(&key).map_or(0, result_bytes));
-        cache.bytes += bytes;
-        let result = image.map(Arc::new);
-        cache.ready.insert(key.clone(), result.clone());
-        let frame = self.inner.active_frame.load(Ordering::Acquire);
-        cache.active_images.insert(key.clone(), (result, frame));
-        trim_cache(&mut cache, &key);
+        store_cached(&mut cache, key, image, bytes, frame);
     }
 
     pub(super) fn store_texture(&self, key: RequestKey, texture: egui::TextureHandle) {
@@ -154,6 +134,45 @@ impl LocalImageLoader {
         cache.active_textures.insert(key, (texture, frame));
     }
 }
+fn store_oversized(
+    cache: &mut Cache,
+    key: RequestKey,
+    image: Result<egui::ColorImage, String>,
+    frame: u64,
+) {
+    if let Some(old) = cache.ready.remove(&key) {
+        cache.bytes = cache.bytes.saturating_sub(decode_retry::result_bytes(&old));
+    }
+    cache.textures.remove(&key);
+    cache.active_textures.remove(&key);
+    let Ok(image) = image else {
+        return;
+    };
+    cache
+        .active_images
+        .insert(key.clone(), (Ok(Arc::new(image)), frame));
+    trim_cache(cache, &key);
+}
+
+fn store_cached(
+    cache: &mut Cache,
+    key: RequestKey,
+    image: Result<egui::ColorImage, String>,
+    bytes: usize,
+    frame: u64,
+) {
+    cache.bytes = cache
+        .bytes
+        .saturating_sub(cache.ready.get(&key).map_or(0, decode_retry::result_bytes));
+    cache.bytes += bytes;
+    let result = image.map_or_else(
+        |error| Err(decode_retry::failure(cache, &key, error)),
+        |image| Ok(Arc::new(image)),
+    );
+    cache.ready.insert(key.clone(), result.clone());
+    cache.active_images.insert(key.clone(), (result, frame));
+    trim_cache(cache, &key);
+}
 
 fn trim_cache(cache: &mut Cache, retained: &RequestKey) {
     while (cache.bytes > IMAGE_CACHE_LIMIT || cache.ready.len() > CACHE_ENTRY_LIMIT)
@@ -164,7 +183,7 @@ fn trim_cache(cache: &mut Cache, retained: &RequestKey) {
             break;
         };
         if let Some(old) = cache.ready.remove(&key) {
-            cache.bytes = cache.bytes.saturating_sub(result_bytes(&old));
+            cache.bytes = cache.bytes.saturating_sub(decode_retry::result_bytes(&old));
         }
         cache.textures.remove(&key);
     }

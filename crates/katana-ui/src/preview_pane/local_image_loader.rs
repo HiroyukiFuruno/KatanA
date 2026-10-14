@@ -4,7 +4,11 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, atomic::AtomicU64, mpsc};
 
 mod cache;
+mod constructor;
 mod decode;
+mod decode_retry;
+#[cfg(test)]
+mod decode_retry_boundary_tests;
 mod overflow;
 mod pool;
 mod retry;
@@ -30,9 +34,9 @@ struct RequestKey {
 }
 
 struct Cache {
-    ready: HashMap<RequestKey, Result<Arc<egui::ColorImage>, String>>,
+    ready: HashMap<RequestKey, decode_retry::CachedResult>,
     textures: HashMap<RequestKey, egui::TextureHandle>,
-    active_images: HashMap<RequestKey, (Result<Arc<egui::ColorImage>, String>, u64)>,
+    active_images: HashMap<RequestKey, (decode_retry::CachedResult, u64)>,
     active_textures: HashMap<RequestKey, (egui::TextureHandle, u64)>,
     bytes: usize,
 }
@@ -72,38 +76,6 @@ pub(crate) enum LocalTextureStatus {
     Failed(String),
 }
 
-impl Default for LocalImageLoader {
-    fn default() -> Self {
-        let (result_tx, result_rx) = mpsc::channel();
-        let (invalidation_tx, invalidation_rx) = mpsc::sync_channel(INVALIDATION_QUEUE_CAPACITY);
-        Self {
-            inner: Arc::new(Inner {
-                result_rx: Mutex::new(result_rx),
-                result_tx,
-                invalidation_rx: Mutex::new(invalidation_rx),
-                invalidation_tx,
-                invalidation_overflow: std::sync::atomic::AtomicBool::new(false),
-                repaint_context: Mutex::new(None),
-                pending: Mutex::new(HashSet::new()),
-                path_revisions: Mutex::new(HashMap::new()),
-                watched_paths: Mutex::new(HashSet::new()),
-                watch_pending: Mutex::new(HashSet::new()),
-                watch_errors: Mutex::new(HashMap::new()),
-                deferred_watch_results: Mutex::new(HashMap::new()),
-                cache: Mutex::new(Cache {
-                    ready: HashMap::new(),
-                    textures: HashMap::new(),
-                    active_images: HashMap::new(),
-                    active_textures: HashMap::new(),
-                    bytes: 0,
-                }),
-                generation: AtomicU64::new(0),
-                active_frame: AtomicU64::new(0),
-            }),
-        }
-    }
-}
-
 impl LocalImageLoader {
     pub(crate) fn poll(&self, frame: u64) -> bool {
         self.advance_active_frame(frame);
@@ -133,24 +105,46 @@ impl LocalImageLoader {
         if watch_failed {
             self.retry_watch(&key.path);
         }
-        if let Some(status) = self.cached_status(&key) {
+        if let Some(status) = self.cached_request_status(&key) {
             return status;
         }
-        if !watch_failed {
-            match self.ensure_watched(&key.path) {
-                Ok(true) => {}
-                Ok(false) => return LocalImageStatus::Pending,
-                Err(error) => {
-                    let generation = self.generation();
-                    self.store_watch_error(key.path.clone(), error, generation);
-                    self.schedule_watch_retry(key.path.clone(), generation);
-                }
-            }
+        if !watch_failed && let Some(status) = self.ensure_request_watched(&key) {
+            return status;
         }
         if self.is_pending(&key) {
             return LocalImageStatus::Pending;
         }
-        self.enqueue(key)
+        self.finish_request(key)
+    }
+
+    fn cached_request_status(&self, key: &RequestKey) -> Option<LocalImageStatus> {
+        let status = self.cached_status(key)?;
+        if matches!(&status, LocalImageStatus::Failed(_)) {
+            self.request_decode_repaint(key);
+        }
+        Some(status)
+    }
+
+    fn ensure_request_watched(&self, key: &RequestKey) -> Option<LocalImageStatus> {
+        match self.ensure_watched(&key.path) {
+            Ok(true) => None,
+            Ok(false) => Some(LocalImageStatus::Pending),
+            Err(error) => {
+                let generation = self.generation();
+                self.store_watch_error(key.path.clone(), error, generation);
+                self.schedule_watch_retry(key.path.clone(), generation);
+                None
+            }
+        }
+    }
+
+    fn finish_request(&self, key: RequestKey) -> LocalImageStatus {
+        let status = self.enqueue(key.clone());
+        if matches!(&status, LocalImageStatus::Failed(_)) {
+            self.rearm_decode_failure(&key);
+            self.request_decode_repaint(&key);
+        }
+        status
     }
 
     fn enqueue(&self, key: RequestKey) -> LocalImageStatus {
@@ -180,23 +174,23 @@ impl LocalImageLoader {
 }
 
 #[cfg(test)]
+mod batch_tests;
+#[cfg(test)]
+mod cancellation_tests;
+#[cfg(test)]
+mod display_tests;
+#[cfg(test)]
 mod failed_decode_retry_tests;
 #[cfg(test)]
 mod fullscreen_gui_tests;
 #[cfg(test)]
 mod gui_tests;
 #[cfg(test)]
-mod tests;
-
-#[cfg(test)]
-mod batch_tests;
-#[cfg(test)]
-mod cancellation_tests;
-
-#[cfg(test)]
-mod display_tests;
+mod healthy_decode_retry_tests;
 #[cfg(test)]
 mod retry_tests;
+#[cfg(test)]
+mod tests;
 #[cfg(test)]
 mod watcher_overflow_tests;
 #[cfg(test)]

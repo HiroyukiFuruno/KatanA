@@ -2,9 +2,15 @@ use super::LocalImageLoader;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-const INITIAL_RETRY_DELAY: Duration = Duration::from_millis(100);
-const MAX_RETRY_DELAY: Duration = Duration::from_secs(2);
-const MAX_BACKOFF_ATTEMPTS: u32 = 4;
+pub(super) const INITIAL_RETRY_DELAY: Duration = Duration::from_millis(100);
+pub(super) const MAX_RETRY_DELAY: Duration = Duration::from_secs(2);
+pub(super) const MAX_BACKOFF_ATTEMPTS: u32 = 4;
+
+pub(super) fn retry_delay(attempts: u32) -> Duration {
+    INITIAL_RETRY_DELAY
+        .saturating_mul(2u32.saturating_pow(attempts.min(MAX_BACKOFF_ATTEMPTS)))
+        .min(MAX_RETRY_DELAY)
+}
 
 pub(super) struct WatchFailure {
     pub(super) error: String,
@@ -24,9 +30,7 @@ impl WatchFailure {
     }
 
     fn next_delay(attempts: u32) -> Duration {
-        INITIAL_RETRY_DELAY
-            .saturating_mul(2u32.saturating_pow(attempts.min(MAX_BACKOFF_ATTEMPTS)))
-            .min(MAX_RETRY_DELAY)
+        retry_delay(attempts)
     }
 }
 
