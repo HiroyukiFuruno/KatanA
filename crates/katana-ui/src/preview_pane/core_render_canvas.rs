@@ -14,6 +14,13 @@ impl PreviewPane {
             request.request_refresh();
             return;
         }
+        let snapshot = if preserve {
+            self.canvas_surface
+                .as_ref()
+                .and_then(|surface| surface.revision_snapshot())
+        } else {
+            None
+        };
         let previous = if preserve {
             self.canvas_surface.take()
         } else {
@@ -23,14 +30,35 @@ impl PreviewPane {
         if let Some(surface) = previous {
             self.canvas_surface = Some(surface);
         }
-        match CanvasParseRequest::start_path(
-            self.session_generation,
-            path.to_path_buf(),
-            self.repaint_ctx.clone(),
-        ) {
+        let request = self.start_canvas_request(path, snapshot);
+        match request {
             Ok(request) => self.canvas_request = Some(request),
             Err(error) => self.fail_canvas_request(error),
         }
+    }
+
+    fn start_canvas_request(
+        &self,
+        path: &std::path::Path,
+        snapshot: Option<super::canvas_request::CanvasRevisionSnapshot>,
+    ) -> Result<CanvasParseRequest, CanvasRequestError> {
+        snapshot.map_or_else(
+            || {
+                CanvasParseRequest::start_path(
+                    self.session_generation,
+                    path.to_path_buf(),
+                    self.repaint_ctx.clone(),
+                )
+            },
+            |snapshot| {
+                CanvasParseRequest::start_snapshot(
+                    self.session_generation,
+                    path.to_path_buf(),
+                    snapshot,
+                    self.repaint_ctx.clone(),
+                )
+            },
+        )
     }
 
     pub(crate) fn has_canvas_surface(&self) -> bool {

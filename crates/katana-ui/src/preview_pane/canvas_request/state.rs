@@ -69,14 +69,14 @@ impl RequestState {
         self.cancelled.load(Ordering::Acquire)
     }
 
-    pub(super) fn take_source(&self) -> Result<String, CanvasRequestError> {
+    pub(super) fn take_input(&self) -> Result<CanvasInput, CanvasRequestError> {
         let input = self
             .source
             .lock()
             .map_err(|_| CanvasRequestError::RequestPoisoned)?
             .take()
             .ok_or(CanvasRequestError::SourceUnavailable)?;
-        input.load(|| self.is_cancelled())
+        Ok(input)
     }
 
     pub(super) fn deliver(

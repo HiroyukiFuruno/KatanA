@@ -113,7 +113,11 @@ fn real_channel_disconnect_is_a_typed_delivery_error() {
 #[test]
 fn missing_taken_source_is_not_silently_reparsed() {
     let (request, receiver) = RequestState::new(1, RequestTest::source("{}"), None);
-    request.take_source().expect("first source take");
+    request
+        .take_input()
+        .expect("first source take")
+        .load(|| request.is_cancelled())
+        .expect("source load");
     CanvasWorker::process(&request).expect("typed result delivery");
     let result = receiver.recv_timeout(TEST_TIMEOUT).expect("response");
     assert!(matches!(

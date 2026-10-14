@@ -4,6 +4,7 @@ use eframe::egui;
 
 mod coalescing_tests;
 mod revision_tests;
+mod unchanged_parse_tests;
 
 const PARSE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
 const PAN_POINTER_X: f32 = 400.0;

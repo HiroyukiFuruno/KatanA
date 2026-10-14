@@ -16,6 +16,7 @@ mod state;
 pub(crate) use labels::CanvasSurfaceLabels;
 pub(crate) use state::CanvasLoadError;
 
+use super::canvas_request::CanvasRevisionSnapshot;
 use geometry::CanvasLayout;
 use state::CanvasLoadState;
 
@@ -86,6 +87,17 @@ impl CanvasSurface {
         if matches!(self.state, CanvasLoadState::Ready(_)) {
             self.revision = revision;
         }
+    }
+
+    pub(crate) fn revision_snapshot(&self) -> Option<CanvasRevisionSnapshot> {
+        let revision = self.revision?;
+        let CanvasLoadState::Ready(document) = &self.state else {
+            return None;
+        };
+        Some(CanvasRevisionSnapshot {
+            revision,
+            document: Arc::clone(document),
+        })
     }
 
     pub(crate) fn is_drawn(&self) -> bool {

@@ -25,6 +25,11 @@ use state::RequestState;
 const SHA256_DIGEST_BYTES: usize = 32;
 pub(crate) type CanvasRevision = [u8; SHA256_DIGEST_BYTES];
 
+pub(crate) struct CanvasRevisionSnapshot {
+    pub(crate) revision: CanvasRevision,
+    pub(crate) document: Arc<katana_core::canvas::CanvasDocument>,
+}
+
 pub(crate) struct CanvasParseRequest {
     request: Arc<RequestState>,
     receiver: Receiver<CanvasParseResult>,
@@ -59,6 +64,24 @@ impl CanvasParseRequest {
             CanvasPool::global()?,
             generation,
             CanvasInput::File(path),
+            repaint,
+        )
+    }
+
+    pub(crate) fn start_snapshot(
+        generation: u64,
+        path: PathBuf,
+        snapshot: CanvasRevisionSnapshot,
+        repaint: Option<egui::Context>,
+    ) -> Result<Self, CanvasRequestError> {
+        Self::submit_input(
+            CanvasPool::global()?,
+            generation,
+            CanvasInput::Snapshot {
+                path,
+                revision: snapshot.revision,
+                document: snapshot.document,
+            },
             repaint,
         )
     }

@@ -4,6 +4,7 @@ use std::sync::atomic::Ordering;
 use katana_core::canvas::CanvasDocument;
 use sha2::{Digest, Sha256};
 
+use super::input::CanvasInput;
 use super::state::{CanvasRequestError, RequestState};
 use super::{CanvasRevision, pool::SharedPool};
 
@@ -79,18 +80,62 @@ impl CanvasWorker {
         if request.is_cancelled() {
             return Ok(());
         }
-        let source = match request.take_source() {
-            Ok(source) => source,
+        let input = match request.take_input() {
+            Ok(input) => input,
             Err(error) => return request.deliver(Err(error)),
         };
-        let Some(parsed) = Self::parse_source(&source, || request.is_cancelled()) else {
-            return Ok(());
+        let parsed = match Self::parse_input(input, || request.is_cancelled()) {
+            Ok(Some(parsed)) => parsed,
+            Ok(None) => return Ok(()),
+            Err(error) => return request.deliver(Err(error)),
         };
         request.deliver_revision(parsed.result, Some(parsed.revision))
     }
 
+    fn parse_input(
+        input: CanvasInput,
+        cancelled: impl Fn() -> bool,
+    ) -> Result<Option<ParsedCanvas>, CanvasRequestError> {
+        match input {
+            CanvasInput::Snapshot {
+                path,
+                revision,
+                document,
+            } => Self::parse_snapshot(path, revision, document, cancelled),
+            input => Ok(Self::parse_source(&input.load(&cancelled)?, &cancelled)),
+        }
+    }
+
+    fn parse_snapshot(
+        path: std::path::PathBuf,
+        expected: CanvasRevision,
+        document: Arc<CanvasDocument>,
+        cancelled: impl Fn() -> bool,
+    ) -> Result<Option<ParsedCanvas>, CanvasRequestError> {
+        let source = CanvasInput::File(path).load(&cancelled)?;
+        let revision = Self::revision(&source, &cancelled);
+        let Some(revision) = revision else {
+            return Ok(None);
+        };
+        if revision == expected {
+            return Ok(Some(ParsedCanvas {
+                revision,
+                result: Ok(document),
+            }));
+        }
+        Ok(Self::parse_document(&source, revision, cancelled))
+    }
+
     fn parse_source(source: &str, cancelled: impl Fn() -> bool) -> Option<ParsedCanvas> {
         let revision = Self::revision(source, &cancelled)?;
+        Self::parse_document(source, revision, cancelled)
+    }
+
+    fn parse_document(
+        source: &str,
+        revision: CanvasRevision,
+        cancelled: impl Fn() -> bool,
+    ) -> Option<ParsedCanvas> {
         let result = match CanvasDocument::parse_cancellable(source, cancelled) {
             Ok(Some(document)) => Ok(Arc::new(document)),
             Ok(None) => return None,

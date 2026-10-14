@@ -4,11 +4,18 @@ use std::path::{Path, PathBuf};
 use katana_core::document_source::MAX_BINARY_DOCUMENT_BYTES;
 
 use super::super::cancellable_read::{CancellableReader, ReadCancellation};
-use super::CanvasRequestError;
+use super::{CanvasRequestError, CanvasRevision};
+use katana_core::canvas::CanvasDocument;
+use std::sync::Arc;
 
 pub(super) enum CanvasInput {
     Text(String),
     File(PathBuf),
+    Snapshot {
+        path: PathBuf,
+        revision: CanvasRevision,
+        document: Arc<CanvasDocument>,
+    },
 }
 
 impl From<String> for CanvasInput {
@@ -24,7 +31,9 @@ impl CanvasInput {
         }
         let source = match self {
             Self::Text(source) => source,
-            Self::File(path) => CanvasFileInput::load(&path, &cancelled)?,
+            Self::File(path) | Self::Snapshot { path, .. } => {
+                CanvasFileInput::load(&path, &cancelled)?
+            }
         };
         /* WHY: メモリ経由でもファイル経由と同じ上限で固定ワーカーを保護する。 */
         if source.len() > MAX_BINARY_DOCUMENT_BYTES {
