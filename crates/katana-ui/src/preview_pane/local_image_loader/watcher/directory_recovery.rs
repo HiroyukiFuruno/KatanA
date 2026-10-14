@@ -1,6 +1,7 @@
 use super::WatchEvent;
 use super::events::{notify_overflow, send_event};
 use super::registration::Targets;
+use notify::event::{ModifyKind, RenameMode};
 use notify::{Event, EventKind, RecommendedWatcher, Watcher};
 use std::collections::HashSet;
 use std::path::PathBuf;
@@ -14,19 +15,38 @@ impl DirectoryRecovery {
         watched_dirs: &mut HashSet<PathBuf>,
         targets: &Targets,
     ) {
-        if !matches!(event.kind, EventKind::Remove(_)) {
-            return;
-        }
-        let removed: HashSet<_> = watched_dirs
-            .iter()
-            .filter(|directory| event.paths.iter().any(|path| directory.starts_with(path)))
-            .cloned()
-            .collect();
+        let removed = Self::lost_directories(event, watched_dirs);
         let backend_changed = Self::detach(watcher, watched_dirs, &removed);
         Self::notify_removed(targets, &removed);
         if backend_changed {
             /* WHY: FSEventsの実解除が他監視のstreamを再開した場合だけ、元の通知欠落補完を維持する。 */
             notify_overflow(targets);
+        }
+    }
+
+    fn lost_directories(event: &Event, watched_dirs: &HashSet<PathBuf>) -> HashSet<PathBuf> {
+        let paths = Self::lost_paths(event);
+        if paths.is_empty() {
+            return HashSet::new();
+        }
+        watched_dirs
+            .iter()
+            .filter(|directory| paths.iter().any(|path| directory.starts_with(path)))
+            .cloned()
+            .collect()
+    }
+
+    fn lost_paths(event: &Event) -> &[PathBuf] {
+        match event.kind {
+            EventKind::Remove(_)
+            | EventKind::Modify(ModifyKind::Name(RenameMode::From | RenameMode::Any)) => {
+                &event.paths
+            }
+            /* WHY: Bothの二番目は移動先なので、移動元とその子だけを監視再登録へ戻す。 */
+            EventKind::Modify(ModifyKind::Name(RenameMode::Both)) => {
+                &event.paths[..event.paths.len().min(1)]
+            }
+            _ => &[],
         }
     }
 

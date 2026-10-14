@@ -182,6 +182,10 @@ mod event_path_tests;
 #[cfg(test)]
 mod order_tests;
 #[cfg(test)]
+mod rename_classification_tests;
+#[cfg(test)]
+mod rename_tests;
+#[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod topology_tests;
