@@ -29,6 +29,14 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-15 上記後続差分は関心別通常署名G commitへ正式統合: #348早期return ace75eb1(session99662actual0)、#350両lock e2901ea7(34602actual0)、#350standalone供給網導線/metadata dd9d6dc5(20793actual0)。旧失敗push13043を再開せず、新HEADの通常pushを一回行い、結果/remote/currentreviewを回収する。PPTX/画像の個別replyresolveは実upload後。全release条件は未完。
+
+- [/] #350 最終shared gate59641actual0、両graph全4カテゴリok・両--locked・Just directBash、正式契約10PASS。新graph34959 UI全target/testinclusive/externalfixture strictClippy actual0/3分33秒、56356公式fmt actual0、bash/zsh syntax・diffcheck0、独立最終P0/P1無し。通常関心別commit/push/currentreview/全release条件は未完。RTK補正は現端末の実REDではなく他版移植性リスクの修復として記録する。
+
+- [/] 2026-10-15 #350 通常push13043はactualexit1、新RustSec0346–0349/rustls0.23.45で拒否しremote2a7のまま。両lockを公開互換0.23.46へ更新し許容範囲内syn/getrandom edge再解決を精査。別screenshot graphのMIT/version不足も修復し、Just/preflight/Ready-only CIを同一供給網scriptへ接続。契約旧RED→10PASS、実shared gate56200actual0/両graph全4カテゴリok、元deny規則/Draft条件不変。新graph公式原本48062actual0: Office6 exact1PASS19.00秒/PPTX3 ready-next-stale-close exact1PASS9.42秒/HTML#s15 exact1PASS10.14秒。AST21789actual0/23PASS22.35秒。strict/fmt/通常統合/push/currentreview/全配布公開は未完。evidence/rustls350-security-graph-2026-10-15.md。
+
+- [/] #348 最終自己レビューでlost directory無しの通常eventにもtarget全走査が残る点を補正し、recoverの空集合で早期return。新graph73065actual0/local_image_loader53PASS、元owner/generation/backoff/overflow契約不変。性能測定や全OS解消を主張せず、通常統合/個別replyresolve/全公開条件へ継続する。
+
 - [/] 2026-10-15 PPTX349の限定source/公式受入導線は通常署名commit17569actual0/e6292c98へ統合。下記実入力/検査結果の証明範囲を維持し、normal push・個別replyresolve・current review・全release条件は未完。画像348 source dd65b4c9/docs c334fb55とは関心分離した。
 
 - [/] 2026-10-15 #348 directory rename P2 4268050392を採用。旧製品実native22387actual101/移動元ledger残留assertRED→From/Any/Both回復、Both移動先は解除せず。最終96602local_image_loader53PASS/2.69秒、42873正式AST23PASS/23.53秒、41098全target/testinclusive/externalfixture strictClippy・fmt/diff成功、HIGH P0/P1無し。限定source通常署名commit78736actual0/dd65b4c9。evidence/image-directory-rename-recovery-2026-10-15.md。push/個別replyresolve/全OS・packaged・公開は未完。
