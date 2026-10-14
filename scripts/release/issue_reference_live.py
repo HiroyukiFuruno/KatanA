@@ -93,6 +93,19 @@ class LiveIssueClient:
                 return True
         return False
 
+    def genuine_payloads(self, numbers: list[int]) -> dict[int, dict[str, object]]:
+        """Return canonical genuine Issue payloads, omitting missing/non-Issues."""
+        candidates = candidate_numbers(numbers)
+        deadline = time.monotonic() + LOOKUP_DEADLINE_SECONDS
+        payloads: dict[int, dict[str, object]] = {}
+        for number in candidates:
+            timeout = remaining_time(deadline, time.monotonic())
+            payload = self._lookup(number, timeout)
+            if payload is not None and is_genuine_issue(payload, self.repository, number):
+                # WHY: PR/404は候補から除外し、identity不一致は呼び出し元へ伝播する。
+                payloads[number] = payload
+        return payloads
+
     def _lookup(self, number: int, timeout: float) -> dict[str, object] | None:
         # WHY: 環境のGH_HOSTで取得先を変更せず、Issue本文や認証診断を実行・表示しない。
         command = [

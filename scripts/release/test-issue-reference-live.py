@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import json
 import unittest
+from unittest.mock import ANY, patch
 
 from issue_reference_live import (
-    MAX_CANDIDATES, MAX_RESPONSE_CHARACTERS, IssueLookupError,
-    candidate_numbers, is_genuine_issue, remaining_time, response_payload,
+    LOOKUP_DEADLINE_SECONDS, MAX_CANDIDATES, MAX_RESPONSE_CHARACTERS,
+    IssueLookupError, LiveIssueClient, candidate_numbers, is_genuine_issue,
+    remaining_time, response_payload,
 )
 
 REPOSITORY = "HiroyukiFuruno/KatanA"
@@ -117,6 +119,73 @@ class LookupBoundsContractTests(unittest.TestCase):
         for now in (30.0, 31.0):
             with self.subTest(now=now), self.assertRaises(IssueLookupError):
                 remaining_time(30.0, now)
+
+
+class GenuinePayloadContractTests(unittest.TestCase):
+    def client(self) -> LiveIssueClient:
+        return LiveIssueClient(REPOSITORY)
+
+    def test_returns_payload_and_preserves_body(self) -> None:
+        client = self.client()
+        payload = issue_payload(body="dependency evidence")
+        with patch.object(client, "_lookup", return_value=payload):
+            result = client.genuine_payloads([ISSUE_NUMBER])
+        self.assertEqual(result[ISSUE_NUMBER]["body"], "dependency evidence")
+
+    def test_omits_missing_and_pull_request_payloads(self) -> None:
+        client = self.client()
+        pull_request = issue_payload(
+            number=336,
+            html_url=f"https://github.com/{REPOSITORY}/pull/336",
+            pull_request={},
+        )
+        with patch.object(client, "_lookup", side_effect=[None, pull_request]):
+            self.assertEqual(client.genuine_payloads([335, 336]), {})
+
+    def test_rejects_mismatched_identity(self) -> None:
+        client = self.client()
+        with patch.object(client, "_lookup", return_value=issue_payload(number=336)), \
+                self.assertRaises(IssueLookupError):
+            client.genuine_payloads([ISSUE_NUMBER])
+
+    def test_deduplicates_numbers_before_lookup(self) -> None:
+        client = self.client()
+        with patch.object(client, "_lookup", return_value=issue_payload()) as lookup:
+            client.genuine_payloads([335, 335])
+        lookup.assert_called_once_with(335, ANY)
+
+    def test_uses_one_shared_deadline_for_all_candidates(self) -> None:
+        client = self.client()
+        with patch("issue_reference_live.time.monotonic", side_effect=[100.0, 101.0, 102.0]), patch.object(
+            client, "_lookup", side_effect=[None, None]
+        ) as lookup:
+            client.genuine_payloads([335, 336])
+        timeouts = [call.args[1] for call in lookup.call_args_list]
+        self.assertEqual(timeouts, [LOOKUP_DEADLINE_SECONDS - 1.0,
+                                    LOOKUP_DEADLINE_SECONDS - 2.0])
+
+    def test_validate_keeps_early_success_short_circuit(self) -> None:
+        client = self.client()
+        with patch.object(
+            client, "_lookup", side_effect=[issue_payload(), IssueLookupError("must not run")]
+        ) as lookup:
+            self.assertTrue(client.validate([335, 336]))
+        lookup.assert_called_once()
+
+    def test_invalid_candidates_never_reach_transport(self) -> None:
+        for numbers in ([True], [0], list(range(1, MAX_CANDIDATES + 2))):
+            client = self.client()
+            with patch.object(client, "_lookup") as lookup, self.assertRaises(IssueLookupError):
+                client.genuine_payloads(numbers)
+            lookup.assert_not_called()
+
+    def test_exhausted_shared_deadline_stops_before_next_lookup(self) -> None:
+        client = self.client()
+        with patch("issue_reference_live.time.monotonic", side_effect=[100.0, 101.0, 130.0]), \
+                patch.object(client, "_lookup", return_value=None) as lookup, \
+                self.assertRaises(IssueLookupError):
+            client.genuine_payloads([335, 336])
+        lookup.assert_called_once()
 
 
 if __name__ == "__main__":
