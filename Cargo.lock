@@ -3887,6 +3887,7 @@ dependencies = [
  "once_cell",
  "proc-macro2",
  "regex",
+ "semver",
  "serde",
  "serde_json",
  "syn 3.0.9",

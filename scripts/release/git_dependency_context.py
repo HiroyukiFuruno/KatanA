@@ -20,10 +20,13 @@ class GitDependencyBinding:
 
 
 def _relative_target(origin: ManifestDependencyOrigin) -> str | None:
-    locator = origin.declaration.source.locator
+    return relative_manifest_path(origin.origin_path, origin.declaration.source.locator)
+
+
+def relative_manifest_path(origin_path: str, locator: str) -> str | None:
     if locator.startswith("/") or "\\" in locator or re.match(r"[A-Za-z]:", locator):
         return None
-    parts = origin.origin_path.split("/")[:-1]
+    parts = origin_path.split("/")[:-1]
     for component in locator.split("/"):
         if component in {"", "."}:
             continue
