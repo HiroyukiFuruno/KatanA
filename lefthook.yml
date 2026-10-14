@@ -33,8 +33,18 @@ pre-push:
         - ref: master
         - ref: release/*
     check-strict:
-      run: just check
-      glob: "{crates,vendor}/**/*.{rs,toml,lock}"
+      run: python3 scripts/release/run-owned-push-check.py
+      glob:
+        - "Cargo.{toml,lock}"
+        - "**/Cargo.{toml,lock}"
+        - "{crates,vendor}/**/*.{rs,toml,lock}"
+        - "scripts/*.{py,sh}"
+        - "scripts/**/*.{py,sh,rs,toml,lock}"
+        - "just/*.just"
+        - "Justfile"
+        - "lefthook.yml"
+        - ".cargo/*.toml"
+        - "rust-toolchain.toml"
       only:
         - ref: master
         - ref: release/*

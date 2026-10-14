@@ -33,6 +33,8 @@ jobs:
         with:
           tool: cargo-deny@0.20.2
           fallback: none
+      - name: Install native hook contract tools
+        run: brew install lefthook just
       - name: Run PR readiness check
         # WHY: check-pr-ready が preflight を内包するため、同じ公開検査を二重実行しない。
         shell: bash

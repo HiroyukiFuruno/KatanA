@@ -152,7 +152,7 @@ def main() -> None:
     assert "run: just lint\n" not in lefthook
     assert "pre-push: check\n" in tests
     assert "pre-push: check-full" not in tests
-    assert "run: just check" in lefthook
+    assert "run: python3 scripts/release/run-owned-push-check.py" in lefthook
     assert "preflight.sh" in check_pr_ready
     verify_workflow(build_workflow)
     verify_document_phase_order(build_workflow)
