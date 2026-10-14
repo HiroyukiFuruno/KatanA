@@ -29,6 +29,14 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-15 本turn sourceは関心別通常署名Gへ統合: #335 origin 0bd8b1fd/23212actual0、#350第三paint固定graph/lock cb5a6282/90851actual0。対象検査成功と独立HIGH限定P0/P1無しを確認し、通常push一回→paint thread個別replyresolve→fresh current reviewへ進む。旧42886 reviewを新HEAD承認へ流用せず、全335/350/公開条件は未完のまま維持する。
+
+- [/] 2026-10-15 #335 宣言originを保持する候補を追加。全katana候補を残し、workspace継承元/直接宣言のpath/blobを分離、同名external pathを内部として免除しない。実SHA256 temporary Git6回帰61385actual0/4.533秒、Werror release Python全142件93155actual0/25.235秒、HIGH限定P0/P1無し。初missing-moduleはAPI接続errorで旧製品assert REDとは呼ばない。evidence/manifest-dependency-origins-2026-10-15.md。registered membership・同commit/provider真正結合・lock所有・全tree分類・真正Issue/publicregistry/trusted検査/既存hook先行/cleanupと全DoDは未完。
+
+- [/] 2026-10-15 current42886a2e bot review5524700208を全REST/GraphQL取得し、P2 4276299202/PRRT_kwDORm09y86shV9Lを#350へ採用。独立paint lockはscreenshot graphでは代用できない。第三--locked gate契約assert RED→10PASS、実3graph52448actual0全4カテゴリok、paint互換8更新27498actual0/公式paint2tests54982actual0。root/screenshot locks/元deny/Draft条件不変。evidence/paint-metrics-supply-chain-2026-10-15.md。通常統合/push/個別replyresolve/fresh/公開未完、全vendor独立実行を検査済みとはしない。
+
+- [/] 前公開42886a2eまでの正常push81068actual0、画像/PPTX各reply4276267116/4276267683→resolveとfresh全取得を回収。未解決は既存manual方針2と上記paint指摘。currentbot reviewは自reply由来empty reviewと区別し、上流全体待ちへ戻さず独立実装を継続する。
+
 - [/] 2026-10-15 上記後続差分は関心別通常署名G commitへ正式統合: #348早期return ace75eb1(session99662actual0)、#350両lock e2901ea7(34602actual0)、#350standalone供給網導線/metadata dd9d6dc5(20793actual0)。旧失敗push13043を再開せず、新HEADの通常pushを一回行い、結果/remote/currentreviewを回収する。PPTX/画像の個別replyresolveは実upload後。全release条件は未完。
 
 - [/] #350 最終shared gate59641actual0、両graph全4カテゴリok・両--locked・Just directBash、正式契約10PASS。新graph34959 UI全target/testinclusive/externalfixture strictClippy actual0/3分33秒、56356公式fmt actual0、bash/zsh syntax・diffcheck0、独立最終P0/P1無し。通常関心別commit/push/currentreview/全release条件は未完。RTK補正は現端末の実REDではなく他版移植性リスクの修復として記録する。
