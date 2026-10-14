@@ -57,15 +57,19 @@ def verify_document_phase_order(workflow: str) -> None:
 
 
 class WorkflowContractTests(unittest.TestCase):
-    def test_supply_chain_covers_both_locked_graphs_at_all_entrypoints(self) -> None:
+    def test_supply_chain_covers_host_and_tool_locked_graphs_at_all_entrypoints(self) -> None:
         entry = "bash scripts/ci/check-supply-chain.sh"
         checker = ROOT / "scripts/ci/check-supply-chain.sh"
-        self.assertTrue(checker.is_file(), "Both lockfiles need one shared supply-chain gate")
+        self.assertTrue(checker.is_file(), "Host and tool locks need one shared supply-chain gate")
         source = checker.read_text(encoding="utf-8")
         self.assertIn("set -euo pipefail", source)
         self.assertIn("cargo deny --locked check --hide-inclusion-graph", source)
         self.assertIn(
             "cargo deny --locked --manifest-path scripts/screenshot/Cargo.toml check --hide-inclusion-graph",
+            source,
+        )
+        self.assertIn(
+            "cargo deny --locked --manifest-path scripts/paint-metrics/Cargo.toml check --hide-inclusion-graph",
             source,
         )
         for path in (

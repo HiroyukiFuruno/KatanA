@@ -8,3 +8,4 @@ command -v cargo-deny >/dev/null || {
 }
 cargo deny --locked check --hide-inclusion-graph
 cargo deny --locked --manifest-path scripts/screenshot/Cargo.toml check --hide-inclusion-graph
+cargo deny --locked --manifest-path scripts/paint-metrics/Cargo.toml check --hide-inclusion-graph
