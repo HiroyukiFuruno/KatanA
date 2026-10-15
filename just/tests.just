@@ -11,7 +11,13 @@ type-check:
     {{CARGO}} check --workspace
 
 # Run impacted unit tests (local default)
-test: test-cargo-sweep-contract test-ci-resource-contract test-html-host-contract test-commonmark-backend test-custom-cursor-cache test-impacted
+test: test-cargo-sweep-contract test-ci-resource-contract test-html-host-contract test-commonmark-html-trace test-commonmark-backend test-custom-cursor-cache test-impacted
+
+# vendor workspaceの別lockを更新せず、依存なしの実要約moduleを直接検査する。
+test-commonmark-html-trace:
+    mkdir -p target/contract-tests
+    {{RTK_CMD}}rustc --edition 2024 -D warnings --test vendor/egui_commonmark_upstream/egui_commonmark/src/parsers/pulldown/html_trace_summary.rs -o target/contract-tests/commonmark-html-trace.exe
+    {{RTK_CMD}}target/contract-tests/commonmark-html-trace.exe
 
 # root lockとUIのfeature集合で、workspace外の既存patched backendを検査する。
 test-commonmark-backend:

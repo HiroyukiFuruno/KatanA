@@ -15,6 +15,9 @@ use egui_commonmark_backend::pulldown::*;
 use pulldown_cmark::{CowStr, HeadingLevel};
 use unicode_segmentation::UnicodeSegmentation;
 
+mod html_trace_summary;
+use html_trace_summary::summarize_html;
+
 #[allow(dead_code)]
 const INLINE_EMOJI_URI_PREFIX: &str = "bytes://katana-inline-emoji-";
 /* WHY: Enhanced visibility for diagram highlights as requested in Image 1. */
@@ -46,12 +49,7 @@ fn html_layout_trace(ui: &Ui, stage: &str, html: &str) {
     eprintln!(
         "[KATANA_DEBUG] event=html_parser_trace stage={stage} frame={} html={} body_height={:.1} cursor_height={:.1} item_spacing_y={:.1} next=({:.1},{:.1}) min=({:.1},{:.1},{:.1},{:.1})",
         ui.ctx().cumulative_frame_nr(),
-        html.split_whitespace()
-            .collect::<Vec<_>>()
-            .join("_")
-            .chars()
-            .take(80)
-            .collect::<String>(),
+        summarize_html(html.chars()),
         ui.text_style_height(&TextStyle::Body),
         ui.cursor().height(),
         ui.spacing().item_spacing.y,
