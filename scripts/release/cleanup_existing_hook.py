@@ -10,6 +10,13 @@ from release_cleanup_audit import CleanupRefused
 from release_cleanup_transaction import MAX_TRANSACTION_BYTES
 
 STREAM_CHUNK_BYTES = 65536
+INTENT_ENV = "KATANA_CLEANUP_INTENT"
+DIGEST_ENV = "KATANA_CLEANUP_INTENT_SHA256"
+
+
+def owner_environment() -> dict[str, str]:
+    # 既存owner内の別Git操作に、単一削除用の入力を伝播させない。
+    return {key: value for key, value in os.environ.items() if key not in (INTENT_ENV, DIGEST_ENV)}
 
 
 def exit_like_owner(status: int) -> None:
@@ -46,7 +53,7 @@ def capture_owner_input(stream: BinaryIO, path: Path | None, phase: str) -> tupl
     if path is None:
         return _forward(stream, None), 0
     # 全入力は既存ownerへ渡し、追加検査用コピーだけを有界に保つ。
-    with subprocess.Popen(owner_command(path, phase), stdin=subprocess.PIPE) as process:
+    with subprocess.Popen(owner_command(path, phase), stdin=subprocess.PIPE, env=owner_environment()) as process:
         payload = _forward(stream, process.stdin)
         if process.stdin is not None:
             try:
