@@ -29,6 +29,12 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] #335 ownerstreamはd17803c7/30070actual0/G、vendor trace P2はd0bb921d/13265actual0/Gへ通常関心別統合済み。final限定独立review P0/P1/必須P2残無し、root固定lock実接続compile88072actual0・pure4PASS・全releasePython307PASS97708actual0・Draftphase5PASS・diff/KML成功。通常docs統合後に一回normalpushを行い、その実exit/公開同一HEAD・個別replyresolve/fresh全reviewを回収する。全335/343/Ready/実packaged/Releaseは未完。
+
+- [/] #335 pre-push owner契約を実5RED（4assertFAIL/1missinglog）から修復。全文stream/追加コピー1MiB+1・owner絶対path・同argv/exit/signal・session環境保持/cleanupenv隔離を共用化。owner成功後の上限/LEFTHOOK/HEAD/receipt検査は維持。対象21PASS7.623秒、最終全release Python307PASS128.079秒/実97708exit0、4files AST/200行/30行成功。evidence/pre-push-owner-stream-2026-10-15.md。限定独立review/通常関心別commit/pushは未完、本番activation/全335/公開完了ではない。
+
+- [/] current f40a vendor P2 4279432020は実sourceをbounded helperへ接続。旧prefix80/Unicode圧縮を維持し走査4096文字以内、予算打切だけ80内省略表示。mainの通常入口just test-commonmark-html-traceは4PASS、Ready CI同targetへ接続、root固定lockの実caller/katana-ui compile88072actual0/11.23秒。初期standalone vendor lock更新はworker自身が復元し検証範囲を区別、誤RUSTFLAGS check19399はownSIGINT130回収し成功扱いしない。evidence/vendor-html-trace-bounds-2026-10-15.md。限定独立review/通常commit/push/個別replyresolve/fresh全review/Ready/公開は未完。
+
 - [/] reference installer sourceはba2d591e/46302actual0/署名Gへ通常統合。302全Python/最終8native/独立再review/AST/KML/diff証跡を保持。docs通常統合後は新vendor P2とpublic cleanup callerを続け、一部品毎の重いpush再実行をしない。本番導入不可・全335/Ready/ReleaseDoD未完を維持する。
 
 - [/] #335 reference installerを実装。既存5scope検査を共有moduleへ手動抽出し旧prepush API/WHYを維持、commonhooks/全既存WT runtime parity・owner bytes/mode・backup非上書き・欠落owner・導入lock/冪等性を追加。unknown V0 wrapper81419assertREDと実os.replace直後SIGINTでbackup消失86734assertREDを修復。最終14760新8PASS3.931秒/割込後commit成功、98087両installer18PASS、77867全release Python302PASS126.340秒（最後の追加fixture assertion配置差は14760で別証明）、5files AST/200行/30行成功・fresh独立限定P0/P1/必須P2無し。read-only実repo validatorは旧master不一致を拒否し本番未活性。通常統合/public caller/serialization/localremote/prune/workflow・全335/Release未完。evidence/reference-hook-installer-2026-10-15.md。
