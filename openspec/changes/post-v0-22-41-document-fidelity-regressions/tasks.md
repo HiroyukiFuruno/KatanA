@@ -29,6 +29,12 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] reference installer sourceはba2d591e/46302actual0/署名Gへ通常統合。302全Python/最終8native/独立再review/AST/KML/diff証跡を保持。docs通常統合後は新vendor P2とpublic cleanup callerを続け、一部品毎の重いpush再実行をしない。本番導入不可・全335/Ready/ReleaseDoD未完を維持する。
+
+- [/] #335 reference installerを実装。既存5scope検査を共有moduleへ手動抽出し旧prepush API/WHYを維持、commonhooks/全既存WT runtime parity・owner bytes/mode・backup非上書き・欠落owner・導入lock/冪等性を追加。unknown V0 wrapper81419assertREDと実os.replace直後SIGINTでbackup消失86734assertREDを修復。最終14760新8PASS3.931秒/割込後commit成功、98087両installer18PASS、77867全release Python302PASS126.340秒（最後の追加fixture assertion配置差は14760で別証明）、5files AST/200行/30行成功・fresh独立限定P0/P1/必須P2無し。read-only実repo validatorは旧master不一致を拒否し本番未活性。通常統合/public caller/serialization/localremote/prune/workflow・全335/Release未完。evidence/reference-hook-installer-2026-10-15.md。
+
+- [ ] current f40a review5528605915/P2 4279432020/threadPRRT_kwDORm09y86sorwg: vendor pulldownのHTML診断要約が全文collect/joinしてから80文字へ切り詰める不備を修復する。今回の診断/受入性能契約に含まれるため採用。全REST/GraphQL88240actual0、nested欠落0、既存manualpolicy3とは分離。限定workerは案/RED計画のread-only段階、main installer通常統合のfmt競合回避までRust編集/build待機。上流へ誤分類せずKatanA vendorで対応し、検証・通常統合/push後に個別reply/resolve・fresh全取得を行う。
+
 - [/] no-intent/env隔離sourceは6c586811/62648actual0/署名Gへ通常統合。最終94024全cleanup66PASS48.221秒・独立限定review/AST/KML/diff成功。docs統合後、installer/public caller/serialization/remote/prune/workflowを続ける。未公開sourceをpublic f40a成功や全335/Release完了へ読み替えず、少量修正毎の重いnormalpush重複はしない。
 
 - [/] no-intent/env隔離の最終cleanup全66件94024actual0/48.221秒を回収。41707対象30件・fresh独立限定P0/P1/必須P2無し・3files AST/200行/30行・KML/diff成功。通常関心別source/docs統合へ進むが、public f40a577fにこの新関心はまだ含まれない。既存hook本番導入・公開後caller・localremote安全削除・prune・workflow・全335/公開DoDは未完。
