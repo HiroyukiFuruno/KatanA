@@ -855,5 +855,7 @@
 
 ## 最新の限定検証（2026-10-15）
 
+- [/] #340元sample全体の公式export97005 actualexit0/固定3c6/開始終了cleanを回収。1280×19282新候補と128×128画像領域を記録したがhostの元SVG構文警告は別に残す。原本sectionの本文肯定assert付き回帰を追加、関連3PASS/正式AST23PASS/strictClippy/fmt成功。`evidence/original-sample340-2026-10-15.md`（repo root）参照。全packaged/Issue閉鎖/参照採用/95点へ代用しない。
+
 - [x] public f8c78b97の既存原本受入36713 actualexit0を回収。Office6件・PPTX3操作・HTML#s15/sticky成功、開始終了HEAD/clean/両lock一致。`evidence/original-fixtures-f8c78b97-2026-10-15.md`（repo root）参照。速度/RSS/正常終了/packaged/独立95点は別の未完条件。
 - [x] 同HEAD bot6187837805 major無しと全REST159/177/139・GQL88（pagination完了）を回収。P1 4280360962は通常push後の個別reply4280696700/resolveを確認。未解決manual-target方針P2は3threads、Ready/CI/merge/Releaseは未完。

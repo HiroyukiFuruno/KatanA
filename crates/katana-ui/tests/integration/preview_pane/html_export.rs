@@ -62,3 +62,59 @@ fn quoted_data_uri_html_image_renders_without_svg_text_leak() {
         "quoted data URI SVG markup must not leak as preview text"
     );
 }
+
+fn original_readme_header() -> &'static str {
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../assets/fixtures/sample.md"
+    ));
+    let (_, section) = source
+        .split_once("### 1.6 Full README Header Reproduction\n")
+        .expect("original sample must contain its README header section");
+    section
+        .split_once("\n---\n")
+        .expect("original README header section must have its boundary")
+        .0
+}
+
+fn rendered_header_text(markdown: &str) -> String {
+    let mut pane = PreviewPane::default();
+    pane.update_markdown_sections(markdown, Path::new("/tmp/sample.md"));
+    let context = egui::Context::default();
+    let output = crate::IntegrationUiOps::run(&context, egui::RawInput::default(), |context| {
+        egui::CentralPanel::default().show(context, |ui| {
+            pane.show_content(ui, None, None, None, None);
+        });
+    });
+    let shapes: Vec<_> = output.shapes.into_iter().map(|it| it.shape).collect();
+    flatten_shapes(&shapes)
+        .into_iter()
+        .filter_map(|it| match it {
+            egui::Shape::Text(text) => Some(text.galley.job.text.clone()),
+            _ => None,
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+#[test]
+fn original_sample_readme_header_renders_text_without_quoted_svg_leak() {
+    // WHY: 元入力の不正namespaceを補正せず、空描画による誤成功と本文への漏出を分ける。
+    let markdown = original_readme_header();
+    assert!(markdown.contains("xmlns=%22<http://www.w3.org/2000/svg%22>"));
+    let text = rendered_header_text(markdown);
+    assert!(
+        text.contains("KatanA Desktop"),
+        "header text must render: {text}"
+    );
+    assert!(
+        text.contains("A fast, lightweight Markdown workspace for macOS"),
+        "header description must render: {text}"
+    );
+    for fragment in ["%3Csvg", "%3Crect", "%3Ctext", "width=%22128%22%3E"] {
+        assert!(
+            !text.contains(fragment),
+            "SVG text leaked into preview: {text}"
+        );
+    }
+}
