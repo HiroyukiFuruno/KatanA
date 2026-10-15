@@ -47,10 +47,11 @@ def check_repository(metadata: dict[str, object], repository: str) -> None:
 def check_release(release: dict[str, object], repository: str, tag: str, version: str, release_url: str) -> None:
     if not isinstance(release.get("published_at"), str) or not release["published_at"].strip() or release.get("draft") is not False or release.get("prerelease") is not False:
         raise ValueError("GitHub release is not published")
-    if release.get("tag_name") != tag or tag not in {version, f"v{version}"}:
+    final_component = tag.rsplit("/", 1)[-1]
+    if release.get("tag_name") != tag or final_component not in {version, f"v{version}"}:
         raise ValueError("GitHub release tag mismatch")
     actual = urlsplit(str(release.get("html_url", "")))
-    expected = urlsplit(f"https://github.com/{repository}/releases/tag/{quote(unquote(tag), safe='')}")
+    expected = urlsplit(f"https://github.com/{repository}/releases/tag/{quote(tag, safe='')}")
     source = urlsplit(release_url)
     if actual.scheme != "https" or actual.netloc.casefold() != "github.com" or unquote(actual.path).casefold() != unquote(expected.path).casefold() or source.scheme != "https" or source.netloc.casefold() != "github.com" or unquote(source.path).casefold() != unquote(expected.path).casefold() or source.query or source.fragment:
         raise ValueError("GitHub release identity mismatch")

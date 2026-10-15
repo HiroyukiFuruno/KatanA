@@ -32,6 +32,19 @@ class PublicationError(ValueError):
 class _NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, request, fp, code, msg, headers, new):
         raise PublicationError("redirect is forbidden")
+
+
+def _release_tag_from_url(release_url: str, repository: str) -> str:
+    path = urlsplit(release_url).path
+    prefix = f"/{repository}/releases/tag/"
+    if not path.startswith(prefix):
+        raise PublicationError("release URL does not identify the repository tag")
+    suffix = path[len(prefix):]
+    if not suffix:
+        raise PublicationError("release URL has an empty tag")
+    return unquote(suffix)
+
+
 OPENER = build_opener(_NoRedirect())
 def _deadline() -> float:
     return time.monotonic() + DEADLINE_SECONDS
@@ -64,7 +77,7 @@ def _request(url: str, limit: int, end: float) -> bytes:
 def _verify_release(record: dict[str, object], end: float) -> None:
     repository = str(record["repository"])
     version = str(record["version"])
-    tag = unquote(urlsplit(str(record["release_url"])).path.rsplit("/", 1)[-1])
+    tag = _release_tag_from_url(str(record["release_url"]), repository)
     try:
         fetch_and_check(repository, tag, version, str(record["release_url"]), end)
     except ValueError as error:

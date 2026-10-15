@@ -7,7 +7,14 @@ import unittest
 from io import BytesIO
 
 from github_publication import check_release
-from upstream_publication import PublicationError, _index_path, _validated_unique, _verify_crate, verify_upstreams
+from upstream_publication import (
+    PublicationError,
+    _index_path,
+    _release_tag_from_url,
+    _validated_unique,
+    _verify_crate,
+    verify_upstreams,
+)
 
 
 def record() -> dict[str, str]:
@@ -21,6 +28,36 @@ def record() -> dict[str, str]:
 
 
 class PublicationTests(unittest.TestCase):
+    def test_nested_release_tag_is_decoded_once_as_a_full_suffix(self) -> None:
+        value = record()
+        value["release_url"] = "https://github.com/HiroyukiFuruno/KatanA/releases/tag/release%2Fv0.5.12"
+        self.assertEqual(_release_tag_from_url(value["release_url"], value["repository"]), "release/v0.5.12")
+
+    def test_raw_nested_release_tag_keeps_all_components(self) -> None:
+        value = record()
+        value["release_url"] = "https://github.com/HiroyukiFuruno/KatanA/releases/tag/release/v0.5.12"
+        self.assertEqual(_release_tag_from_url(value["release_url"], value["repository"]), "release/v0.5.12")
+
+    def test_multiple_nested_release_tag_prefixes_are_preserved(self) -> None:
+        value = record()
+        value["release_url"] = "https://github.com/HiroyukiFuruno/KatanA/releases/tag/maintenance/candidate/v0.5.12"
+        self.assertEqual(_release_tag_from_url(value["release_url"], value["repository"]), "maintenance/candidate/v0.5.12")
+
+    def test_percent_escaped_percent_remains_literal_after_one_decode(self) -> None:
+        value = record()
+        value["release_url"] = "https://github.com/HiroyukiFuruno/KatanA/releases/tag/release%252Fv0.5.12"
+        self.assertEqual(_release_tag_from_url(value["release_url"], value["repository"]), "release%2Fv0.5.12")
+
+    def test_repository_named_releases_tag_uses_exact_prefix(self) -> None:
+        release_url = "https://github.com/releases/tag/releases/tag/v0.5.12"
+        self.assertEqual(_release_tag_from_url(release_url, "releases/tag"), "v0.5.12")
+
+    def test_release_tag_url_with_unsafe_empty_component_is_rejected_by_schema(self) -> None:
+        value = record()
+        value["release_url"] = "https://github.com/HiroyukiFuruno/KatanA/releases/tag/release//v0.5.12"
+        with self.assertRaises(PublicationError):
+            verify_upstreams([value])
+
     def test_index_shards(self) -> None:
         self.assertEqual(_index_path("a"), "1/a")
         self.assertEqual(_index_path("ab"), "2/ab")
