@@ -110,6 +110,9 @@ impl KatanaApp {
             return;
         };
         let path = self.state.document.open_documents[idx].path.clone();
+        if self.retry_failed_url_source(ctx, &path) {
+            return;
+        }
         if let Some(source) = self
             .state
             .url_tab

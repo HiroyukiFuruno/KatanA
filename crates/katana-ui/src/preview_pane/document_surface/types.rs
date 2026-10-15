@@ -83,11 +83,15 @@ impl DocumentFailure {
     }
 
     pub(crate) fn summary(&self) -> String {
+        /* WHY: HTMLなど形式未確定の取得失敗を、binary文書の失敗と誤表示しない。 */
+        let format = self
+            .format
+            .map(|format| format!("{} ", format.extension()))
+            .unwrap_or_default();
         format!(
-            "{} could not display this {} document",
+            "{} could not display this {}document",
             self.layer.label(),
-            self.format
-                .map_or("binary", BinaryDocumentFormat::extension)
+            format
         )
     }
 

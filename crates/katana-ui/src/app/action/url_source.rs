@@ -1,4 +1,8 @@
 mod document;
+mod poll;
+
+#[cfg(test)]
+mod request_poll_tests;
 
 use super::file_open::FileOpenOps;
 use crate::app::url_source::{UrlResponseCollector, ValidatedHttpUrl, ValidatedLocalHtmlUrl};
@@ -121,60 +125,6 @@ impl KatanaApp {
                 std::ops::ControlFlow::Break(())
             },
         );
-    }
-
-    pub(crate) fn poll_url_source(&mut self, ctx: &egui::Context) {
-        while let Some(request) = self.state.url_tab.pending_url_requests.pop_front() {
-            if request.target_document.as_ref().is_some_and(|target| {
-                !self
-                    .state
-                    .document
-                    .open_documents
-                    .iter()
-                    .any(|document| document.path == *target)
-            }) {
-                self.state.url_tab.is_loading = !self.state.url_tab.pending_url_requests.is_empty();
-                continue;
-            }
-            match request.response_rx.try_recv() {
-                Ok(Ok(source)) => {
-                    self.apply_fetched_url_source(source, request.target_document);
-                    self.state.layout.status_message = None;
-                    self.state.url_tab.is_loading =
-                        !self.state.url_tab.pending_url_requests.is_empty();
-                }
-                Ok(Err(error)) => {
-                    self.fail_html_source(error);
-                    self.state.url_tab.is_loading =
-                        !self.state.url_tab.pending_url_requests.is_empty();
-                }
-                Err(std::sync::mpsc::TryRecvError::Empty) => {
-                    if std::time::Instant::now() >= request.deadline {
-                        self.fail_html_source(HtmlSourceError::Timeout {
-                            url: request.source_url,
-                            seconds: URL_SOURCE_TIMEOUT.as_secs(),
-                        });
-                        self.state.url_tab.is_loading =
-                            !self.state.url_tab.pending_url_requests.is_empty();
-                        continue;
-                    }
-                    let repaint_after = request
-                        .deadline
-                        .saturating_duration_since(std::time::Instant::now())
-                        .min(std::time::Duration::from_millis(100));
-                    self.state.url_tab.pending_url_requests.push_front(request);
-                    ctx.request_repaint_after(repaint_after);
-                    break;
-                }
-                Err(std::sync::mpsc::TryRecvError::Disconnected) => {
-                    self.fail_html_source(HtmlSourceError::Network(
-                        "URL request channel disconnected".to_string(),
-                    ));
-                    self.state.url_tab.is_loading =
-                        !self.state.url_tab.pending_url_requests.is_empty();
-                }
-            }
-        }
     }
 }
 
