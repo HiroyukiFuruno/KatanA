@@ -76,7 +76,13 @@ run ID and attempt. Restored target caches cannot supply an older run's records.
   API, dependencies, bypass, test ignore or skip authority was added. Diff check
   passed. Source and workflow changes form one concern.
 
-Normal integration and new-HEAD review are still pending. Windows
+Normal integration was completed by signed commits bddd93af and8bfb357f and
+normal push84837 (actual exit0). Subsequent review identified the separate
+listing-profile contamination P1; its real RED/GREEN, repair77229527, original
+full coverage11776, normal push83637 and individual reply/resolve are documented
+in `inventory-listing-profile-isolation-2026-10-16.md`. Bot response6196423500
+explicitly reviewed77229527dc with no major issues; the existing three
+manual-target policy threads remain unresolved. Windows
 cold/warm measurements, complete test-set equivalence, protected result reuse,
 measured total-cycle reduction and full Issue #343 completion remain separate.
 The user application/settings/Terms and sibling repositories are not operated.

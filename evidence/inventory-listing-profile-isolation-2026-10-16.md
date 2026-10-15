@@ -40,8 +40,36 @@ Independent final read-only review found no additional P0/P1 or mandatory P2.
 Main self-review confirms the diff is limited to listing profile isolation,
 real regression tests and their evidence, with no product or public API change.
 
-Normal integration/push, P1 reply/resolve and a fresh original full coverage run with
-inventory enabled remain pending. Earlier successful coverage reports that
-included auxiliary listing profiles are historical command results, not proof
-of uncontaminated coverage. No coverage threshold, exclusion, test selection,
-Draft policy, dependency or product runtime is changed by this repair.
+## Original full gate and normal integration
+
+The repair was integrated by signed normal commit
+`77229527dccfa15cc11557c263ca8ef4a923d049` (session19924 actual exit0).
+With inventory enabled, the original `just JOBS=2 coverage` session11776 exited0:
+core258, UI1308 with the original two ignored tests, export13 with the original
+one filter (282.16seconds), parallel144 with the original two ignores, and
+serial18. Both the original meaningful-line gate and strict document100%/zero
+uncovered gate passed. An independent check of the emitted JSON report passed.
+Beginning/end source guards confirm the same clean HEAD and unchanged locks.
+
+- Raw `tmp/77229527-full-coverage-2026-10-16.log`, SHA256
+  `f80799a07a6da34984cd441272de1a3d74d2b6556da777f9e1d39c43de0db9d5`.
+- JSON `tmp/77229527-full-coverage-report-2026-10-16.json`, SHA256
+  `399ba1de84bcea0d9943a5df07c2a69a496788d8c6366087546971edb2d58ceb`.
+- All four inventory records retain source_stable=true, exit0, no listing
+  errors and complete/reuse=false; native record counts are8/26/1/1.
+- Normal push83637 exited0 after its native, real Linux and preflight chain.
+  `tmp/listing-profile-isolation-normal-push-2026-10-16.log` records the actual
+  remote update45747305..77229527. Linux log12549 exited0, including export14,
+  UI1288, parallel142 and serial18 with no new ignores.
+- Individual reply4285268755 precedes resolution of
+  `PRRT_kwDORm09y86s1xMl`. Fresh complete retrieval confirms resolution.
+- New-HEAD review request6196372796 received bot response6196423500 at
+  2026-10-15T15:59:22Z, explicitly reviewing77229527dc with no major issues.
+  Complete GraphQL retrieval21465 found90 threads and no truncated nested
+  comments. Only the three existing manual-target policy threads are unresolved.
+
+Earlier successful reports containing auxiliary listing profiles remain
+historical command results, not proof of uncontaminated coverage. No coverage
+threshold, exclusion, test selection, Draft policy, dependency or product runtime
+changed. This closes the specific P1 repair, not full Issue343, Ready CI,
+all-platform distribution acceptance or public release.
