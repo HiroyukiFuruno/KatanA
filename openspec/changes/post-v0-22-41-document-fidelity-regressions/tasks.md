@@ -29,6 +29,8 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [ ] d4870ffe review5536347239のP2 4285493973: 起動復旧の公開説明を一次記録の「workspaceごとのJSON削除」と「重workspace除外」の両操作後・各操作の個別寄与未確定へ日英で補正する。OpenSpec基準の既存evidenceをrepo直下で誤探索した記録も補正し、一次記録の存在を保持する。文書検査/通常統合push/個別replyresolve/fresh・newHEAD reviewを回収する。起動原因や製品解消を新たに断定しない。
+
 - [/] #343 current45747305 review5535514218のP1 4284857791を修復。実instrumented53008actual1/2assertRED、unsafeTMPDIR46394actual1→62852actual0/3PASS16.001秒、全対象73669actual0/71PASS23.344秒。listingだけ一時profileへ分離しunsafe位置拒否・元test101保持。通常署名77229527/19924actual0、inventory有効の元fullcoverage11776actual0/meaningful0・strict文書100%未実行0・開始終了clean同HEAD/両lock不変、通常push83637actual0→reply4285268755→個別resolve/fresh90threads・nested切れ無し。bot6196423500は同772/no major、未解決manualpolicy3だけ。evidence/inventory-listing-profile-isolation-2026-10-16.md。旧補助profile込みreportは非汚染品質の証明に使わず、全#343/Ready必須CI/全配布公開は別未完。
 
 - [/] #343 実invocation inventoryのnormal対coverage4phase比較を接続。raw/hash/footer/ignoredとCargo artifact・要求/実行argv、候補集合・features/環境/ソース条件差を診断し、未知選択/欠落/不正/source不一致は比較不能、execution_equivalent/reuse_authorizedは常にfalse。run_id/attemptで旧cacheを隔離。対象68PASS27.704秒/69205actual0・actionlint22996actual0、通常署名bddd93af/補正8bfb357f/通常push84837actual0。後続P1隔離77229527/通常push83637・71検査/元fullcoverage/current bot6196423500/no majorまで回収。evidence/invocation-inventory-comparison-2026-10-15.md。test再実行・skip・閾値変更はせず、全#343/検査削減/全OS実測は未完。
