@@ -25,3 +25,9 @@ show-envをshell evalせず、既知キーのexport/unsetだけを有界metadata
 ## 未完了の境界
 
 これは計測用diagnosticの改善であり、normal testとcoverageの同値性、全workspace coverage成功、時間短縮、Windows native listing、doctest inventory、実test時のbinary digest、CI上での再利用証明ではない。`complete=false`/`reuse_authorized=false`を維持する。検査のskipやreuseは追加せず、Issue343・Ready・全配布・公開の完了を主張しない。
+
+## 正式統合とCI実行環境
+
+source/evidence/tasksは通常署名付きcommit `aead4b6807a71a9efee2c1dc2a3873df8ad3e7db`へ統合。通常push3158はnative→Linux実container→preflightを通りactual exit 0、local/origin/PR346の同HEADとahead/behind0/0を確認した。raw `tmp/coverage-native-artifacts-normal-push-2026-10-15.log`。これはReady後の3OS/全coverage/配布検証ではない。
+
+caller監査でpreflightのdiscoveryが実coverage回帰も実行する一方、Readiness/CD preflightに必要tool/componentが無いことを発見した。先に両jobの契約を追加し実assert2件RED（`tmp/coverage-preflight-tools-red-2026-10-15.log`）。両jobでllvm-tools-previewとcargo-llvm-cov0.9.1を明示導入する。Draft条件・元preflight・四coverage phaseを維持し、skipしない。変更後45件/10.175秒とrelease flow10件成功。最終raw `tmp/coverage-ci-setup-final-2026-10-15.log`。クラウド上での実install/実行はReady後の別確認とする。

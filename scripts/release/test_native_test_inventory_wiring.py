@@ -1,12 +1,25 @@
 """Keep original test gates and phase selections beside collect-only metadata."""
 
 from pathlib import Path
+import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 class InventoryWiringTests(unittest.TestCase):
+    def test_preflight_jobs_install_real_coverage_contract_tools(self) -> None:
+        for filename, name in (("release-readiness.yml", "release-check"),
+                               ("build-and-release.yml", "preflight")):
+            with self.subTest(workflow=filename):
+                source = (ROOT / ".github/workflows" / filename).read_text()
+                body = source.split(f"\n  {name}:\n", 1)[1]
+                job = re.split(r"\n  [a-zA-Z_][\w-]*:\n", body, maxsplit=1)[0]
+                self.assertIn("components: llvm-tools-preview", job)
+                self.assertIn("tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1", job)
+                self.assertLess(job.index("components: llvm-tools-preview"),
+                                job.index("tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1"))
+
     def test_normal_entry_preserves_worker_and_original_nonrecording_command(self) -> None:
         source = (ROOT / "scripts/ci/with-office-test-worker.sh").read_text()
         self.assertIn('export KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER"', source)
