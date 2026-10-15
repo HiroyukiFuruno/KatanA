@@ -110,12 +110,17 @@ jobs:
 
       - name: Determine version
         id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          RELEASE_HEAD: ${{ github.event.pull_request.head.ref }}
+          RELEASE_REF: ${{ github.ref }}
         run: |
           ./scripts/release/get-version.sh \
-            "${{ github.event_name }}" \
-            "${{ github.event.inputs.version }}" \
-            "${{ github.event.pull_request.head.ref }}" \
-            "${{ github.ref }}" \
+            "$EVENT_NAME" \
+            "$INPUT_VERSION" \
+            "$RELEASE_HEAD" \
+            "$RELEASE_REF" \
             "$GITHUB_OUTPUT"
 
       - name: Verify CI gate for version bump merge
@@ -499,16 +504,16 @@ jobs:
           TAG="${{ needs.preflight.outputs.version }}"
           TITLE="KatanA Desktop ${TAG}"
           NOTES="release-notes/RELEASE_NOTES.md"
-          FILES="release-files/*"
+          FILES=(release-files/*)
           SHA="${{ needs.preflight.outputs.commit_sha }}"
           
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "⚠️ Release $TAG already exists. Updating..."
             gh release edit "$TAG" --title "$TITLE" --notes-file "$NOTES" --target "$SHA"
-            gh release upload "$TAG" $FILES --clobber
+            gh release upload "$TAG" "${FILES[@]}" --clobber
           else
             echo "✨ Creating new release $TAG..."
-            gh release create "$TAG" --title "$TITLE" --notes-file "$NOTES" --target "$SHA" $FILES
+            gh release create "$TAG" --title "$TITLE" --notes-file "$NOTES" --target "$SHA" "${FILES[@]}"
           fi
 
       - name: Attest Artifacts
@@ -526,3 +531,61 @@ jobs:
             "${{ needs.preflight.outputs.version_bare }}" \
             "${{ needs.preflight.outputs.version }}" \
             "release-files"
+
+  cleanup_default:
+    name: Audit and clean published release branches
+    needs: [preflight, publish]
+    if: needs.publish.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: taiki-e/install-action@5b4d68e2e660441203ab128a23676f1e4faf1532 # v2.86.3
+        with:
+          tool: just,cargo-deny@0.20.2,cargo-sweep@0.8.0
+          fallback: none
+      - name: Install normal hook dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zsh python3-venv clang lld libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev mesa-vulkan-drivers vulkan-tools xvfb
+          bun install --global lefthook@2.2.0
+          docker compose version
+          lefthook install
+      - name: Resolve and clean the published target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          VERSION: ${{ needs.preflight.outputs.version_bare }}
+          PUBLISHED: ${{ needs.preflight.outputs.commit_sha }}
+          SOURCE_PR: ${{ github.event.pull_request.number }}
+        run: |
+          PR_OPTIONS=()
+          if [[ -n "$SOURCE_PR" ]]; then
+            PR_OPTIONS=("--pull-request" "$SOURCE_PR")
+          fi
+          TARGET=$(python3 -B scripts/release/resolve-cleanup-target.py \
+            --repository "$REPOSITORY" --version "$VERSION" --published "$PUBLISHED" "${PR_OPTIONS[@]}")
+          BRANCH=$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["branch"])' "$TARGET")
+          EXPECTED=$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["expected"])' "$TARGET")
+          python3 -B scripts/release/run-release-cleanup.py \
+            --root "$PWD" --controller "$PWD" --repository "$REPOSITORY" \
+            --version "$VERSION" --branch "$BRANCH" --expected "$EXPECTED" --published "$PUBLISHED" --remote
+      - name: Preserve cleanup receipts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: published-release-cleanup-receipts
+          path: .git/katana-cleanup-receipts/*.jsonl
+          include-hidden-files: true
+          if-no-files-found: error
