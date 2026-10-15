@@ -29,6 +29,10 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] #335上記caller接続はinstaller3ea29e3/caller567833d/workflow ac2610fへ関心別通常署名commit（95333/8037/95774各actual0）。固定対象126+11・releaseflow10・defaultfullactionlint・KML/AST/diffと独立最終を回収済み。docs統合後のnormalpush/current review/実公開後cleanup・全DoDは未完で、旧source未commit表現は当時の履歴。
+
+- [/] #335 production caller/workflow接続候補を実装。publication OIDを同期前照合→default ff-only/再監査→既存owner保持installer→remote/local削除→空registry scopeのnativeprune→common-dir receiptへ接続。foreigncontroller先行receipt/変更referenceowner/P1 installer割込gapを実REDから修復。固定source最終cleanup126PASS77.977s/installer11PASS3.444s、releaseflow10、default fullactionlint0、18Python構文200/30、独立最終P0/P1/必須P2無し。live merged334選択0/Draft346拒否2、delete_branch_on_merge=true確認からremote absent/変更/通信失敗を区別。evidence/cleanup-production-caller-2026-10-15.md。通常統合/push・本番公開後実成功・全335/343/Ready/配布公開は未完、未知linked metadataは自動削除しない。
+
 - [/] #335 remote cleanup専用schema2/既存mandatory checker広告tuple照合・remote-only audit・canonical SHA256は8b79f43へ通常統合、単一intent失効/common-repo排他はc272424へ通常統合（実commit両exit0）。対象cleanup88PASS67.091秒とpush70PASS37.318秒は8件重複。独立P1の未知request置換/内容変更削除はmain実2assert RED後にidentity/digest照合で修復、最終session10PASS2.048秒actual0・fresh限定P0/P1/必須P2無し。evidence/cleanup-remote-admission-2026-10-15.md。未push、production publication caller/削除順序/receipt/scopedprune/workflow/全335・公開DoDは未完。
 
 - [/] 前ownerstream/vendor関心はnormalpush87932 actualexit0で公開a66c5e0449742ffe7329ea5b8af126f90d07897aへ統合済み。vendor指摘4279432020へreply4279736687/個別resolve、全REST/GQL取得nested欠落0、bot6185918089は同HEAD major issuesなし。既存manualpolicy3未解決は本人判断のまま。旧記録の未push/未回収表現は当時の履歴であり現状の停止条件ではない。全335/343/Ready/公開は未完。
