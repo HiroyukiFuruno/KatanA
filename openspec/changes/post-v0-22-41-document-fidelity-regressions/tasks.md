@@ -29,6 +29,14 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] #343 sourceは通常署名G da9cc55df2f2b0383e68ce7a3c6f07c7242d5dfb（88114actual0）、#335 squash P1 sourceは通常署名G a5aa2a18437a41ce3ba3518e3e679d340f8453c4（60350actual0）へ関心別正式統合。final inventory34PASS4.377秒/70087actual0、cleanup136PASS98.220秒/40938actual0・共通matcher統一後remote8PASS7.586秒/26063actual0・独立再確認P0/P1/必須P2無し。対象KML/両defaultactionlint/構文/diff成功。docs統合後一回normalpush→P1個別replyresolve/fresh reviewへ続行、全335/343/Ready/配布公開は未完。
+
+- [/] #343 実invocation診断入口をnormal workspaceとcoverage4phaseへ接続。Cargo JSONのtest artifactだけからnative list/ignored・HEAD/tree/status/両lock/選択env/workerを記録し、元test/終了code/coverage条件/Draft policyを維持。実Cargo成功0/失敗101を含む対象34PASS2.779秒・CIresource10PASS・Bash/Zsh構文/両workflow defaultactionlint0、限定独立P0/P1/必須P2無し。doctest/llvm-cov artifact/Windowsnative/実test時binary未捕捉はcomplete=false/reuse_authorized=false、重複削減/全343完了ではない。evidence/native-invocation-inventory-2026-10-15.md。正式commit/pushへ続行。
+
+- [ ] current04 review5529761247/P1 4280360962・PRRT_kwDORm09y86sq7cn: squash/rebase時のhead非祖先によるcleanup拒否を修復。live merged PRのhead/merge/number一致を公開tag結合へ使用し、削除tip CAS/広告tupleはheadを保持。remote schema3 live再照合・schema1/2互換、local native update-ref旧値CAS/既存reference owner/prepared/使用中・変更tip拒否を維持。main全cleanup136PASS98.220秒/40938actual0、defaultactionlint51876actual0、live334 read-only binding成功。最初のfixture tag署名timeoutはfixture設定を補正し本番変更無し。evidence/cleanup-squash-merge-binding-2026-10-15.md。独立最終review/通常commit/push後の個別reply/resolve/fresh取得・実公開後cleanup・全335未完。
+
+- [/] 前7commitsのnormalpush66321 actualexit0を回収、local/origin/PR346=04dbeea995309604b3a2ef7aa2d9a0c4f0feacfc・clean/ahead0behind0/masterclean/stash0/既存2WT。newHEAD review6187054029依頼から上記P1を取得し修復中。旧a66の承認を04へ流用しない。manualpolicy3は本人判断のまま、Ready/配布/公開未完。
+
 - [/] #335上記caller接続はinstaller3ea29e3/caller567833d/workflow ac2610fへ関心別通常署名commit（95333/8037/95774各actual0）。固定対象126+11・releaseflow10・defaultfullactionlint・KML/AST/diffと独立最終を回収済み。docs統合後のnormalpush/current review/実公開後cleanup・全DoDは未完で、旧source未commit表現は当時の履歴。
 
 - [/] #335 production caller/workflow接続候補を実装。publication OIDを同期前照合→default ff-only/再監査→既存owner保持installer→remote/local削除→空registry scopeのnativeprune→common-dir receiptへ接続。foreigncontroller先行receipt/変更referenceowner/P1 installer割込gapを実REDから修復。固定source最終cleanup126PASS77.977s/installer11PASS3.444s、releaseflow10、default fullactionlint0、18Python構文200/30、独立最終P0/P1/必須P2無し。live merged334選択0/Draft346拒否2、delete_branch_on_merge=true確認からremote absent/変更/通信失敗を区別。evidence/cleanup-production-caller-2026-10-15.md。通常統合/push・本番公開後実成功・全335/343/Ready/配布公開は未完、未知linked metadataは自動削除しない。
