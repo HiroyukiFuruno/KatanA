@@ -29,6 +29,8 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [ ] #352 既存function-length APIの常時0行計測を、brace open.start/close.endの実位置へ限定修復。30定数/end-start行差/free・impl範囲を維持し、全repoへの新gate有効化はしない。正式integration7回帰は旧source23101exit101/4FAIL3PASS→修復88813exit0/7PASS、公式AST40531exit0/30PASS、fmt補正後67524exit0。evidence/function-length-contract-2026-10-15.md。通常統合/push・current review/公開未完。共有registry KAL0.5.2の同不備は別実装として診断/handoffし、今回の修復で全関数30行を証明したとはしない。
+
 - [/] #343 sourceは通常署名G da9cc55df2f2b0383e68ce7a3c6f07c7242d5dfb（88114actual0）、#335 squash P1 sourceは通常署名G a5aa2a18437a41ce3ba3518e3e679d340f8453c4（60350actual0）へ関心別正式統合。final inventory34PASS4.377秒/70087actual0、cleanup136PASS98.220秒/40938actual0・共通matcher統一後remote8PASS7.586秒/26063actual0・独立再確認P0/P1/必須P2無し。対象KML/両defaultactionlint/構文/diff成功。docs統合後一回normalpush→P1個別replyresolve/fresh reviewへ続行、全335/343/Ready/配布公開は未完。
 
 - [/] #343 実invocation診断入口をnormal workspaceとcoverage4phaseへ接続。Cargo JSONのtest artifactだけからnative list/ignored・HEAD/tree/status/両lock/選択env/workerを記録し、元test/終了code/coverage条件/Draft policyを維持。実Cargo成功0/失敗101を含む対象34PASS2.779秒・CIresource10PASS・Bash/Zsh構文/両workflow defaultactionlint0、限定独立P0/P1/必須P2無し。doctest/llvm-cov artifact/Windowsnative/実test時binary未捕捉はcomplete=false/reuse_authorized=false、重複削減/全343完了ではない。evidence/native-invocation-inventory-2026-10-15.md。正式commit/pushへ続行。
