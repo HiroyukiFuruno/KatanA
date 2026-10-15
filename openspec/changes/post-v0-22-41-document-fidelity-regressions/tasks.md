@@ -855,6 +855,8 @@
 
 ## 最新の限定検証（2026-10-15）
 
+- [/] #343 inventory有効時のcoverage実artifact収集を公式show-env external-test方式へ接続。実profile/report不一致90613とbuild先57273を修復し、通常target/warm再実行・元report環境・設定済build先・失敗101保持を含む44件4029 actual0。`evidence/coverage-native-artifacts-2026-10-15.md`参照。complete/reuse=false、検査skip無し、全coverage/速度/Issue全DoDは未完。
+
 - [/] #340元sample全体の公式export97005 actualexit0/固定3c6/開始終了cleanを回収。1280×19282新候補と128×128画像領域を記録したがhostの元SVG構文警告は別に残す。原本sectionの本文肯定assert付き回帰を追加、関連3PASS/正式AST23PASS/strictClippy/fmt成功。`evidence/original-sample340-2026-10-15.md`（repo root）参照。全packaged/Issue閉鎖/参照採用/95点へ代用しない。
 
 - [x] public f8c78b97の既存原本受入36713 actualexit0を回収。Office6件・PPTX3操作・HTML#s15/sticky成功、開始終了HEAD/clean/両lock一致。`evidence/original-fixtures-f8c78b97-2026-10-15.md`（repo root）参照。速度/RSS/正常終了/packaged/独立95点は別の未完条件。

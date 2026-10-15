@@ -13,9 +13,14 @@ LOCK_PATHS = ("Cargo.lock", "scripts/screenshot/Cargo.lock")
 INPUT_ENVIRONMENT = (
     "RUSTFLAGS", "CARGO_ENCODED_RUSTFLAGS", "RUSTDOCFLAGS", "RUSTC", "RUSTDOC",
     "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTUP_TOOLCHAIN",
-    "CARGO_BUILD_TARGET", "CARGO_TARGET_DIR", "CARGO_LLVM_COV_TARGET_DIR",
+    "CARGO_BUILD_TARGET", "CARGO_TARGET_DIR", "CARGO_BUILD_BUILD_DIR", "CARGO_LLVM_COV_TARGET_DIR",
     "CARGO_BUILD_JOBS", "JOBS", "RUST_TEST_THREADS", "DEBUG",
     "KATANA_KDV_OFFICE_WORKER", "KATANA_HTML_FAILURE_SAMPLE",
+    "LLVM_PROFILE_FILE", "CARGO_LLVM_COV", "CARGO_LLVM_COV_SHOW_ENV",
+    "CARGO_LLVM_COV_BUILD_DIR", "__CARGO_LLVM_COV_RUSTC_WRAPPER",
+    "__CARGO_LLVM_COV_RUSTC_WRAPPER_RUSTFLAGS", "__CARGO_LLVM_COV_RUSTC_WRAPPER_CRATE_NAMES",
+    "__CARGO_LLVM_COV_RUSTC_WRAPPER_COVERAGE_TARGET", "__CARGO_LLVM_COV_RUSTC_WRAPPER_HOST",
+    "__CARGO_LLVM_COV_RUSTC_WRAPPER_PRE_EXISTING",
 )
 
 
@@ -49,8 +54,9 @@ def source_identity(root: Path) -> dict:
         return {"clean": False, "unavailable": str(error)}
 
 
-def environment_identity(root: Path) -> dict:
-    environment = {key: os.environ.get(key) for key in INPUT_ENVIRONMENT}
+def environment_identity(root: Path, execution_environment: dict[str, str] | None = None) -> dict:
+    inherited = os.environ if execution_environment is None else execution_environment
+    environment = {key: inherited.get(key) for key in INPUT_ENVIRONMENT}
     worker = environment["KATANA_KDV_OFFICE_WORKER"]
     try:
         worker_sha = file_digest(root / worker) if worker else None

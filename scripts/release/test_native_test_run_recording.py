@@ -91,8 +91,11 @@ class RunRecordingTests(unittest.TestCase):
                         ["cargo", "test", "--message-format=short"], ["bash", "-c", "cargo test"]):
             with self.subTest(invalid=invalid), self.assertRaises(ValueError):
                 cargo_command(invalid, "test")
-        coverage = ["cargo", "llvm-cov", "--no-report", "--", "--test-threads=1"]
-        self.assertEqual(cargo_command(coverage, "coverage"), coverage)
+        coverage = ["cargo", "llvm-cov", "--no-cfg-coverage", "--no-report", "--lib",
+                    "--", "--test-threads=1"]
+        self.assertEqual(cargo_command(coverage, "coverage"),
+                         ["cargo", "test", "--lib", "--message-format=json",
+                          "--", "--test-threads=1"])
 
 
 if __name__ == "__main__":

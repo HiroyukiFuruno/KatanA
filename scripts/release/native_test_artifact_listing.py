@@ -17,7 +17,8 @@ def _record(record) -> dict:
             "footer": record.inventory.footer_counts}
 
 
-def list_artifacts(artifacts: list[dict], root: Path, kind: str) -> tuple[list, list]:
+def list_artifacts(artifacts: list[dict], root: Path, kind: str,
+                   environment: dict[str, str] | None = None) -> tuple[list, list]:
     records, reasons, remaining = [], [], MAX_LISTING_BYTES
     for artifact in artifacts:
         if remaining <= 0:
@@ -26,9 +27,10 @@ def list_artifacts(artifacts: list[dict], root: Path, kind: str) -> tuple[list, 
         executable = Path(artifact["executable"])
         try:
             before = file_digest(executable)
-            all_cases = collect_inventory((str(executable), "--list"), root, kind, InventoryConditions())
+            all_cases = collect_inventory((str(executable), "--list"), root, kind,
+                                          InventoryConditions(), environment)
             ignored = collect_inventory((str(executable), "--list", "--ignored"), root, kind,
-                                        InventoryConditions())
+                                        InventoryConditions(), environment)
             validate_ignored_subset(all_cases.inventory, ignored.inventory)
             if before != file_digest(executable):
                 raise ValueError("native executable changed during listing")

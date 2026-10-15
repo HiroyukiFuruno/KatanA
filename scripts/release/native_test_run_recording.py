@@ -11,12 +11,15 @@ import uuid
 
 from native_test_artifact_listing import list_artifacts
 from native_test_cargo_artifacts import CargoArtifactInventory
+from native_test_coverage import coverage_environment, coverage_test_command
 from native_test_run_identity import environment_identity, source_identity
 
 MAX_LINE_BYTES = 65536
 
 
 def cargo_command(argv: list[str], kind: str) -> list[str]:
+    if kind not in {"test", "coverage"}:
+        raise ValueError("inventory execution kind is invalid")
     expected = "test" if kind == "test" else "llvm-cov"
     if argv[:2] != ["cargo", expected]:
         raise ValueError("inventory requires the explicit Cargo test or llvm-cov command")
@@ -26,9 +29,9 @@ def cargo_command(argv: list[str], kind: str) -> list[str]:
         raise ValueError("inventory owns the Cargo JSON message format")
     if "--no-run" in cargo_arguments or "--list" in argv[boundary:]:
         raise ValueError("inventory must observe real tests, not replace them with listing")
-    if kind == "coverage":
-        return argv
-    return [*argv[:boundary], "--message-format=json", *argv[boundary:]]
+    command = coverage_test_command(argv) if kind == "coverage" else argv
+    boundary = command.index("--") if "--" in command else len(command)
+    return [*command[:boundary], "--message-format=json", *command[boundary:]]
 
 
 def _consume_output(process, inventory: CargoArtifactInventory | None) -> None:
@@ -41,8 +44,9 @@ def _consume_output(process, inventory: CargoArtifactInventory | None) -> None:
         continued = not chunk.endswith(b"\n")
 
 
-def _execute(command: list[str], root: Path, inventory: CargoArtifactInventory | None) -> int:
-    with subprocess.Popen(command, cwd=root, stdout=subprocess.PIPE) as process:
+def _execute(command: list[str], root: Path, inventory: CargoArtifactInventory | None,
+             environment: dict[str, str]) -> int:
+    with subprocess.Popen(command, cwd=root, env=environment, stdout=subprocess.PIPE) as process:
         try:
             _consume_output(process, inventory)
         except BaseException:
@@ -77,18 +81,22 @@ def _manifest(root: Path, kind: str, argv: list[str], before: dict, environment:
 
 def run_recording(root: Path, output: Path, argv: list[str], kind: str) -> int:
     command = cargo_command(argv, kind)
-    before, environment = source_identity(root), environment_identity(root)
+    before, execution_environment = source_identity(root), dict(os.environ)
+    coverage = None
+    if kind == "coverage":
+        execution_environment, coverage = coverage_environment(root, execution_environment)
+    environment = environment_identity(root, execution_environment)
     inventory = CargoArtifactInventory()
-    status = _execute(command, root, inventory if kind == "test" else None)
+    status = _execute(command, root, inventory, execution_environment)
     manifest = _manifest(root, kind, argv, before, environment)
     artifacts = inventory.result()
-    records, reasons = list_artifacts(artifacts["artifacts"], root, kind)
+    records, reasons = list_artifacts(artifacts["artifacts"], root, kind, execution_environment)
     after = source_identity(root)
     manifest.update({"executed_argv": command, "exit_code": status, "source_after": after,
                      "source_stable": before == after and before.get("clean") is True,
                      "cargo": artifacts, "native_listings": records, "listing_reasons": reasons})
     if kind == "coverage":
-        manifest["limitations"].append("cargo llvm-cov does not expose Cargo artifact JSON here")
+        manifest["coverage"] = coverage
     _save(output, manifest)
     print(f"inventory diagnostic: {output}; complete=false; tests exit={status}", file=sys.stderr)
     return status

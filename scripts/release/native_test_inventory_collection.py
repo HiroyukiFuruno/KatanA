@@ -98,12 +98,13 @@ def _read_streams(process: subprocess.Popen[bytes]) -> tuple[int, bytes, bytes]:
 
 
 def collect_inventory(argv: Sequence[str], cwd: Path, kind: str,
-                      conditions: InventoryConditions) -> InventoryRecord:
+                      conditions: InventoryConditions,
+                      environment: dict[str, str] | None = None) -> InventoryRecord:
     if os.name != "posix":
         raise InventoryExecutionError("native --list collector requires POSIX selector pipes")
     command = _resolve_command(argv, cwd, kind)
     try:
-        process = subprocess.Popen(command, cwd=cwd, stdin=subprocess.DEVNULL,
+        process = subprocess.Popen(command, cwd=cwd, env=environment, stdin=subprocess.DEVNULL,
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except OSError as error:
         raise InventoryExecutionError("native --list command could not start") from error
