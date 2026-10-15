@@ -15,17 +15,53 @@ impl KatanaApp {
             return;
         };
         let destination = Self::url_response_destination(&response, &request);
-        if destination
-            .as_ref()
-            .is_some_and(|path| self.state.url_tab.request_order.is_superseded(path, order))
-        {
+        if self.consume_superseded_url_selection(destination.as_deref(), &request, order) {
             return;
         }
+        let background = self.url_response_is_background(&request, order);
         self.apply_selected_url_response(response, request, order);
-        self.state
-            .url_tab
-            .request_order
-            .complete(destination, order);
+        self.record_url_completion(destination, order, background);
+    }
+
+    fn consume_superseded_url_selection(
+        &mut self,
+        destination: Option<&std::path::Path>,
+        request: &PendingUrlRequest,
+        order: std::num::NonZeroU64,
+    ) -> bool {
+        let Some(path) =
+            destination.filter(|path| self.state.url_tab.request_order.is_superseded(path, order))
+        else {
+            return false;
+        };
+        /* WHY: 古い本文は破棄するが、有効なユーザー選択は取得済みの最新版へ適用する。 */
+        if !self.url_response_is_background(request, order) && self.select_cached_url_document(path)
+        {
+            self.state
+                .url_tab
+                .request_order
+                .complete(Some(path.to_path_buf()), order);
+        }
+        true
+    }
+
+    fn record_url_completion(
+        &mut self,
+        destination: Option<std::path::PathBuf>,
+        order: std::num::NonZeroU64,
+        background: bool,
+    ) {
+        if background {
+            self.state
+                .url_tab
+                .request_order
+                .complete_destination(destination, order);
+        } else {
+            self.state
+                .url_tab
+                .request_order
+                .complete(destination, order);
+        }
     }
 
     pub(super) fn url_response_destination(

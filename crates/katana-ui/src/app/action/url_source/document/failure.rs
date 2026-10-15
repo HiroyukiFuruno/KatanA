@@ -11,6 +11,7 @@ impl KatanaApp {
         &mut self,
         ctx: &egui::Context,
         path: &Path,
+        is_manual: bool,
     ) -> bool {
         let source = self
             .tab_previews
@@ -25,7 +26,7 @@ impl KatanaApp {
             return false;
         };
         /* WHY: 初回失敗や失敗navigationは成功済みURL登録より元要求を優先して再取得する。 */
-        self.fetch_html_url(ctx, source, Some(path.to_path_buf()));
+        self.fetch_html_url_for_refresh(ctx, source, Some(path.to_path_buf()), is_manual);
         true
     }
 

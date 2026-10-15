@@ -27,6 +27,10 @@ impl UrlRequestOrder {
 
     pub(crate) fn complete(&mut self, path: Option<PathBuf>, order: NonZeroU64) {
         self.latest = Some(self.latest.map_or(order, |latest| latest.max(order)));
+        self.complete_destination(path, order);
+    }
+
+    pub(crate) fn complete_destination(&mut self, path: Option<PathBuf>, order: NonZeroU64) {
         let Some(path) = path else {
             return;
         };
@@ -106,6 +110,17 @@ mod tests {
         assert!(order.completed.is_empty());
         order.retain_after(Some(first));
         assert!(order.has_newer_completion(first));
+    }
+
+    #[test]
+    fn background_completion_orders_content_without_claiming_foreground_selection() {
+        let mut order = UrlRequestOrder::default();
+        let first = order.allocate().unwrap();
+        let second = order.allocate().unwrap();
+        let path = PathBuf::from("background.pdf");
+        order.complete_destination(Some(path.clone()), second);
+        assert!(order.is_superseded(&path, first));
+        assert!(!order.has_newer_completion(first));
     }
 
     #[test]

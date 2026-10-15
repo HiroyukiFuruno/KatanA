@@ -5,14 +5,17 @@ use katana_core::document::Document;
 use std::sync::{Arc, mpsc};
 use std::time::Instant;
 
+mod auto_refresh_intent_tests;
 mod edge_cases;
 mod file_dialog_selection_tests;
 mod format_collision;
 mod mixed_targets;
+mod pending_intent_tests;
 mod reload_tests;
 mod selection_enqueue_tests;
 mod selection_failure_tests;
 mod selection_tests;
+mod stale_selection_tests;
 
 fn app() -> KatanaApp {
     KatanaApp::new(AppState::new(

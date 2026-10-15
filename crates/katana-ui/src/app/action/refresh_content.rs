@@ -110,7 +110,7 @@ impl KatanaApp {
             return;
         };
         let path = self.state.document.open_documents[idx].path.clone();
-        if self.retry_failed_url_source(ctx, &path) {
+        if self.retry_failed_url_source(ctx, &path, is_manual) {
             return;
         }
         if let Some(source) = self
@@ -120,7 +120,7 @@ impl KatanaApp {
             .map(ToOwned::to_owned)
         {
             match crate::app::url_source::ValidatedHttpUrl::parse(&source) {
-                Ok(url) => self.fetch_html_url(ctx, url, Some(path)),
+                Ok(url) => self.fetch_html_url_for_refresh(ctx, url, Some(path), is_manual),
                 Err(error) => self
                     .state
                     .url_tab
@@ -139,7 +139,7 @@ impl KatanaApp {
             .cloned()
         {
             match crate::app::url_source::ValidatedHttpUrl::parse(&source.source_url) {
-                Ok(url) => self.fetch_html_url(ctx, url, Some(path)),
+                Ok(url) => self.fetch_html_url_for_refresh(ctx, url, Some(path), is_manual),
                 Err(error) => self
                     .state
                     .url_tab

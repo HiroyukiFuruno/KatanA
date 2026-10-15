@@ -1,13 +1,14 @@
 mod document;
 mod poll;
+mod request;
 
 #[cfg(test)]
 mod request_poll_tests;
 
 use super::file_open::FileOpenOps;
-use crate::app::url_source::{UrlResponseCollector, ValidatedHttpUrl, ValidatedLocalHtmlUrl};
+use crate::app::url_source::{ValidatedHttpUrl, ValidatedLocalHtmlUrl};
 use crate::shell::KatanaApp;
-use crate::state::{HtmlSource, HtmlSourceError, PendingUrlRequest};
+use crate::state::{HtmlSource, HtmlSourceError};
 
 const URL_DOCUMENT_PREFIX: &str = "Katana://URL";
 const URL_SOURCE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
@@ -90,43 +91,6 @@ impl KatanaApp {
         );
         FileOpenOps::open_in_current_workspace(self, path);
         self.state.layout.status_message = None;
-    }
-
-    pub(super) fn fetch_html_url(
-        &mut self,
-        ctx: &egui::Context,
-        url: ValidatedHttpUrl,
-        target_document: Option<std::path::PathBuf>,
-    ) {
-        let (sender, receiver) = std::sync::mpsc::channel();
-        self.state
-            .url_tab
-            .pending_url_requests
-            .push_back(PendingUrlRequest {
-                response_rx: receiver,
-                target_document,
-                source_url: url.as_str().to_owned(),
-                order: None,
-                selection_owner: Some(self.state.url_tab.selection_owner.clone()),
-                deadline: std::time::Instant::now() + URL_SOURCE_TIMEOUT,
-            });
-        self.state.url_tab.input = url.as_str().to_string();
-        self.state.url_tab.is_loading = true;
-        self.state.url_tab.last_error = None;
-
-        let collector = std::cell::RefCell::new(UrlResponseCollector::new(url.clone()));
-        let repaint = ctx.clone();
-        ehttp::streaming::fetch(
-            ehttp::Request::get(url.as_str()).with_timeout(Some(URL_SOURCE_TIMEOUT)),
-            move |part| {
-                let Some(result) = collector.borrow_mut().accept(part) else {
-                    return std::ops::ControlFlow::Continue(());
-                };
-                let _ = sender.send(result);
-                repaint.request_repaint_after(std::time::Duration::ZERO);
-                std::ops::ControlFlow::Break(())
-            },
-        );
     }
 }
 

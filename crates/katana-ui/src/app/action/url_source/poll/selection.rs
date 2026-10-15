@@ -63,6 +63,33 @@ impl UrlSelection {
 }
 
 impl KatanaApp {
+    pub(super) fn select_cached_url_document(&mut self, path: &std::path::Path) -> bool {
+        let Some(index) = document_index(self, path) else {
+            return false;
+        };
+        let tab = &self.state.url_tab;
+        let html_index = tab.tabs.iter().position(|tab| tab.document_path == path);
+        let source_url = tab
+            .source_for_document(path)
+            .map(|source| source.source_url.as_str())
+            .or_else(|| tab.document_source_url_for_document(path));
+        let Some(source_url) = source_url.map(str::to_owned) else {
+            return false;
+        };
+        self.state.document.active_doc_idx = Some(index);
+        self.state.document.scroll_to_active_tab = true;
+        self.state.url_tab.input = source_url;
+        self.state.url_tab.last_error = None;
+        self.state.layout.status_message = None;
+        if let Some(index) = html_index {
+            self.state.url_tab.active_tab = Some(index);
+        } else {
+            self.state
+                .set_active_view_mode(crate::state::document::ViewMode::PreviewOnly);
+        }
+        true
+    }
+
     pub(super) fn apply_selected_url_response(
         &mut self,
         response: Result<FetchedUrlSource, HtmlSourceError>,
@@ -79,7 +106,11 @@ impl KatanaApp {
         }
     }
 
-    fn url_response_is_background(&self, request: &PendingUrlRequest, order: NonZeroU64) -> bool {
+    pub(super) fn url_response_is_background(
+        &self,
+        request: &PendingUrlRequest,
+        order: NonZeroU64,
+    ) -> bool {
         self.state.url_tab.request_order.has_newer_completion(order)
             || request
                 .selection_owner
