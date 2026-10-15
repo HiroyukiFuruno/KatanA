@@ -852,3 +852,8 @@
 - [/] 上記Git隔離修正を実装し、実Git caller config bytes/status不変・fixture独立metadata/source列挙の回帰GREEN、gate全16/evidence全27成功。Git native local-env-varsとindexed config overrideを除去、非Git環境/PATHを保持。既存preflightに含まれるgate回帰で再発検知。通常commit/push後の実shared config bytes不変確認・最新reviewは未完了。
 - [x] Git隔離修正b7f41291の通常commit/push exit0、GitHub HEAD一致。実shared config SHAは前後bcf708315eb9ae84c706129108d49862ef47e24a0d13a615f0b3bd58e0fb3c29で一致、core.bare=false/master clean/stash0を再確認。上記ハーネス再発修正の実hook不変検証まで完了。最新cloud review/CI・上流修正版・製品性能/配布受入・リリースは別途未完了。
 - [/] 2026-10-14 #335 下流証跡syntax slice: failedexit/空白note/pathscope、URL正規化/traversal/repositorydot/CRLF/CRの実RED→修復後単一21PASS。syntax/diffcheck成功、readonly再review P0/P1残0。既存preflight純discovery一回、必須gate削除無し。新4files通常commit/push結果回収へ続行。作者JSONは公開/実行成功証明ではなく、actual Git/live publication/artifact binding・dispatcher/activation/cleanup未完。evidence/issue-downstream-schema-2026-10-14.md。
+
+## 最新の限定検証（2026-10-15）
+
+- [x] public f8c78b97の既存原本受入36713 actualexit0を回収。Office6件・PPTX3操作・HTML#s15/sticky成功、開始終了HEAD/clean/両lock一致。`evidence/original-fixtures-f8c78b97-2026-10-15.md`（repo root）参照。速度/RSS/正常終了/packaged/独立95点は別の未完条件。
+- [x] 同HEAD bot6187837805 major無しと全REST159/177/139・GQL88（pagination完了）を回収。P1 4280360962は通常push後の個別reply4280696700/resolveを確認。未解決manual-target方針P2は3threads、Ready/CI/merge/Releaseは未完。
