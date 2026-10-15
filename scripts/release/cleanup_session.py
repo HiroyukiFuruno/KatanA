@@ -39,7 +39,8 @@ class CleanupSession:
 
     @contextmanager
     def intent(self, branch: str, expected: str, *, operation: str = LOCAL_DELETE,
-               repository: str | None = None):
+               repository: str | None = None, merge_commit: str | None = None,
+               pull_request: str | None = None):
         if not self.active or self.operation_active:
             raise CleanupRefused("cleanup intent requires an active idle session")
         directory = Path(tempfile.mkdtemp(prefix="operation-", dir=self.lock))
@@ -48,7 +49,8 @@ class CleanupSession:
         identity, digest = None, None
         try:
             path, digest = write_intent(directory, self.root, branch, expected,
-                                        operation=operation, repository=repository)
+                                        operation=operation, repository=repository,
+                                        merge_commit=merge_commit, pull_request=pull_request)
             identity = record_identity(os.stat(INTENT_NAME, dir_fd=descriptor, follow_symlinks=False))
             yield path, digest
         finally:

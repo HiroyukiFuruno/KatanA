@@ -20,9 +20,11 @@ from release_cleanup_publication import cleanup_destination
 
 class CleanupExecutor:
     def __init__(self, controller: Path, repository: str, default: str,
-                 branch: str, expected: str):
+                 branch: str, expected: str, *, merge_commit: str | None = None,
+                 pull_request: int | None = None):
         self.controller, self.repository = controller.resolve(), repository
         self.default, self.branch, self.expected = default, branch, expected
+        self.merge_commit, self.pull_request = merge_commit, pull_request
         self.reference_snapshot = None
         self.remote_snapshot = None
 
@@ -44,7 +46,7 @@ class CleanupExecutor:
     def _audit(self) -> None:
         require_controller(self.controller, self.controller, self.default)
         result = audit_branch(self.controller, self.default, self.branch, self.expected,
-                              allow_absent=True)
+                              allow_absent=True, integrated_oid=self.merge_commit)
         if result["state"] != "eligible":
             raise CleanupRefused("cleanup target must be retained: " + result["reason"])
 
@@ -90,7 +92,10 @@ class CleanupExecutor:
         if _local_branch_oid(self.controller, self.branch) is None:
             return "absent"
         with session.intent(self.branch, self.expected) as (path, digest):
-            self._command(["git", "branch", "-d", "--", self.branch],
+            # squash済みtipは祖先ではないため、検証済PR結合とpreparedの旧値照合でCAS削除する。
+            command = (["git", "update-ref", "-d", "refs/heads/" + self.branch, self.expected]
+                       if self.merge_commit else ["git", "branch", "-d", "--", self.branch])
+            self._command(command,
                           {INTENT_ENV: str(path), DIGEST_ENV: digest})
         if _local_branch_oid(self.controller, self.branch) is not None:
             raise CleanupRefused("local cleanup target still exists")
@@ -103,7 +108,8 @@ class CleanupExecutor:
         if remote_tip(self.controller, destination, self.branch, self.expected) is None:
             return "absent"
         with session.intent(self.branch, self.expected, operation=REMOTE_DELETE,
-                            repository=self.repository) as (path, digest):
+                            repository=self.repository, merge_commit=self.merge_commit,
+                            pull_request=str(self.pull_request) if self.pull_request else None) as (path, digest):
             self._command(["git", "push", "origin", "--delete", "refs/heads/" + self.branch],
                           {REMOTE_INTENT_ENV: str(path), REMOTE_DIGEST_ENV: digest})
         if remote_tip(self.controller, destination, self.branch, self.expected) is not None:

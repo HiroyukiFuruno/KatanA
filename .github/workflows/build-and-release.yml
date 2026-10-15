@@ -578,9 +578,12 @@ jobs:
             --repository "$REPOSITORY" --version "$VERSION" --published "$PUBLISHED" "${PR_OPTIONS[@]}")
           BRANCH=$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["branch"])' "$TARGET")
           EXPECTED=$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["expected"])' "$TARGET")
+          MERGE_COMMIT=$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["merge_commit"])' "$TARGET")
+          PULL_REQUEST=$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["pull_request"])' "$TARGET")
           python3 -B scripts/release/run-release-cleanup.py \
             --root "$PWD" --controller "$PWD" --repository "$REPOSITORY" \
-            --version "$VERSION" --branch "$BRANCH" --expected "$EXPECTED" --published "$PUBLISHED" --remote
+            --version "$VERSION" --branch "$BRANCH" --expected "$EXPECTED" --published "$PUBLISHED" \
+            --merge-commit "$MERGE_COMMIT" --pull-request "$PULL_REQUEST" --remote
       - name: Preserve cleanup receipts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -27,7 +27,8 @@ class CleanupWorkflowTests(unittest.TestCase):
         self.assertLess(owner, resolve)
         self.assertLess(resolve, execute)
         for required in ("docker compose version", "cargo-deny@0.20.2", "setup-bun@",
-                         '"--pull-request" "$SOURCE_PR"', '--expected "$EXPECTED"', "--remote"):
+                         '"--pull-request" "$SOURCE_PR"', '--expected "$EXPECTED"', "--remote",
+                         '--merge-commit "$MERGE_COMMIT"', '--pull-request "$PULL_REQUEST"'):
             self.assertIn(required, job)
         for forbidden in ("--no-verify", "--force", "LEFTHOOK: 0", "continue-on-error"):
             self.assertNotIn(forbidden, job)

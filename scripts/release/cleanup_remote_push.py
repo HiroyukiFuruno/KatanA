@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from cleanup_intent import REMOTE_DELETE, read_intent
+from cleanup_merge_binding import require_merge_binding
 from push_ref_updates import PushInputError, parse_push_updates
 from release_cleanup_audit import CleanupRefused, audit_branch, common_directory, git, require_controller
 from release_cleanup_publication import cleanup_destination
@@ -38,7 +39,14 @@ class RemoteCleanupPush:
             raise CleanupRefused("remote cleanup default is not a branch")
         default = self.default_ref.removeprefix("refs/heads/")
         require_controller(self.root, self.root, default)
-        record = audit_branch(self.root, default, value["branch"], value["expected"], allow_absent=True)
+        merge_commit = value.get("merge_commit")
+        pull_request = value.get("pull_request")
+        merge_commit = require_merge_binding(
+            self.repository, value["branch"].removeprefix("release/v"),
+            merge_commit or value["expected"], value["branch"], value["expected"],
+            merge_commit, int(pull_request) if pull_request is not None else None)
+        record = audit_branch(self.root, default, value["branch"], value["expected"],
+                              allow_absent=True, integrated_oid=merge_commit)
         if record["state"] != "eligible":
             raise CleanupRefused("remote cleanup must retain this target: " + record["reason"])
 

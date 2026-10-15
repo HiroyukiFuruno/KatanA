@@ -75,12 +75,12 @@ def _local_branch_oid(controller: Path, branch: str) -> str | None:
 
 
 def _retention(controller: Path, default: str, branch: str, oid: str,
-               has_local: bool) -> dict[str, str]:
+               has_local: bool, integrated_oid: str | None = None) -> dict[str, str]:
     inventory = git(controller, "worktree", "list", "--porcelain", "-z")
     if ("branch refs/heads/" + branch).encode() in inventory.split(b"\0"):
         return {"branch": branch, "oid": oid, "state": "retain", "reason": "worktree in use"}
     try:
-        git(controller, "merge-base", "--is-ancestor", oid, "refs/heads/" + default)
+        git(controller, "merge-base", "--is-ancestor", integrated_oid or oid, "refs/heads/" + default)
     except CleanupRefused:
         return {"branch": branch, "oid": oid, "state": "retain", "reason": "merge not established"}
     reason = "merged unused local branch" if has_local else "merged target without a local branch"
@@ -88,20 +88,23 @@ def _retention(controller: Path, default: str, branch: str, oid: str,
 
 
 def audit_branch(controller: Path, default: str, branch: str, expected_oid: str, *,
-                 allow_absent: bool = False) -> dict[str, str]:
+                 allow_absent: bool = False, integrated_oid: str | None = None) -> dict[str, str]:
     git(controller, "check-ref-format", "refs/heads/" + branch)
     if branch in {default, "master", "main"} or not branch.startswith("release/"):
         raise CleanupRefused("cleanup target must be an explicit non-default release branch")
     if CANONICAL_OID.fullmatch(expected_oid) is None:
         raise CleanupRefused("cleanup target requires a full commit identity")
+    if integrated_oid is not None and CANONICAL_OID.fullmatch(integrated_oid) is None:
+        raise CleanupRefused("cleanup integration requires a full commit identity")
     oid = _local_branch_oid(controller, branch)
     if oid is None and not allow_absent:
         raise CleanupRefused("cleanup target local branch is missing")
     if oid is not None and oid != expected_oid:
         raise CleanupRefused("cleanup target no longer matches the audited commit")
-    if git(controller, "cat-file", "-t", expected_oid).strip() != b"commit":
-        raise CleanupRefused("cleanup target is not a commit")
-    canonical = git(controller, "rev-parse", "--verify", expected_oid + "^{commit}").decode().strip()
-    if canonical != expected_oid:
-        raise CleanupRefused("cleanup target must use its full canonical commit identity")
-    return _retention(controller, default, branch, expected_oid, oid is not None)
+    if oid is not None or integrated_oid is None:
+        if git(controller, "cat-file", "-t", expected_oid).strip() != b"commit":
+            raise CleanupRefused("cleanup target is not a commit")
+        canonical = git(controller, "rev-parse", "--verify", expected_oid + "^{commit}").decode().strip()
+        if canonical != expected_oid:
+            raise CleanupRefused("cleanup target must use its full canonical commit identity")
+    return _retention(controller, default, branch, expected_oid, oid is not None, integrated_oid)

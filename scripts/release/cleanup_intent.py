@@ -34,6 +34,19 @@ def _validate_remote(value: dict[str, object]) -> None:
         raise CleanupRefused("cleanup intent repository is malformed") from error
 
 
+def _schema_value(value: dict[str, object], operation: str) -> tuple[int, set[str]]:
+    if operation != REMOTE_DELETE:
+        if "merge_commit" in value or "pull_request" in value:
+            raise CleanupRefused("local cleanup cannot carry remote merge metadata")
+        return _schema(operation)
+    pair = {"merge_commit", "pull_request"} & value.keys()
+    if pair and pair != {"merge_commit", "pull_request"}:
+        raise CleanupRefused("remote cleanup merge metadata must be complete")
+    if pair:
+        return 3, FIELDS | {"operation", "repository", "merge_commit", "pull_request"}
+    return _schema(operation)
+
+
 def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
     value: dict[str, object] = {}
     for name, item in pairs:
@@ -44,8 +57,10 @@ def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
 
 
 def _validate(value: object, operation: str = LOCAL_DELETE) -> dict[str, object]:
-    version, fields = _schema(operation)
-    if not isinstance(value, dict) or set(value) != fields:
+    if not isinstance(value, dict):
+        raise CleanupRefused("cleanup intent fields do not match its schema")
+    version, fields = _schema_value(value, operation)
+    if set(value) != fields:
         raise CleanupRefused("cleanup intent fields do not match its schema")
     if type(value["schema"]) is not int or value["schema"] != version:
         raise CleanupRefused("cleanup intent schema is unsupported")
@@ -53,6 +68,11 @@ def _validate(value: object, operation: str = LOCAL_DELETE) -> dict[str, object]
         raise CleanupRefused("cleanup intent fields must be strings")
     if operation == REMOTE_DELETE:
         _validate_remote(value)
+        if version == 3:
+            if OID.fullmatch(value["merge_commit"]) is None:
+                raise CleanupRefused("cleanup intent merge commit is malformed")
+            if re.fullmatch(r"[1-9][0-9]*", value["pull_request"]) is None:
+                raise CleanupRefused("cleanup intent pull request is malformed")
     if SHA256.fullmatch(value["nonce"]) is None or OID.fullmatch(value["expected"]) is None:
         raise CleanupRefused("cleanup intent identity is malformed")
     root = Path(value["root"])
@@ -67,16 +87,22 @@ def _validate(value: object, operation: str = LOCAL_DELETE) -> dict[str, object]
 
 
 def write_intent(directory: Path, root: Path, branch: str, expected: str, *,
-                 operation: str = LOCAL_DELETE, repository: str | None = None) -> tuple[Path, str]:
-    version, _ = _schema(operation)
-    if operation == LOCAL_DELETE and repository is not None:
+                 operation: str = LOCAL_DELETE, repository: str | None = None,
+                 merge_commit: str | None = None, pull_request: str | None = None) -> tuple[Path, str]:
+    if operation == LOCAL_DELETE and (repository is not None or merge_commit is not None
+                                      or pull_request is not None):
         raise CleanupRefused("local cleanup cannot carry a remote repository")
+    if operation == REMOTE_DELETE and ((merge_commit is None) != (pull_request is None)):
+        raise CleanupRefused("remote cleanup merge metadata must be complete")
+    version = 3 if operation == REMOTE_DELETE and merge_commit is not None else _schema(operation)[0]
     directory = directory.absolute()
     root = root.resolve()
     value = {"schema": version, "nonce": secrets.token_hex(32), "root": str(root),
              "common_git_dir": str(common_directory(root)), "branch": branch, "expected": expected}
     if operation == REMOTE_DELETE:
         value.update(operation=operation, repository=repository)
+        if version == 3:
+            value.update(merge_commit=merge_commit, pull_request=pull_request)
     _validate(value, operation)
     payload = json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
     try:

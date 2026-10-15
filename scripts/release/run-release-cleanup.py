@@ -16,20 +16,24 @@ from release_cleanup_publication import published_audit
 
 def run_cleanup(root: Path, controller: Path, repository: str, version: str,
                 branch: str, expected: str, *, published: str,
-                include_remote: bool = False) -> dict[str, str]:
+                include_remote: bool = False, merge_commit: str | None = None,
+                pull_request: int | None = None) -> dict[str, str]:
     require_repository_scope(root, controller)
     if CANONICAL_OID.fullmatch(published) is None:
         raise CleanupRefused("cleanup publication requires a full commit identity")
     request = {"repository": repository, "version": version, "branch": branch,
-               "expected": expected, "published": published, "include_remote": include_remote}
+               "expected": expected, "published": published, "include_remote": include_remote,
+               "merge_commit": merge_commit, "pull_request": pull_request}
     with CleanupReceipt(controller, request) as receipt, CleanupSession(controller) as session:
         admitted = published_audit(root, controller, repository, version, branch, expected,
-                                   allow_absent=include_remote, publication_oid=published)
+                                   allow_absent=include_remote, publication_oid=published,
+                                   merge_commit=merge_commit, pull_request=pull_request)
         receipt.record("publication", "verified", admitted)
         if admitted["state"] != "eligible":
             raise CleanupRefused("cleanup target retained: " + admitted["reason"])
         verify_prune_scope(controller)
-        executor = CleanupExecutor(controller, repository, admitted["default_branch"], branch, expected)
+        executor = CleanupExecutor(controller, repository, admitted["default_branch"], branch, expected,
+                                   merge_commit=merge_commit, pull_request=pull_request)
         executor.prepare_hooks(include_remote=include_remote)
         result = {"local": "not-started", "remote": "not-requested"}
         if include_remote:
@@ -51,12 +55,15 @@ def main(arguments: list[str] | None = None) -> int:
     parser.add_argument("--branch", required=True)
     parser.add_argument("--expected", required=True)
     parser.add_argument("--published", required=True)
+    parser.add_argument("--merge-commit")
+    parser.add_argument("--pull-request", type=int)
     parser.add_argument("--remote", action="store_true", help="also delete the explicit remote branch")
     options = parser.parse_args(arguments)
     try:
         result = run_cleanup(options.root, options.controller, options.repository, options.version,
                              options.branch, options.expected, published=options.published,
-                             include_remote=options.remote)
+                             include_remote=options.remote, merge_commit=options.merge_commit,
+                             pull_request=options.pull_request)
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         print(f"release cleanup refused: {error}", file=sys.stderr)
         return 2
