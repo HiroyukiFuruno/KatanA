@@ -116,6 +116,24 @@ class PrePushOwnerStreamTests(unittest.TestCase):
         self.assertEqual(result.returncode, -signal.SIGTERM)
         self.assertEqual(result.stderr, b"")
 
+    def test_remote_cleanup_capability_is_removed_but_receipt_session_is_retained(self):
+        self.owner.write_text(
+            f"#!{sys.executable}\nimport os,sys\n"
+            "sys.stdin.buffer.read()\n"
+            "assert 'KATANA_REMOTE_CLEANUP_INTENT' not in os.environ\n"
+            "assert 'KATANA_REMOTE_CLEANUP_INTENT_SHA256' not in os.environ\n"
+            "assert os.environ['KATANA_OWNER_CHECK_DIRECTORY']\n"
+            "assert len(os.environ['KATANA_OWNER_CHECK_TOKEN']) == 64\n"
+            "raise SystemExit(23)\n", encoding="utf-8",
+        )
+        self.owner.chmod(0o700)
+        result = self._run(b"payload\n", "origin", "url", environment={
+            "KATANA_REMOTE_CLEANUP_INTENT": "not-propagated",
+            "KATANA_REMOTE_CLEANUP_INTENT_SHA256": "not-propagated",
+        })
+        self.assertEqual(result.returncode, 23, result.stderr)
+        self.assertFalse(self.checker_log.exists())
+
 
 if __name__ == "__main__":
     unittest.main()

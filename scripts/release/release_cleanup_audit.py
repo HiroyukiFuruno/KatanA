@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import re
 
 from bounded_git_output import bounded_git
 from downstream_git_binding import GitBindingError
 
 GIT_OUTPUT_LIMIT = 4 * 1024 * 1024
 GIT_DEADLINE_SECONDS = 30
+CANONICAL_OID = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})\Z")
 
 
 class CleanupRefused(ValueError):
@@ -56,13 +58,20 @@ def synchronize_default(root: Path, controller: Path, default: str, *, destinati
     return head
 
 
-def audit_branch(controller: Path, default: str, branch: str, expected_oid: str) -> dict[str, str]:
-    git(controller, "check-ref-format", "refs/heads/" + branch)
-    if branch in {default, "master", "main"} or not branch.startswith("release/"):
-        raise CleanupRefused("cleanup target must be an explicit non-default release branch")
-    oid = git(controller, "rev-parse", "--verify", "refs/heads/" + branch).decode().strip()
-    if oid != expected_oid or git(controller, "cat-file", "-t", oid).strip() != b"commit":
-        raise CleanupRefused("cleanup target no longer matches the audited commit")
+def _local_branch_oid(controller: Path, branch: str) -> str | None:
+    reference = "refs/heads/" + branch
+    raw = git(controller, "for-each-ref", "--format=%(refname)%00%(objectname)", "--", reference)
+    records = [line.split(b"\0") for line in raw.split(b"\n") if line]
+    exact = [fields[1] for fields in records if len(fields) == 2 and fields[0] == reference.encode()]
+    if not exact:
+        return None
+    if len(exact) != 1:
+        raise CleanupRefused("local cleanup target is ambiguous")
+    return exact[0].decode("ascii")
+
+
+def _retention(controller: Path, default: str, branch: str, oid: str,
+               has_local: bool) -> dict[str, str]:
     inventory = git(controller, "worktree", "list", "--porcelain", "-z")
     if ("branch refs/heads/" + branch).encode() in inventory.split(b"\0"):
         return {"branch": branch, "oid": oid, "state": "retain", "reason": "worktree in use"}
@@ -70,4 +79,25 @@ def audit_branch(controller: Path, default: str, branch: str, expected_oid: str)
         git(controller, "merge-base", "--is-ancestor", oid, "refs/heads/" + default)
     except CleanupRefused:
         return {"branch": branch, "oid": oid, "state": "retain", "reason": "merge not established"}
-    return {"branch": branch, "oid": oid, "state": "eligible", "reason": "merged unused local branch"}
+    reason = "merged unused local branch" if has_local else "merged target without a local branch"
+    return {"branch": branch, "oid": oid, "state": "eligible", "reason": reason}
+
+
+def audit_branch(controller: Path, default: str, branch: str, expected_oid: str, *,
+                 allow_absent: bool = False) -> dict[str, str]:
+    git(controller, "check-ref-format", "refs/heads/" + branch)
+    if branch in {default, "master", "main"} or not branch.startswith("release/"):
+        raise CleanupRefused("cleanup target must be an explicit non-default release branch")
+    if CANONICAL_OID.fullmatch(expected_oid) is None:
+        raise CleanupRefused("cleanup target requires a full commit identity")
+    oid = _local_branch_oid(controller, branch)
+    if oid is None and not allow_absent:
+        raise CleanupRefused("cleanup target local branch is missing")
+    if oid is not None and oid != expected_oid:
+        raise CleanupRefused("cleanup target no longer matches the audited commit")
+    if git(controller, "cat-file", "-t", expected_oid).strip() != b"commit":
+        raise CleanupRefused("cleanup target is not a commit")
+    canonical = git(controller, "rev-parse", "--verify", expected_oid + "^{commit}").decode().strip()
+    if canonical != expected_oid:
+        raise CleanupRefused("cleanup target must use its full canonical commit identity")
+    return _retention(controller, default, branch, expected_oid, oid is not None)

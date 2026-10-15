@@ -12,12 +12,15 @@ from release_cleanup_transaction import MAX_TRANSACTION_BYTES
 STREAM_CHUNK_BYTES = 65536
 INTENT_ENV = "KATANA_CLEANUP_INTENT"
 DIGEST_ENV = "KATANA_CLEANUP_INTENT_SHA256"
+REMOTE_INTENT_ENV = "KATANA_REMOTE_CLEANUP_INTENT"
+REMOTE_DIGEST_ENV = "KATANA_REMOTE_CLEANUP_INTENT_SHA256"
 
 
 def owner_environment(environment: dict[str, str] | None = None) -> dict[str, str]:
     # 既存owner内の別Git操作に、単一削除用の入力を伝播させない。
     values = os.environ if environment is None else environment
-    return {key: value for key, value in values.items() if key not in (INTENT_ENV, DIGEST_ENV)}
+    scoped = (INTENT_ENV, DIGEST_ENV, REMOTE_INTENT_ENV, REMOTE_DIGEST_ENV)
+    return {key: value for key, value in values.items() if key not in scoped}
 
 
 def exit_like_owner(status: int) -> None:

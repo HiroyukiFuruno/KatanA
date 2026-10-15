@@ -71,6 +71,53 @@ class CleanupNativeGitTests(unittest.TestCase):
             with self.subTest(target=target), self.assertRaises(CleanupRefused):
                 audit_branch(self.root, "master", target, self.oid)
 
+    def test_remote_only_audit_requires_explicit_absent_local_permission(self):
+        git(self.root, "branch", "-d", "release/completed")
+        with self.assertRaises(CleanupRefused):
+            audit_branch(self.root, "master", "release/completed", self.oid)
+        result = audit_branch(self.root, "master", "release/completed", self.oid,
+                              allow_absent=True)
+        self.assertEqual(result["state"], "eligible")
+        self.assertEqual(result["reason"], "merged target without a local branch")
+
+    def test_absent_parent_does_not_select_a_different_local_child_branch(self):
+        git(self.root, "branch", "-d", "release/completed")
+        git(self.root, "branch", "release/completed/keep")
+        result = audit_branch(self.root, "master", "release/completed", self.oid,
+                              allow_absent=True)
+        self.assertEqual(result["reason"], "merged target without a local branch")
+        self.assertEqual(git(self.root, "rev-parse", "refs/heads/release/completed/keep").decode().strip(), self.oid)
+
+    def test_absent_local_branch_cannot_admit_an_unmerged_remote_commit(self):
+        git(self.root, "switch", "release/completed")
+        git(self.root, "commit", "--allow-empty", "-m", "remote-only unmerged")
+        unmerged = git(self.root, "rev-parse", "HEAD").decode().strip()
+        git(self.root, "switch", "master")
+        git(self.root, "update-ref", "-d", "refs/heads/release/completed", unmerged)
+        result = audit_branch(self.root, "master", "release/completed", unmerged,
+                              allow_absent=True)
+        self.assertEqual(result["state"], "retain")
+
+    def test_absent_local_target_still_requires_a_full_commit_oid(self):
+        git(self.root, "branch", "-d", "release/completed")
+        for expected in (self.oid[:12], "--help", "f" * len(self.oid)):
+            with self.subTest(expected=expected), self.assertRaises(CleanupRefused):
+                audit_branch(self.root, "master", "release/completed", expected,
+                             allow_absent=True)
+
+    def test_sha256_absent_local_target_rejects_a_resolvable_40_character_prefix(self):
+        root = Path(self.temporary.name) / "sha256"
+        root.mkdir()
+        git(root, "init", "--object-format=sha256", "--initial-branch=master")
+        git(root, "-c", "commit.gpgsign=false", "-c", "user.name=Fixture",
+            "-c", "user.email=fixture@example.invalid", "commit", "--allow-empty", "-m", "sha256")
+        oid = git(root, "rev-parse", "HEAD").decode().strip()
+        self.assertEqual(len(oid), 64)
+        self.assertEqual(audit_branch(root, "master", "release/missing", oid,
+                                      allow_absent=True)["state"], "eligible")
+        with self.assertRaises(CleanupRefused):
+            audit_branch(root, "master", "release/missing", oid[:40], allow_absent=True)
+
     def test_unrelated_repository_and_nested_root_are_rejected(self):
         other = Path(self.temporary.name) / "other"
         other.mkdir()
