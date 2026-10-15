@@ -855,6 +855,8 @@
 
 ## 最新の限定検証（2026-10-15）
 
+- [/] ce95公式inventory全coverage76455は全4phase test成功（UI1308/既存ignore2、parallel144/既存ignore2、serial18）だがmeaningful29未実行でactualexit1。元閾値/除外維持でCanvas実serde委譲・size_hint/全要素・診断/file_label契約を追加し、取消の到達不能重複分類を意味同一に整理。対象40PASS37926actual0・impactedClippy91493/テスト込みcore strict93428/正式AST23件6630/fmt/diff成功。独立reviewの未使用enumP1は実production経路不在で撤回し制約を記録。`evidence/canvas-coverage-contracts-2026-10-15.md`参照。通常署名統合/一回normalpush/新HEAD全coverage/current review/公開は未完。
+
 - [/] #343 CI setup e1c18a47の通常push61674actual0/remote-PR一致0/0を回収。CD preflightのbin cacheが固定tool導入後に復元される構成を1assertREDで検出し、binだけcache対象から除外。registry/build cache維持、関連45PASS/11.036秒・actionlint成功。実cache内容/クラウド失敗を確認したとは主張せず、新通常統合/current review/Ready後実CI/全公開は未完。
 
 - [/] #343 source aead4b68の通常push3158actual0/local-origin-PR一致0/0を回収。続くcaller監査でReadiness/CD preflightのcoverage tool不足を契約2REDで再現し、llvm-tools-preview/cargo-llvm-cov0.9.1導入を補正。native関連45PASS/flow10PASS、クラウド実install・新通常統合/current review/Ready/公開は未完。

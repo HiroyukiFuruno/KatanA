@@ -53,13 +53,11 @@ impl CanvasParser {
     ) -> Result<Option<CanvasDocument>, CanvasError> {
         let cancellation = Cancellation::new(cancelled);
         let result = Self::parse_checked(source, &cancellation);
-        /* WHY: serde の取消通知を入力不正として公開せず、部分モデルも破棄する。 */
-        if cancellation.observed.get() {
-            return Ok(None);
-        }
         match result {
             Ok(document) => Ok(Some(document)),
             Err(ParseFailure::Cancelled) => Ok(None),
+            /* WHY: serde が入力エラーへ変換した取消だけを取消結果へ戻す。 */
+            Err(ParseFailure::Invalid(_)) if cancellation.observed.get() => Ok(None),
             Err(ParseFailure::Invalid(error)) => Err(error),
         }
     }

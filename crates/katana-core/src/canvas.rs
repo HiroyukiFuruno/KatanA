@@ -47,3 +47,9 @@ mod validation_tests;
 
 #[cfg(test)]
 mod cancellation_tests;
+
+#[cfg(test)]
+mod cancellable_contract_tests;
+
+#[cfg(test)]
+mod diagnostic_contract_tests;
