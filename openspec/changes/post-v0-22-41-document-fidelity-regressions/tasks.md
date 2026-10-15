@@ -29,6 +29,8 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [x] #351 異source A/B→同一PDFの実HTTP redirect回帰を補完。両適用順で新しいBのrevision・世代・選択・独立HTML保持を検証し既存製品は成功、製品変更無し。fixtureの分割受信/途中切れ/上限超過は32277actual101/3assert RED→bounded reader修復後70625のURL81PASS2.55秒・AST30PASS14.04秒・全target/external-fixture strict成功。module宣言順だけfmt補正後公式fmt/diff0、独立再review必須無し。evidence/url-redirect-convergence-2026-10-16.md。通常push/current review/Ready必須CI/packaged/全公開は別未完。
+
 - [ ] #343 Windows観測と実測: registry cacheの結果と既存workspace testの一回の時間/exit・run/source/lock情報をCI summary/artifactへ記録する。元cache key/対象・全test・worker入口・失敗code・Draft guardを維持し、追加test実行やskip/reuse権限を導入しない。target cold/warm同等性やWindows実測済みとは扱わない。旧workflow契約3FAIL→3PASS、独立P2のsummary識別/実行後hash明示は94513actual1/2FAIL1ERROR→94406actual0/関連23PASS2.336秒、default actionlint22470actual0。独立再review必須P0/P1/P2無し→署名ef29a17d/15586actual0へ通常統合。evidence/windows-ci-observation-2026-10-16.md。通常push/current reviewの実結果はcurrentメモ/台帳で追跡し、Windows実測・matched cold/warm比較・全#343は未完。
 
 - [/] #339 現8ec4e562 clean同HEAD/両lock不変で既存just package-mac31345 actualexit0。main/worker各IntelARM・全4slice minos13.0・Info v0.22.42・deep strict ad-hoc署名を実物で確認。evidence/current-static-package-8ec4e562-2026-10-16.mdにSHA/実log/初回worker名誤探索の補正を記録。静的ローカル配布候補だけであり本人実機・clean-machine・全OS・全5公開・起動障害解消の証明ではない。

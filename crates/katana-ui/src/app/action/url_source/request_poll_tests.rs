@@ -11,6 +11,7 @@ mod file_dialog_selection_tests;
 mod format_collision;
 mod mixed_targets;
 mod pending_intent_tests;
+mod redirect_convergence;
 mod reload_tests;
 mod selection_enqueue_tests;
 mod selection_failure_tests;
