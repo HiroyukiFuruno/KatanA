@@ -29,6 +29,14 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] 最終pending/auto/stale候補は89298公式URL63PASS2.61秒・13990AST23PASS13.54秒・68488全target external-fixture-acceptance strict actual0/7.22秒・31392順序9PASS・fmt/diff/KML成功。46332 workspace_openは1件で旧5件へ読み替えない。独立readonly限定P0/P1・必須P2無し。cleanup公開tag結合はad88b732、native transaction観測は1782a9f4へ通常署名G commit済み。URL source通常commit63430の実exit回収・docs統合・通常push一回・current reviewへ継続、全335/351/343/公開DoDは未完。
+
+- [/] #351 pending/auto/stale destination選択を追加修復。47957 actual101/1PASS2activepath assertFAIL後、旧payload/失敗抑止を維持しcurrent foregroundだけcached最新版の選択を適用。manualowner失効時は選択不変、destination generation不変。9326公式URL63PASS/2.66秒、31392順序9PASS、23948全target外部fixture strict actual0/5.90秒。30379 ASTは新fixture数値で22PASS1FAIL、定数化後13990再検査中。先行34123auto実RED→修復3138全URL60PASSも別記録。evidence/url-pending-intent-2026-10-15.md。独立最終review・通常統合/push・個別replyresolve/fresh・全公開DoDは継続。
+
+- [/] #335 cleanup公開tag結合を実装。公開名一致だけに依存せずremote annotated/lightweight tagの広告前後/commit graphとfull canonical OIDを同期前に照合する。submodule25828 actual1→再帰抑止のみ7033actual0、SHA25640prefix51967assertRED→修復後38914actual0/20件14.557秒、Python構文・200/30契約・diff/KML成功、独立fresh限定P0/P1・必須P2無し。prune候補は旧source68084で2PASSのため未再現と区別。evidence/cleanup-published-tag-2026-10-15.md。実repo同期/削除・本番hook/workflow・通常統合push・全335/公開DoDは未完。
+
+- [ ] current e0 review5527794142/P2 4278800773/threadPRRT_kwDORm09y86snOcmの新B投入済み未完了→旧A先行成功によるURL UI奪取を修復する。66005actual101のactivepath assert REDを確認し、fetch enqueue毎にownerを更新。実HTTP500/barrier両完了順のB選択・input・本文・globalエラーとA更新を維持し、正式57619全URL回帰を実行中。2276型error/77222DisconnectedとHTML document_failure過剰期待はfixture問題として製品REDと区別。通常commit/push・個別reply/resolve/fresh/全公開DoDは継続する。
+
 - [/] #351追加file-dialog完了経路を11025 actual101/2PASS1assertFAILで再現。DocumentOps入口の別path activateだけownerを失効し、同path補完/非活性ロードは不変とする。最終91932公式URL56件/52490workspace5件/4680AST23件/62146全target externalfeature strict/8533fmt各actual0、限定独立review P0/P1・必須P2無し。初88919のfixture compile errorとは区別。先行4d0e0e5d/docs d375は通常push73802actual0・local/origin/PR一致clean0/0、追加補完は通常統合/upload/4278428451個別replyresolve/fresh確認が未完。全公開DoDは継続する。
 
 - [/] #351 current e88 review PRRT_kwDORm09y86smWvzの選択奪取を修復。旧57780 actual101/3assert、3986 actual101/形式移行・globalエラー3assert、実HTTP72201 actual101、逆順9411 actual101、workspace復元1465 actual101を確認。enqueue時の選択ownerと完了serialを分離し、手動選択/往復・移行先追従・backgroundのstatus/last_error・非同期workspace復元後の選択を保持する。最終83885公式URL53件/99142順序管理7件/65592workspace5件/4832AST23件/58576UI全target externalfeature strict/9341fmtはactual0。独立read-only限定機能P0/P1無し、fixture専用poll補完は撤去。evidence/url-selection-ownership-2026-10-15.md。通常統合/push・個別reply/resolve・fresh/全公開DoDは未完。
