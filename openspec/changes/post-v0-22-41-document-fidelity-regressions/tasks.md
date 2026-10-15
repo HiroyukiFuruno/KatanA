@@ -29,6 +29,12 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] no-intent/env隔離sourceは6c586811/62648actual0/署名Gへ通常統合。最終94024全cleanup66PASS48.221秒・独立限定review/AST/KML/diff成功。docs統合後、installer/public caller/serialization/remote/prune/workflowを続ける。未公開sourceをpublic f40a成功や全335/Release完了へ読み替えず、少量修正毎の重いnormalpush重複はしない。
+
+- [/] no-intent/env隔離の最終cleanup全66件94024actual0/48.221秒を回収。41707対象30件・fresh独立限定P0/P1/必須P2無し・3files AST/200行/30行・KML/diff成功。通常関心別source/docs統合へ進むが、public f40a577fにこの新関心はまだ含まれない。既存hook本番導入・公開後caller・localremote安全削除・prune・workflow・全335/公開DoDは未完。
+
+- [/] #335 常用reference hook接続前のno-intent互換を64689actual1/7assertREDから修復。optional CLI/envpair・owneronly・cleanup専用2env隔離を追加、実commit/pull/環境intent削除を含む41707対象30PASS19.177秒、fresh独立限定P0/P1/必須P2無し。AUTO_MERGE最終callback誤assertはfixture問題として記録。全cleanup対象94024結果回収・通常関心別統合へ続行、shared hook/publication caller/remote/prune/workflow/全335・Releaseは未完。evidence/cleanup-no-intent-passthrough-2026-10-15.md。
+
 - [/] 上記owner/privateintent sourceはbbe3cebe/52072actual0/署名Gへ通常統合。77050最終対象21PASS・fresh独立限定P0/P1/必須P2無し・KML/diff成功をmain回収。docs通常統合→一回normalpushへ続行、未公開/production未接続/全335・Release未完を維持する。
 
 - [/] #335 既存reference hook先行/private intent部品を追加。全文stream委譲・同phase/通常exit/signal維持、owner絶対path、private0700/0600・native NOFOLLOW・digest/schema/common-dir/locked tip照合を実装。owner上限超過/PATH取り違え2assertREDとsignal241!=-15の実REDを修復。最終77050対象21PASS12.209秒・7files構文/200行/30行制約成功。全284PASS6538はsignal修正前と区別。新source未commit/未公開、production hook/publication lifecycle/localremote削除/prune/workflow・全335/公開DoDは未完。evidence/cleanup-owner-private-intent-2026-10-15.md。
