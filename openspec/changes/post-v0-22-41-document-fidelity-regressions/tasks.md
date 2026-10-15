@@ -29,6 +29,10 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-15 #351非同期URLの別target待機・失敗先誤表示を修復中。追加redirect境界10947 actual101/6PASS2assertFAIL→局所修復後46988 actual0/URL35PASS。queueはstate保持、同target/未確定redirect順序・確定別target独立・閉target破棄・要求URL診断を維持。正式AST82260は22PASS1FAIL/magic numberを既存期限定数へ修復、66814/61562の再検査回収・最終source/通常commit/push/current review/全公開DoDは未完。evidence/url-request-order-failure-2026-10-15.md。
+
+- [/] #351上記後続の同source形式合流61124 queueassert REDと、実HTTP初回403→reload無し29382 assertREDを修復。最終63212 URL37件2.76秒/12274失敗表示2件/13532 UI全target・externalfeature strictClippy/58422正式AST23件/94716fmt各actual0。候補の通常commit96026 actual0/source0fc9b15eへ統合。物理テストhelper分離後の参照型compile errorとHTTPfixture不備は修復して別証跡として保持。異source redirect合流順序はまだ未検証、限定source統合を全Issue・KDV Ready/frame・packaged/publicの完了にしない。docs/通常push/current reviewと残DoDへ継続。
+
 - [/] 2026-10-15 #335 cleanup初段を実装: public stable Release確認前は同期mutation拒否。既存default controllerの同commonGit/default/clean/stash0とnative ff-only同期・再監査を接続し、使用中/未統合/保護/監査OID変更を保持。fetch/push先の不一致とmultiple URLを拒否、実Git二段insteadOfの2assert REDを修復しrewrite設定を保持条件へ追加。最終対象46173 actual0/14件9.781秒、4Python AST/200行・30行契約成功。2353全240件actual0は最終rewrite修正前と区別。実未公開Release拒否31623actual0/両WTHEAD・status・reflog不変。本番同期/削除は無し。通常統合/push・conditional local/remote deletion・activeWT証跡保持・scoped prune・workflow呼出/本番導入・全335/公開DoDは未完。evidence/cleanup-default-retention-2026-10-15.md。
 
 - [/] #335上記候補の最終修復後、94203 actual0/228件75.449秒、最終bounded public KDV/KRR batch43410 actual0、Lefthook validate/diff check成功、独立限定review P0/P1残0を回収。sourceは関心別通常commitへ統合: public0d56d696/49598 actual0/G、admission00624b78/91860 actual0/G、owner23222c20/26132 actual0。docs通常統合と一回の通常push/current HEAD reviewへ継続。本番dispatcherの活性、whole admission正常系、cleanup接続、全公開DoDは未完として維持する。
