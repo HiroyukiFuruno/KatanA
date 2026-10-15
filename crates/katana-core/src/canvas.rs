@@ -53,3 +53,6 @@ mod cancellable_contract_tests;
 
 #[cfg(test)]
 mod diagnostic_contract_tests;
+
+#[cfg(test)]
+mod cancellable_map_contract_tests;

@@ -59,6 +59,21 @@ that unused path, so generic enum support is not added to this release slice.
 
 ## Remaining verification
 
+The fresh run at published `82fca38b9b06146da8e14936f52d10d4e7c5dfad`
+also exited 1 (session 25129): all four test phases passed, but the meaningful
+gate found the two lines in `CheckedMap::size_hint` unexecuted. The earlier
+sequence tests did not cover this separate map contract. Source guard confirmed
+the same clean HEAD and locks; strict document coverage was not reached.
+Raw log: `tmp/82fca38b-full-inventory-coverage-2026-10-15.log`.
+
+The added map tests now assert both the unknown hint of a real JSON string
+deserializer and the known hint of a real JSON value deserializer, and consume
+and assert both entries. Targeted session 94899 exited 0 with 42 Canvas tests.
+The combined diagnostic report records visitor lines 71/71, including both
+previously missing map lines. This report mixes full and targeted profiles;
+it is not a fresh full-gate pass. The cancellation zero-count segments are
+structural `?`/return locations, not new meaningful failures in the fresh gate.
+
 Mixed earlier profiles plus targeted tests are not a fresh full-gate result.
 Normal signed integration, one normal push hook, current-HEAD full coverage,
 fresh review and all release/package/publication requirements remain separate.
