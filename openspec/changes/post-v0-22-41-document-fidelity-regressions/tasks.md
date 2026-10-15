@@ -29,6 +29,12 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] #351最新current0837 review5527055431/P2 4278185039を採用。None/Some混在の無関係要求2件を14493 actual101で再現し、同sourceのみFIFO・異sourceは実反映先serial保護へ修復。16825公式URL42件/8106AST23件/69115UI全target externalfeature strictはactual0。旧redirect回帰は先行表示を要求し最終newer本文保持assertを維持、連続None/Noneと同source混在FIFOも維持。3e4e2b6dは先行serial関心の通常G commitで追加mixed候補の公開証拠ではない。最終format/workspace/通常統合push/個別replyresolve/fresh/全DoDを継続する。
+
+- [/] #351異source redirect合流の旧66866 actual101を修復。最終45514公式URL39件/13940順序管理等9件/51302workspace取消4件/60428AST23件/7543UI全target externalfeature strictClippy/95085fmtは各actual0。実反映先と順序照合を共用、空queueと取消でcapacity解放、counter枯渇は実poll経由の明示失敗を検証。表に固定件数上限はなくpending寿命/既存期限による保持でありRSS予算証明に代用しない。source通常統合/push/current review・全Issue/packaged/公開DoDは未完。evidence/url-redirect-destination-order-2026-10-15.md。
+
+- [/] #351残っていた異source redirectの同一binary合流を66866 actual101で実証。先に反映済みPDFのgeneration1が古い応答で2へ再更新された。本文複製や全target直列化を追加せず、poll挿入順serialと実反映先の最新serialを照合する限定修復へ進む。表のmin pending刈込み/空queue capacity解放/counter枯渇を回帰化し、既存cancel/移行/期限/reloadを維持する。旧08371680の通常push成功はこの追加候補の成功へ流用しない。
+
 - [/] 2026-10-15 #351非同期URLの別target待機・失敗先誤表示を修復中。追加redirect境界10947 actual101/6PASS2assertFAIL→局所修復後46988 actual0/URL35PASS。queueはstate保持、同target/未確定redirect順序・確定別target独立・閉target破棄・要求URL診断を維持。正式AST82260は22PASS1FAIL/magic numberを既存期限定数へ修復、66814/61562の再検査回収・最終source/通常commit/push/current review/全公開DoDは未完。evidence/url-request-order-failure-2026-10-15.md。
 
 - [/] #351上記後続の同source形式合流61124 queueassert REDと、実HTTP初回403→reload無し29382 assertREDを修復。最終63212 URL37件2.76秒/12274失敗表示2件/13532 UI全target・externalfeature strictClippy/58422正式AST23件/94716fmt各actual0。候補の通常commit96026 actual0/source0fc9b15eへ統合。物理テストhelper分離後の参照型compile errorとHTTPfixture不備は修復して別証跡として保持。異source redirect合流順序はまだ未検証、限定source統合を全Issue・KDV Ready/frame・packaged/publicの完了にしない。docs/通常push/current reviewと残DoDへ継続。

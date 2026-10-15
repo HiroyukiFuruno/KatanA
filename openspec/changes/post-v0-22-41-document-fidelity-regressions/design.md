@@ -134,3 +134,13 @@ singletonは全worker起動成功後だけReadyへ公開し、partial spawn失�
 ## Filter候補の有界保持（2026-10-01）
 
 UIは候補要求を単一の(sheet,column)として保持し、sheet変更でresetする。共通user queueは通常入力16件に加え、最新のCandidatesを1件だけ保持する。新CandidatesはUI側でsupersededとなったqueued候補を置換し、overflow時は最古の通常入力だけを除去する。候補をqueue先頭へ優先移動せず、残ったnavigation/Clear/Applyとの挿入順を維持する。inflight eventのsheet/column照合も維持する。これにより候補要求消失による永久Loadingを防ぎ、通常navigation上限16/coalescingと最大17件の有界性を両立する。
+
+## URL反映先の要求順序（Issue351、2026-10-15）
+
+異なる要求URLでもredirect後のbinary文書pathが一致する。先行pendingで全タブを止めず、遅れた古い応答で新しい文書を上書きしないため、pending要求にpoll時の挿入順serialを一度だけ付ける。成功応答の反映先は実applyと同じpath計算を使い、失敗は要求URL/targetで診断する。反映済みserialが新しければ古い応答を採用しない。同target・同sourceの既存FIFOと連続OpenUrl同士の順序は維持し、None/Some混在は異sourceなら並行に進める。
+
+UI所有の順序表はpathとserialだけを保持し、本文bytes・frame・worker・Contextを保持しない。残pendingの最小serial以前の記録を除去し、queueが空なら表のcapacityとcounterも解放/resetする。counterはchecked加算し、枯渇時にwrap・同期待機・無制限再起動をせず要求に明示的な失敗を返す。新しいruntime、serde設定、公開core/API、依存版、期限や品質閾値は変更しない。
+
+固定件数上限は設けておらず、保持はpending要求の寿命と既存期限に従う。空queue・取消時の容量解放と、アプリ全体のRSS/性能予算の受入は別に検証する。
+
+実generation比較66866は旧候補actual101/新しいPDFを古いredirect応答でgeneration1→2へ置換するassert RED。修復後の同回帰、順序表の刈込み/空queue解放/counter境界、既存URL/形式移行/取消/失敗/reload、正式AST/strict lint/通常統合・公開レビューを必要とする。これは追加修復方針であり未検証を完了扱いしない。
