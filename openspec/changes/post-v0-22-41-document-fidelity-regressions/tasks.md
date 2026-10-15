@@ -29,13 +29,17 @@
 
 ## 1. Reproduction and ownership evidence
 
-- [ ] d4870ffe review5536347239のP2 4285493973: 起動復旧の公開説明を一次記録の「workspaceごとのJSON削除」と「重workspace除外」の両操作後・各操作の個別寄与未確定へ日英で補正する。OpenSpec基準の既存evidenceをrepo直下で誤探索した記録も補正し、一次記録の存在を保持する。文書検査/通常統合push/個別replyresolve/fresh・newHEAD reviewを回収する。起動原因や製品解消を新たに断定しない。
+- [ ] #343 Windows観測と実測: registry cacheの結果と既存workspace testの一回の時間/exit・run/source/lock情報をCI summary/artifactへ記録する。元cache key/対象・全test・worker入口・失敗code・Draft guardを維持し、追加test実行やskip/reuse権限を導入しない。target cold/warm同等性やWindows実測済みとは扱わない。旧workflow契約3FAIL→3PASS、独立P2のsummary識別/実行後hash明示は94513actual1/2FAIL1ERROR→94406actual0/関連23PASS2.336秒、default actionlint22470actual0。独立再review必須P0/P1/P2無し→署名ef29a17d/15586actual0へ通常統合。evidence/windows-ci-observation-2026-10-16.md。通常push/current reviewの実結果はcurrentメモ/台帳で追跡し、Windows実測・matched cold/warm比較・全#343は未完。
+
+- [/] #339 現8ec4e562 clean同HEAD/両lock不変で既存just package-mac31345 actualexit0。main/worker各IntelARM・全4slice minos13.0・Info v0.22.42・deep strict ad-hoc署名を実物で確認。evidence/current-static-package-8ec4e562-2026-10-16.mdにSHA/実log/初回worker名誤探索の補正を記録。静的ローカル配布候補だけであり本人実機・clean-machine・全OS・全5公開・起動障害解消の証明ではない。
+
+- [/] d4870ffe review5536347239のP2 4285493973: 日英公開説明をJSON削除＋重workspace除外の両操作後・個別寄与と現版解消未確定へ補正、既存canonicalの探索基準誤りも訂正。対象文書検査/独立review→署名8ec4e562/75124actual0→通常push99737actual0→reply4285646380/個別resolve→newHEAD review5536674945/全98168actual0回収。追加画像symlink P2は既存invalidate_pathのwatched解除・再登録経路を主査/独立確認して現状維持をreply4285766783→resolve→fresh全10179actual0でmanualpolicy3のみ再確認。製品起動修復・原因確定・全公開の完了ではない。
 
 - [/] #343 current45747305 review5535514218のP1 4284857791を修復。実instrumented53008actual1/2assertRED、unsafeTMPDIR46394actual1→62852actual0/3PASS16.001秒、全対象73669actual0/71PASS23.344秒。listingだけ一時profileへ分離しunsafe位置拒否・元test101保持。通常署名77229527/19924actual0、inventory有効の元fullcoverage11776actual0/meaningful0・strict文書100%未実行0・開始終了clean同HEAD/両lock不変、通常push83637actual0→reply4285268755→個別resolve/fresh90threads・nested切れ無し。bot6196423500は同772/no major、未解決manualpolicy3だけ。evidence/inventory-listing-profile-isolation-2026-10-16.md。旧補助profile込みreportは非汚染品質の証明に使わず、全#343/Ready必須CI/全配布公開は別未完。
 
 - [/] #343 実invocation inventoryのnormal対coverage4phase比較を接続。raw/hash/footer/ignoredとCargo artifact・要求/実行argv、候補集合・features/環境/ソース条件差を診断し、未知選択/欠落/不正/source不一致は比較不能、execution_equivalent/reuse_authorizedは常にfalse。run_id/attemptで旧cacheを隔離。対象68PASS27.704秒/69205actual0・actionlint22996actual0、通常署名bddd93af/補正8bfb357f/通常push84837actual0。後続P1隔離77229527/通常push83637・71検査/元fullcoverage/current bot6196423500/no majorまで回収。evidence/invocation-inventory-comparison-2026-10-15.md。test再実行・skip・閾値変更はせず、全#343/検査削減/全OS実測は未完。
 
-- [ ] #352 既存function-length APIの常時0行計測を、brace open.start/close.endの実位置へ限定修復。30定数/end-start行差/free・impl範囲を維持し、全repoへの新gate有効化はしない。正式integration7回帰は旧source23101exit101/4FAIL3PASS→修復88813exit0/7PASS、公式AST40531exit0/30PASS、fmt補正後67524exit0。evidence/function-length-contract-2026-10-15.md。通常統合/push・current review/公開未完。共有registry KAL0.5.2の同不備は別実装として診断/handoffし、今回の修復で全関数30行を証明したとはしない。
+- [/] #352 既存function-length APIの常時0行計測を、brace open.start/close.endの実位置へ限定修復。30定数/end-start行差/free・impl範囲を維持し、全repoへの新gate有効化はしない。正式integration7回帰は旧source23101exit101/4FAIL3PASS→修復88813exit0/7PASS、公式AST40531exit0/30PASS、fmt補正後67524exit0。通常署名ec139db9/57782actual0・通常push46986actual0、後続8ecのcurrent review/fresh確認まで回収。evidence/function-length-contract-2026-10-15.md。GitHub Release公開は未完。共有registry KAL0.5.2の同不備は別実装として診断/handoffし、今回の修復で全関数30行を証明したとはしない。
 
 - [/] #343 sourceは通常署名G da9cc55df2f2b0383e68ce7a3c6f07c7242d5dfb（88114actual0）、#335 squash P1 sourceは通常署名G a5aa2a18437a41ce3ba3518e3e679d340f8453c4（60350actual0）へ関心別正式統合。final inventory34PASS4.377秒/70087actual0、cleanup136PASS98.220秒/40938actual0・共通matcher統一後remote8PASS7.586秒/26063actual0・独立再確認P0/P1/必須P2無し。対象KML/両defaultactionlint/構文/diff成功。docs統合後一回normalpush→P1個別replyresolve/fresh reviewへ続行、全335/343/Ready/配布公開は未完。
 
