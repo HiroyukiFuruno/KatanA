@@ -107,6 +107,7 @@ impl KatanaApp {
                 target_document,
                 source_url: url.as_str().to_owned(),
                 order: None,
+                selection_owner: Some(self.state.url_tab.selection_owner.clone()),
                 deadline: std::time::Instant::now() + URL_SOURCE_TIMEOUT,
             });
         self.state.url_tab.input = url.as_str().to_string();
@@ -306,6 +307,7 @@ mod tests {
                 target_document: None,
                 source_url: "https://example.test/stale.html".to_string(),
                 order: None,
+                selection_owner: None,
                 deadline: std::time::Instant::now() + URL_SOURCE_TIMEOUT,
             });
         app.state.url_tab.is_loading = true;
@@ -365,6 +367,7 @@ mod tests {
                 target_document: None,
                 source_url: "https://example.test/disconnected.pdf".to_string(),
                 order: None,
+                selection_owner: None,
                 deadline: std::time::Instant::now() + URL_SOURCE_TIMEOUT,
             });
         app.poll_url_source(&ctx);
@@ -388,6 +391,7 @@ mod tests {
                 target_document: None,
                 source_url: source_url.to_string(),
                 order: None,
+                selection_owner: None,
                 deadline: std::time::Instant::now(),
             });
         app.state.url_tab.input = source_url.to_string();
@@ -434,6 +438,7 @@ mod tests {
                 target_document: Some(target),
                 source_url: "https://example.test/target.html".to_string(),
                 order: None,
+                selection_owner: None,
                 deadline: Instant::now() + URL_SOURCE_TIMEOUT,
             });
         app.state.url_tab.is_loading = true;
@@ -470,6 +475,7 @@ mod tests {
                     target_document,
                     source_url: "https://example.test/pending.html".to_string(),
                     order: None,
+                    selection_owner: None,
                     deadline: Instant::now() + URL_SOURCE_TIMEOUT,
                 });
         }
@@ -516,6 +522,7 @@ mod tests {
                 target_document: Some(target.clone()),
                 source_url: "https://example.test/old.html".to_string(),
                 order: None,
+                selection_owner: None,
                 deadline: Instant::now() + URL_SOURCE_TIMEOUT,
             });
         app.state.url_tab.is_loading = true;
@@ -545,6 +552,7 @@ mod tests {
                 target_document: Some(std::path::PathBuf::from("closed-error.html")),
                 source_url: "https://example.test/closed-error.pdf".to_string(),
                 order: None,
+                selection_owner: None,
                 deadline: Instant::now() + URL_SOURCE_TIMEOUT,
             });
         let (_timeout_sender, timeout_receiver) = std::sync::mpsc::channel();
@@ -556,6 +564,7 @@ mod tests {
                 target_document: Some(std::path::PathBuf::from("closed-timeout.html")),
                 source_url: "https://example.test/closed-timeout.pdf".to_string(),
                 order: None,
+                selection_owner: None,
                 deadline: Instant::now(),
             });
 
@@ -584,6 +593,7 @@ mod tests {
                 target_document: Some(target),
                 source_url: "https://example.test/closed.html".to_string(),
                 order: None,
+                selection_owner: None,
                 deadline: Instant::now() + URL_SOURCE_TIMEOUT,
             });
         app.state.url_tab.is_loading = true;

@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 pub(crate) struct UrlRequestOrder {
     next: u64,
     completed: HashMap<PathBuf, NonZeroU64>,
+    latest: Option<NonZeroU64>,
 }
 
 impl UrlRequestOrder {
@@ -20,7 +21,15 @@ impl UrlRequestOrder {
             .is_some_and(|latest| *latest > order)
     }
 
-    pub(crate) fn complete(&mut self, path: PathBuf, order: NonZeroU64) {
+    pub(crate) fn has_newer_completion(&self, order: NonZeroU64) -> bool {
+        self.latest.is_some_and(|latest| latest > order)
+    }
+
+    pub(crate) fn complete(&mut self, path: Option<PathBuf>, order: NonZeroU64) {
+        self.latest = Some(self.latest.map_or(order, |latest| latest.max(order)));
+        let Some(path) = path else {
+            return;
+        };
         self.completed
             .entry(path)
             .and_modify(|latest| *latest = (*latest).max(order))
@@ -52,8 +61,8 @@ mod tests {
         let first = order.allocate().unwrap();
         let second = order.allocate().unwrap();
         let path = PathBuf::from("destination.pdf");
-        order.complete(path.clone(), second);
-        order.complete(path.clone(), first);
+        order.complete(Some(path.clone()), second);
+        order.complete(Some(path.clone()), first);
         assert!(order.is_superseded(&path, first));
         assert!(!order.is_superseded(&path, second));
         assert!(!order.is_superseded(&PathBuf::from("other.pdf"), first));
@@ -64,8 +73,8 @@ mod tests {
         let mut order = UrlRequestOrder::default();
         let first = order.allocate().unwrap();
         let second = order.allocate().unwrap();
-        order.complete(PathBuf::from("old.pdf"), first);
-        order.complete(PathBuf::from("new.pdf"), second);
+        order.complete(Some(PathBuf::from("old.pdf")), first);
+        order.complete(Some(PathBuf::from("new.pdf")), second);
         order.retain_after(Some(first));
         assert_eq!(order.completed.len(), 1);
         assert!(order.completed.contains_key(&PathBuf::from("new.pdf")));
@@ -78,10 +87,25 @@ mod tests {
     fn empty_queue_releases_history_and_restarts_counter() {
         let mut order = UrlRequestOrder::default();
         let first = order.allocate().unwrap();
-        order.complete(PathBuf::from("done.pdf"), first);
+        order.complete(Some(PathBuf::from("done.pdf")), first);
         order.retain_after(None);
         assert_eq!(order.completed.capacity(), 0);
         assert_eq!(order.allocate(), Some(first));
+        assert!(!order.has_newer_completion(first));
+    }
+
+    #[test]
+    fn completion_without_destination_still_orders_global_selection() {
+        let mut order = UrlRequestOrder::default();
+        let first = order.allocate().unwrap();
+        let second = order.allocate().unwrap();
+        order.complete(None, second);
+        order.complete(None, first);
+        assert!(order.has_newer_completion(first));
+        assert!(!order.has_newer_completion(second));
+        assert!(order.completed.is_empty());
+        order.retain_after(Some(first));
+        assert!(order.has_newer_completion(first));
     }
 
     #[test]
@@ -106,6 +130,7 @@ mod tests {
             .pending_url_requests
             .push_back(super::super::PendingUrlRequest {
                 order: None,
+                selection_owner: None,
                 response_rx,
                 target_document: None,
                 source_url: "https://example.test/page.html".to_owned(),
@@ -141,7 +166,7 @@ mod tests {
         app.state
             .url_tab
             .request_order
-            .complete(PathBuf::from("done.pdf"), order);
+            .complete(Some(PathBuf::from("done.pdf")), order);
         app.state.url_tab.cancel_pending_url_requests();
         assert_eq!(app.state.url_tab.request_order.completed.capacity(), 0);
         assert_eq!(app.state.url_tab.request_order.next, 0);

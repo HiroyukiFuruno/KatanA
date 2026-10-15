@@ -9,6 +9,9 @@ mod edge_cases;
 mod format_collision;
 mod mixed_targets;
 mod reload_tests;
+mod selection_enqueue_tests;
+mod selection_failure_tests;
+mod selection_tests;
 
 fn app() -> KatanaApp {
     KatanaApp::new(AppState::new(
@@ -42,6 +45,7 @@ fn request(
             target_document,
             source_url: source_url.to_owned(),
             order: None,
+            selection_owner: None,
             deadline: Instant::now() + super::URL_SOURCE_TIMEOUT,
         },
     )

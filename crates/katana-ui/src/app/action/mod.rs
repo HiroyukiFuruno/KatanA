@@ -118,6 +118,7 @@ impl ActionOps for KatanaApp {
     }
 
     fn process_action(&mut self, ctx: &egui::Context, action: AppAction) {
+        let previous_active_path = self.state.active_path();
         self.dispatch_action(ctx, action);
         self.cleanup_closed_tab_previews();
         let mut inactive_but_focused_path = None;
@@ -133,6 +134,10 @@ impl ActionOps for KatanaApp {
             self.handle_select_document(path, true);
         }
         self.close_diff_review_if_tab_removed();
+        if self.state.active_path() != previous_active_path {
+            /* WHY: 選択を往復しても、開始済みの取得に手動選択を上書きさせない。 */
+            self.state.url_tab.selection_owner = std::sync::Arc::new(());
+        }
     }
 
     fn handle_show_release_notes(&mut self) {

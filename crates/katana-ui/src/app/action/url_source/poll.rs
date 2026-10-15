@@ -6,6 +6,7 @@ use std::time::{Duration, Instant};
 
 const URL_SOURCE_REPAINT_INTERVAL: Duration = Duration::from_millis(100);
 mod dispatch;
+mod selection;
 
 impl KatanaApp {
     pub(crate) fn poll_url_source(&mut self, ctx: &egui::Context) {

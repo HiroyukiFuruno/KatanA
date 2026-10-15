@@ -63,6 +63,8 @@ impl WorkspaceOpenHandlersOps {
             crate::app_state::StatusType::Success,
         ));
         app.state.workspace.set_data(Some(ws));
+        /* WHY: 復元完了はaction外でも選択を置換するため、旧URL要求の選択権を破棄する。 */
+        app.state.url_tab.selection_owner = std::sync::Arc::new(());
         /* WHY: 同じパスを復元しても旧ワークスペースの応答は新しい文書へ適用しない。 */
         app.state
             .url_tab

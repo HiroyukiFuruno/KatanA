@@ -42,6 +42,7 @@ pub struct BinaryUrlTab {
 
 pub(crate) struct PendingUrlRequest {
     pub(crate) order: Option<std::num::NonZeroU64>,
+    pub(crate) selection_owner: Option<std::sync::Arc<()>>,
     pub(crate) response_rx: std::sync::mpsc::Receiver<Result<FetchedUrlSource, HtmlSourceError>>,
     pub(crate) target_document: Option<std::path::PathBuf>,
     pub(crate) source_url: String,
@@ -58,6 +59,7 @@ pub struct UrlTabState {
     pub last_error: Option<HtmlSourceError>,
     pub(crate) pending_url_requests: VecDeque<PendingUrlRequest>,
     pub(crate) request_order: request_order::UrlRequestOrder,
+    pub(crate) selection_owner: std::sync::Arc<()>,
 }
 
 impl Default for UrlTabState {
@@ -78,6 +80,7 @@ impl UrlTabState {
             last_error: None,
             pending_url_requests: VecDeque::new(),
             request_order: request_order::UrlRequestOrder::default(),
+            selection_owner: std::sync::Arc::new(()),
         }
     }
 

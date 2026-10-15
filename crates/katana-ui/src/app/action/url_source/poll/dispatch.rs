@@ -21,13 +21,14 @@ impl KatanaApp {
         {
             return;
         }
-        self.apply_ordered_url_response(response, request);
-        if let Some(path) = destination {
-            self.state.url_tab.request_order.complete(path, order);
-        }
+        self.apply_selected_url_response(response, request, order);
+        self.state
+            .url_tab
+            .request_order
+            .complete(destination, order);
     }
 
-    fn url_response_destination(
+    pub(super) fn url_response_destination(
         response: &Result<FetchedUrlSource, HtmlSourceError>,
         request: &PendingUrlRequest,
     ) -> Option<std::path::PathBuf> {
@@ -40,7 +41,7 @@ impl KatanaApp {
         }
     }
 
-    fn apply_ordered_url_response(
+    pub(super) fn apply_ordered_url_response(
         &mut self,
         response: Result<FetchedUrlSource, HtmlSourceError>,
         request: PendingUrlRequest,
