@@ -17,6 +17,7 @@ class InventoryWiringTests(unittest.TestCase):
                 job = re.split(r"\n  [a-zA-Z_][\w-]*:\n", body, maxsplit=1)[0]
                 self.assertIn("components: llvm-tools-preview", job)
                 self.assertIn("tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1", job)
+                self.assertNotIn("~/.cargo/bin", job)
                 self.assertLess(job.index("components: llvm-tools-preview"),
                                 job.index("tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1"))
 

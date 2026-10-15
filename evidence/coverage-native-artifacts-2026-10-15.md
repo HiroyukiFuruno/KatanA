@@ -31,3 +31,7 @@ show-envをshell evalせず、既知キーのexport/unsetだけを有界metadata
 source/evidence/tasksは通常署名付きcommit `aead4b6807a71a9efee2c1dc2a3873df8ad3e7db`へ統合。通常push3158はnative→Linux実container→preflightを通りactual exit 0、local/origin/PR346の同HEADとahead/behind0/0を確認した。raw `tmp/coverage-native-artifacts-normal-push-2026-10-15.log`。これはReady後の3OS/全coverage/配布検証ではない。
 
 caller監査でpreflightのdiscoveryが実coverage回帰も実行する一方、Readiness/CD preflightに必要tool/componentが無いことを発見した。先に両jobの契約を追加し実assert2件RED（`tmp/coverage-preflight-tools-red-2026-10-15.log`）。両jobでllvm-tools-previewとcargo-llvm-cov0.9.1を明示導入する。Draft条件・元preflight・四coverage phaseを維持し、skipしない。変更後45件/10.175秒とrelease flow10件成功。最終raw `tmp/coverage-ci-setup-final-2026-10-15.log`。クラウド上での実install/実行はReady後の別確認とする。
+
+CI setupは通常署名付きcommit `e1c18a47999f393cf5009b39f342b89c35449e60`へ統合し、通常push61674がnative→Linux実container→preflightを経てactual exit 0。local/origin/PR346一致0/0を確認した。raw `tmp/coverage-preflight-tools-normal-push-2026-10-15.log`。
+
+追加のcaller監査で、CD preflightが固定tool導入後に`~/.cargo/bin`をcache restoreする構成を発見した。旧cacheによるpin上書きの構造的リスクであり、実cache内容やクラウド失敗は未確認。対象jobのbin cacheを拒否する契約を追加して1件assert RED（`tmp/coverage-tool-cache-pin-red-2026-10-15.log`）を確認し、preflightのcache pathsからbinだけを除いた。registry/git-db/target cacheと元のtool pin・Draft/owner/publish条件は維持する。関連45件/11.036秒（54151 actual0）、actionlint v1.7.12（57901 actual0）成功。raw `tmp/coverage-tool-cache-pin-final-2026-10-15.log`。CI上の実cache復元試験や全Issue343完了の主張ではない。

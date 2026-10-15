@@ -855,6 +855,8 @@
 
 ## 最新の限定検証（2026-10-15）
 
+- [/] #343 CI setup e1c18a47の通常push61674actual0/remote-PR一致0/0を回収。CD preflightのbin cacheが固定tool導入後に復元される構成を1assertREDで検出し、binだけcache対象から除外。registry/build cache維持、関連45PASS/11.036秒・actionlint成功。実cache内容/クラウド失敗を確認したとは主張せず、新通常統合/current review/Ready後実CI/全公開は未完。
+
 - [/] #343 source aead4b68の通常push3158actual0/local-origin-PR一致0/0を回収。続くcaller監査でReadiness/CD preflightのcoverage tool不足を契約2REDで再現し、llvm-tools-preview/cargo-llvm-cov0.9.1導入を補正。native関連45PASS/flow10PASS、クラウド実install・新通常統合/current review/Ready/公開は未完。
 
 - [/] #343 inventory有効時のcoverage実artifact収集を公式show-env external-test方式へ接続。実profile/report不一致90613とbuild先57273を修復し、通常target/warm再実行・元report環境・設定済build先・失敗101保持を含む44件4029 actual0。`evidence/coverage-native-artifacts-2026-10-15.md`参照。complete/reuse=false、検査skip無し、全coverage/速度/Issue全DoDは未完。

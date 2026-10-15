@@ -151,7 +151,6 @@ jobs:
             ~/.cargo/registry/index
             ~/.cargo/registry/cache
             ~/.cargo/git/db
-            ~/.cargo/bin
             target
           key: ${{ runner.os }}-cargo-preflight-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
