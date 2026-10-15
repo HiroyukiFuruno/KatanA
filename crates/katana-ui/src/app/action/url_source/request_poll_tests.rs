@@ -6,6 +6,7 @@ use std::sync::{Arc, mpsc};
 use std::time::Instant;
 
 mod edge_cases;
+mod file_dialog_selection_tests;
 mod format_collision;
 mod mixed_targets;
 mod reload_tests;

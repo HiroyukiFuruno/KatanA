@@ -22,6 +22,10 @@ use preview_policy::DocumentPreviewPolicy;
 impl DocumentOps for KatanaApp {
     fn handle_select_document(&mut self, path: std::path::PathBuf, activate: bool) {
         let previous_active_path = self.state.active_path();
+        if activate && previous_active_path.as_ref() != Some(&path) {
+            /* WHY: action外で完了するファイル選択も、古いURL応答に選択を戻させない。 */
+            self.state.url_tab.selection_owner = std::sync::Arc::new(());
+        }
 
         if activate {
             let mut parent = path.parent();
