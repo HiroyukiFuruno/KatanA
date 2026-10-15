@@ -29,6 +29,8 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] #351追加file-dialog完了経路を11025 actual101/2PASS1assertFAILで再現。DocumentOps入口の別path activateだけownerを失効し、同path補完/非活性ロードは不変とする。最終91932公式URL56件/52490workspace5件/4680AST23件/62146全target externalfeature strict/8533fmt各actual0、限定独立review P0/P1・必須P2無し。初88919のfixture compile errorとは区別。先行4d0e0e5d/docs d375は通常push73802actual0・local/origin/PR一致clean0/0、追加補完は通常統合/upload/4278428451個別replyresolve/fresh確認が未完。全公開DoDは継続する。
+
 - [/] #351 current e88 review PRRT_kwDORm09y86smWvzの選択奪取を修復。旧57780 actual101/3assert、3986 actual101/形式移行・globalエラー3assert、実HTTP72201 actual101、逆順9411 actual101、workspace復元1465 actual101を確認。enqueue時の選択ownerと完了serialを分離し、手動選択/往復・移行先追従・backgroundのstatus/last_error・非同期workspace復元後の選択を保持する。最終83885公式URL53件/99142順序管理7件/65592workspace5件/4832AST23件/58576UI全target externalfeature strict/9341fmtはactual0。独立read-only限定機能P0/P1無し、fixture専用poll補完は撤去。evidence/url-selection-ownership-2026-10-15.md。通常統合/push・個別reply/resolve・fresh/全公開DoDは未完。
 
 - [/] #351最新current0837 review5527055431/P2 4278185039を採用。None/Some混在の無関係要求2件を14493 actual101で再現し、同sourceのみFIFO・異sourceは実反映先serial保護へ修復。16825公式URL42件/8106AST23件/69115UI全target externalfeature strictはactual0。旧redirect回帰は先行表示を要求し最終newer本文保持assertを維持、連続None/Noneと同source混在FIFOも維持。3e4e2b6dは先行serial関心の通常G commitで追加mixed候補の公開証拠ではない。最終format/workspace/通常統合push/個別replyresolve/fresh/全DoDを継続する。

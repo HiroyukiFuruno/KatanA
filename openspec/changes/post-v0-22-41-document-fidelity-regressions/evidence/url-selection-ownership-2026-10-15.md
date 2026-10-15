@@ -64,3 +64,37 @@ source integration, upload and exact-head review remain separate requirements.
 Normal source commit 4d0e0e5d completed with exit 0 (1610). It contains the
 selection-owner repair and its regressions. Upload, exact-head review response
 and resolution are not implied by this local source commit.
+
+Normal push 73802 subsequently exited 0. Local, origin and PR #346 matched
+`d375bed98a98a355d052491f52831ee166f0e011`, with a clean worktree and no
+ahead/behind difference. The normal native, actual Linux-container and
+preflight chain completed; this is not three-OS native or packaged acceptance.
+
+## Asynchronous file-dialog completion
+
+Further call-site inspection found that the GUI dialog completion invokes
+`FileOpenOps::open_in_current_workspace` outside `process_action`. Regression
+11025 exited 101: two owner-invariance cases passed, but the old targetless
+response replaced the real temporary local file selection. 88919 was a
+fixture import/signature compilation error, not a product assertion failure.
+
+`DocumentOps::handle_select_document` now invalidates selection ownership only
+for activation of a different path. HTTP response application does not use
+that method; file URLs already cancel pending requests. Existing same-path
+preview completion and background document loading do not invalidate owners.
+
+- 91932: official URL tests, exit 0, 56 passed, 2.62 seconds.
+- 52490: official workspace generation tests, exit 0, 5 passed.
+- 4680: official AST, exit 0, 23 passed, 13.30 seconds.
+- 62146: locked UI all-targets/external-fixture-acceptance strict Clippy, exit 0.
+- 8533: official format check, exit 0; diff check also passed.
+- Main reviewed the exact guard and real caller. Independent read-only review
+  found no remaining functional P0/P1 or required P2 in this limited follow-up.
+
+The test uses the real local file-open implementation, not an OS dialog or
+the human application. Follow-up source integration, upload, individual thread
+reply/resolve and fresh review are still separate requirements.
+
+The file-dialog source was integrated by normal signed commit
+`94151a0ae69a7eee635a886aa0b64f83242d80cf` (24584, exit 0). Its upload and
+review resolution are not implied by this local integration checkpoint.
