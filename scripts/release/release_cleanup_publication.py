@@ -6,7 +6,8 @@ from urllib.parse import quote
 
 from github_publication import _gh_json, check_release, check_repository
 from push_repository_context import remote_repository
-from release_cleanup_audit import CleanupRefused, audit_branch, git, synchronize_default
+from release_cleanup_audit import CleanupRefused, audit_branch, git, require_controller, synchronize_default
+from release_cleanup_tag import require_published_commit
 
 PUBLICATION_DEADLINE_SECONDS = 30
 
@@ -47,9 +48,12 @@ def published_audit(root: Path, controller: Path, repository: str, version: str,
     default = metadata.get("default_branch")
     if not isinstance(default, str) or not default:
         raise CleanupRefused("published repository default branch is missing")
+    require_controller(root, controller, default)
     # 入力誤りを同期前に拒否し、同期後の最新defaultで統合状態を再判定する。
     audit_branch(controller, default, branch, expected_oid)
+    published_commit = require_published_commit(controller, destination, tag, expected_oid)
     # 検証後のorigin設定差し替えで別repoを取り込まないよう検証済URLを使う。
     default_oid = synchronize_default(root, controller, default, destination=destination)
     result = audit_branch(controller, default, branch, expected_oid)
-    return {**result, "default_oid": default_oid, "publication_url": str(release["html_url"])}
+    return {**result, "default_oid": default_oid, "published_commit": published_commit,
+            "publication_url": str(release["html_url"])}
