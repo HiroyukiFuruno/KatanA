@@ -29,6 +29,10 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] #335 remote cleanup専用schema2/既存mandatory checker広告tuple照合・remote-only audit・canonical SHA256は8b79f43へ通常統合、単一intent失効/common-repo排他はc272424へ通常統合（実commit両exit0）。対象cleanup88PASS67.091秒とpush70PASS37.318秒は8件重複。独立P1の未知request置換/内容変更削除はmain実2assert RED後にidentity/digest照合で修復、最終session10PASS2.048秒actual0・fresh限定P0/P1/必須P2無し。evidence/cleanup-remote-admission-2026-10-15.md。未push、production publication caller/削除順序/receipt/scopedprune/workflow/全335・公開DoDは未完。
+
+- [/] 前ownerstream/vendor関心はnormalpush87932 actualexit0で公開a66c5e0449742ffe7329ea5b8af126f90d07897aへ統合済み。vendor指摘4279432020へreply4279736687/個別resolve、全REST/GQL取得nested欠落0、bot6185918089は同HEAD major issuesなし。既存manualpolicy3未解決は本人判断のまま。旧記録の未push/未回収表現は当時の履歴であり現状の停止条件ではない。全335/343/Ready/公開は未完。
+
 - [/] #335 ownerstreamはd17803c7/30070actual0/G、vendor trace P2はd0bb921d/13265actual0/Gへ通常関心別統合済み。final限定独立review P0/P1/必須P2残無し、root固定lock実接続compile88072actual0・pure4PASS・全releasePython307PASS97708actual0・Draftphase5PASS・diff/KML成功。通常docs統合後に一回normalpushを行い、その実exit/公開同一HEAD・個別replyresolve/fresh全reviewを回収する。全335/343/Ready/実packaged/Releaseは未完。
 
 - [/] #335 pre-push owner契約を実5RED（4assertFAIL/1missinglog）から修復。全文stream/追加コピー1MiB+1・owner絶対path・同argv/exit/signal・session環境保持/cleanupenv隔離を共用化。owner成功後の上限/LEFTHOOK/HEAD/receipt検査は維持。対象21PASS7.623秒、最終全release Python307PASS128.079秒/実97708exit0、4files AST/200行/30行成功。evidence/pre-push-owner-stream-2026-10-15.md。限定独立review/通常関心別commit/pushは未完、本番activation/全335/公開完了ではない。
