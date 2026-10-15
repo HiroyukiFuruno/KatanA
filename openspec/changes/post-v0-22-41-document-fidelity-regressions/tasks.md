@@ -29,6 +29,10 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] 上記owner/privateintent sourceはbbe3cebe/52072actual0/署名Gへ通常統合。77050最終対象21PASS・fresh独立限定P0/P1/必須P2無し・KML/diff成功をmain回収。docs通常統合→一回normalpushへ続行、未公開/production未接続/全335・Release未完を維持する。
+
+- [/] #335 既存reference hook先行/private intent部品を追加。全文stream委譲・同phase/通常exit/signal維持、owner絶対path、private0700/0600・native NOFOLLOW・digest/schema/common-dir/locked tip照合を実装。owner上限超過/PATH取り違え2assertREDとsignal241!=-15の実REDを修復。最終77050対象21PASS12.209秒・7files構文/200行/30行制約成功。全284PASS6538はsignal修正前と区別。新source未commit/未公開、production hook/publication lifecycle/localremote削除/prune/workflow・全335/公開DoDは未完。evidence/cleanup-owner-private-intent-2026-10-15.md。
+
 - [/] #335 locked transaction部品は819a52ef/47903actual0/署名Gへ通常統合。最終43563全cleanup36PASS28.672秒・KML/diff成功・独立限定P0/P1残無し。source未公開、docs通常統合後も既存hook先行/privateintent/publication/retention/remote削除/workflow接続・全DoDは継続する。公開170d56afのcurrent botは依頼6184600662一回で結果未回収、本人空reviewを承認にしない。
 
 - [/] #335 locked transaction部品のforeign root誤受理を実2repo84213actual1で再現し、prepared入口のcommon Git dir照合へ修復。43856transaction10PASS7.258秒、最終43563全cleanup36PASS28.672秒、限定独立再review P0/P1残無し。source55/test189/binding59行・関数30以下。evidence/cleanup-locked-transaction-2026-10-15.md。通常関心別統合・既存hook先行/private intent/publication/workflow接続・本番導入/実削除・全335/公開DoDは未完。
