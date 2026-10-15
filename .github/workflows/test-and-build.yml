@@ -39,6 +39,7 @@ jobs:
       CARGO_PROFILE_TEST_DEBUG: 0
       CARGO_PROFILE_DEV_STRIP: none
       CARGO_PROFILE_TEST_STRIP: none
+      KATANA_TEST_INVENTORY_ROOT: target/test-inventory/${{ github.run_id }}-${{ github.run_attempt }}
     strategy:
       fail-fast: false
       matrix:
@@ -148,7 +149,7 @@ jobs:
         shell: bash
         env:
           KATANA_HTML_FAILURE_SAMPLE: ${{ runner.os == 'macOS' && '1' || '0' }}
-          KATANA_TEST_INVENTORY_OUTPUT: target/test-inventory/normal.json
+          KATANA_TEST_INVENTORY_OUTPUT: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/normal.json
         run: bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
 
       - name: Upload original HTML failure sample (macOS)
@@ -203,18 +204,22 @@ jobs:
       - name: Run coverage
         if: runner.os == 'macOS' && github.event_name == 'pull_request'
         env:
-          KATANA_TEST_INVENTORY_DIRECTORY: target/test-inventory/coverage
+          KATANA_TEST_INVENTORY_DIRECTORY: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/coverage
         run: |
           rustup component add llvm-tools-preview
           curl -LsSf https://github.com/taiki-e/cargo-llvm-cov/releases/latest/download/cargo-llvm-cov-x86_64-apple-darwin.tar.gz | tar xz -C ~/.cargo/bin
           JOBS=1 just coverage
+
+      - name: Compare observed test inventory diagnostics
+        if: always() && runner.os == 'macOS'
+        run: python3 -B scripts/release/compare-test-invocations.py --directory "$KATANA_TEST_INVENTORY_ROOT"
 
       - name: Upload observed test inventory diagnostics
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-inventory-${{ runner.os }}
-          path: target/test-inventory
+          path: ${{ env.KATANA_TEST_INVENTORY_ROOT }}
           if-no-files-found: warn
 
   lint:

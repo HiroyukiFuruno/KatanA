@@ -29,6 +29,8 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [ ] #343 実invocation inventoryのnormal対coverage4phase比較を接続。raw/hash/footer/ignoredとCargo artifact・要求/実行argvを照合し、候補集合・features/環境/ソース条件の差を診断する。既存whole-run以外の選択条件、欠落phase/不正入力、source不一致は比較不能、execution_equivalent/reuse_authorizedは常にfalse。run_id/attempt単位で旧cacheを隔離。最終対象68PASS27.704秒/69205actual0、defaultactionlint22996actual0、独立最終P0/P1/必須P2無し。evidence/invocation-inventory-comparison-2026-10-15.md。通常統合/current reviewは未完。test再実行・skip・閾値変更はせず、全#343/検査削減/全OS実測の完了には代用しない。
+
 - [ ] #352 既存function-length APIの常時0行計測を、brace open.start/close.endの実位置へ限定修復。30定数/end-start行差/free・impl範囲を維持し、全repoへの新gate有効化はしない。正式integration7回帰は旧source23101exit101/4FAIL3PASS→修復88813exit0/7PASS、公式AST40531exit0/30PASS、fmt補正後67524exit0。evidence/function-length-contract-2026-10-15.md。通常統合/push・current review/公開未完。共有registry KAL0.5.2の同不備は別実装として診断/handoffし、今回の修復で全関数30行を証明したとはしない。
 
 - [/] #343 sourceは通常署名G da9cc55df2f2b0383e68ce7a3c6f07c7242d5dfb（88114actual0）、#335 squash P1 sourceは通常署名G a5aa2a18437a41ce3ba3518e3e679d340f8453c4（60350actual0）へ関心別正式統合。final inventory34PASS4.377秒/70087actual0、cleanup136PASS98.220秒/40938actual0・共通matcher統一後remote8PASS7.586秒/26063actual0・独立再確認P0/P1/必須P2無し。対象KML/両defaultactionlint/構文/diff成功。docs統合後一回normalpush→P1個別replyresolve/fresh reviewへ続行、全335/343/Ready/配布公開は未完。

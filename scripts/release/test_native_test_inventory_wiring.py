@@ -8,6 +8,27 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class InventoryWiringTests(unittest.TestCase):
+    def test_ci_compares_observed_inputs_without_replacing_existing_test_gates(self) -> None:
+        source = (ROOT / ".github/workflows/test-and-build.yml").read_text()
+        start = source.index("- name: Compare observed test inventory diagnostics")
+        end = source.index("- name: Upload observed test inventory diagnostics")
+        compare = source[start:end]
+        self.assertIn("if: always() && runner.os == 'macOS'", compare)
+        self.assertIn("python3 -B scripts/release/compare-test-invocations.py", compare)
+        self.assertIn('--directory "$KATANA_TEST_INVENTORY_ROOT"', compare)
+        self.assertLess(source.index("- name: Run coverage"), start)
+        self.assertNotIn("continue-on-error", compare)
+        self.assertNotIn("cargo test", compare)
+        self.assertNotIn("cargo llvm-cov", compare)
+
+    def test_ci_inventory_uses_current_run_and_attempt_not_restored_cache_records(self) -> None:
+        source = (ROOT / ".github/workflows/test-and-build.yml").read_text()
+        self.assertIn("KATANA_TEST_INVENTORY_ROOT: target/test-inventory/${{ github.run_id }}-${{ github.run_attempt }}", source)
+        self.assertIn("KATANA_TEST_INVENTORY_OUTPUT: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/normal.json", source)
+        self.assertIn("KATANA_TEST_INVENTORY_DIRECTORY: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/coverage", source)
+        self.assertIn("path: ${{ env.KATANA_TEST_INVENTORY_ROOT }}", source)
+        self.assertNotIn("KATANA_TEST_INVENTORY_OUTPUT: target/test-inventory/normal.json", source)
+
     def test_preflight_jobs_install_real_coverage_contract_tools(self) -> None:
         for filename, name in (("release-readiness.yml", "release-check"),
                                ("build-and-release.yml", "preflight")):
@@ -53,7 +74,7 @@ class InventoryWiringTests(unittest.TestCase):
         start = source.index("- name: Upload observed test inventory diagnostics")
         upload = source[start:source.index("\n  lint:", start)]
         self.assertIn("if: always()", upload)
-        self.assertIn("path: target/test-inventory", upload)
+        self.assertIn("path: ${{ env.KATANA_TEST_INVENTORY_ROOT }}", upload)
         self.assertNotIn("continue-on-error", source)
         self.assertIn("!github.event.pull_request.draft", source)
 
