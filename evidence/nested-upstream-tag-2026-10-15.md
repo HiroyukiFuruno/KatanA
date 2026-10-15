@@ -30,5 +30,10 @@ Public repository, published/non-draft/non-prerelease and URL checks remain.
 
 These are pure contract tests, not live proof of a nested GitHub release,
 current full coverage, current-HEAD approval, publication or cleanup success.
-Normal signed integration, normal push, individual review reply/resolve and
-fresh complete review retrieval remain required.
+Signed integration a9638417 and normal push88715 subsequently completed at
+published2703655e. Reply4282819292 was posted directly to the original finding,
+then its thread was resolved and confirmed by fresh complete retrieval:
+89threads, no nested pagination missing, REST161reviews/179comments/144conversation
+comments across two pages each. Bot6191882028 explicitly reviewed2703655e73 and
+reported no major issues. The three pre-existing manual-target policy threads
+remain unresolved; no human policy decision or public release is inferred.

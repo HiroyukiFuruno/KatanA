@@ -33,7 +33,7 @@
 
 - [/] #343 実invocation診断入口をnormal workspaceとcoverage4phaseへ接続。Cargo JSONのtest artifactだけからnative list/ignored・HEAD/tree/status/両lock/選択env/workerを記録し、元test/終了code/coverage条件/Draft policyを維持。実Cargo成功0/失敗101を含む対象34PASS2.779秒・CIresource10PASS・Bash/Zsh構文/両workflow defaultactionlint0、限定独立P0/P1/必須P2無し。doctest/llvm-cov artifact/Windowsnative/実test時binary未捕捉はcomplete=false/reuse_authorized=false、重複削減/全343完了ではない。evidence/native-invocation-inventory-2026-10-15.md。正式commit/pushへ続行。
 
-- [ ] current04 review5529761247/P1 4280360962・PRRT_kwDORm09y86sq7cn: squash/rebase時のhead非祖先によるcleanup拒否を修復。live merged PRのhead/merge/number一致を公開tag結合へ使用し、削除tip CAS/広告tupleはheadを保持。remote schema3 live再照合・schema1/2互換、local native update-ref旧値CAS/既存reference owner/prepared/使用中・変更tip拒否を維持。main全cleanup136PASS98.220秒/40938actual0、defaultactionlint51876actual0、live334 read-only binding成功。最初のfixture tag署名timeoutはfixture設定を補正し本番変更無し。evidence/cleanup-squash-merge-binding-2026-10-15.md。独立最終review/通常commit/push後の個別reply/resolve/fresh取得・実公開後cleanup・全335未完。
+- [/] review5529761247/P1 4280360962・PRRT_kwDORm09y86sq7cn: squash/rebaseのhead/merge結合修復はa5aa2a18へ通常統合・push済み。全cleanup136件とremote8件、独立review・個別reply/resolveを記録し、270のfresh全GQLでもresolvedを主査確認。削除tip CAS/既存owner/変更tip拒否は維持。repo rootのevidence/cleanup-squash-merge-binding-2026-10-15.md参照。レビュー修復の完了であり、実公開後cleanup・Issue335全体は未完。
 
 - [/] 前7commitsのnormalpush66321 actualexit0を回収、local/origin/PR346=04dbeea995309604b3a2ef7aa2d9a0c4f0feacfc・clean/ahead0behind0/masterclean/stash0/既存2WT。newHEAD review6187054029依頼から上記P1を取得し修復中。旧a66の承認を04へ流用しない。manualpolicy3は本人判断のまま、Ready/配布/公開未完。
 
@@ -225,8 +225,8 @@
 
 - [/] 協調取消2件を関心別通常commit/署名Gで統合: 文書・共有reader1ca93980d13af724c486a4b2c182a4c3310bb187（61556actual0）、画像699ee58fc792e47091a6164acf8c56b538cd35fc（21434actual0）。実FIFO RED doc20048/image24556→realworker doc146/image40/sharedFS3PASS、38438 AST23/strictalltargetsUIClippy/fmt actual0、34530 fullAST31/token8含む actual0。初compile/workerpath/AST失敗保持、規約補正・元worker/queue/size/品質維持。evidence/cooperative-local-read-cancellation-2026-10-07.md。docs通常統合/push/各replyresolve/fresh/current全gate/配布公開を継続、停止中OS syscall/codec内部の即時中断は非保証、本人app非操作。
 
-- [ ] current502933b9 review5435480274/P2 4201258867・PRRT_kwDORm09y86psGt3: 唯一image workerはdecode開始後にowner/generation取消を観測せず、古い読込・decodeが後続を待たせる。実body/現codec・resvg同期APIを確認。強参照owner延命・追加worker・描画方式変更は行わず、実FIFO/actual loaderのprivate回帰で取消後の不要読込を切分ける。codec内部/停止中OS syscallの即時中断は未保証。製品修復・runtime RED/GREEN・通常統合・current全gate未完。
-- [ ] current502933b9 review5435480274/P2 4201258873・PRRT_kwDORm09y86psGt-: 文書intake取消は全read後のdeliveryでのみ観測し、取消済みactive2本で後続がcapacity failureになる。design126-132の固定2worker/queue64/256MiBと停止不能OS syscallの非保証は維持し、既存実FIFO子processでread復帰後の協調取消を検証する。replacement/追加worker・品質閾値変更・本人app操作は行わない。製品修復・runtime RED/GREEN・通常統合・current全gate未完。
+- [/] review5435480274/P2 4201258867・PRRT_kwDORm09y86psGt3: imageの不要読込は実FIFO RED→協調取消・loader40件成功後699ee58fへ通常統合・push済み。270のfresh全GQLでも個別reply/resolve済みを確認。既存worker数・描画方式を維持し、codec内部/停止中OS syscallの即時中断は非保証。change-local evidence/cooperative-local-read-cancellation-2026-10-07.md参照。packaged/human/公開は別途未完。
+- [/] review5435480274/P2 4201258873・PRRT_kwDORm09y86psGt-: 文書intakeの協調取消は実FIFO RED→realworker文書146件・共有reader3件成功後1ca93980へ通常統合・push済み。270のfresh全GQLでも個別reply/resolve済みを確認。固定2worker/queue64/256MiBと停止不能OS syscallの非保証を維持。change-local evidence/cooperative-local-read-cancellation-2026-10-07.md参照。packaged/human/公開は別途未完。
 - [x] current502933b9に限る公式coverage60124 actual0: UI1171(ignore2)/native18/export13(257.98秒、既存fixture1filtered)/parallel143(ignore2)/serial18、meaningful0/strict文書100%未カバー0。report/独立checker actual0、JSON SHA256ae6dd47e43408f72323b3a685d92d2e5a523f10476696b6d6e22d9df5e1cbadd。package74591 actual0/deep strict ad-hoc署名/main-worker各Intel+ARM/全4slice minos13.0/plistv0.22.42、tmp/502933b9-package-verification.md。本人/clean-machine/全5公開受入とは別、新取消修復後へ流用しない。
 
 - [/] current ebdce22a review5435243464/P2 PRRT_kwDORm09y86prljY・4201042151: Failed画像label後Noneでsection未drawn/anchor欠落を実caller7946 runtime RED101/1PASS3assertFAILで再現。両Failed branchで既存label rect Someだけ返す最小修正後51072/最終83989 actual0、caller4・loader38・AST31（既存token8含む）・strictClippy/fmt成功。positive rect/anchor0..1/textureNone/Pending Noneを保持、同期fallback/画像IO/上流代替なし。初回98973 fixture compile101はREDにしない。通常統合/push/各replyresolve/fresh/new全gate・実配布公開は未完、ebd coverage60146は後続へ流用しない。
@@ -252,7 +252,7 @@
 
 - [/] workspace generation P2を17440 actual101/15PASS1assertFAILで再現（20674 fixture compile errorは別保存）。成功Openのdocumentset置換でSome requestだけ取消・None保持/is_loading再計算を実装、74603全workspace16PASS・87861全URL27PASS/actual0。Refresh/error/unfinished保持、Settings/GlobalWorkspace InMemory隔離・本人app非操作。公式static46428実行中、通常統合push/replyresolve/fresh/newgraph全gate/配布公開は未完。evidence/workspace-url-generation-review-2026-10-07.md。
 
-- [ ] current068 review5433007691/P2 PRRT_kwDORm09y86pm6yc・4199097415: workspace Open成功時のdocumentset clear/同local HTMLpath復元後、古targeted HTTP応答を受理し新文書を置換する。rootは実置換時だけSome request取消/None保護・is_loading再計算を設計、限定private poll/session回帰を準備。製品未編集、RED/GREEN/通常統合/push/replyresolve/fresh/currentgateは未完。上流次期へ移さずKatanA所有。
+- [/] review5433007691/P2 PRRT_kwDORm09y86pm6yc・4199097415: workspace置換時の古targeted応答は実assert RED→workspace16件/URL27件成功後3c777614へ通常統合・push済み。Some取消・None保護・is_loading再計算を実装し、270のfresh全GQLでも個別reply/resolve済みを確認。change-local evidence/workspace-url-generation-review-2026-10-07.md参照。全OS CI・packaged/human/公開は別途未完。
 
 - [/] queue修復b0088fb8f38f03ce2e415667cece05b8efaf8c52を通常precommit/署名Gで正式統合（49488 actual0）。最終URL27/AST23/strictClippy/fmt/check成功、EN/JAは実source commit18:16:12UTC/03:16:12JSTへ同期。通常docscommit/push・公開新HEAD各replyresolve/fresh/全gate・packaged受入・公開後処理は継続、旧5a coverage/CIを流用しない。
 
@@ -262,7 +262,7 @@
 
 - [/] currentreview4198242488画像watch独立化: 初期候補の27PASS4FAIL/次候補25PASS6FAILを保持し、rootはretry→既存cache→初期watch Pending→decodeの元順序へ補正。root91798 actual0/全loader31PASS、cold実PNG・未回復watch error診断・反復Ready Arc・Registered回復・旧revision拒否・atomic/GUI/missingparent/overflow/cache契約成功。watch failureだけでcacheを破棄せず、回復時のみ既存revisionで古結果を拒否。正常decode/queue errorをwatch errorへ置換しない。cursor5回帰/AST23/strictlint/fmt公式1256 actual0、両新P2の通常統合/公開reply/resolve/freshは未完。
 
-- [ ] current fe6b8e96 review5432002232 inline P2 PRRT_kwDORm09y86pk197/4198242488: readable PNGでもwatch登録失敗でdecodeを止める。実PNG+既存Failedイベント/回復を抑止した元Ready期限で14901 actual101/1FAILを再現。watch freshnessとdecodeの独立化、診断保持、反復失敗時Ready保持、再登録時古結果拒否を修正・検証中。evidence/image-watch-cursor-review-2026-10-07.md。上流次期とは別のKatanA所有。
+- [/] review5432002232/P2 PRRT_kwDORm09y86pk197/4198242488: watch登録失敗とdecodeを独立化し、実PNG RED→全loader31件成功後54462de7へ通常統合・push済み。診断・反復Ready保持・再登録時古結果拒否を保持し、270のfresh全GQLでも個別reply/resolve済みを確認。repo root evidence/image-watch-cursor-review-2026-10-07.md参照。packaged/human/公開は別途未完。
 - [/] 同review P2 PRRT_kwDORm09y86pk1-E/4198242505: cursor pointer-only keyのhotspot/size更新漏れと元Arc寿命欠落。旧ロジック抽出の実RED34319 actual101/2PASS3assertFAIL→元画像保持+geometry比較のGREEN28210 actual0/5PASS。workspace外依存の通常local/3OS検査入口へ回帰を接続。正式route47994は画像編集中のunused helperでactual101、成功扱いせずsource freeze後に再検査する。通常統合/push/reply/resolve/fresh/newHEAD全gateは未完。
 - [x] 公開fe6b8e96公式coverage40956 actual0、UI1144/native18/export13/parallel143/serial18/meaningful成功・既存ignore維持、strict文書100%未カバー0。report-only30790と独立checkeractual0/JSON SHA2566b86492d9a3e4e4ae251f85f64a5eedcca24eceaed55223158246e38b2d71cc0。本人用package7288 actual0/署名universal/minos13.0/version0.22.42は同source候補で、後続review修正へ流用しない。本人app/Terms非操作。
 
@@ -418,7 +418,7 @@
   - c2ed191bまでnormalpush58363 actualexit0・GitHub一致/upstream0/0/stash0/master clean。変更後公式coverage/supply-chain86558 exit0（UI1059/parallel143/serial18/実export13、既存ignore維持、meaningful未実行0/strict文書100%/供給網4分類PASS）。現HEADレビュー5998998843を依頼、全thread再取得でmanual-target P2だけ残存。新3OS cloudは進行中のため、旧失敗の解消は未確認。
   - 後続ライブ確認でc2ed191b macOS job111877277619のRun tests/Run coverageを含む全job success、Ubuntu build・CodeQLもsuccess。旧macOS実frame失敗は修正後cloudで通過確認。Windows buildはまだ進行中で全3OS完了ではない。後発KDV0.5.12 graph/observer変更へこのc2結果を流用しない。
 
-- [ ] 2026-10-05 current490df76a review PRR_kwDORm09y88AAAABQt3wcw P2 PRRT_kwDORm09y86pGLOg: 既存dirty HTML targetのbufferは保持されるがpreviewへdisk由来sourceを渡して不一致となる。preserved buffer由来sourceと移動先URL/fragmentの両立、実file RED→GREEN、全gate/正式統合/個別reply-resolve/fresh取得を継続。既存manual-target公開方針P2とは別件。
+- [/] P2 PRRT_kwDORm09y86pGLOg: dirty HTML targetのpreserved bufferと移動先URL/fragmentをpreviewへ渡す修復は実file RED→最終8回帰成功後62ab1a14へ通常統合・push済み。270のfresh全GQLでも個別reply/resolve済みを確認。change-local evidence/html-navigation-collision-review-2026-10-05.md参照。manual-target方針とは別件で、実packaged/原本fidelity/公開DoDは未完。
   - 2026-10-06 実fileのdisk青/unsaved赤で現490df76aのpreview不一致をRED再現。preserved bufferとrequested origin/fragmentからsourceを作る最小修正後、実RGB response/exact origin/dirty・固定・split・所有保持/same-path回帰を含む7件GREEN、format/diffcheck成功。実worker/canonical workspace入口・通常commit/push・個別reply-resolve/fresh review・変更後全gate/配布受入は継続。
   - 通常commit初回はAST行数210>200でexit1、未統合。source生成を共通化し検証→mutationの順序と責務を維持して184行へ整理。invalid origin時の文書/active path/preview history保持を含む8件GREEN、正規AST23件成功。閾値/除外/hook迂回なし、最終canonical/通常commit-push/各thread reply-resolve/変更後全gateは継続。
   - main最終実worker canonical8pass1836filtered39suites exit0、原本/process契約24+7成功。通常hookと署名Gで62ab1a14へsource正式統合。初回AST失敗を成功へ書換えず保持。通常push・当該thread返信/resolve・fresh review・変更後全coverage/package/原本/全配布/95点は未完了。
@@ -461,7 +461,7 @@
 
 - [/] 2026-10-05 current 8f212305実装のfresh release worker/runner再buildはexit0。DEBUG=false原本Office5は2回exit0（RSS delta195312/194784KiB、元196608維持）、multi-format38step・legal DOCX・実Sheet0→1→0・PPTX/XLSX/原本large PPTX cold1+warm10全exit0、終了資源全0。旧c626二回超過と原因未確定は保持しRSS修正済みとしない。canonical契約PASSと実PNG/geometryをKDV#58へhandoffし、独立95点・原本HTML・current review・全配布/公開DoDを継続。証跡evidence/current-p2-acceptance-2026-10-05.md。
 
-- [ ] 2026-10-04 current c62644f2 review5406778273追加P2: 4178163032/threadPRRT_kwDORm09y86oztRA（登録済み外部カスタム書体École/écoleのfallback照合）、4178163035/threadPRRT_kwDORm09y86oztRC（直接SetViewModeのHTML/Office availability）。回帰RED→最小修正→既存ゲート→正式push→各reply/resolve→fresh全取得を継続し、Draft維持。
+- [/] review5406778273追加P2 4178163032/PRRT_kwDORm09y86oztRA、4178163035/PRRT_kwDORm09y86oztRC: 実REDから登録書体662c9059・直接SetViewMode a7555b9dへ修復、aab3ddf8まで通常push・各reply/resolve済み。270のfresh全GQLでも両resolvedを確認。c62644f2は修復commitではなく当時のreview対象。change-local evidence/registered-font-viewmode-review-2026-10-05.md参照。全packaged/原本/公開DoDは別途未完、Draft維持。
   - 2026-10-05: 両回帰をtest-onlyで追加。初回buildとDEBUG診断runはdisk fullで失敗し、製品RED/受入証跡にはしない。使用中owned Cargo/runner終了確認後、公式cargo cleanのUI dev限定dry-run2121files/3.6GiB、実2116files/3.1GiBを再生成可能に整理。source/原本/release binary/siblingを保持、差分cacheだけCARGO_INCREMENTAL=0で再検証中。stash0/master clean/upstream0/0。
   - 再試行の全workspace buildも容量超過で実テスト前に失敗。既存全coverage raw JSON保全・owned Cargo終了確認後、当WTのcoverage用core dev生成物1691files/1.8GiBだけを公式dry-run→clean（再生成可能）。同じwarning/profile設定のUI --lib focused回帰へ絞ってまず製品REDを確認する。全workspace/coverageの最終DoDは削減しない。
   - 両製品REDを実確認（Name("École")要求がProportional、HTMLへの直接SplitがPreviewOnlyからSplitへ変更）。Unicode lowercase照合とPreviewOnly以外の直接action availability guardを最小修正、追加focused3件GREEN、fmt/AST23成功。全UIは1045pass/1fail/既存ignore2で、失敗はprofile隣接の実workerをclean後に未buildだったため。既存with-office-test-worker入口で再build・全UI再実行中。strict Clippy/正式履歴/push/個別replyresolve/current review/full coverage/受入を継続し、未検証を完了にしない。
@@ -478,7 +478,7 @@
   - 変更後公式just coverage exit0: UI1043/既存ignore2/main17/実export13/parallel143/既存ignore2/serial18、meaningful未実行0・strict surface100%/uncovered0、raw JSON15366622bytes保存。通常pushと両Unicode thread reply/resolve/current rereview、新source原本/配布受入を続行。
   - c62644f2通常push exit0・GitHub HEAD一致・upstream差0/0。metadata reply4178133293/lease reply4178133882→個別resolve後、mainも全thread/commentsをfresh再取得し両解決・nextpageなし・残るmanual-target方針thread一件のみと確認。current review5981260229依頼、Draft維持。署名clean checkpoint/JSON保全後のcoverage UI生成物限定3.0GiB整理（再生成可能）、新source locked release worker/runner再buildを開始。KRR PR105のUbuntu/reusable CI失敗は既存担当へhandoff、現在Draft・新registry版未公開。原本/全配布/95点/公開後処理は未完了。
 
-- [ ] 2026-10-04 latest HEAD761439e review P2 4177866298/thread PRRT_kwDORm09y86oy_ZO: Unicode localized alias École/request écoleをASCII case comparisonで不一致にする問題。回帰RED→同一Unicode casingで修正→全gate→正式push→個別reply/resolve→fresh reviewを継続。既存二件resolve/受入を現review全完了へ読み替えない。
+- [/] P2 4177866298/PRRT_kwDORm09y86oy_ZO: Unicode alias不一致は実SFNT RED→26件成功で16d70b90へ修復し、後段consumerもc62644f2まで通常統合・push済み。個別reply4178133293/resolveを記録し270のfresh全GQLでもresolved確認。change-local evidence/unicode-font-alias-review-2026-10-04.md参照。旧metadata単独結果をconsumer全体や原本/配布/公開の完了へ読み替えない。
   - 実SFNT matcher unavailableをRED再現、alias/request/dedupのUnicode lowercaseを既存request_keyへ統一して書体26件GREEN。fixture責務/共通record reader分離後AST23と全target strict Clippy成功。0件filter・fixture length assertion・fmt/AST失敗は成功証跡から除外し、基準不変。正式履歴・全coverage・通常push・個別reply/resolve・fresh review/変更後実受入を継続、証跡evidence/unicode-font-alias-review-2026-10-04.md。
   - source16d70b9と証跡8f98915は署名Gで正式履歴化。変更後公式just coverage exit0、UI1040/既存ignore2・main17・実export13・parallel143/既存ignore2・serial18、meaningful未実行0・strict文書surface100%/uncovered0。source保全後に生成物限定3.6GiB整理、stash0/master clean。通常push/個別replyresolve/current rereview/新source原本・全配布受入/公開は残し継続。
 
@@ -820,7 +820,7 @@
 
 ### 2026-10-02 current HEAD 8460bd91 review 回帰
 
-- [ ] 2026-10-03 current HEAD ba1bc215 review P1 4171200192 / thread PRRT_kwDORm09y86oivbN: reference/measured SHAが実render成果物bytesへ結合されず、任意hashとreceipt矩形で合格できる。実参照・packaged-main出力artifactの読込/実SHA、計測geometry/state/viewport/inputとrecorded packaged run ID/target/artifact identity照合を必須化し、missing/tampered/foreign-run回帰を追加する。限定validator/testは既存担当、mainは契約確認・統合review・正式履歴と各thread reply/resolve。実原本fidelity成功へ代用しない。
+- [/] P1 4171200192/PRRT_kwDORm09y86oivbN: 実render bytes/hash・geometry・run/target/main/worker結合は21条件RED→acceptance38件/gate16件成功後dd9595ccへ通常統合・push済み。個別reply4171374334/resolveを記録し270のfresh全GQLでもresolved確認。change-local evidence/render-artifact-binding-2026-10-03.md参照。validator修復の完了であり実原本producer/fidelity score/全packaged/公開は未完。
 - [/] 同時点ライブ確認: KatanA ba1bc215はDraft、8check成功・macOS/Windows Test and Build実行中。KRR最新公開0.4.22のまま、既存担当は依存更新18検査後に全gateへ進行。KDV0.5.9公開/non-yanked・KRR^0.4.22/KUC=0.4.1を再確認。KDV既存担当の6原本先頭page参照計測はmanifest/PDF/PNG/矩形整合の実検証済みだが、全sheet/slide、viewport投影、原本許容値、候補comparisonは未完了として維持。
 - [/] 新P1 4171200192: mainがJSON-only draftを引継ぎ、二段metrics manifest→実PNG bytes/hash/header寸法・pixel ratio、producer/input/viewport/state/geometry、run ID/target/main/sidecar、packaged_run側render_outputの相互照合を実装。receipt内部mutation無し。旧ba1bc215 moduleへ新3回帰を適用し21条件RED、修正後acceptance38件/gate16件GREEN。独立reviewのcontract-directory除外/古いfixture失敗は現sourceに非該当と実照合、一方unittest module起動のhelper import失敗は再現してfile-relative loadへ修正。最終54件・正式commit/push・個別返信/resolve/全再取得を継続。実原本producer/受入、許容値・score・公開は未完了。証跡evidence/render-artifact-binding-2026-10-03.md。
 - [x] 上記artifact結合P1はdd9595ccへ正式commit/通常push成功、最終unittest54件GREEN。comment4171200192へreply4171374334後、thread PRRT_kwDORm09y86oivbNを個別resolve。全conversation/review/thread再取得でP0/P1未解決0、既存manual公開方針P2のみ判断待ち。current HEADレビュー/CI、原本実producer/比較受入・公開は未完了としてDraftを維持。KRRは全操作の計測/公開版検証、KDV既存担当は原本frame/viewport変更/page倍率/grid scroll計測を継続中。
@@ -855,8 +855,10 @@
 
 ## 最新の限定検証（2026-10-15）
 
-- [/] public82のfresh全coverage25129は全4phase成功だがCheckedMap.size_hintの2meaningful行未実行でexit1。実serde文字列/Value mapの未知/既知hintと全entry契約を追加、対象42件94899exit0。局所混合reportのvisitor71/71をfresh全成功に代用しない。`evidence/canvas-coverage-contracts-2026-10-15.md`へ追記し、core test-inclusive strictClippy35976成功、通常hook付きcommit94587b53/54367exit0へ統合。新HEAD全gate/pushは未完。
-- [/] PR346 P2 4282450025: schema許可済みnestedtagの全suffixをexact repository prefix後から一回decodeし、API/Release identityを保持。versionはliteral slashの末尾成分だけ比較し、literal%2Fの誤正規化を実assert REDから修復。関連pure41件成功・独立P0/P1/必須P2無し、`evidence/nested-upstream-tag-2026-10-15.md`参照。通常署名commita9638417/58003exit0へ統合、push・個別reply/resolve・fresh全reviewは未完。
+- [x] public2703655eのfresh公式inventory全coverage6528actual0、元4phase/core258/UI1308+既存ignore2/export13+元filter1/parallel144+既存ignore2/serial18、meaningful0・strict document100%/uncovered0。開始終了clean HEAD/両lock一致。通常push88715actual0・bot6191882028 Reviewed270/major無し・fresh全GQL89/nested欠落0/REST161179144各2pagesも回収。repo root `evidence/current-gates-package-2703655e-2026-10-15.md`参照。新docs HEADのrequired CIや公開へ流用しない。
+- [x] 同clean270の既存macOS package8952actual0、main/worker双方Intel+ARM・全4slice minos13.0・Info v0.22.42・deep strict ad-hoc署名検査成功、実hash/開始終了guardを回収。本人app/設定/Terms非操作。上記証跡参照。static packageに限定し本人/clean-machine/全OS/全5公開asset受入とは別。
+- [/] public82のfresh全coverage25129actual1/CheckedMap.size_hint2欠落を、実serde map契約94587b53で修復。対象42件94899/core全target strict35976/通常hook54367成功→normalpush88715actual0→新270全coverage6528actual0で修復検証。局所混合reportや旧失敗runを成功へ書換えない。repo root `evidence/canvas-coverage-contracts-2026-10-15.md`参照。全258/公開は別途未完。
+- [/] PR346 P2 4282450025: nestedtag全suffixのexact prefix/一回decode/full identity/literal slash末尾versionを修復。関連pure41件・独立review成功→通常署名a9638417→normalpush88715actual0/public270→個別reply4282819292/resolve→fresh全89threadsで解決確認。repo root `evidence/nested-upstream-tag-2026-10-15.md`参照。manual-policy3未決/Ready/公開は別途未完。
 
 - [/] ce95公式inventory全coverage76455は全4phase test成功（UI1308/既存ignore2、parallel144/既存ignore2、serial18）だがmeaningful29未実行でactualexit1。元閾値/除外維持でCanvas実serde委譲・size_hint/全要素・診断/file_label契約を追加し、取消の到達不能重複分類を意味同一に整理。対象40PASS37926actual0・impactedClippy91493/テスト込みcore strict93428/正式AST23件6630/fmt/diff成功。独立reviewの未使用enumP1は実production経路不在で撤回し制約を記録。`evidence/canvas-coverage-contracts-2026-10-15.md`参照。通常署名統合/一回normalpush/新HEAD全coverage/current review/公開は未完。
 

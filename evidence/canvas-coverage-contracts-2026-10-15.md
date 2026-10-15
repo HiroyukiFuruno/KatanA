@@ -74,8 +74,12 @@ previously missing map lines. This report mixes full and targeted profiles;
 it is not a fresh full-gate pass. The cancellation zero-count segments are
 structural `?`/return locations, not new meaningful failures in the fresh gate.
 
-Mixed earlier profiles plus targeted tests are not a fresh full-gate result.
-Normal signed integration, one normal push hook, current-HEAD full coverage,
-fresh review and all release/package/publication requirements remain separate.
-The failed full-run log is preserved; this document does not claim that the
-29-line failure, all-OS acceptance or Issue258 is already complete.
+Mixed earlier profiles plus targeted tests were not used as a full-gate result.
+The map correction was integrated in signed commit94587b53 and normal push88715
+exited0 at published2703655e739473a60802a6b7be3cd5069266d48e.
+Its fresh official full coverage6528 subsequently exited0: all four phases,
+meaningful-line gate and strict document surface100%/zero uncovered passed.
+Begin/end clean source guards and both lock hashes matched. The failed ce95/82
+logs remain failure records, not relabeled passes. See
+`evidence/current-gates-package-2703655e-2026-10-15.md` for exact scope.
+All-OS packaged acceptance, Issue258 and public release remain separate.
