@@ -855,6 +855,9 @@
 
 ## 最新の限定検証（2026-10-15）
 
+- [/] public82のfresh全coverage25129は全4phase成功だがCheckedMap.size_hintの2meaningful行未実行でexit1。実serde文字列/Value mapの未知/既知hintと全entry契約を追加、対象42件94899exit0。局所混合reportのvisitor71/71をfresh全成功に代用しない。`evidence/canvas-coverage-contracts-2026-10-15.md`へ追記し、core test-inclusive strictClippy35976成功、通常hook付きcommit94587b53/54367exit0へ統合。新HEAD全gate/pushは未完。
+- [/] PR346 P2 4282450025: schema許可済みnestedtagの全suffixをexact repository prefix後から一回decodeし、API/Release identityを保持。versionはliteral slashの末尾成分だけ比較し、literal%2Fの誤正規化を実assert REDから修復。関連pure41件成功・独立P0/P1/必須P2無し、`evidence/nested-upstream-tag-2026-10-15.md`参照。通常署名commita9638417/58003exit0へ統合、push・個別reply/resolve・fresh全reviewは未完。
+
 - [/] ce95公式inventory全coverage76455は全4phase test成功（UI1308/既存ignore2、parallel144/既存ignore2、serial18）だがmeaningful29未実行でactualexit1。元閾値/除外維持でCanvas実serde委譲・size_hint/全要素・診断/file_label契約を追加し、取消の到達不能重複分類を意味同一に整理。対象40PASS37926actual0・impactedClippy91493/テスト込みcore strict93428/正式AST23件6630/fmt/diff成功。独立reviewの未使用enumP1は実production経路不在で撤回し制約を記録。`evidence/canvas-coverage-contracts-2026-10-15.md`参照。通常署名統合/一回normalpush/新HEAD全coverage/current review/公開は未完。
 
 - [/] #343 CI setup e1c18a47の通常push61674actual0/remote-PR一致0/0を回収。CD preflightのbin cacheが固定tool導入後に復元される構成を1assertREDで検出し、binだけcache対象から除外。registry/build cache維持、関連45PASS/11.036秒・actionlint成功。実cache内容/クラウド失敗を確認したとは主張せず、新通常統合/current review/Ready後実CI/全公開は未完。
