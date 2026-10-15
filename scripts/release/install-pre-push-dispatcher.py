@@ -74,12 +74,18 @@ def write_temporary_wrapper(repository: str, hook: Path) -> Path:
 
 
 def activate_wrapper(hook: Path, backup: Path, temporary: Path, original_mode: int) -> None:
-    os.replace(hook, backup)
+    # 置換前にownerを移動すると、割込後の通常pushが既存検査を迂回するためlinkで保持する。
+    os.link(hook, backup, follow_symlinks=False)
     try:
+        validate_regular(backup, "retained pre-push owner")
+        validate_regular(hook, "pre-push target")
+        if (not os.path.samefile(hook, backup)
+                or stat.S_IMODE(backup.stat().st_mode) != original_mode):
+            raise ValueError("pre-push owner changed during installation")
         os.replace(temporary, hook)
-    except OSError:
-        os.replace(backup, hook)
-        os.chmod(hook, original_mode)
+    except BaseException:
+        if hook.exists() and not hook.is_symlink() and os.path.samefile(hook, backup):
+            backup.unlink()
         raise
 
 
