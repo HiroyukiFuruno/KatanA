@@ -29,6 +29,8 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] 2026-10-15 #335 cleanup初段を実装: public stable Release確認前は同期mutation拒否。既存default controllerの同commonGit/default/clean/stash0とnative ff-only同期・再監査を接続し、使用中/未統合/保護/監査OID変更を保持。fetch/push先の不一致とmultiple URLを拒否、実Git二段insteadOfの2assert REDを修復しrewrite設定を保持条件へ追加。最終対象46173 actual0/14件9.781秒、4Python AST/200行・30行契約成功。2353全240件actual0は最終rewrite修正前と区別。実未公開Release拒否31623actual0/両WTHEAD・status・reflog不変。本番同期/削除は無し。通常統合/push・conditional local/remote deletion・activeWT証跡保持・scoped prune・workflow呼出/本番導入・全335/公開DoDは未完。evidence/cleanup-default-retention-2026-10-15.md。
+
 - [/] #335上記候補の最終修復後、94203 actual0/228件75.449秒、最終bounded public KDV/KRR batch43410 actual0、Lefthook validate/diff check成功、独立限定review P0/P1残0を回収。sourceは関心別通常commitへ統合: public0d56d696/49598 actual0/G、admission00624b78/91860 actual0/G、owner23222c20/26132 actual0。docs通常統合と一回の通常push/current HEAD reviewへ継続。本番dispatcherの活性、whole admission正常系、cleanup接続、全公開DoDは未完として維持する。
 
 - [/] 2026-10-15 #335 production admission候補を実装。既存ownerのexit0だけをfresh検査とする誤証明を実回帰でRED→修復し、private push session/nonce・fixed `just check`実行receipt・同HEAD/cleanに分離。root/nested Cargoと独立graphを通常hookの対象に含め、実Lefthook/Just wiring3件成功、skip/excludeはreceipt無し。installerのforeign hooks directory symlink誤受理は実Git RED→10件成功で修復。公開repo metadata/Release/registry checksum/crate identityとPAX/GNU前のgzip展開read境界を追加。Python対象53件67344 actual0、discovery223件9207 actual0、続く226件95494 actual0は途中候補の限定証跡で最終検査/通常統合を別回収する。live KDV0.5.12 70942/KRR runtime/assets0.4.23 34686各actual0は公開可視性追加後の照合、最終bounded reader再照合は未回収。本番installerは全既存worktree runtime互換確認まで拒否し、master編集や固定WT fallbackで迂回しない。全335の実downstream admission正常系・hook本番接続・cleanup、および全公開DoDは未完。evidence/production-push-admission-2026-10-15.mdへ証跡を集約する。
