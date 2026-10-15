@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 from owner_verification import VerificationSession
+from cleanup_existing_hook import capture_owner_input, exit_like_owner
 
 MAX_STDIN_BYTES = 1024 * 1024
 BACKUP_NAME = "pre-push.katana-existing"
@@ -73,7 +74,7 @@ def run_checker(root: Path, repository: str, argv: list[str], revision: str | No
     return int(result or 0)
 
 
-def checked_owner(root: Path, argv: list[str], payload: bytes, backup_path: Path):
+def checked_owner(root: Path, argv: list[str], backup_path: Path):
     before = head_revision(root)
     if backup_path.exists() or backup_path.is_symlink():
         if backup_path.is_symlink() or not backup_path.is_file():
@@ -84,21 +85,25 @@ def checked_owner(root: Path, argv: list[str], payload: bytes, backup_path: Path
         raise ValueError(f"required existing hook backup is missing: {backup_path}")
 
     with VerificationSession(root, before) as session:
-        status = run_hook([str(backup_path), *argv], payload, root, session.environment())
+        payload, status = capture_owner_input(
+            sys.stdin.buffer, backup_path, argv, limit=MAX_STDIN_BYTES,
+            cwd=root, environment=session.environment(),
+        )
         if status != 0:
-            return status, None
+            return status, None, payload
+        if len(payload) > MAX_STDIN_BYTES:
+            raise ValueError(f"pre-push input exceeds {MAX_STDIN_BYTES} bytes")
+        if os.environ.get("LEFTHOOK") == "0":
+            raise ValueError("disabled existing owner cannot provide fresh verification")
         after = head_revision(root)
         if before != after:
             raise ValueError(f"existing pre-push hook changed HEAD: {before} -> {after}")
-        return 0, session.verified_source()
+        return 0, session.verified_source(), payload
 
 
 def dispatch(repository: str, argv: list[str], backup: Path | None = None) -> int:
-    if os.environ.get("LEFTHOOK") == "0":
-        raise ValueError("disabled existing owner cannot provide fresh verification")
     root = active_root()
-    payload = read_bounded_stdin()
-    status, revision = checked_owner(root, argv, payload, backup or hooks_dir() / BACKUP_NAME)
+    status, revision, payload = checked_owner(root, argv, backup or hooks_dir() / BACKUP_NAME)
     if status != 0:
         return status
     return run_checker(root, repository, argv, revision, payload)
@@ -125,4 +130,4 @@ def main(arguments: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    exit_like_owner(main())

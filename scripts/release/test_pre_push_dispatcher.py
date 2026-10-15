@@ -66,7 +66,8 @@ class DispatcherTests(unittest.TestCase):
         result = self.run_dispatcher(b"x\n", "origin", "url", environment={"LEFTHOOK": "0"})
         self.assertEqual(result.returncode, 2)
         self.assertIn(b"disabled existing owner", result.stderr)
-        self.assertFalse(self.log.exists())
+        self.assertIn("existing:", self.log.read_text())
+        self.assertNotIn("checker:", self.log.read_text())
 
     def test_existing_runs_before_checker_with_same_input_and_args(self) -> None:
         result = self.run_dispatcher(b"refs/heads/main abc\n", "origin", "ssh://remote", "old", "new")
@@ -101,7 +102,8 @@ class DispatcherTests(unittest.TestCase):
     def test_input_is_bounded(self) -> None:
         result = self.run_dispatcher(b"x" * (1024 * 1024 + 1), "origin", "url")
         self.assertEqual(result.returncode, 2)
-        self.assertFalse(self.log.exists())
+        self.assertTrue(self.log.read_text().endswith("x" * (1024 * 1024 + 1)))
+        self.assertNotIn("checker:", self.log.read_text())
 
 
 if __name__ == "__main__":

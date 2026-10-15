@@ -14,9 +14,10 @@ INTENT_ENV = "KATANA_CLEANUP_INTENT"
 DIGEST_ENV = "KATANA_CLEANUP_INTENT_SHA256"
 
 
-def owner_environment() -> dict[str, str]:
+def owner_environment(environment: dict[str, str] | None = None) -> dict[str, str]:
     # 既存owner内の別Git操作に、単一削除用の入力を伝播させない。
-    return {key: value for key, value in os.environ.items() if key not in (INTENT_ENV, DIGEST_ENV)}
+    values = os.environ if environment is None else environment
+    return {key: value for key, value in values.items() if key not in (INTENT_ENV, DIGEST_ENV)}
 
 
 def exit_like_owner(status: int) -> None:
@@ -29,17 +30,18 @@ def exit_like_owner(status: int) -> None:
     raise SystemExit(status)
 
 
-def owner_command(path: Path, phase: str) -> list[str]:
+def owner_command(path: Path, phase: str | list[str]) -> list[str]:
     path = path.absolute()
     if path.is_symlink() or not path.is_file() or not os.access(path, os.X_OK):
-        raise CleanupRefused("existing reference hook is not a regular executable")
-    return [str(path), phase]
+        raise CleanupRefused("existing hook is not a regular executable")
+    arguments = [phase] if isinstance(phase, str) else phase
+    return [str(path), *arguments]
 
 
-def _forward(stream: BinaryIO, owner: BinaryIO | None) -> bytes:
+def _forward(stream: BinaryIO, owner: BinaryIO | None, limit: int) -> bytes:
     captured = bytearray()
     while chunk := stream.read(STREAM_CHUNK_BYTES):
-        remaining = MAX_TRANSACTION_BYTES + 1 - len(captured)
+        remaining = limit + 1 - len(captured)
         captured.extend(chunk[:remaining])
         if owner is not None:
             try:
@@ -49,12 +51,15 @@ def _forward(stream: BinaryIO, owner: BinaryIO | None) -> bytes:
     return bytes(captured)
 
 
-def capture_owner_input(stream: BinaryIO, path: Path | None, phase: str) -> tuple[bytes, int]:
+def capture_owner_input(stream: BinaryIO, path: Path | None, phase: str | list[str], *,
+                        limit: int = MAX_TRANSACTION_BYTES, cwd: Path | None = None,
+                        environment: dict[str, str] | None = None) -> tuple[bytes, int]:
     if path is None:
-        return _forward(stream, None), 0
+        return _forward(stream, None, limit), 0
     # 全入力は既存ownerへ渡し、追加検査用コピーだけを有界に保つ。
-    with subprocess.Popen(owner_command(path, phase), stdin=subprocess.PIPE, env=owner_environment()) as process:
-        payload = _forward(stream, process.stdin)
+    with subprocess.Popen(owner_command(path, phase), stdin=subprocess.PIPE, cwd=cwd,
+                          env=owner_environment(environment)) as process:
+        payload = _forward(stream, process.stdin, limit)
         if process.stdin is not None:
             try:
                 process.stdin.close()
