@@ -148,6 +148,7 @@ jobs:
         shell: bash
         env:
           KATANA_HTML_FAILURE_SAMPLE: ${{ runner.os == 'macOS' && '1' || '0' }}
+          KATANA_TEST_INVENTORY_OUTPUT: target/test-inventory/normal.json
         run: bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
 
       - name: Upload original HTML failure sample (macOS)
@@ -183,7 +184,8 @@ jobs:
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
             export LIBGL_ALWAYS_SOFTWARE=1
-            export VK_DRIVER_FILES="$(find /usr/share/vulkan/icd.d -name '*lvp*.json' -print -quit)"
+            export VK_DRIVER_FILES
+            VK_DRIVER_FILES="$(find /usr/share/vulkan/icd.d -name '*lvp*.json' -print -quit)"
             export WGPU_BACKEND=vulkan
           fi
           scripts/screenshot/run.sh \
@@ -200,10 +202,20 @@ jobs:
 
       - name: Run coverage
         if: runner.os == 'macOS' && github.event_name == 'pull_request'
+        env:
+          KATANA_TEST_INVENTORY_DIRECTORY: target/test-inventory/coverage
         run: |
           rustup component add llvm-tools-preview
           curl -LsSf https://github.com/taiki-e/cargo-llvm-cov/releases/latest/download/cargo-llvm-cov-x86_64-apple-darwin.tar.gz | tar xz -C ~/.cargo/bin
           JOBS=1 just coverage
+
+      - name: Upload observed test inventory diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-inventory-${{ runner.os }}
+          path: target/test-inventory
+          if-no-files-found: warn
 
   lint:
     name: Lint
