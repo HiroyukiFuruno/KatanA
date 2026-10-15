@@ -29,6 +29,12 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] #335 locked transaction部品は819a52ef/47903actual0/署名Gへ通常統合。最終43563全cleanup36PASS28.672秒・KML/diff成功・独立限定P0/P1残無し。source未公開、docs通常統合後も既存hook先行/privateintent/publication/retention/remote削除/workflow接続・全DoDは継続する。公開170d56afのcurrent botは依頼6184600662一回で結果未回収、本人空reviewを承認にしない。
+
+- [/] #335 locked transaction部品のforeign root誤受理を実2repo84213actual1で再現し、prepared入口のcommon Git dir照合へ修復。43856transaction10PASS7.258秒、最終43563全cleanup36PASS28.672秒、限定独立再review P0/P1残無し。source55/test189/binding59行・関数30以下。evidence/cleanup-locked-transaction-2026-10-15.md。通常関心別統合・既存hook先行/private intent/publication/workflow接続・本番導入/実削除・全335/公開DoDは未完。
+
+- [/] #335 native transaction削除直前の実tip照合部品へ着手。6429実一時Git4件成功後、release_cleanup_transaction.pyを追加し97907 actual0/8件5.371秒。preparedのold値zeroを現在tipと混同せず、変化した統合済み枝・異ref/複数/不正/過大入力・短縮OIDを保持/拒否する。既存source/tag/publication/auditとの全cleanup回帰38920実行中、独立readonly review未回収。新部品は未commit/未公開、既存hook先行接続・公開後admission・本番導入・実削除・全335/343/公開DoDは未完。
+
 - [/] 最終pending/auto/stale候補は89298公式URL63PASS2.61秒・13990AST23PASS13.54秒・68488全target external-fixture-acceptance strict actual0/7.22秒・31392順序9PASS・fmt/diff/KML成功。46332 workspace_openは1件で旧5件へ読み替えない。独立readonly限定P0/P1・必須P2無し。cleanup公開tag結合はad88b732、native transaction観測は1782a9f4へ通常署名G commit済み。URL source通常commit63430の実exit回収・docs統合・通常push一回・current reviewへ継続、全335/351/343/公開DoDは未完。
 
 - [/] #351 pending/auto/stale destination選択を追加修復。47957 actual101/1PASS2activepath assertFAIL後、旧payload/失敗抑止を維持しcurrent foregroundだけcached最新版の選択を適用。manualowner失効時は選択不変、destination generation不変。9326公式URL63PASS/2.66秒、31392順序9PASS、23948全target外部fixture strict actual0/5.90秒。30379 ASTは新fixture数値で22PASS1FAIL、定数化後13990再検査中。先行34123auto実RED→修復3138全URL60PASSも別記録。evidence/url-pending-intent-2026-10-15.md。独立最終review・通常統合/push・個別replyresolve/fresh・全公開DoDは継続。
