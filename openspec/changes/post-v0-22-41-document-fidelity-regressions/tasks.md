@@ -150,7 +150,7 @@
 - [/] 2026-10-14 #335 live Issue本文APIを追加。genuine_payloadsは既存32候補/全体30秒を維持し、404/PR除外とidentity不一致拒否、body保持を行う。既存validateの先行成功短絡は維持。root最終27UT/Werror actual0/0.002秒、実GitHub Issue335取得+PR346除外+body保持58543actual0。候補不正/期限切れ時にtransportへ進まない回帰を含む。payload取得だけ完了で、dependency分類・意味/公開照合・production pre-push接続・cleanupは未完。
 
 - [/] 2026-10-14 clean cbc19648のpackage8383は実exit0、native1m48s/ARM6m54s/Intel29m15s、Universal本体・worker両archとcodesign deep strict、Info.plist v0.22.42を独立確認。evidence/macos-package-cbc19648-2026-10-14.md。構成検証だけ完了で、本人起動・Terms・runtime/clean-machine/原本/RSS/各95/全OS/publicは未完。
-- [ ] 次期へ明示分離: macOS Reopenを伴う起動失敗は、本人のworkspaces JSON削除+重workspace除外で復旧。memleak/個別原因/現修復の解消を未証明として、fresh-process重session再起動受入・原因切分け・条件付きsafe-start復旧導線を追跡する。evidence/next-release-startup-recovery-2026-10-14.md。本人設定/アプリ操作はしない。
+- [ ] 次期へ明示分離: macOS Reopenを伴う起動失敗は、本人のworkspaces JSON削除+重workspace除外で復旧。memleak/個別原因/現修復の解消を未証明として、fresh-process重session再起動受入・原因切分け・条件付きsafe-start復旧導線を追跡する。evidence/next-release-startup-recovery-2026-10-14.md。日英CHANGELOGにも未解消の本人報告として明記し、製品修復済みとはしない。本人設定/アプリ操作はしない。
 
 - [/] 2026-10-14 #343 collector最終対象検証はrelease Python discovery全79件、警告error化で5.898秒/actual0（session7088）。指定cwdに存在しない ./native-list が呼出元cwdの別binaryへfallbackする境界を修復し、実ファイルfixtureの回帰を追加。POSIX限定収集・未計測条件の非等価・raw再parse照合を維持。通常commit/push・新HEAD review・全OS collectorとCIreuseのDoDは未完。
 
