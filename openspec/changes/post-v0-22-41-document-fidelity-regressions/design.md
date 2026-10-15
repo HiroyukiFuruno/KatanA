@@ -144,3 +144,9 @@ UI所有の順序表はpathとserialだけを保持し、本文bytes・frame・w
 固定件数上限は設けておらず、保持はpending要求の寿命と既存期限に従う。空queue・取消時の容量解放と、アプリ全体のRSS/性能予算の受入は別に検証する。
 
 実generation比較66866は旧候補actual101/新しいPDFを古いredirect応答でgeneration1→2へ置換するassert RED。修復後の同回帰、順序表の刈込み/空queue解放/counter境界、既存URL/形式移行/取消/失敗/reload、正式AST/strict lint/通常統合・公開レビューを必要とする。これは追加修復方針であり未検証を完了扱いしない。
+
+## URL応答と選択権の分離（Issue351、2026-10-15）
+
+本文の反映先とは別に、古い完了は選択中タブ・URL入力・global診断を上書きしない。最新完了serialはpath無しの失敗も含めて記録する。手動の選択変更はenqueue時に共有した小さなowner tokenを交換して識別し、URL応答による選択変更と区別する。これによりタブを往復しても手動操作を保持し、旧応答が先に返っただけで新応答の表示まで抑止しない。tokenは本文やContextを所有せず、旧要求の完了/取消で追加所有が解放される。
+
+background応答は個別文書の本文/診断を更新するが、反映前の選択path・URLタブ・入力・scroll要求・status/last_errorを復元する。元pathが残る場合は元文書を優先し、選択していた要求target自体が形式移行で消えた場合だけ実destinationへ追従する。queue全体のis_loadingはpoll側で集約し、snapshotで巻き戻さない。これはKatanA hostの状態回帰修正であり、KDV/KRR renderingやpackaged受入の証明には代用しない。

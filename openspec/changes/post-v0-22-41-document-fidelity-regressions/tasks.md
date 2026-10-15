@@ -29,6 +29,8 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [/] #351 current e88 review PRRT_kwDORm09y86smWvzの選択奪取を修復。旧57780 actual101/3assert、3986 actual101/形式移行・globalエラー3assert、実HTTP72201 actual101、逆順9411 actual101、workspace復元1465 actual101を確認。enqueue時の選択ownerと完了serialを分離し、手動選択/往復・移行先追従・backgroundのstatus/last_error・非同期workspace復元後の選択を保持する。最終83885公式URL53件/99142順序管理7件/65592workspace5件/4832AST23件/58576UI全target externalfeature strict/9341fmtはactual0。独立read-only限定機能P0/P1無し、fixture専用poll補完は撤去。evidence/url-selection-ownership-2026-10-15.md。通常統合/push・個別reply/resolve・fresh/全公開DoDは未完。
+
 - [/] #351最新current0837 review5527055431/P2 4278185039を採用。None/Some混在の無関係要求2件を14493 actual101で再現し、同sourceのみFIFO・異sourceは実反映先serial保護へ修復。16825公式URL42件/8106AST23件/69115UI全target externalfeature strictはactual0。旧redirect回帰は先行表示を要求し最終newer本文保持assertを維持、連続None/Noneと同source混在FIFOも維持。3e4e2b6dは先行serial関心の通常G commitで追加mixed候補の公開証拠ではない。最終format/workspace/通常統合push/個別replyresolve/fresh/全DoDを継続する。
 
 - [/] #351異source redirect合流の旧66866 actual101を修復。最終45514公式URL39件/13940順序管理等9件/51302workspace取消4件/60428AST23件/7543UI全target externalfeature strictClippy/95085fmtは各actual0。実反映先と順序照合を共用、空queueと取消でcapacity解放、counter枯渇は実poll経由の明示失敗を検証。表に固定件数上限はなくpending寿命/既存期限による保持でありRSS予算証明に代用しない。source通常統合/push/current review・全Issue/packaged/公開DoDは未完。evidence/url-redirect-destination-order-2026-10-15.md。
