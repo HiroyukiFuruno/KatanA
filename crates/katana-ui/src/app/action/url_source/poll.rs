@@ -59,8 +59,8 @@ impl KatanaApp {
                     }
                     /* WHY: URL入力欄の連続OpenUrlは既存の最終表示・履歴順を維持する。 */
                     (None, None) => true,
-                    /* WHY: target未確定の取得はredirectで既存文書と合流するため順序を保つ。 */
-                    _ => true,
+                    /* WHY: 異sourceのredirect合流は反映先serialで保護し、無関係なタブを止めない。 */
+                    _ => earlier.source_url == request.source_url,
                 }
             })
     }

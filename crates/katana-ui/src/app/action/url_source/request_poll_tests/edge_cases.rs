@@ -24,7 +24,7 @@ fn closed_target_is_discarded_even_behind_pending_shared_input() {
 }
 
 #[test]
-fn redirected_shared_input_and_target_keep_request_order() {
+fn redirected_shared_input_cannot_replace_newer_target() {
     let mut app = app();
     let url = "https://example.test/source.html";
     let target = super::super::document::remote_document_path(url, "html");
@@ -42,15 +42,16 @@ fn redirected_shared_input_and_target_keep_request_order() {
         .send(Ok(html(url, "second")))
         .expect("second response");
     app.poll_url_source(&egui::Context::default());
-    assert_eq!(source_body(&app, &target), None);
-    assert_eq!(app.state.url_tab.pending_url_requests.len(), 2);
+    assert_target_body(&app, &target, "<html><body>second</body></html>");
+    assert_eq!(app.state.url_tab.pending_url_requests.len(), 1);
     first.send(Ok(html(url, "first"))).expect("first response");
     app.poll_url_source(&egui::Context::default());
-    assert_eq!(
-        source_body(&app, &target).as_deref(),
-        Some("<html><body>second</body></html>")
-    );
+    assert_target_body(&app, &target, "<html><body>second</body></html>");
     assert!(app.state.url_tab.pending_url_requests.is_empty());
+}
+
+fn assert_target_body(app: &crate::shell::KatanaApp, target: &std::path::Path, expected: &str) {
+    assert_eq!(source_body(app, target).as_deref(), Some(expected));
 }
 
 #[test]

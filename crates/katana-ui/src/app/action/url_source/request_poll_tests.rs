@@ -7,6 +7,7 @@ use std::time::Instant;
 
 mod edge_cases;
 mod format_collision;
+mod mixed_targets;
 mod reload_tests;
 
 fn app() -> KatanaApp {
