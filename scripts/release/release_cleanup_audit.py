@@ -30,12 +30,16 @@ def common_directory(root: Path) -> Path:
     return Path(os.fsdecode(git(root, "rev-parse", "--path-format=absolute", "--git-common-dir").strip())).resolve()
 
 
-def require_controller(root: Path, controller: Path, default: str) -> None:
+def require_repository_scope(root: Path, controller: Path) -> None:
     if root.resolve() != Path(os.fsdecode(git(root, "rev-parse", "--show-toplevel").strip())).resolve():
         raise CleanupRefused("cleanup source is not a repository root")
     actual = Path(os.fsdecode(git(controller, "rev-parse", "--show-toplevel").strip())).resolve()
     if actual != controller.resolve() or common_directory(root) != common_directory(controller):
         raise CleanupRefused("default controller is not an existing worktree of this repository")
+
+
+def require_controller(root: Path, controller: Path, default: str) -> None:
+    require_repository_scope(root, controller)
     git(controller, "check-ref-format", "refs/heads/" + default)
     if git(controller, "symbolic-ref", "HEAD").strip() != ("refs/heads/" + default).encode():
         raise CleanupRefused("explicit controller is not on the default branch")

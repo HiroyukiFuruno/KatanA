@@ -6,10 +6,16 @@ from urllib.parse import quote
 
 from github_publication import _gh_json, check_release, check_repository
 from push_repository_context import remote_repository
-from release_cleanup_audit import CleanupRefused, audit_branch, git, require_controller, synchronize_default
+from release_cleanup_audit import CANONICAL_OID, CleanupRefused, audit_branch, git, require_controller
+from release_cleanup_audit import synchronize_default
 from release_cleanup_tag import require_published_commit
 
 PUBLICATION_DEADLINE_SECONDS = 30
+
+
+def verify_publication_oid(actual: str, expected: str | None) -> None:
+    if expected is not None and (CANONICAL_OID.fullmatch(expected) is None or actual != expected):
+        raise CleanupRefused("published tag differs from the requested publication source")
 
 
 def require_no_url_rewrites(worktree: Path) -> None:
@@ -37,7 +43,8 @@ def cleanup_destination(root: Path, controller: Path, repository: str) -> str:
 
 
 def published_audit(root: Path, controller: Path, repository: str, version: str,
-                    branch: str, expected_oid: str) -> dict[str, str]:
+                    branch: str, expected_oid: str, *, allow_absent: bool = False,
+                    publication_oid: str | None = None) -> dict[str, str]:
     destination = cleanup_destination(root, controller, repository)
     end = time.monotonic() + PUBLICATION_DEADLINE_SECONDS
     metadata = _gh_json(f"/repos/{quote(repository, safe='/')}", end)
@@ -50,10 +57,11 @@ def published_audit(root: Path, controller: Path, repository: str, version: str,
         raise CleanupRefused("published repository default branch is missing")
     require_controller(root, controller, default)
     # 入力誤りを同期前に拒否し、同期後の最新defaultで統合状態を再判定する。
-    audit_branch(controller, default, branch, expected_oid)
+    audit_branch(controller, default, branch, expected_oid, allow_absent=allow_absent)
     published_commit = require_published_commit(controller, destination, tag, expected_oid)
+    verify_publication_oid(published_commit, publication_oid)
     # 検証後のorigin設定差し替えで別repoを取り込まないよう検証済URLを使う。
     default_oid = synchronize_default(root, controller, default, destination=destination)
-    result = audit_branch(controller, default, branch, expected_oid)
+    result = audit_branch(controller, default, branch, expected_oid, allow_absent=allow_absent)
     return {**result, "default_oid": default_oid, "published_commit": published_commit,
-            "publication_url": str(release["html_url"])}
+            "publication_url": str(release["html_url"]), "default_branch": default}

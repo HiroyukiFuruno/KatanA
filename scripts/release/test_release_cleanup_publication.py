@@ -5,7 +5,18 @@ import tempfile
 import unittest
 
 from release_cleanup_audit import CleanupRefused, git
-from release_cleanup_publication import cleanup_destination
+from release_cleanup_publication import cleanup_destination, verify_publication_oid
+
+
+class PublishedSourceIdentityTests(unittest.TestCase):
+    def test_exact_publication_commit_matches_without_substitution(self):
+        self.assertIsNone(verify_publication_oid("a" * 40, "a" * 40))
+        self.assertIsNone(verify_publication_oid("b" * 64, "b" * 64))
+
+    def test_short_or_other_publication_commit_is_refused(self):
+        for expected in ("a" * 12, "b" * 40, "a" * 64):
+            with self.subTest(expected=expected), self.assertRaises(CleanupRefused):
+                verify_publication_oid("a" * 40, expected)
 
 
 class CleanupDestinationTests(unittest.TestCase):

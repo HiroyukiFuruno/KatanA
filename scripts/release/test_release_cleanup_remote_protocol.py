@@ -9,6 +9,8 @@ import sys
 import tempfile
 import unittest
 
+from cleanup_remote_inventory import remote_tip
+from release_cleanup_audit import CleanupRefused
 
 REFERENCE = "refs/heads/release/cleanup-fixture"
 GIT_TIMEOUT_SECONDS = 30
@@ -95,6 +97,23 @@ class RemoteDeletionProtocolTests(unittest.TestCase):
         self.assert_advertised_first()
         self.assertEqual(self.git("ls-remote", "origin", REFERENCE).stdout, b"")
         self.assertNotEqual(self.git("show-ref", "--verify", REFERENCE, check=False).returncode, 0)
+
+    def test_inventory_distinguishes_already_deleted_target(self):
+        branch = REFERENCE.removeprefix("refs/heads/")
+        self.assertEqual(remote_tip(self.client, str(self.remote), branch, self.first), self.first)
+        self.git("push", "origin", "--delete", REFERENCE)
+        self.assertIsNone(remote_tip(self.client, str(self.remote), branch, self.first))
+
+    def test_inventory_does_not_treat_changed_tip_as_absence(self):
+        self.git("--git-dir", str(self.remote), "update-ref", REFERENCE, self.second, self.first)
+        with self.assertRaises(CleanupRefused):
+            remote_tip(self.client, str(self.remote), REFERENCE.removeprefix("refs/heads/"), self.first)
+        self.assertIn(self.second.encode(), self.git("ls-remote", "origin", REFERENCE).stdout)
+
+    def test_transport_failure_is_not_reported_as_already_absent(self):
+        with self.assertRaises(CleanupRefused):
+            remote_tip(self.client, str(self.directory / "missing-remote"),
+                       REFERENCE.removeprefix("refs/heads/"), self.first)
 
 
 if __name__ == "__main__":
