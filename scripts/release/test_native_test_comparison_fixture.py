@@ -125,4 +125,3 @@ def _environment(root: Path) -> dict[str, str]:
     environment = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
     environment.update({"CARGO_TARGET_DIR": str(root / "target"), "CARGO_BUILD_JOBS": "1"})
     return environment
-
