@@ -1,16 +1,21 @@
 use super::URL_SOURCE_TIMEOUT;
 use crate::shell::KatanaApp;
-use crate::state::{FetchedUrlSource, HtmlSourceError, PendingUrlRequest};
+use crate::state::{HtmlSourceError, PendingUrlRequest};
 use std::sync::mpsc::TryRecvError;
 use std::time::{Duration, Instant};
 
 const URL_SOURCE_REPAINT_INTERVAL: Duration = Duration::from_millis(100);
+mod dispatch;
 
 impl KatanaApp {
     pub(crate) fn poll_url_source(&mut self, ctx: &egui::Context) {
+        self.assign_url_request_orders();
         let mut index = 0;
         while index < self.state.url_tab.pending_url_requests.len() {
             if self.discard_closed_url_request(index) {
+                continue;
+            }
+            if self.discard_unordered_url_request(index) {
                 continue;
             }
             if self.url_request_waits_for_earlier(index) || self.poll_url_request(ctx, index) {
@@ -18,6 +23,23 @@ impl KatanaApp {
             }
         }
         self.state.url_tab.is_loading = !self.state.url_tab.pending_url_requests.is_empty();
+        let earliest = self
+            .state
+            .url_tab
+            .pending_url_requests
+            .iter()
+            .filter_map(|request| request.order)
+            .min();
+        self.state.url_tab.request_order.retain_after(earliest);
+    }
+
+    fn assign_url_request_orders(&mut self) {
+        let tab = &mut self.state.url_tab;
+        for request in &mut tab.pending_url_requests {
+            if request.order.is_none() {
+                request.order = tab.request_order.allocate();
+            }
+        }
     }
 
     fn url_request_waits_for_earlier(&self, index: usize) -> bool {
@@ -104,23 +126,5 @@ impl KatanaApp {
                 .min(URL_SOURCE_REPAINT_INTERVAL),
         );
         true
-    }
-
-    fn consume_url_response(
-        &mut self,
-        index: usize,
-        response: Result<FetchedUrlSource, HtmlSourceError>,
-    ) {
-        let Some(request) = self.state.url_tab.pending_url_requests.remove(index) else {
-            return;
-        };
-        /* WHY: queueはstateに残し、形式移行による後続targetの付け替えを受け取る。 */
-        match response {
-            Ok(source) => {
-                self.apply_fetched_url_source(source, request.target_document);
-                self.state.layout.status_message = None;
-            }
-            Err(error) => self.fail_requested_url_source(error, request),
-        }
     }
 }

@@ -33,6 +33,7 @@ fn queue_request(
             response_rx,
             target_document,
             source_url: source_url.to_string(),
+            order: None,
             deadline: Instant::now() + REQUEST_TIMEOUT,
         });
     app.state.url_tab.is_loading = true;
@@ -97,6 +98,7 @@ fn successful_open_cancels_retargeted_request_but_keeps_unscoped_request() {
             response_rx: none_receiver,
             target_document: None,
             source_url: "https://example.test/unscoped.html".to_string(),
+            order: None,
             deadline: Instant::now() + REQUEST_TIMEOUT,
         });
 

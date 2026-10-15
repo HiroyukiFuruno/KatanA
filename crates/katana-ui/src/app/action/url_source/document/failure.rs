@@ -69,7 +69,7 @@ impl KatanaApp {
         self.state.url_tab.fail(error);
     }
 
-    fn url_failure_identity(
+    pub(super) fn url_failure_identity(
         source_url: &str,
         target: Option<&Path>,
     ) -> Option<(Option<BinaryDocumentFormat>, PathBuf)> {

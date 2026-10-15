@@ -40,6 +40,7 @@ fn request(
             response_rx,
             target_document,
             source_url: source_url.to_owned(),
+            order: None,
             deadline: Instant::now() + super::URL_SOURCE_TIMEOUT,
         },
     )

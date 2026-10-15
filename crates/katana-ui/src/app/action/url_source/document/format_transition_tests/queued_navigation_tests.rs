@@ -38,6 +38,7 @@ fn queued_binary_responses_follow_clean_target_migration() {
                 response_rx: first_receiver,
                 target_document: Some(html_path.clone()),
                 source_url: first_url.to_owned(),
+                order: None,
                 deadline: std::time::Instant::now() + std::time::Duration::from_secs(30),
             });
         app.state
@@ -47,6 +48,7 @@ fn queued_binary_responses_follow_clean_target_migration() {
                 response_rx: second_receiver,
                 target_document: Some(html_path.clone()),
                 source_url: second_url.to_owned(),
+                order: None,
                 deadline: std::time::Instant::now() + std::time::Duration::from_secs(30),
             });
         first_sender
@@ -98,6 +100,7 @@ fn queued_html_response_migrates_binary_target_back_to_html_identity() {
             response_rx: first_receiver,
             target_document: Some(html_path.clone()),
             source_url: first_url.to_owned(),
+            order: None,
             deadline: std::time::Instant::now() + std::time::Duration::from_secs(30),
         });
     app.state
@@ -107,6 +110,7 @@ fn queued_html_response_migrates_binary_target_back_to_html_identity() {
             response_rx: second_receiver,
             target_document: Some(html_path),
             source_url: second_url.to_owned(),
+            order: None,
             deadline: std::time::Instant::now() + std::time::Duration::from_secs(30),
         });
     first_sender
@@ -162,6 +166,7 @@ fn closing_migrated_target_cancels_retargeted_pending_request() {
             response_rx: first_receiver,
             target_document: Some(html_path.clone()),
             source_url: "https://example.test/first.pdf".to_owned(),
+            order: None,
             deadline: std::time::Instant::now() + std::time::Duration::from_secs(30),
         });
     app.state
@@ -171,6 +176,7 @@ fn closing_migrated_target_cancels_retargeted_pending_request() {
             response_rx: second_receiver,
             target_document: Some(html_path),
             source_url: "https://example.test/second.pdf".to_owned(),
+            order: None,
             deadline: std::time::Instant::now() + std::time::Duration::from_secs(30),
         });
     first_sender
@@ -216,6 +222,7 @@ fn preserved_dirty_or_collision_target_does_not_retarget_pending_request() {
                 response_rx: receiver,
                 target_document: Some(html_path.clone()),
                 source_url: "https://example.test/pending.pdf".to_owned(),
+                order: None,
                 deadline: std::time::Instant::now() + std::time::Duration::from_secs(30),
             });
 

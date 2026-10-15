@@ -5,6 +5,7 @@ use crate::shell::KatanaApp;
 use crate::state::{BinaryUrlSource, FetchedUrlSource};
 
 mod failure;
+mod target;
 mod transition;
 
 #[cfg(test)]
@@ -16,16 +17,9 @@ impl KatanaApp {
         source: FetchedUrlSource,
         target_document: Option<std::path::PathBuf>,
     ) {
+        let document_path = Self::url_response_document_path(&source, target_document.as_deref());
         match source {
             FetchedUrlSource::Html(source) => {
-                let document_path = target_document
-                    .as_ref()
-                    .filter(|path| {
-                        katana_core::document_source::BinaryDocumentFormat::from_path(path)
-                            .is_none()
-                    })
-                    .cloned()
-                    .unwrap_or_else(|| remote_document_path(&source.source_url, "html"));
                 self.migrate_binary_url_target(target_document.as_deref(), &document_path);
                 self.state
                     .url_tab
@@ -33,7 +27,7 @@ impl KatanaApp {
                 self.replace_html_document(source, document_path, None);
             }
             FetchedUrlSource::Document(source) => {
-                self.apply_fetched_document_source(source, target_document);
+                self.apply_fetched_document_source(source, target_document, document_path);
             }
         }
     }
@@ -42,20 +36,14 @@ impl KatanaApp {
         &mut self,
         source: BinaryUrlSource,
         target_document: Option<std::path::PathBuf>,
+        document_path: std::path::PathBuf,
     ) {
         let BinaryUrlSource {
             bytes,
             source_url,
             mime,
-            format,
+            ..
         } = source;
-        let document_path = target_document
-            .as_ref()
-            .filter(|path| {
-                katana_core::document_source::BinaryDocumentFormat::from_path(path) == Some(format)
-            })
-            .cloned()
-            .unwrap_or_else(|| remote_document_path(&source_url, format.extension()));
         let surface_source = match crate::preview_pane::DocumentSurfaceSource::remote(
             source_url.clone(),
             Some(&mime),
