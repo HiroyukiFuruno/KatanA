@@ -35,6 +35,9 @@ class CiRunAdmissionTests(unittest.TestCase):
         accepted = gate.index('success "CI passed', start)
         self.assertIn('python3 scripts/release/verify-ci-run.py', gate[start:accepted])
         self.assertIn('--json status,conclusion,url,headSha,databaseId', gate)
+        verifier = (root / "scripts/release/verify-ci-run.py").read_text()
+        self.assertIn('/jobs?filter=all&per_page=100', verifier)
+        self.assertNotIn('/attempts/', verifier)
 
     def verify(self, run=None, jobs=None, after=None, pages=None):
         run = run_record() if run is None else run
@@ -48,6 +51,28 @@ class CiRunAdmissionTests(unittest.TestCase):
         jobs = job_records()
         jobs.append(jobs[0] | {"id": 4, "name": "Lint", "conclusion": "skipped"})
         self.assertEqual(self.verify(jobs=jobs), (42, 2))
+
+    def test_partial_rerun_preserves_latest_success_for_each_platform(self):
+        jobs = job_records()
+        jobs[0]["run_attempt"] = jobs[2]["run_attempt"] = 1
+        jobs.append(jobs[1] | {"id": 4, "run_attempt": 1, "conclusion": "failure"})
+        self.assertEqual(self.verify(jobs=jobs), (42, 2))
+        self.assertEqual(self.verify(jobs=list(reversed(jobs))), (42, 2))
+
+    def test_latest_unsuccessful_job_cannot_reuse_older_success(self):
+        for conclusion in ("failure", "skipped", "cancelled"):
+            jobs = job_records()
+            jobs.append(jobs[1] | {"id": 4, "run_attempt": 1})
+            jobs[1]["conclusion"] = conclusion
+            with self.subTest(conclusion=conclusion), self.assertRaises(ValueError):
+                self.verify(jobs=jobs)
+            with self.subTest(conclusion=conclusion, order="reverse"), self.assertRaises(ValueError):
+                self.verify(jobs=list(reversed(jobs)))
+
+    def test_old_jobs_alone_cannot_describe_a_new_attempt(self):
+        jobs = [job | {"run_attempt": 1} for job in job_records()]
+        with self.assertRaises(ValueError):
+            self.verify(jobs=jobs)
 
     def test_successful_run_without_all_three_jobs_is_rejected(self):
         for index in range(3):
@@ -74,8 +99,8 @@ class CiRunAdmissionTests(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(ValueError):
                 self.verify(run=run_record() | {key: value})
 
-    def test_jobs_cannot_come_from_other_source_run_or_attempt(self):
-        for key, value in (("run_id", 43), ("run_attempt", 1),
+    def test_jobs_cannot_come_from_other_source_run_or_future_attempt(self):
+        for key, value in (("run_id", 43), ("run_attempt", 3), ("run_attempt", True),
                            ("head_sha", "b" * 40), ("id", True)):
             jobs = job_records()
             jobs[1][key] = value

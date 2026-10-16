@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read the exact live workflow attempt before accepting its three-OS result."""
+"""Read live run history before accepting the latest three-OS results."""
 
 import argparse
 import json
@@ -47,10 +47,10 @@ def main() -> int:
         before = _read(["gh", "api", endpoint])
         attempt = verify_identity(before, args.sha, args.run_id, repository)
         pages = _read(["gh", "api", "--paginate", "--slurp",
-                       f"{endpoint}/attempts/{attempt}/jobs?per_page=100"])
+                       f"{endpoint}/jobs?filter=all&per_page=100"])
         after = _read(["gh", "api", endpoint])
         verify_run(before, pages, after, args.sha, args.run_id, repository)
-        print(f"CI run {args.run_id} attempt {attempt}: all three platform jobs succeeded for {args.sha}")
+        print(f"CI run {args.run_id} snapshot attempt {attempt}: latest three-OS jobs succeeded for {args.sha}")
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
         print(f"CI run admission failed: {error}", file=sys.stderr)
         return 1

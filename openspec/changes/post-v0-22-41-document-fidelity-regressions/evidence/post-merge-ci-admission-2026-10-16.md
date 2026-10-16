@@ -8,13 +8,24 @@ merge SHA through `verify-version-bump-ci.sh`. The production caller is
 Previously that script accepted the workflow conclusion alone. It did not
 independently reject a missing or skipped platform job inside a successful run.
 
-The admission now reads the live run identity, all job pages for its explicit
-attempt, and the live run identity again. It requires the same repository, exact
-SHA, master push event, fixed CI workflow path, run and attempt throughout.
-Every macOS, Windows and Ubuntu `Test and Build` job must finish successfully.
-Duplicate identities, missing jobs, skipped/neutral/failing platform jobs,
-unexpected test matrix legs, incomplete pages and concurrent reruns fail closed.
+The admission reads the live run identity, all job-history pages, and the live
+run identity again. It requires the same repository, exact SHA, master push
+event, fixed CI workflow path and run throughout, with a stable root attempt.
+For each macOS, Windows and Ubuntu `Test and Build` job, its latest attempt must
+finish successfully. Older successful platform jobs in the same run can remain
+valid when only a failed job is rerun; an older success cannot hide a newer
+failure or skip. Duplicate identities, same-name/attempt ambiguity, missing jobs,
+future attempts, unexpected matrix legs, incomplete pages and concurrent reruns
+fail closed. At least one job must belong to the current root attempt.
 The existing wait window and latest-run selection are unchanged.
+
+The initial b271666f slice incorrectly required all jobs to have the same attempt.
+The partial-rerun regression reproduced that newly introduced overrestriction.
+The follow-up uses `filter=all` and chooses each platform's maximum attempt,
+independently of API record order. GitHub explicitly supports [specific-job
+reruns](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs?tool=webui)
+and [all-attempt job history](https://docs.github.com/en/rest/actions/workflow-jobs).
+No workflow was rerun as part of this investigation.
 
 PR-only lint, supply-chain and CodeQL jobs remain separate requirements. Their
 intentional push skips are not counted as successful execution and cannot
@@ -34,6 +45,12 @@ local inventory file receives CI skip/reuse authority.
   The helper exits zero; no CI or app was launched. This proves API compatibility
   and historical admission only, not current release HEAD success.
 - An independent read-only review found no mandatory findings.
+- Follow-up: the partial-rerun test fails on b271666f and all twelve admission
+  tests pass after repair, including both record orders and latest-failure
+  rejection. Independent high review identified the same P1 overrestriction and
+  confirmed the all-history/latest-per-job design. Actual KatanA run 31354395814
+  exposes 16 job records across two attempts, confirming API history compatibility;
+  it reran all eight jobs, so it is not evidence of a real partial-rerun success.
 
 ## Remaining
 

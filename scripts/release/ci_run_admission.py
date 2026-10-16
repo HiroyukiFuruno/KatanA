@@ -40,25 +40,36 @@ def _jobs(pages: list) -> list:
     return jobs
 
 
+def _job_identity(job: dict, sha: str, run_id: int, attempt: int, identities: set) -> int:
+    if not isinstance(job, dict) or not _positive(job.get("id")) or job["id"] in identities:
+        raise ValueError("CI jobs have invalid or duplicate identities")
+    identities.add(job["id"])
+    if (type(job.get("run_id")) is not int or job["run_id"] != run_id
+            or not _positive(job.get("run_attempt")) or job["run_attempt"] > attempt
+            or job.get("head_sha") != sha or not isinstance(job.get("name"), str)):
+        raise ValueError("CI job is not bound to the current source and run history")
+    return job["run_attempt"]
+
+
 def _verify_jobs(jobs: list, sha: str, run_id: int, attempt: int) -> None:
-    found, identities = set(), set()
+    latest, seen, identities, current = {}, set(), set(), False
     for job in jobs:
-        if not isinstance(job, dict) or not _positive(job.get("id")) or job["id"] in identities:
-            raise ValueError("CI jobs have invalid or duplicate identities")
-        identities.add(job["id"])
-        if (type(job.get("run_id")) is not int or job["run_id"] != run_id
-                or type(job.get("run_attempt")) is not int or job["run_attempt"] != attempt
-                or job.get("head_sha") != sha or not isinstance(job.get("name"), str)):
-            raise ValueError("CI job is not bound to the current source, run and attempt")
+        observed = _job_identity(job, sha, run_id, attempt, identities)
+        current = current or observed == attempt
         name = job["name"]
         if name in REQUIRED_JOBS:
-            if name in found or job.get("status") != "completed" or job.get("conclusion") != "success":
-                raise ValueError("required CI job is duplicated or did not execute successfully")
-            found.add(name)
+            if (name, observed) in seen:
+                raise ValueError("required CI job is duplicated in the same attempt")
+            seen.add((name, observed))
+            if name not in latest or observed > latest[name]["run_attempt"]:
+                latest[name] = job
         elif name.startswith("Test and Build"):
             raise ValueError("CI test matrix has an unrecognized job")
-    if found != REQUIRED_JOBS:
+    if not current or set(latest) != REQUIRED_JOBS:
         raise ValueError("CI did not complete every required platform job")
+    if any(job.get("status") != "completed" or job.get("conclusion") != "success"
+           for job in latest.values()):
+        raise ValueError("the latest required CI job did not execute successfully")
 
 
 def verify_run(before: dict, pages: list, after: dict, sha: str,
