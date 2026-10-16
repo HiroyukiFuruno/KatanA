@@ -39,6 +39,10 @@ Pre-built binaries are not yet available. Please build from source (see below).
 - **macOS:** [Homebrew](https://brew.sh) (the setup script will install it if missing)
 - **Windows / Linux:** Standard build tools (`build-essential` on Ubuntu, Visual Studio Build Tools on Windows)
 - **just:** Command runner used for local development and CI/CD tasks
+- **Git 2.45+:** Development/release evidence checks require the actual
+  `--no-lazy-fetch` capability to prevent missing-object downloads. Setup and
+  release preflight check the active Git on `PATH`; upgrade Git if rejected
+  (`brew upgrade git` on macOS). This is not a distributed-app runtime requirement.
 
 ### One-command Setup
 

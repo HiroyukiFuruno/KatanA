@@ -17,17 +17,17 @@ fn cell_style_handles_clipping_selection_grid_lines_and_color_fallbacks() {
 
         let mut clipped = grid_cell();
         clipped.clipped_bounds.width = 0;
-        super::paint_cell(ui, &painter, viewport, &clipped, false);
+        super::paint_cell(ui, &painter, viewport, &clipped, false, None);
 
         let mut selected = grid_cell();
         selected.selected = true;
         selected.appearance.fill_color = Some("invalid".to_owned());
-        super::paint_cell(ui, &painter, viewport, &selected, true);
+        super::paint_cell(ui, &painter, viewport, &selected, true, None);
 
         let mut active = grid_cell();
         active.active = true;
         active.appearance.fill_color = Some("#123456".to_owned());
-        super::paint_cell(ui, &painter, viewport, &active, false);
+        super::paint_cell(ui, &painter, viewport, &active, false, None);
     });
 
     assert_eq!(

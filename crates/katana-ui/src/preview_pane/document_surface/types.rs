@@ -83,11 +83,15 @@ impl DocumentFailure {
     }
 
     pub(crate) fn summary(&self) -> String {
+        /* WHY: HTMLなど形式未確定の取得失敗を、binary文書の失敗と誤表示しない。 */
+        let format = self
+            .format
+            .map(|format| format!("{} ", format.extension()))
+            .unwrap_or_default();
         format!(
-            "{} could not display this {} document",
+            "{} could not display this {}document",
             self.layer.label(),
-            self.format
-                .map_or("binary", BinaryDocumentFormat::extension)
+            format
         )
     }
 
@@ -129,12 +133,16 @@ pub(crate) struct DocumentSurface {
     pub(super) command_tx: Option<SyncSender<DocumentWorkerCommand>>,
     pub(super) event_rx: Receiver<DocumentWorkerEvent>,
     pub(super) frame: Option<DocumentFrame>,
+    pub(super) border_cache: super::painter_grid_borders::PreparedGridBorders,
+    pub(super) filter_ui: super::spreadsheet_filter_controls::SpreadsheetFilterUiState,
+    pub(super) fonts: super::font_lookup::DocumentFontLookup,
     pub(super) failure: Option<DocumentFailure>,
     pub(super) painter: DocumentFramePainter,
     pub(super) loading: bool,
     pub(super) command_in_flight: bool,
     pub(super) pending_commands: PendingDocumentCommands,
     pub(super) viewport: Option<DocumentViewport>,
+    pub(super) started_at: std::time::Instant,
 }
 
 impl std::fmt::Debug for DocumentSurface {
@@ -151,6 +159,17 @@ impl std::fmt::Debug for DocumentSurface {
 
 impl Drop for DocumentSurface {
     fn drop(&mut self) {
+        super::debug_log::DebugLog::write(
+            "document_surface_drop",
+            format_args!(
+                "generation={} elapsed_ms={} has_frame={} has_texture={} uri={}",
+                self.generation,
+                self.started_at.elapsed().as_millis(),
+                self.frame.is_some(),
+                self.painter.texture.is_some(),
+                self.source.uri
+            ),
+        );
         self.command_tx.take();
     }
 }

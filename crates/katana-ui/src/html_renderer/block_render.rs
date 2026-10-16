@@ -41,13 +41,24 @@ impl<'a> HtmlRenderer<'a> {
                 match align {
                     Some(TextAlign::Center) => {
                         let avail_w = self.ui.available_width();
-                        self.ui.allocate_ui_with_layout(
+                        let response = self.ui.allocate_ui_with_layout(
                             egui::vec2(avail_w, 0.0),
                             egui::Layout::top_down(egui::Align::Center),
                             |ui| {
                                 ui.set_width(avail_w);
                                 ui.label(rt);
                             },
+                        );
+                        self.trace_layout(
+                            "centered_heading_response",
+                            format_args!(
+                                "level={} response=({:.1},{:.1},{:.1},{:.1})",
+                                level,
+                                response.response.rect.min.x,
+                                response.response.rect.min.y,
+                                response.response.rect.max.x,
+                                response.response.rect.max.y,
+                            ),
                         );
                     }
                     _ => {
@@ -105,12 +116,26 @@ impl<'a> HtmlRenderer<'a> {
         }
 
         let label = egui::Label::new(job).wrap();
-        if centered {
+        let response = if centered {
             self.ui
-                .add_sized(egui::vec2(self.ui.available_width(), 0.0), label);
+                .add_sized(egui::vec2(self.ui.available_width(), 0.0), label)
         } else {
-            self.ui.add(label);
-        }
+            self.ui.add(label)
+        };
+        self.trace_layout(
+            "text_batch_response",
+            format_args!(
+                "centered={centered} chars={} response=({:.1},{:.1},{:.1},{:.1})",
+                batch
+                    .iter()
+                    .map(|node| collect_text(std::slice::from_ref(*node)).chars().count())
+                    .sum::<usize>(),
+                response.rect.min.x,
+                response.rect.min.y,
+                response.rect.max.x,
+                response.rect.max.y,
+            ),
+        );
     }
 
     pub(super) fn render_centered_children(&mut self, children: &[HtmlNode]) -> Option<LinkAction> {

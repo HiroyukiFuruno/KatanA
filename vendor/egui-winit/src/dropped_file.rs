@@ -17,6 +17,6 @@ impl egui::DroppedFile for NativeFile {
     }
 
     fn bytes(&self) -> Result<Vec<u8>, String> {
-        std::fs::read(&self.path).map_err(|error| error.to_string())
+        std::fs::read(&self.path).map_err(|err| err.to_string())
     }
 }

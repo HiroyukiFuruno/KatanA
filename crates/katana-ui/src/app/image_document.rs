@@ -5,6 +5,10 @@ use std::path::Path;
 
 pub(crate) struct ImageDocumentOps;
 
+#[cfg(test)]
+#[path = "image_document_canvas_tests.rs"]
+mod canvas_tests;
+
 impl ImageDocumentOps {
     pub(crate) fn is_image_path(path: &Path) -> bool {
         path.exists() && katana_core::workspace::TreeEntry::path_is_image(path)
@@ -18,6 +22,9 @@ impl ImageDocumentOps {
         fs: &FilesystemService,
         path: &Path,
     ) -> Result<Document, DocumentError> {
+        if katana_core::workspace::TreeEntry::path_is_canvas(path) {
+            return Ok(Self::new_binary_document(path));
+        }
         if Self::is_image_path(path) {
             return Ok(Self::new_document(path));
         }

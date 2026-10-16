@@ -30,6 +30,9 @@
 
 set -euo pipefail
 
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+ARCHITECTURE_VERIFIER="${SCRIPT_DIR}/verify-binary-architecture.py"
+
 PLATFORM="${1:-}"
 ASSET_PATH="${2:-}"
 
@@ -65,6 +68,7 @@ check_linux() {
         echo "$entries" | awk -F/ '{print $1}' | sort -u >&2
         fail "Linux tar.gz must contain exactly two top-level entries (got $top)"
     fi
+    python3 "$ARCHITECTURE_VERIFIER" linux "$path" || fail "Linux binary architecture mismatch"
     ok "Linux tar.gz contract satisfied ($path)"
 }
 
@@ -84,6 +88,7 @@ check_windows() {
     if ! echo "$names" | grep -qxF "kdv-office-worker.exe"; then
         fail "Windows zip must contain top-level file 'kdv-office-worker.exe'"
     fi
+    python3 "$ARCHITECTURE_VERIFIER" windows "$path" || fail "Windows binary architecture mismatch"
     ok "Windows zip contract satisfied ($path)"
 }
 
@@ -106,6 +111,7 @@ check_macos() {
     if ! echo "$names" | grep -qxF "KatanA Desktop.app/Contents/MacOS/kdv-office-worker"; then
         fail "macOS bundle must contain Contents/MacOS/kdv-office-worker"
     fi
+    python3 "$ARCHITECTURE_VERIFIER" macos "$path" || fail "macOS binary architecture mismatch"
     ok "macOS zip contract satisfied ($path)"
 }
 

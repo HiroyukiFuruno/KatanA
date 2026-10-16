@@ -242,8 +242,8 @@ fn matches_rgb(pixel: &image::Rgba<u8>, expected: [u8; 3], tolerance: u8) -> boo
 #[cfg(test)]
 mod tests {
     use super::{
-        assert_png_changed, assert_png_contains_rgb, locate_largest_color_region_in_image,
-        PngBounds,
+        PngBounds, assert_png_changed, assert_png_contains_rgb,
+        locate_largest_color_region_in_image,
     };
     use image::{Rgba, RgbaImage};
 
@@ -365,14 +365,10 @@ mod tests {
                 height: 1,
             },
         ] {
-            assert!(locate_largest_color_region_in_image(
-                &image,
-                [31, 95, 139],
-                0,
-                1,
-                Some(bounds)
-            )
-            .is_err());
+            assert!(
+                locate_largest_color_region_in_image(&image, [31, 95, 139], 0, 1, Some(bounds))
+                    .is_err()
+            );
         }
     }
 }

@@ -24,6 +24,9 @@ for argument in "$@"; do
         --pr-bootstrap) TASK_GATE_MODE="pr-bootstrap" ;;
         --release-artifact-pending) TASK_GATE_MODE="release-artifact-pending" ;;
         --post-release-evidence) TASK_GATE_MODE="post-release-evidence" ;;
+        --post-release-host) TASK_GATE_MODE="post-release-host" ;;
+        --document-source) TASK_GATE_MODE="source" ;;
+        --packaged-host) TASK_GATE_MODE="packaged-host" ;;
         --*) error "Unknown option: $argument"; exit 2 ;;
         *)
             if [[ -n "$EXPECTED_VERSION" ]]; then
@@ -131,7 +134,7 @@ rm -f "$LOCK_CHECK_OUTPUT"
 success "Cargo.lock is synced."
 
 # 5. Version increment or published-release guard
-if [[ "$TASK_GATE_MODE" == "post-release-evidence" ]]; then
+if [[ "$TASK_GATE_MODE" == "post-release-evidence" || "$TASK_GATE_MODE" == "post-release-host" ]]; then
     RELEASE_STATE=$(gh release view "v${TARGET_VERSION}" \
         --repo "${KATANA_RELEASE_REPO:-HiroyukiFuruno/KatanA}" \
         --json tagName,isDraft,isPrerelease \

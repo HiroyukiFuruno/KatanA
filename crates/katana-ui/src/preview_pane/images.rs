@@ -1,70 +1,17 @@
 use super::image_raster::{MAX_ZOOM, MIN_ZOOM};
 use crate::preview_pane::{ViewerState, ViewerTextureIdentity};
-use eframe::egui::{self, TextureHandle, Vec2};
+use eframe::egui::{self, Vec2};
+
+const IMAGE_LOADING_REPAINT_INTERVAL_MS: u64 = 16;
 
 pub use super::types::ImageLogicOps;
 
 impl ImageLogicOps {
-    pub(super) fn load_local_image_texture(
-        ui: &mut egui::Ui,
-        path: &std::path::Path,
-        id: usize,
-        preview_background: egui::Color32,
-    ) -> Option<TextureHandle> {
-        let bytes = std::fs::read(path).ok()?;
-        let color_img = if path
-            .extension()
-            .and_then(|ext| ext.to_str())
-            .is_some_and(|ext| ext.eq_ignore_ascii_case("svg"))
-        {
-            let svg = std::str::from_utf8(&bytes).ok()?;
-            let rasterized =
-                katana_core::markdown::svg_rasterize::SvgRasterizeOps::rasterize_svg(svg, 1.0)
-                    .ok()?;
-            let mut pixels = rasterized.rgba;
-            super::image_background::ImageBackgroundOps::composite_rgba_over_background(
-                &mut pixels,
-                preview_background,
-            );
-            egui::ColorImage::from_rgba_unmultiplied(
-                std::array::from_fn(|i| {
-                    if i == 0 {
-                        rasterized.width as usize
-                    } else {
-                        rasterized.height as usize
-                    }
-                }),
-                &pixels,
-            )
-        } else {
-            let rgba = image::load_from_memory(&bytes).ok()?.into_rgba8();
-            let size = std::array::from_fn(|i| {
-                if i == 0 {
-                    rgba.width() as usize
-                } else {
-                    rgba.height() as usize
-                }
-            });
-            let mut pixels = rgba.into_raw();
-            super::image_background::ImageBackgroundOps::composite_rgba_over_background(
-                &mut pixels,
-                preview_background,
-            );
-            egui::ColorImage::from_rgba_unmultiplied(size, &pixels)
-        };
-
-        Some(ui.ctx().load_texture(
-            format!("local_image_{id}"),
-            color_img,
-            egui::TextureOptions::LINEAR,
-        ))
-    }
-
     pub(crate) fn show_local_image(
         ui: &mut egui::Ui,
         path: &std::path::Path,
-        _alt: &str,
         id: usize,
+        loader: &super::local_image_loader::LocalImageLoader,
         mut viewer_state: Option<&mut ViewerState>,
         fullscreen_request: Option<&mut Option<usize>>,
         draw_background: impl FnOnce(&mut egui::Ui, egui::Rect, bool),
@@ -73,15 +20,59 @@ impl ImageLogicOps {
             ui.ctx(),
             ui.visuals().window_fill(),
         );
+        loader.set_repaint_context(ui.ctx());
         let texture_handle = if let Some(state) = viewer_state.as_mut() {
-            state.prepare_texture(ViewerTextureIdentity::local_file(path), preview_background);
+            state.prepare_texture(
+                ViewerTextureIdentity::local_file_revision(path, loader.path_revision(path)),
+                preview_background,
+            );
             if state.texture.is_none() || state.texture_background != Some(preview_background) {
-                state.texture = Self::load_local_image_texture(ui, path, id, preview_background);
-                state.texture_background = Some(preview_background);
+                match loader.request(path, preview_background) {
+                    super::local_image_loader::LocalImageStatus::Ready(image) => {
+                        state.texture = Some(ui.ctx().load_texture(
+                            format!("local_image_{id}"),
+                            image,
+                            egui::TextureOptions::LINEAR,
+                        ));
+                        state.texture_background = Some(preview_background);
+                        loader.release_active_image(path, preview_background);
+                    }
+                    super::local_image_loader::LocalImageStatus::Pending => {
+                        ui.ctx()
+                            .request_repaint_after(std::time::Duration::from_millis(
+                                IMAGE_LOADING_REPAINT_INTERVAL_MS,
+                            ));
+                        ui.label(&crate::i18n::I18nOps::get().preview.rendering);
+                    }
+                    super::local_image_loader::LocalImageStatus::Failed(error) => {
+                        return Some(
+                            ui.label(&crate::i18n::I18nOps::get().preview.missing_image)
+                                .on_hover_text(error)
+                                .rect,
+                        );
+                    }
+                }
             }
             state.texture.clone()
         } else {
-            None
+            match loader.texture(ui.ctx(), path, preview_background, id) {
+                super::local_image_loader::LocalTextureStatus::Ready(texture) => Some(texture),
+                super::local_image_loader::LocalTextureStatus::Pending => {
+                    ui.ctx()
+                        .request_repaint_after(std::time::Duration::from_millis(
+                            IMAGE_LOADING_REPAINT_INTERVAL_MS,
+                        ));
+                    ui.label(&crate::i18n::I18nOps::get().preview.rendering);
+                    None
+                }
+                super::local_image_loader::LocalTextureStatus::Failed(error) => {
+                    return Some(
+                        ui.label(&crate::i18n::I18nOps::get().preview.missing_image)
+                            .on_hover_text(error)
+                            .rect,
+                    );
+                }
+            }
         };
 
         let (texture_handle, width, height) = match texture_handle {
@@ -90,7 +81,7 @@ impl ImageLogicOps {
                 (t, size[0], size[1])
             }
             None => {
-                return super::image_fallback::ImageFallbackOps::show_image_fallback(ui, path);
+                return None;
             }
         };
 
@@ -143,6 +134,13 @@ impl ImageLogicOps {
         );
 
         if let Some(state) = viewer_state {
+            #[cfg(feature = "screenshot-test-hooks")]
+            crate::preview_pane::overlay_inspection::PreviewOverlayInspectionOps::increment(
+                ui.ctx(),
+                |inspection| {
+                    inspection.image_control_renders += 1;
+                },
+            );
             if crate::diagram_controller::DiagramControllerOps::draw_fullscreen_button(
                 ui,
                 container_rect,

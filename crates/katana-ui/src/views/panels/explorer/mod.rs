@@ -1,5 +1,6 @@
 pub mod breadcrumb;
 pub mod content;
+mod content_virtualization;
 pub mod dir_entry;
 pub mod dir_entry_paint;
 pub mod drag;

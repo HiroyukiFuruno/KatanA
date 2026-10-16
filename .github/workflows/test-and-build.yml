@@ -12,6 +12,7 @@ on:
       - '.github/workflows/**'
   pull_request:
     branches: [master]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,6 +30,16 @@ env:
 jobs:
   test:
     name: Test and Build
+    # WHY: Draft PRでは重い検査を起動せず、pushとReady PRだけを実行する。
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.draft)
+    # 全テストを維持し、巨大なOffice/V8依存のデバッグ情報だけでrunnerを満杯にしない。
+    env:
+      RUST_TEST_THREADS: 2
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_PROFILE_TEST_DEBUG: 0
+      CARGO_PROFILE_DEV_STRIP: none
+      CARGO_PROFILE_TEST_STRIP: none
+      KATANA_TEST_INVENTORY_ROOT: target/test-inventory/${{ github.run_id }}-${{ github.run_attempt }}
     strategy:
       fail-fast: false
       matrix:
@@ -62,6 +73,18 @@ jobs:
         with:
           bun-version: latest
 
+      # WHY: Windowsの旧target cacheは無効化されているため、取得元だけを再利用する。
+      - name: Cache Windows Cargo registry
+        id: windows_registry_cache
+        if: runner.os == 'Windows'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: ${{ runner.os }}-${{ runner.arch }}-cargo-registry-v1-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Cache Cargo registry & target
         if: runner.os != 'Windows'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -71,9 +94,9 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/git/db
             target
-          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-test-no-debug-info-v1-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-test-
+            ${{ runner.os }}-cargo-test-no-debug-info-v1-
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
@@ -91,8 +114,82 @@ jobs:
       - name: Check types
         run: cargo check --workspace
 
+      - name: Verify CI resource contract
+        run: |
+          python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
+          python3 -B -m unittest discover -s scripts/ci -p test_observe_ci_command.py -v
+          python3 -B -m unittest discover -s scripts/ci -p test_windows_ci_observation_contract.py -v
+          python3 -B -m unittest discover -s scripts/runner -p test_impacted.py -v
+
+      - name: Install cargo-sweep
+        run: |
+          cargo install cargo-sweep --locked
+          cargo sweep --version
+
+      - name: Verify Cargo sweep safety contract
+        run: python3 -B -m unittest discover -s scripts/ci -p test_cargo_sweep_guard.py -v
+
+      - name: Measure cold real-font lookup (Windows)
+        if: runner.os == 'Windows'
+        env:
+          DEBUG: 'true'
+        run: >-
+          cargo test --locked -p katana-ui --lib
+          preview_pane::document_surface::font_lookup::tests::real_background_worker_returns_result_with_identity_while_ui_paints
+          -- --exact --nocapture
+
+      - name: Test CommonMark cache contracts
+        run: cargo test --locked -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
+
+      - name: Test CommonMark HTML trace bounds
+        run: just test-commonmark-html-trace
+
+      - name: Test patched custom cursor cache
+        run: cargo test --locked -p katana-ui -p egui-winit --lib cursor_cache::tests
+
       - name: Run tests
-        run: cargo test --workspace
+        id: workspace_tests
+        shell: bash
+        env:
+          KATANA_HTML_FAILURE_SAMPLE: ${{ runner.os == 'macOS' && '1' || '0' }}
+          KATANA_TEST_INVENTORY_OUTPUT: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/normal.json
+          WINDOWS_REGISTRY_CACHE_HIT: ${{ steps.windows_registry_cache.outputs.cache-hit }}
+        run: |
+          if [[ "${RUNNER_OS}" == "Windows" ]]; then
+            python3 -B scripts/ci/observe-ci-command.py \
+              --output "${KATANA_TEST_INVENTORY_ROOT}/windows-timing.json" \
+              --cache-hit "${WINDOWS_REGISTRY_CACHE_HIT}" \
+              -- bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
+          else
+            bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
+          fi
+
+      - name: Upload original HTML failure sample (macOS)
+        if: failure() && runner.os == 'macOS' && steps.workspace_tests.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: original-html-failure-sample-${{ runner.os }}
+          path: target/html-startup-failures
+          if-no-files-found: warn
+
+      # WHY: 通常検査の失敗を維持し、描画phaseの診断だけを別実行へ隔離する。
+      - name: Trace failed HTML startup (macOS)
+        if: failure() && runner.os == 'macOS' && steps.workspace_tests.outcome == 'failure'
+        shell: bash
+        env:
+          DEBUG: 'true'
+        run: >-
+          bash scripts/ci/with-office-test-worker.sh
+          'cargo test --locked -p katana-ui --lib
+          app::action::html_navigation::tests::file_navigation_to_an_open_dirty_target_preserves_target_state
+          -- --exact --nocapture'
+
+      - name: Test screenshot harness contracts
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        shell: bash
+        env:
+          CARGO_TARGET_DIR: target/screenshot-harness
+        run: cargo test --locked --release --manifest-path scripts/screenshot/Cargo.toml
 
       - name: Run multi-format headless acceptance
         if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
@@ -100,7 +197,8 @@ jobs:
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
             export LIBGL_ALWAYS_SOFTWARE=1
-            export VK_DRIVER_FILES="$(find /usr/share/vulkan/icd.d -name '*lvp*.json' -print -quit)"
+            export VK_DRIVER_FILES
+            VK_DRIVER_FILES="$(find /usr/share/vulkan/icd.d -name '*lvp*.json' -print -quit)"
             export WGPU_BACKEND=vulkan
           fi
           scripts/screenshot/run.sh \
@@ -117,14 +215,28 @@ jobs:
 
       - name: Run coverage
         if: runner.os == 'macOS' && github.event_name == 'pull_request'
+        env:
+          KATANA_TEST_INVENTORY_DIRECTORY: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/coverage
         run: |
           rustup component add llvm-tools-preview
           curl -LsSf https://github.com/taiki-e/cargo-llvm-cov/releases/latest/download/cargo-llvm-cov-x86_64-apple-darwin.tar.gz | tar xz -C ~/.cargo/bin
           JOBS=1 just coverage
 
+      - name: Compare observed test inventory diagnostics
+        if: always() && runner.os == 'macOS'
+        run: python3 -B scripts/release/compare-test-invocations.py --directory "$KATANA_TEST_INVENTORY_ROOT"
+
+      - name: Upload observed test inventory diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-inventory-${{ runner.os }}
+          path: ${{ env.KATANA_TEST_INVENTORY_ROOT }}
+          if-no-files-found: warn
+
   lint:
     name: Lint
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     strategy:
       fail-fast: false
       matrix:
@@ -156,6 +268,17 @@ jobs:
         with:
           bun-version: latest
 
+      # WHY: compiled targetを共有せず、lintも現在のsourceから実行する。
+      - name: Cache Windows Cargo registry
+        if: runner.os == 'Windows'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: ${{ runner.os }}-${{ runner.arch }}-cargo-registry-v1-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Cache Cargo registry & target
         if: runner.os != 'Windows'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -178,7 +301,7 @@ jobs:
 
   supply-chain:
     name: Dependency Supply Chain
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -190,12 +313,12 @@ jobs:
           fallback: none
 
       - name: Check advisories, licenses, and sources
-        run: cargo deny check
+        run: bash scripts/ci/check-supply-chain.sh
 
   # CodeQL security scanning (Task 7.2 / 7.3).
   codeql:
     name: CodeQL Security Scan
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     permissions:
       security-events: write  # Required to upload SARIF results.

@@ -71,4 +71,96 @@ mod tests {
                 .is_empty()
         );
     }
+
+    #[test]
+    fn refresh_diagnostics_does_not_load_unloaded_markdown_documents() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let config_path = dir.path().join(".markdownlint.json");
+        let doc_path = dir.path().join("unloaded.md");
+        std::fs::write(&config_path, r#"{"default": false, "MD001": true}"#).unwrap();
+        std::fs::write(&doc_path, "# Title\n### Skipped\n").unwrap();
+        app.state.workspace.data = Some(Workspace::new(dir.path(), Vec::new()));
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .linter
+            .use_workspace_local_config = true;
+        app.state
+            .document
+            .open_documents
+            .push(katana_core::document::Document::new_empty(doc_path.clone()));
+
+        app.handle_action_refresh_diagnostics();
+
+        let document = &app.state.document.open_documents[0];
+        assert!(!document.is_loaded);
+        assert!(document.buffer.is_empty());
+        assert!(
+            app.state
+                .diagnostics
+                .get_file_diagnostics(&doc_path)
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn refresh_diagnostics_uses_loaded_dirty_buffer_without_reloading_from_disk() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let config_path = dir.path().join(".markdownlint.json");
+        let doc_path = dir.path().join("dirty.md");
+        std::fs::write(&config_path, r#"{"default": false, "MD001": true}"#).unwrap();
+        std::fs::write(&doc_path, "# Title\n").unwrap();
+        app.state.workspace.data = Some(Workspace::new(dir.path(), Vec::new()));
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .linter
+            .use_workspace_local_config = true;
+
+        app.handle_select_document(doc_path.clone(), true);
+        app.state.document.open_documents[0].update_buffer("# Title\n### Unsaved\n");
+        app.handle_action_refresh_diagnostics();
+
+        assert!(app.state.document.open_documents[0].is_dirty);
+        assert!(
+            app.state
+                .diagnostics
+                .get_file_diagnostics(&doc_path)
+                .iter()
+                .any(|diagnostic| diagnostic.rule_id == "MD001")
+        );
+    }
+
+    #[test]
+    fn refresh_diagnostics_evaluates_document_after_normal_load() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let config_path = dir.path().join(".markdownlint.json");
+        let doc_path = dir.path().join("loaded.md");
+        std::fs::write(&config_path, r#"{"default": false, "MD001": true}"#).unwrap();
+        std::fs::write(&doc_path, "# Title\n### Loaded\n").unwrap();
+        app.state.workspace.data = Some(Workspace::new(dir.path(), Vec::new()));
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .linter
+            .use_workspace_local_config = true;
+
+        app.handle_select_document(doc_path.clone(), true);
+        app.handle_action_refresh_diagnostics();
+
+        assert!(app.state.document.open_documents[0].is_loaded);
+        assert!(
+            app.state
+                .diagnostics
+                .get_file_diagnostics(&doc_path)
+                .iter()
+                .any(|diagnostic| diagnostic.rule_id == "MD001")
+        );
+    }
 }

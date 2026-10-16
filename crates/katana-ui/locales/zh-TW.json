@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "暫時工作區"
   },
   "preview": {
+    "canvas": {
+      "fit": "顯示完整畫布",
+      "empty": "空白畫布",
+      "unsupported_node": "不支援的節點",
+      "unsupported_fields": "不支援的屬性",
+      "unsupported_link": "尚不支援外部連結",
+      "unsupported_background": "尚不支援背景圖片",
+      "load_error": "無法載入畫布",
+      "loading": "正在載入畫布…"
+    },
     "preview_title": "預覽",
     "refresh_diagrams": "重新整理圖表",
     "rendering": "正在繪製 {kind}…",
@@ -124,6 +134,18 @@
     "highlight_hover": "懸停高亮",
     "show_diagram_controls": "圖表控制項",
     "toggle_slideshow": "切換投影片",
+    "spreadsheet_filter": {
+      "open": "開啟篩選器",
+      "title": "篩選值",
+      "loading": "正在載入值…",
+      "apply": "套用",
+      "clear": "清除",
+      "select_all": "全選",
+      "blank": "空白",
+      "non_blank": "非空白",
+      "no_values": "沒有可用的值",
+      "truncated": "僅顯示前面的值，無法套用篩選"
+    },
     "document_controller": {
       "previous": "上一頁、工作表或投影片",
       "next": "下一頁、工作表或投影片",

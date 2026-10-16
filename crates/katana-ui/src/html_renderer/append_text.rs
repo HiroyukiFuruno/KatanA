@@ -107,10 +107,20 @@ impl<'a> HtmlRenderer<'a> {
 
         if batch.len() == 1 {
             let mut action = None;
-            self.ui.vertical_centered(|ui| {
+            let response = self.ui.vertical_centered(|ui| {
                 let mut inner = HtmlRenderer::new_inner(ui, self.text_color, self.max_image_width);
                 action = inner.render_inline(batch[0]);
             });
+            self.trace_layout(
+                "centered_single_response",
+                format_args!(
+                    "response=({:.1},{:.1},{:.1},{:.1})",
+                    response.response.rect.min.x,
+                    response.response.rect.min.y,
+                    response.response.rect.max.x,
+                    response.response.rect.max.y,
+                ),
+            );
             return action;
         }
 
@@ -165,8 +175,25 @@ impl<'a> HtmlRenderer<'a> {
         }
 
         let row_height = new_size.y;
-        self.ui
+        let (_, response) = self
+            .ui
             .allocate_space(egui::vec2(bounds.width(), row_height));
+        self.trace_layout(
+            "centered_multi_response",
+            format_args!(
+                "batch_index={batch_index} memorized={memorized} content=({:.1},{:.1}) child_min=({:.1},{:.1},{:.1},{:.1}) response=({:.1},{:.1},{:.1},{:.1})",
+                content_size.x,
+                content_size.y,
+                child_ui.min_rect().min.x,
+                child_ui.min_rect().min.y,
+                child_ui.min_rect().max.x,
+                child_ui.min_rect().max.y,
+                response.min.x,
+                response.min.y,
+                response.max.x,
+                response.max.y,
+            ),
+        );
 
         action
     }

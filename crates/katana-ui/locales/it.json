@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "Area di lavoro temporanea"
   },
   "preview": {
+    "canvas": {
+      "fit": "Mostra l’intera tela",
+      "empty": "Tela vuota",
+      "unsupported_node": "Nodo non supportato",
+      "unsupported_fields": "Attributi non supportati",
+      "unsupported_link": "I collegamenti esterni non sono supportati",
+      "unsupported_background": "Le immagini di sfondo non sono supportate",
+      "load_error": "Impossibile caricare la tela",
+      "loading": "Caricamento della tela…"
+    },
     "preview_title": "Anteprima",
     "refresh_diagrams": "Aggiorna diagrammi",
     "rendering": "Rendering di {kind}…",
@@ -124,6 +134,18 @@
     "highlight_hover": "Evidenzia al Passaggio",
     "show_diagram_controls": "Controlli Diagramma",
     "toggle_slideshow": "Attiva/Disattiva Presentazione",
+    "spreadsheet_filter": {
+      "open": "Apri filtro",
+      "title": "Filtra valori",
+      "loading": "Caricamento valori…",
+      "apply": "Applica",
+      "clear": "Cancella",
+      "select_all": "Seleziona tutto",
+      "blank": "Vuoto",
+      "non_blank": "Non vuoto",
+      "no_values": "Nessun valore disponibile",
+      "truncated": "Vengono mostrati solo i primi valori; l'applicazione è disattivata"
+    },
     "document_controller": {
       "previous": "Pagina, foglio o diapositiva precedente",
       "next": "Pagina, foglio o diapositiva successiva",

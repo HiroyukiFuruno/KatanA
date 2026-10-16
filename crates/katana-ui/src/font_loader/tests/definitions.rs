@@ -71,7 +71,7 @@ fn test_custom_font_injection_invalid_path() {
 
 #[test]
 #[cfg(target_os = "macos")]
-fn test_macos_ui_font_setup_does_register_apple_color_emoji_globally() {
+fn test_macos_ui_font_setup_does_not_own_the_giant_apple_color_emoji_payload() {
     let preset = DiagramColorPreset::current();
     let fonts = SystemFontLoader::build_font_definitions(
         &preset.proportional_font_candidates,
@@ -86,8 +86,8 @@ fn test_macos_ui_font_setup_does_register_apple_color_emoji_globally() {
         .get(&FontFamily::Proportional)
         .expect("proportional family");
     assert!(
-        proportional.contains(&APPLE_COLOR_EMOJI_FONT_NAME.to_string()),
-        "UI symbol glyphs should include emoji fonts"
+        !proportional.contains(&APPLE_COLOR_EMOJI_FONT_NAME.to_string()),
+        "the built-in Noto emoji fallback must avoid a 183 MiB startup allocation"
     );
 
     let monospace = fonts
@@ -96,8 +96,18 @@ fn test_macos_ui_font_setup_does_register_apple_color_emoji_globally() {
         .get(&FontFamily::Monospace)
         .expect("monospace family");
     assert!(
-        monospace.contains(&APPLE_COLOR_EMOJI_FONT_NAME.to_string()),
-        "UI symbol glyphs should include emoji fonts"
+        !monospace.contains(&APPLE_COLOR_EMOJI_FONT_NAME.to_string()),
+        "the built-in Noto emoji fallback must avoid a 183 MiB startup allocation"
+    );
+    let owned_bytes = fonts
+        .fonts()
+        .font_data
+        .values()
+        .map(|font| font.font.len())
+        .sum::<usize>();
+    assert!(
+        owned_bytes <= 128 * 1024 * 1024,
+        "UI-owned font payload must stay below 128 MiB, got {owned_bytes} bytes"
     );
 }
 

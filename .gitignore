@@ -106,3 +106,4 @@ cpD
 **/assets/fixtures/mermaid/**/*.png
 **/assets/fixtures/mermaid/**/*.svg
 **/assets/fixtures/mermaid_parts/**/*.svg
+**/__pycache__/

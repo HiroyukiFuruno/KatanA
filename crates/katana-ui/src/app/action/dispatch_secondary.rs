@@ -60,7 +60,19 @@ impl KatanaApp {
             AppAction::IngestClipboardImage => self.handle_action_ingest_clipboard_image(),
             AppAction::SetSplitDirection(dir) => self.state.set_active_split_direction(dir),
             AppAction::SetPaneOrder(order) => self.state.set_active_pane_order(order),
-            AppAction::SetViewMode(mode) => self.state.set_active_view_mode(mode),
+            AppAction::SetViewMode(mode) => {
+                if mode != ViewMode::PreviewOnly
+                    && !crate::views::panels::preview::PreviewMenuAvailability::for_path(
+                        self.state
+                            .active_document()
+                            .map(|document| document.path.as_path()),
+                        crate::views::panels::preview::PreviewMenu::Tools,
+                    )
+                {
+                    return;
+                }
+                self.state.set_active_view_mode(mode);
+            }
             AppAction::ToggleScrollSync(is_on) => {
                 self.state.scroll.sync_override = Some(is_on);
             }
@@ -121,9 +133,25 @@ impl KatanaApp {
                 }
             }
             AppAction::ToggleSplitMode => {
+                if !crate::views::panels::preview::PreviewMenuAvailability::for_path(
+                    self.state
+                        .active_document()
+                        .map(|document| document.path.as_path()),
+                    crate::views::panels::preview::PreviewMenu::Tools,
+                ) {
+                    return;
+                }
                 self.state.set_active_view_mode(ViewMode::Split);
             }
             AppAction::ToggleCodePreview => {
+                if !crate::views::panels::preview::PreviewMenuAvailability::for_path(
+                    self.state
+                        .active_document()
+                        .map(|document| document.path.as_path()),
+                    crate::views::panels::preview::PreviewMenu::Tools,
+                ) {
+                    return;
+                }
                 let next_mode = match self.state.active_view_mode() {
                     ViewMode::Split => ViewMode::PreviewOnly,
                     ViewMode::PreviewOnly => ViewMode::CodeOnly,
@@ -150,3 +178,7 @@ impl KatanaApp {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "dispatch_secondary_tests.rs"]
+mod tests;

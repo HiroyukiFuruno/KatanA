@@ -101,7 +101,7 @@ impl UpdateDownloadOps {
             };
             let outpath = extract_to_dir.as_ref().join(rel_path);
 
-            if (*file.name()).ends_with('/') {
+            if file.name()?.ends_with('/') {
                 std::fs::create_dir_all(&outpath)?;
             } else {
                 /* WHY: Ensure parent directory exists before creating the file to handle nested path archives. */
@@ -211,5 +211,31 @@ mod tests {
         assert!(extracted_file.exists());
         assert_eq!(std::fs::read(&extracted_file).unwrap(), b"Hello from ZIP");
         assert!(extract_dir.join("somedir").is_dir());
+    }
+
+    #[test]
+    fn zip_update_extracts_nested_files_without_directory_traversal() {
+        use std::io::Write;
+
+        let directory = tempfile::tempdir().unwrap();
+        let archive_path = directory.path().join("update.zip");
+        let output = directory.path().join("application");
+        let mut archive = zip::ZipWriter::new(std::fs::File::create(&archive_path).unwrap());
+        let options = zip::write::SimpleFileOptions::default()
+            .compression_method(zip::CompressionMethod::Stored);
+        for entry in ["nested/application.txt", "../outside.txt"] {
+            archive.start_file(entry, options).unwrap();
+            archive.write_all(b"verified update bytes").unwrap();
+        }
+        archive.finish().unwrap();
+
+        UpdateDownloadOps::extract_update(&archive_path, &output, |_| {}).unwrap();
+
+        assert_eq!(
+            std::fs::read(output.join("nested/application.txt")).unwrap(),
+            b"verified update bytes"
+        );
+        assert!(!directory.path().join("outside.txt").exists());
+        assert!(!output.join("outside.txt").exists());
     }
 }

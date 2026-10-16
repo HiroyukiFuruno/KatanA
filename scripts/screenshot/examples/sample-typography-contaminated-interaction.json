@@ -1,0 +1,34 @@
+{
+  "schema_version": "1",
+  "name": "sample-typography-contaminated-interaction-must-fail",
+  "fixture": {
+    "settings": {
+      "theme": "light",
+      "preset": "KatanaLight",
+      "locale": "en",
+      "font_size": 14,
+      "explorer_visible": false,
+      "linter_enabled": false,
+      "preview_show_diagram_controls": true
+    },
+    "workspace_files": [{ "name": "sample.md", "source": "assets/fixtures/sample.md" }]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "logical_viewport": { "width": 1282.5, "height": 2387 },
+      "wait_seconds": 3.0
+    },
+    { "type": "open_file", "file_name": "sample.md", "wait_seconds": 8.0 },
+    { "type": "action", "action": { "set_view_mode": { "mode": "preview_only" } } },
+    { "type": "action", "action": { "hover_at": { "x": 1, "y": 1, "wait_seconds": 0.1 } } },
+    {
+      "type": "record_preview_geometry",
+      "output_name": "contaminated-preview-geometry",
+      "expected_content_viewport": { "width": 1187, "height": 2225 },
+      "expected_scroll_y": 0,
+      "require_clean_interaction_state": true
+    },
+    { "type": "quit" }
+  ]
+}

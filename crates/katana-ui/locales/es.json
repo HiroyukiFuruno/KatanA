@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "Espacio de trabajo temporal"
   },
   "preview": {
+    "canvas": {
+      "fit": "Mostrar todo el lienzo",
+      "empty": "Lienzo vacío",
+      "unsupported_node": "Nodo no compatible",
+      "unsupported_fields": "Atributos no compatibles",
+      "unsupported_link": "Los enlaces externos no son compatibles",
+      "unsupported_background": "Las imágenes de fondo no son compatibles",
+      "load_error": "No se puede cargar el lienzo",
+      "loading": "Cargando el lienzo…"
+    },
     "preview_title": "Vista previa",
     "refresh_diagrams": "Actualizar diagramas",
     "rendering": "Renderizando {kind}…",
@@ -124,6 +134,18 @@
     "highlight_hover": "Resaltado al pasar el ratón",
     "show_diagram_controls": "Controles del diagrama",
     "toggle_slideshow": "Alternar presentación de diapositivas",
+    "spreadsheet_filter": {
+      "open": "Abrir filtro",
+      "title": "Filtrar valores",
+      "loading": "Cargando valores…",
+      "apply": "Aplicar",
+      "clear": "Borrar",
+      "select_all": "Seleccionar todo",
+      "blank": "En blanco",
+      "non_blank": "No vacío",
+      "no_values": "No hay valores disponibles",
+      "truncated": "Solo se muestran los primeros valores; aplicar está desactivado"
+    },
     "document_controller": {
       "previous": "Página, hoja o diapositiva anterior",
       "next": "Página, hoja o diapositiva siguiente",

@@ -61,18 +61,8 @@ impl KatanaApp {
                 return;
             }
         };
-        let source = std::fs::read_to_string(&path)
-            .map_err(|error| error.to_string())
-            .and_then(|raw_html| {
-                katana_document_viewer::browser_session::HtmlBrowserSource::new(
-                    raw_html.clone(),
-                    url.as_str(),
-                )
-                .map(|source| (raw_html, source))
-                .map_err(|error| error.to_string())
-            });
-        match source {
-            Ok((raw_html, browser_source)) => self.replace_html_document_with_source(
+        match std::fs::read_to_string(&path) {
+            Ok(raw_html) => self.replace_html_document(
                 HtmlSource {
                     raw_html,
                     source_url: url.to_string(),
@@ -80,7 +70,6 @@ impl KatanaApp {
                 },
                 path,
                 Some(active_path),
-                browser_source,
             ),
             Err(error) => {
                 self.state.layout.status_message = Some((
@@ -97,8 +86,40 @@ impl KatanaApp {
         document_path: std::path::PathBuf,
         previous_path: Option<std::path::PathBuf>,
     ) {
+        self.replace_html_document_with_source(source, document_path, previous_path);
+    }
+
+    fn replace_html_document_with_source(
+        &mut self,
+        source: HtmlSource,
+        document_path: std::path::PathBuf,
+        previous_path: Option<std::path::PathBuf>,
+    ) {
+        let target_document_index = self
+            .state
+            .document
+            .open_documents
+            .iter()
+            .position(|document| document.path == document_path);
+        let document_index = target_document_index.or_else(|| {
+            previous_path.as_ref().and_then(|path| {
+                self.state
+                    .document
+                    .open_documents
+                    .iter()
+                    .position(|document| document.path == *path)
+            })
+        });
+        let target_collision = target_document_index.filter(|_| {
+            previous_path
+                .as_ref()
+                .is_some_and(|path| path != &document_path)
+        });
+        let browser_html = target_collision
+            .map(|index| self.state.document.open_documents[index].buffer.clone())
+            .unwrap_or_else(|| source.raw_html.clone());
         let browser_source = match katana_document_viewer::browser_session::HtmlBrowserSource::new(
-            source.raw_html.clone(),
+            browser_html,
             source.origin.clone(),
         ) {
             Ok(source) => source,
@@ -107,37 +128,12 @@ impl KatanaApp {
                 return;
             }
         };
-        self.replace_html_document_with_source(
-            source,
-            document_path,
-            previous_path,
-            browser_source,
-        );
-    }
-
-    fn replace_html_document_with_source(
-        &mut self,
-        source: HtmlSource,
-        document_path: std::path::PathBuf,
-        previous_path: Option<std::path::PathBuf>,
-        browser_source: katana_document_viewer::browser_session::HtmlBrowserSource,
-    ) {
-        let document_index = previous_path
-            .as_ref()
-            .and_then(|path| {
-                self.state
-                    .document
-                    .open_documents
-                    .iter()
-                    .position(|document| document.path == *path)
-            })
-            .or_else(|| {
-                self.state
-                    .document
-                    .open_documents
-                    .iter()
-                    .position(|document| document.path == document_path)
-            });
+        if let Some(index) = target_collision {
+            self.state.document.active_doc_idx = Some(index);
+            self.state.document.scroll_to_active_tab = true;
+            self.full_refresh_html_source(&document_path, browser_source);
+            return;
+        }
         let was_open = document_index.is_some();
         let index = document_index.unwrap_or_else(|| {
             self.state
@@ -185,6 +181,10 @@ fn preserve_html_preview_session(
         preview.path = document_path.to_path_buf();
     }
 }
+
+#[cfg(all(test, target_os = "macos"))]
+#[path = "html_navigation_diagnostics.rs"]
+mod diagnostics;
 
 #[cfg(test)]
 mod tests {
@@ -242,6 +242,279 @@ mod tests {
     }
 
     #[test]
+    fn navigation_to_an_open_target_reuses_target_and_preserves_source_document() {
+        use katana_platform::{PaneOrder, SplitDirection};
+
+        let mut app = test_app();
+        let source_path = std::path::PathBuf::from("Katana://URL/source.html");
+        let target_path = std::path::PathBuf::from("Katana://URL/target.html");
+        let source_document = source_with_body("https://example.com/source", "source");
+        let target_document = source_with_body("https://example.com/target", "target");
+        let navigated_target = source_with_body("https://example.com/navigated", "navigated");
+
+        app.state
+            .url_tab
+            .open_source(source_document.clone(), source_path.clone());
+        app.replace_html_document(source_document, source_path.clone(), None);
+        app.state
+            .set_active_view_mode(crate::state::ViewMode::CodeOnly);
+
+        app.state
+            .url_tab
+            .open_source(target_document.clone(), target_path.clone());
+        app.replace_html_document(target_document, target_path.clone(), None);
+        app.state.document.open_documents[1].is_pinned = true;
+        app.state
+            .set_active_view_mode(crate::state::ViewMode::Split);
+        app.state
+            .set_active_split_direction(SplitDirection::Vertical);
+        app.state.set_active_pane_order(PaneOrder::PreviewFirst);
+        let target_preview_history = app
+            .html_browser_navigation_history_for_test()
+            .expect("target preview history");
+
+        app.state
+            .url_tab
+            .open_source(navigated_target.clone(), target_path.clone());
+        app.replace_html_document(
+            navigated_target,
+            target_path.clone(),
+            Some(source_path.clone()),
+        );
+
+        assert_eq!(app.state.document.open_documents.len(), 2);
+        assert_eq!(
+            app.state
+                .document
+                .open_documents
+                .iter()
+                .map(|document| document.path.clone())
+                .collect::<Vec<_>>(),
+            vec![source_path.clone(), target_path.clone()]
+        );
+        assert_eq!(app.state.active_path(), Some(target_path.clone()));
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "<html><body>source</body></html>"
+        );
+        assert_eq!(
+            app.state.document.open_documents[1].buffer,
+            "<html><body>target</body></html>"
+        );
+        assert!(app.state.document.open_documents[1].is_pinned);
+        assert_eq!(app.state.active_view_mode(), crate::state::ViewMode::Split);
+        assert_eq!(app.state.active_split_direction(), SplitDirection::Vertical);
+        assert_eq!(app.state.active_pane_order(), PaneOrder::PreviewFirst);
+        assert_eq!(app.tab_previews.len(), 2);
+        assert!(
+            app.tab_previews
+                .iter()
+                .any(|preview| preview.path == source_path)
+        );
+        assert!(
+            app.tab_previews
+                .iter()
+                .any(|preview| preview.path == target_path)
+        );
+        assert_eq!(
+            app.state.url_tab.source_for_document(&source_path),
+            Some(&HtmlSource {
+                raw_html: "<html><body>source</body></html>".to_owned(),
+                source_url: "https://example.com/source".to_owned(),
+                origin: "https://example.com/source".to_owned(),
+            })
+        );
+        assert_eq!(
+            app.html_browser_navigation_history_for_test(),
+            Some({
+                let mut history = target_preview_history;
+                history.push("https://example.com/navigated".to_owned());
+                history
+            })
+        );
+    }
+
+    #[test]
+    fn file_navigation_to_an_open_dirty_target_preserves_target_state() -> TestResult {
+        use katana_platform::{PaneOrder, SplitDirection};
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
+
+        let temporary_directory = tempfile::tempdir()?;
+        let source_path = temporary_directory.path().join("source.html");
+        let target_path = temporary_directory.path().join("target.html");
+        std::fs::write(&source_path, "<html><body>source-file</body></html>")?;
+        std::fs::write(
+            &target_path,
+            "<html><body style=\"background: rgb(0, 0, 255)\">target-file</body></html>",
+        )?;
+
+        let mut app = test_app();
+        let source_url = url::Url::from_file_path(&source_path).map_err(|()| "source URL")?;
+        let target_url = url::Url::from_file_path(&target_path).map_err(|()| "target URL")?;
+        let source_document = source_with_body(source_url.as_str(), "source-document");
+        let target_document = source_with_body(target_url.as_str(), "target-document");
+        app.replace_html_document(source_document, source_path.clone(), None);
+        app.replace_html_document(target_document, target_path.clone(), None);
+        app.state.document.open_documents[1].update_buffer(
+            "<html><body style=\"background: rgb(255, 0, 0)\">unsaved-target</body></html>",
+        );
+        app.state.document.open_documents[1].is_pinned = true;
+        app.state
+            .set_active_view_mode(crate::state::ViewMode::Split);
+        app.state
+            .set_active_split_direction(SplitDirection::Vertical);
+        app.state.set_active_pane_order(PaneOrder::PreviewFirst);
+        app.state.document.active_doc_idx = Some(0);
+        let target_history = app
+            .tab_previews
+            .iter()
+            .find(|preview| preview.path == target_path)
+            .and_then(|preview| preview.pane.html_browser_navigation_history())
+            .expect("target preview history");
+
+        let mut target_navigation_url = target_url.clone();
+        target_navigation_url.set_fragment(Some("details"));
+        app.handle_html_navigation(
+            &egui::Context::default(),
+            source_path.clone(),
+            target_navigation_url.to_string(),
+        );
+
+        assert_eq!(app.state.document.open_documents.len(), 2);
+        assert_eq!(app.state.active_path(), Some(target_path.clone()));
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "<html><body>source-document</body></html>"
+        );
+        assert_eq!(
+            app.state.document.open_documents[1].buffer,
+            "<html><body style=\"background: rgb(255, 0, 0)\">unsaved-target</body></html>"
+        );
+        assert!(app.state.document.open_documents[1].is_dirty);
+        assert!(app.state.document.open_documents[1].is_pinned);
+        assert_eq!(app.state.active_split_direction(), SplitDirection::Vertical);
+        assert_eq!(app.state.active_pane_order(), PaneOrder::PreviewFirst);
+        assert_eq!(
+            app.tab_previews
+                .iter()
+                .filter(|preview| preview.path == source_path || preview.path == target_path)
+                .count(),
+            2
+        );
+        assert_eq!(
+            app.tab_previews
+                .iter()
+                .find(|preview| preview.path == target_path)
+                .and_then(|preview| preview.pane.html_browser_navigation_history()),
+            Some({
+                let mut history = target_history;
+                history.push(target_navigation_url.to_string());
+                history
+            })
+        );
+        let viewport =
+            katana_document_viewer::browser_session::HtmlBrowserViewport::new(320, 240, 1.0)?;
+        let startup_started = Instant::now();
+        let startup_accepted = app
+            .tab_previews
+            .iter_mut()
+            .find(|preview| preview.path == target_path)
+            .ok_or("target preview missing")?
+            .pane
+            .start_html_browser_for_test(viewport);
+        app.wait_for_html_browser_frame_for_test(
+            &egui::Context::default(),
+            Duration::from_secs(2),
+        )
+        .map_err(|error| {
+            let original_error = format!(
+                "{error}; startup_accepted={startup_accepted}; elapsed_ms={}; idle={:?}; generation={:?}; origin_matches={}; resources={:?}",
+                startup_started.elapsed().as_millis(),
+                app.html_browser_is_idle_for_test(),
+                app.html_browser_frame_generation_for_test(),
+                app.html_browser_origin_for_test().as_deref() == Some(target_navigation_url.as_str()),
+                app.preview_resource_counts_for_test(),
+            );
+            #[cfg(target_os = "macos")]
+            if let Some(sample) = super::diagnostics::capture_if_enabled() {
+                return match sample {
+                    Ok(path) => format!("{original_error}; sample={}", path.display()),
+                    Err(error) => format!("{original_error}; sample_error={error}"),
+                };
+            }
+            original_error
+        })?;
+        assert!(
+            app.html_browser_frame_matching_rgb_pixels_for_test([255, 0, 0])
+                .is_some_and(|pixels| pixels > 0),
+            "dirty target preview must render the preserved buffer"
+        );
+        assert_eq!(
+            app.html_browser_origin_for_test(),
+            Some(target_navigation_url.to_string())
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn same_path_reload_replaces_document_and_updates_browser_history() {
+        let mut app = test_app();
+        let path = std::path::PathBuf::from("Katana://URL/reload.html");
+        app.replace_html_document(
+            source_with_body("https://example.com/first", "first"),
+            path.clone(),
+            None,
+        );
+        app.replace_html_document(
+            source_with_body("https://example.com/second", "second"),
+            path.clone(),
+            Some(path.clone()),
+        );
+
+        assert_eq!(app.state.document.open_documents.len(), 1);
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "<html><body>second</body></html>"
+        );
+        assert_eq!(app.state.active_path(), Some(path));
+        assert_eq!(
+            app.html_browser_navigation_history_for_test(),
+            Some(vec![
+                "https://example.com/first".to_owned(),
+                "https://example.com/second".to_owned(),
+            ])
+        );
+    }
+
+    #[test]
+    fn invalid_browser_origin_keeps_existing_document_and_preview() {
+        let mut app = test_app();
+        let path = std::path::PathBuf::from("Katana://URL/invalid-origin.html");
+        app.replace_html_document(source("https://example.com/valid"), path.clone(), None);
+        let document_before = app.state.document.open_documents[0].clone();
+        let history_before = app
+            .html_browser_navigation_history_for_test()
+            .expect("existing preview history");
+
+        app.replace_html_document(
+            HtmlSource {
+                raw_html: "<html><body>invalid</body></html>".to_owned(),
+                source_url: "not-a-url".to_owned(),
+                origin: "not-a-url".to_owned(),
+            },
+            path.clone(),
+            Some(path.clone()),
+        );
+
+        assert_eq!(app.state.document.open_documents[0], document_before);
+        assert_eq!(app.state.active_path(), Some(path));
+        assert_eq!(
+            app.html_browser_navigation_history_for_test(),
+            Some(history_before)
+        );
+    }
+
+    #[test]
     fn consecutive_navigation_intents_preserve_active_tab_and_queue_order() -> TestResult {
         let (base_url, server) = navigation_server()?;
         let mut app = test_app();
@@ -289,8 +562,12 @@ mod tests {
     }
 
     fn source(url: &str) -> HtmlSource {
+        source_with_body(url, "browser")
+    }
+
+    fn source_with_body(url: &str, body: &str) -> HtmlSource {
         HtmlSource {
-            raw_html: "<html><body>browser</body></html>".to_owned(),
+            raw_html: format!("<html><body>{body}</body></html>"),
             source_url: url.to_owned(),
             origin: url.to_owned(),
         }

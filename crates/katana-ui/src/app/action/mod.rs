@@ -3,8 +3,10 @@ mod clipboard_file_url;
 pub(crate) mod clipboard_image;
 #[cfg(target_os = "macos")]
 mod clipboard_image_macos;
+mod closed_preview_memory;
 mod demo_bundle;
 mod dispatch;
+mod dispatch_panels;
 mod dispatch_secondary;
 mod dispatch_tertiary;
 mod file_open;
@@ -87,14 +89,39 @@ impl ActionOps for KatanaApp {
             .iter()
             .map(|d| &d.path)
             .collect();
+        let removed_document_preview = self.tab_previews.iter().any(|preview| {
+            !open_paths.contains(&preview.path)
+                && katana_core::workspace::TreeEntry::path_is_document(&preview.path)
+        });
+        /* WHY: 文書を先に閉じても、最後のMarkdown/HTMLを閉じるまで解放意図を保持する。 */
+        self.closed_document_preview_memory_pending |= removed_document_preview;
         self.tab_previews.retain(|t| open_paths.contains(&t.path));
         self.state
             .url_tab
             .document_tabs
             .retain(|tab| open_paths.contains(&tab.document_path));
+        self.state.url_tab.pending_url_requests.retain(|request| {
+            request
+                .target_document
+                .as_ref()
+                .is_none_or(|path| open_paths.contains(path))
+        });
+        self.state.url_tab.is_loading = !self.state.url_tab.pending_url_requests.is_empty();
+        let transition = closed_preview_memory::ClosedPreviewTransition {
+            removed_document_preview: self.closed_document_preview_memory_pending,
+            open_documents_empty: open_paths.is_empty(),
+            previews_empty: self.tab_previews.is_empty(),
+        };
+        if closed_preview_memory::should_relieve_memory(transition) {
+            crate::preview_pane::DocumentWorkerLifecycle::request_closed_preview_memory_relief();
+            self.closed_document_preview_memory_pending = false;
+        } else if !transition.open_documents_empty || !transition.previews_empty {
+            crate::preview_pane::DocumentWorkerLifecycle::cancel_closed_preview_memory_relief();
+        }
     }
 
     fn process_action(&mut self, ctx: &egui::Context, action: AppAction) {
+        let previous_active_path = self.state.active_path();
         self.dispatch_action(ctx, action);
         self.cleanup_closed_tab_previews();
         let mut inactive_but_focused_path = None;
@@ -110,6 +137,10 @@ impl ActionOps for KatanaApp {
             self.handle_select_document(path, true);
         }
         self.close_diff_review_if_tab_removed();
+        if self.state.active_path() != previous_active_path {
+            /* WHY: 選択を往復しても、開始済みの取得に手動選択を上書きさせない。 */
+            self.state.url_tab.selection_owner = std::sync::Arc::new(());
+        }
     }
 
     fn handle_show_release_notes(&mut self) {
@@ -191,5 +222,165 @@ impl ActionOps for KatanaApp {
 
     fn app_state_mut(&mut self) -> &mut AppState {
         &mut self.state
+    }
+}
+
+#[cfg(test)]
+mod closed_preview_memory_tests {
+    use super::ActionOps;
+    use crate::app_state::{AppAction, AppState};
+    use crate::preview_pane::PreviewPane;
+    use crate::shell::{KatanaApp, TabPreviewCache};
+    use katana_core::document::Document;
+    use std::path::PathBuf;
+    use std::sync::Arc;
+
+    fn make_app() -> KatanaApp {
+        let state = AppState::new(
+            katana_core::ai::AiProviderRegistry::new(),
+            katana_core::plugin::PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        KatanaApp::new(state)
+    }
+
+    fn add_preview(app: &mut KatanaApp, path: impl Into<PathBuf>) {
+        app.tab_previews.push(TabPreviewCache {
+            path: path.into(),
+            pane: PreviewPane::default(),
+            hash: 0,
+        });
+    }
+
+    #[test]
+    fn cleanup_removes_closed_document_preserves_remaining_content() {
+        let mut app = make_app();
+        let remaining = PathBuf::from("keep.docx");
+        let closed = PathBuf::from("closed.docx");
+        let mut document = Document::new(remaining.clone(), "unsaved content");
+        document.is_dirty = true;
+        app.state.document.open_documents.push(document);
+        add_preview(&mut app, remaining.clone());
+        add_preview(&mut app, closed);
+
+        app.cleanup_closed_tab_previews();
+
+        assert_eq!(app.tab_previews.len(), 1);
+        assert_eq!(app.tab_previews[0].path, remaining);
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "unsaved content"
+        );
+        assert!(app.state.document.open_documents[0].is_dirty);
+    }
+
+    #[test]
+    fn cleanup_keeps_pinned_and_second_tab_and_does_not_repeat() {
+        let mut app = make_app();
+        let pinned = PathBuf::from("pinned.docx");
+        let second = PathBuf::from("second.docx");
+        let closed = PathBuf::from("closed.docx");
+        let mut pinned_doc = Document::new(pinned.clone(), "pinned content");
+        pinned_doc.is_pinned = true;
+        app.state.document.open_documents.push(pinned_doc);
+        app.state
+            .document
+            .open_documents
+            .push(Document::new(second.clone(), "second content"));
+        add_preview(&mut app, pinned.clone());
+        add_preview(&mut app, second.clone());
+        add_preview(&mut app, closed);
+
+        app.cleanup_closed_tab_previews();
+        assert!(app.closed_document_preview_memory_pending);
+        let paths = app
+            .tab_previews
+            .iter()
+            .map(|preview| preview.path.clone())
+            .collect::<Vec<_>>();
+        app.cleanup_closed_tab_previews();
+
+        assert_eq!(app.tab_previews.len(), 2);
+        assert_eq!(
+            paths,
+            app.tab_previews
+                .iter()
+                .map(|p| p.path.clone())
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "pinned content"
+        );
+        assert_eq!(
+            app.state.document.open_documents[1].buffer,
+            "second content"
+        );
+    }
+
+    #[test]
+    fn cleanup_last_document_removes_preview_once() {
+        let mut app = make_app();
+        add_preview(&mut app, "closed.docx");
+
+        app.cleanup_closed_tab_previews();
+        app.cleanup_closed_tab_previews();
+
+        assert!(app.state.document.open_documents.is_empty());
+        assert!(app.tab_previews.is_empty());
+        assert!(!app.closed_document_preview_memory_pending);
+    }
+
+    fn assert_deferred_relief(document_path: &str, remaining_path: &str) {
+        let mut app = make_app();
+        app.state.document.open_documents.extend([
+            Document::new(document_path, "document"),
+            Document::new(remaining_path, "remaining"),
+        ]);
+        add_preview(&mut app, document_path);
+        add_preview(&mut app, remaining_path);
+        let ctx = egui::Context::default();
+        app.process_action(&ctx, AppAction::CloseDocument(0));
+        assert_eq!(app.state.document.open_documents.len(), 1);
+        assert!(app.closed_document_preview_memory_pending);
+        app.cleanup_closed_tab_previews();
+        assert!(app.closed_document_preview_memory_pending);
+        app.process_action(&ctx, AppAction::CloseDocument(0));
+        assert!(app.state.document.open_documents.is_empty());
+        assert!(app.tab_previews.is_empty());
+        assert!(!app.closed_document_preview_memory_pending);
+        app.cleanup_closed_tab_previews();
+        assert!(!app.closed_document_preview_memory_pending);
+    }
+
+    #[test]
+    fn close_document_then_last_markdown_retains_relief_intent_until_all_previews_close() {
+        assert_deferred_relief("closed.docx", "notes.md");
+    }
+
+    #[test]
+    fn close_pdf_then_last_html_retains_relief_intent_until_all_previews_close() {
+        assert_deferred_relief("closed.pdf", "index.html");
+    }
+
+    #[test]
+    fn close_document_then_last_image_retains_relief_intent_until_all_previews_close() {
+        assert_deferred_relief("closed.docx", "image.png");
+    }
+
+    #[test]
+    fn cleanup_html_only_removes_preview_without_document_transition() {
+        let mut app = make_app();
+        add_preview(&mut app, "index.html");
+
+        app.cleanup_closed_tab_previews();
+
+        assert!(app.state.document.open_documents.is_empty());
+        assert!(app.tab_previews.is_empty());
+        assert!(!app.closed_document_preview_memory_pending);
+        assert!(!katana_core::workspace::TreeEntry::path_is_document(
+            std::path::Path::new("index.html")
+        ));
     }
 }

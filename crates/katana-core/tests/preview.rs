@@ -343,6 +343,17 @@ fn wrap_standalone_img_tag() {
 }
 
 #[test]
+fn preview_html_keeps_quoted_data_uri_img_as_a_single_image() {
+    let src = r#"data:image/svg+xml,%3Csvg xmlns=%22<http://www.w3.org/2000/svg%22> width=%22128%22%3E%3C/svg%3E"#;
+    let input = format!(r#"<img src="{src}" width="128" alt="icon">"#);
+
+    assert_eq!(
+        HtmlPreviewOps::parse_html(&input, Path::new("/project")),
+        format!(r#"<img src="{src}" alt="icon">"#)
+    );
+}
+
+#[test]
 fn do_not_wrap_if_surrounded_by_text() {
     let src = r#"Here is a <a href="foo">link</a> inside text."#;
     assert_eq!(HtmlPreviewOps::wrap_standalone_inline_html(src), src);

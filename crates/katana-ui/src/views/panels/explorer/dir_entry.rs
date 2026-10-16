@@ -1,4 +1,3 @@
-use super::tree_entry::TreeEntryNode;
 use crate::shell::TREE_ROW_HEIGHT;
 use crate::shell_ui::TreeRenderContext;
 use eframe::egui;
@@ -88,14 +87,6 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
             egui::WidgetInfo::labeled(egui::WidgetType::Button, true, &accessible_label)
         });
 
-        if resp.clicked() {
-            if is_open {
-                ctx.expanded_directories.remove(path);
-            } else {
-                ctx.expanded_directories.insert(path.to_path_buf());
-            }
-        }
-
         if ui.is_rect_visible(rect) {
             crate::views::panels::explorer::dir_entry_paint::DirectoryEntryPaintOps::paint_background_and_drop_hint(
                 ui,
@@ -137,26 +128,5 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
             }
         }
         state.store(ui.ctx());
-
-        let line_start_y = rect.bottom();
-        if state.is_open() {
-            let prev_depth = ctx.depth;
-            ctx.depth += 1;
-            for child in children {
-                TreeEntryNode::new(child, ctx).show(ui);
-            }
-            let line_end_y = ui.cursor().top();
-            ctx.depth = prev_depth;
-
-            if ctx.show_vertical_line {
-                crate::views::panels::explorer::dir_entry_paint::DirectoryEntryPaintOps::paint_vertical_line(
-                    ui,
-                    rect,
-                    line_start_y,
-                    line_end_y,
-                    ctx.depth,
-                );
-            }
-        }
     }
 }

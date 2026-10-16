@@ -81,26 +81,15 @@ impl FullscreenLogicOps {
         sections: &[RenderedSection],
         fullscreen_image: Option<usize>,
         fullscreen_state: &mut ViewerState,
+        loader: &super::local_image_loader::LocalImageLoader,
     ) -> Option<usize> {
         let idx = fullscreen_image?;
         if let Some(RenderedSection::Image { svg_data, alt, .. }) = sections.get(idx) {
-            if Self::show_fullscreen_modal(ctx, svg_data, alt, fullscreen_state, idx) {
-                /* WHY: keep open */
-                Some(idx)
-            } else {
-                /* WHY: user closed */
-                None
-            }
+            Self::show_fullscreen_modal(ctx, svg_data, alt, fullscreen_state, idx).then_some(idx)
         } else if let Some(RenderedSection::LocalImage { path, alt, .. }) = sections.get(idx) {
-            if Self::show_fullscreen_local_image(ctx, path, alt, fullscreen_state, idx) {
-                /* WHY: keep open */
-                Some(idx)
-            } else {
-                /* WHY: user closed */
-                None
-            }
+            Self::show_fullscreen_local_image(ctx, path, alt, fullscreen_state, idx, loader)
+                .then_some(idx)
         } else {
-            /* WHY: section gone */
             None
         }
     }
@@ -129,6 +118,7 @@ impl FullscreenLogicOps {
         _alt: &str,
         viewer_state: &mut ViewerState,
         idx: usize,
+        loader: &super::local_image_loader::LocalImageLoader,
     ) -> bool {
         if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
             return false;
@@ -138,7 +128,14 @@ impl FullscreenLogicOps {
             .diagram_controller
             .close
             .clone();
-        super::fullscreen_local::show_fullscreen_local(ctx, path, &dc_close, viewer_state, idx)
+        super::fullscreen_local::show_fullscreen_local(
+            ctx,
+            path,
+            &dc_close,
+            viewer_state,
+            idx,
+            loader,
+        )
     }
 
     pub(crate) fn render_slideshow_modal(

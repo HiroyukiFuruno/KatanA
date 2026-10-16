@@ -1,6 +1,6 @@
 use super::*;
 use crate::app_state::SettingsTab;
-use accesskit::Role;
+use egui::accesskit::Role;
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
 use katana_core::ai::AiProviderRegistry;

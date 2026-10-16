@@ -13,7 +13,12 @@ set shell := ["bash", "-uc"]
 RTK := env_var_or_default("RTK", `command -v rtk 2> /dev/null || true`)
 RTK_CMD := if RTK == "" { "" } else { RTK + " " }
 JOBS := env_var_or_default("JOBS", "2")
+export RUST_TEST_THREADS := env_var_or_default("RUST_TEST_THREADS", JOBS)
 export RUSTFLAGS := env_var_or_default("RUSTFLAGS", "-D warnings")
+export CARGO_PROFILE_DEV_DEBUG := env_var_or_default("CARGO_PROFILE_DEV_DEBUG", "0")
+export CARGO_PROFILE_TEST_DEBUG := env_var_or_default("CARGO_PROFILE_TEST_DEBUG", "0")
+export CARGO_PROFILE_DEV_STRIP := env_var_or_default("CARGO_PROFILE_DEV_STRIP", "none")
+export CARGO_PROFILE_TEST_STRIP := env_var_or_default("CARGO_PROFILE_TEST_STRIP", "none")
 
 LLVM_AR := `if [ "$(uname -s)" = "Darwin" ]; then if [ -x /opt/homebrew/opt/llvm/bin/llvm-ar ]; then printf '%s' /opt/homebrew/opt/llvm/bin/llvm-ar; elif [ -x /usr/local/opt/llvm/bin/llvm-ar ]; then printf '%s' /usr/local/opt/llvm/bin/llvm-ar; fi; fi`
 CARGO := if LLVM_AR == "" { RTK_CMD + "cargo" } else { "AR=" + LLVM_AR + " " + RTK_CMD + "cargo" }
@@ -34,7 +39,7 @@ KML_EXCLUDE_ARGS := env_var_or_default("KML_EXCLUDE_ARGS", "--exclude \"openspec
 KML_CHECK_ARGS := env_var_or_default("KML_CHECK_ARGS", "--config " + KML_CONFIG + " --include \"**/*.md\" --include \"**/*.markdown\" " + KML_EXCLUDE_ARGS + " " + KML_SCOPE)
 OPENSPEC := env_var_or_default("OPENSPEC", "scripts/openspec")
 
-BIOME_VERSION := env_var_or_default("BIOME_VERSION", "2.4.13")
+BIOME_VERSION := env_var_or_default("BIOME_VERSION", "2.5.15")
 BIOME := env_var_or_default("BIOME", "bunx @biomejs/biome@" + BIOME_VERSION)
 BIOME_JS_TS_FILES := env_var_or_default("BIOME_JS_TS_FILES", "")
 BIOME_JSON_FILES := env_var_or_default("BIOME_JSON_FILES", ".markdownlint.json .vscode/settings.json biome.jsonc crates/katana-ui/locales/*.json crates/katana-ui/resources/*.json scripts/screenshot/examples/*.json")

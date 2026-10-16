@@ -11,6 +11,19 @@ impl<'a> CentralContent<'a> {
 
     pub(crate) fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
+
+        /* WHY: モーダルと背面プレビューから同じ文書面へ競合するサイズ変更を送らない。 */
+        let slideshow_owns_document_surface = app.state.layout.show_slideshow
+            && app
+                .state
+                .active_document()
+                .map(|document| document.path.clone())
+                .and_then(|path| app.tab_previews.iter().find(|preview| preview.path == path))
+                .is_some_and(|preview| preview.pane.is_pptx_document_surface());
+        if slideshow_owns_document_surface {
+            return;
+        }
+
         let current_mode = app.state.active_view_mode();
         let is_split = current_mode == ViewMode::Split;
 
@@ -133,3 +146,7 @@ impl<'a> CentralContent<'a> {
             });
     }
 }
+
+#[cfg(test)]
+#[path = "central_content_tests.rs"]
+mod central_content_tests;

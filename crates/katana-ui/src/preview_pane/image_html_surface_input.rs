@@ -135,12 +135,11 @@ impl HtmlBrowserSurface {
             return;
         }
 
-        let delta = ui.input(|input| {
-            if has_nonzero_wheel_event(&input.raw.events) {
-                input.smooth_scroll_delta
-            } else {
-                Vec2::ZERO
-            }
+        let delta = ui.input_mut(|input| {
+            let delta = input.smooth_scroll_delta;
+            /* WHY: HTML側で滑らかなスクロール残量を消費し、外側のeguiが二重適用しないようにするため。 */
+            input.smooth_scroll_delta = Vec2::ZERO;
+            delta
         });
         if delta == Vec2::ZERO {
             return;
@@ -173,15 +172,6 @@ fn browser_scroll_delta(
     viewport: katana_document_viewer::browser_session::HtmlBrowserViewport,
 ) -> Vec2 {
     frame_scroll_delta(rect, -ui_delta, viewport)
-}
-
-fn has_nonzero_wheel_event(events: &[egui::Event]) -> bool {
-    events.iter().any(|event| {
-        matches!(
-            event,
-            egui::Event::MouseWheel { delta, .. } if *delta != Vec2::ZERO
-        )
-    })
 }
 
 #[cfg(test)]
@@ -262,22 +252,59 @@ mod tests {
     }
 
     #[test]
-    fn scroll_forwarding_ignores_smoothing_tail_and_zero_end_phase() {
-        let move_event = egui::Event::MouseWheel {
-            unit: egui::MouseWheelUnit::Point,
-            delta: egui::vec2(0.0, -5.0),
-            modifiers: egui::Modifiers::NONE,
-            phase: egui::TouchPhase::Move,
-        };
-        let end_event = egui::Event::MouseWheel {
-            unit: egui::MouseWheelUnit::Point,
-            delta: Vec2::ZERO,
-            modifiers: egui::Modifiers::NONE,
-            phase: egui::TouchPhase::End,
-        };
+    fn smooth_scroll_tail_is_forwarded_without_a_second_wheel_event() -> Result<(), String> {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
+        let source = katana_document_viewer::browser_session::HtmlBrowserSource::new(
+            "<style>body { height: 4000px; }</style><p>html</p>",
+            "https://example.test/index.html",
+        )
+        .map_err(|error| error.to_string())?;
+        let viewport =
+            katana_document_viewer::browser_session::HtmlBrowserViewport::new(320, 240, 1.0)
+                .map_err(|error| error.to_string())?;
+        let mut surface = HtmlBrowserSurface::start(source);
+        assert!(surface.start_pending_session(viewport));
+        let context = egui::Context::default();
+        surface.wait_for_frame_for_test(&context, std::time::Duration::from_secs(10))?;
+        let rect = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(320.0, 240.0));
+        let pointer = egui::pos2(20.0, 20.0);
 
-        assert!(has_nonzero_wheel_event(&[move_event]));
-        assert!(!has_nonzero_wheel_event(&[end_event]));
-        assert!(!has_nonzero_wheel_event(&[]));
+        let mut output = context.run_ui(
+            egui::RawInput {
+                screen_rect: Some(rect),
+                events: vec![
+                    egui::Event::PointerMoved(pointer),
+                    egui::Event::MouseWheel {
+                        unit: egui::MouseWheelUnit::Point,
+                        delta: egui::vec2(0.0, -120.0),
+                        modifiers: egui::Modifiers::NONE,
+                        phase: egui::TouchPhase::Move,
+                    },
+                ],
+                ..Default::default()
+            },
+            |ui| {
+                let response = ui.allocate_response(rect.size(), egui::Sense::hover());
+                surface.forward_input(ui, rect, &response);
+            },
+        );
+        output.textures_delta.clear();
+        surface.frame_update_deadline = None;
+        let mut output = context.run_ui(
+            egui::RawInput {
+                screen_rect: Some(rect),
+                events: vec![egui::Event::PointerMoved(pointer)],
+                ..Default::default()
+            },
+            |ui| {
+                let response = ui.allocate_response(rect.size(), egui::Sense::hover());
+                surface.forward_input(ui, rect, &response);
+            },
+        );
+        output.textures_delta.clear();
+
+        assert!(surface.frame_update_deadline.is_some());
+        assert!(surface.error.is_none());
+        Ok(())
     }
 }
