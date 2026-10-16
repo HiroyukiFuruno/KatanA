@@ -29,6 +29,8 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [x] PR346 review4291359655のstartup smoke無制限waitを修復。実TERM無視mainで旧helper15秒timeout actual1、main/launcherともTERM後2秒grace→identity再確認KILL→追加2秒上限、終了観測後だけreap。無関係process生存・heartbeat/log/config保持・各case6秒以内を実subprocessで検証し、既存startup contract/identity回帰成功。本人app操作・Reopen原因修復・実packaged/clean-machine受入の完了ではない。正式統合/current reviewはcurrentメモで追跡。
+
 - [x] #343 b271666fの全required job同attemptという新過制約を修復。部分rerunの同SHA・同runで他OSの前回成功を保持する回帰が旧実装でactual1→12件GREEN。全履歴を取得して各OS最大attemptだけを採用し、後の失敗/skipを古い成功で隠さず、未来attempt・重複・欠落・root取得中変化を拒否。順序両方向・現在attempt実在を検査。公式partial rerun/API契約と実履歴16件を確認し、実partial成功未観測は明記。既存品質・Draft方針・元SHA一致は不変。通常統合/current reviewはcurrentメモへ記録し全#343/公開は未完。
 
 - [x] #343 既存post-merge CI再利用入口を補強。run全体successだけでなく固定workflow/master push/同repository・SHA・run/attemptと全3OS実job成功をライブ照合し、全page欠落・重複・skip・異attempt・取得中rerunを拒否する。既存caller不足assert RED→対象9PASS、releaseflow10/Draft5とBash構文/元wait契約成功。実GitHub旧33025396317/attempt1はAPI互換性だけ成功、現HEAD品質成功へ流用しない。通常統合/current reviewはcurrentメモで追跡。Windows実測・実重複削減・広域trusted reuse・全#343/公開DoDは未完。evidence/post-merge-ci-admission-2026-10-16.md。

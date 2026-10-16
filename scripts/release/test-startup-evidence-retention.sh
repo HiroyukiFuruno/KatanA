@@ -90,14 +90,20 @@ wait_for_exit() {
 
 run_cleanup_case() {
     local main_mode="$1"
-    local launched_pid owned_pid
+    local launched_pid owned_pid cleanup_started
     EVIDENCE_DIR=$(mktemp -d -t katana-cleanup-evidence.XXXXXX)
     HEARTBEAT=$(mktemp -t katana-cleanup-heartbeat.XXXXXX)
     LOG_PATH=$(mktemp -t katana-cleanup-log.XXXXXX)
     CONFIG_DIR=$(mktemp -d -t katana-cleanup-config.XXXXXX)
     printf 'first-frame\nframe=1\n' >"$HEARTBEAT"
     printf 'real cleanup regression\n' >"$LOG_PATH"
-    bash -c 'sleep 30 & wait' &
+    if [[ "$main_mode" == direct_ignoring ]]; then
+        bash -c 'trap "" TERM; exec sleep 30' &
+    elif [[ "$main_mode" == launcher_ignoring ]]; then
+        python3 -c 'import signal, subprocess; signal.signal(signal.SIGTERM, signal.SIG_IGN); subprocess.Popen(["sleep", "30"]).wait(); signal.pause()' &
+    else
+        bash -c 'sleep 30 & wait' &
+    fi
     APP_PID=$!
     launched_pid="$APP_PID"
     launcher_pid="$launched_pid"
@@ -105,12 +111,17 @@ run_cleanup_case() {
         echo 'FAIL: real launcher child was not observed before cleanup' >&2
         exit 1
     }
-    if [[ "$main_mode" == verified ]]; then
+    if [[ "$main_mode" != discover ]]; then
         MAIN_PID="$owned_pid"
     else
         MAIN_PID=""
     fi
+    cleanup_started=$SECONDS
     startup_process_cleanup >/dev/null
+    (( SECONDS - cleanup_started <= 6 )) || {
+        echo 'FAIL: startup cleanup exceeded its bounded termination grace' >&2
+        exit 1
+    }
     [[ -z "$APP_PID" && -z "$MAIN_PID" ]] || {
         echo 'FAIL: shared cleanup helper did not clear owned PIDs' >&2
         exit 1
@@ -136,6 +147,8 @@ run_cleanup_case() {
 
 run_cleanup_case verified
 run_cleanup_case discover
+run_cleanup_case direct_ignoring
+run_cleanup_case launcher_ignoring
 
 if [[ "$(uname -m)" == arm64 ]]; then
     if early_output=$(bash "$SMOKE" macos-arm64 /usr/bin/false 2>&1); then
