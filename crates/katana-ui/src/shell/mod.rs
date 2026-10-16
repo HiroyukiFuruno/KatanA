@@ -46,6 +46,7 @@ impl KatanaApp {
             fs: FilesystemService::new(),
             pending_action: AppAction::None,
             tab_previews: Vec::new(),
+            closed_document_preview_memory_pending: false,
             explorer_rx: None,
             update_rx: None,
             changelog_rx: None,

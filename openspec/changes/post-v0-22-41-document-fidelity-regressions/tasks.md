@@ -29,6 +29,8 @@
 
 ## 1. Reproduction and ownership evidence
 
+- [x] PR346 review4291563800の文書先閉→他形式最後閉で返却要求が失われるhost不備を修復。App内部boolへ保持し全docs/previews空で既存requestに一度だけ消費、残/pinned/HTML-only/反復emptyとworker/intake保護は不変。正式caller RED48404 actual101→main73003のDOCX→MD/PDF→HTML/DOCX→PNG等10PASS、worker3749の7PASS、正式AST30/impacted strict/fmt/diff成功、独立high必須無し。通常統合/current reviewはcurrentメモへ記録し、RSS・起動障害原因・packaged/公開の完了へ代用しない。repo root `evidence/deferred-preview-memory-relief-2026-10-16.ja.md`。
+
 - [x] PR346 review4291359655のstartup smoke無制限waitを修復。実TERM無視mainで旧helper15秒timeout actual1、main/launcherともTERM後2秒grace→identity再確認KILL→追加2秒上限、終了観測後だけreap。無関係process生存・heartbeat/log/config保持・各case6秒以内を実subprocessで検証し、既存startup contract/identity回帰成功。本人app操作・Reopen原因修復・実packaged/clean-machine受入の完了ではない。正式統合/current reviewはcurrentメモで追跡。
 
 - [x] #343 b271666fの全required job同attemptという新過制約を修復。部分rerunの同SHA・同runで他OSの前回成功を保持する回帰が旧実装でactual1→12件GREEN。全履歴を取得して各OS最大attemptだけを採用し、後の失敗/skipを古い成功で隠さず、未来attempt・重複・欠落・root取得中変化を拒否。順序両方向・現在attempt実在を検査。公式partial rerun/API契約と実履歴16件を確認し、実partial成功未観測は明記。既存品質・Draft方針・元SHA一致は不変。通常統合/current reviewはcurrentメモへ記録し全#343/公開は未完。

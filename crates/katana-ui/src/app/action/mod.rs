@@ -93,6 +93,8 @@ impl ActionOps for KatanaApp {
             !open_paths.contains(&preview.path)
                 && katana_core::workspace::TreeEntry::path_is_document(&preview.path)
         });
+        /* WHY: 文書を先に閉じても、最後のMarkdown/HTMLを閉じるまで解放意図を保持する。 */
+        self.closed_document_preview_memory_pending |= removed_document_preview;
         self.tab_previews.retain(|t| open_paths.contains(&t.path));
         self.state
             .url_tab
@@ -106,12 +108,13 @@ impl ActionOps for KatanaApp {
         });
         self.state.url_tab.is_loading = !self.state.url_tab.pending_url_requests.is_empty();
         let transition = closed_preview_memory::ClosedPreviewTransition {
-            removed_document_preview,
+            removed_document_preview: self.closed_document_preview_memory_pending,
             open_documents_empty: open_paths.is_empty(),
             previews_empty: self.tab_previews.is_empty(),
         };
         if closed_preview_memory::should_relieve_memory(transition) {
             crate::preview_pane::DocumentWorkerLifecycle::request_closed_preview_memory_relief();
+            self.closed_document_preview_memory_pending = false;
         } else if !transition.open_documents_empty || !transition.previews_empty {
             crate::preview_pane::DocumentWorkerLifecycle::cancel_closed_preview_memory_relief();
         }
@@ -225,7 +228,7 @@ impl ActionOps for KatanaApp {
 #[cfg(test)]
 mod closed_preview_memory_tests {
     use super::ActionOps;
-    use crate::app_state::AppState;
+    use crate::app_state::{AppAction, AppState};
     use crate::preview_pane::PreviewPane;
     use crate::shell::{KatanaApp, TabPreviewCache};
     use katana_core::document::Document;
@@ -290,6 +293,7 @@ mod closed_preview_memory_tests {
         add_preview(&mut app, closed);
 
         app.cleanup_closed_tab_previews();
+        assert!(app.closed_document_preview_memory_pending);
         let paths = app
             .tab_previews
             .iter()
@@ -325,6 +329,44 @@ mod closed_preview_memory_tests {
 
         assert!(app.state.document.open_documents.is_empty());
         assert!(app.tab_previews.is_empty());
+        assert!(!app.closed_document_preview_memory_pending);
+    }
+
+    fn assert_deferred_relief(document_path: &str, remaining_path: &str) {
+        let mut app = make_app();
+        app.state.document.open_documents.extend([
+            Document::new(document_path, "document"),
+            Document::new(remaining_path, "remaining"),
+        ]);
+        add_preview(&mut app, document_path);
+        add_preview(&mut app, remaining_path);
+        let ctx = egui::Context::default();
+        app.process_action(&ctx, AppAction::CloseDocument(0));
+        assert_eq!(app.state.document.open_documents.len(), 1);
+        assert!(app.closed_document_preview_memory_pending);
+        app.cleanup_closed_tab_previews();
+        assert!(app.closed_document_preview_memory_pending);
+        app.process_action(&ctx, AppAction::CloseDocument(0));
+        assert!(app.state.document.open_documents.is_empty());
+        assert!(app.tab_previews.is_empty());
+        assert!(!app.closed_document_preview_memory_pending);
+        app.cleanup_closed_tab_previews();
+        assert!(!app.closed_document_preview_memory_pending);
+    }
+
+    #[test]
+    fn close_document_then_last_markdown_retains_relief_intent_until_all_previews_close() {
+        assert_deferred_relief("closed.docx", "notes.md");
+    }
+
+    #[test]
+    fn close_pdf_then_last_html_retains_relief_intent_until_all_previews_close() {
+        assert_deferred_relief("closed.pdf", "index.html");
+    }
+
+    #[test]
+    fn close_document_then_last_image_retains_relief_intent_until_all_previews_close() {
+        assert_deferred_relief("closed.docx", "image.png");
     }
 
     #[test]
@@ -336,6 +378,7 @@ mod closed_preview_memory_tests {
 
         assert!(app.state.document.open_documents.is_empty());
         assert!(app.tab_previews.is_empty());
+        assert!(!app.closed_document_preview_memory_pending);
         assert!(!katana_core::workspace::TreeEntry::path_is_document(
             std::path::Path::new("index.html")
         ));

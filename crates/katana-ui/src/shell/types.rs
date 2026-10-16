@@ -40,6 +40,7 @@ pub struct KatanaApp {
     pub(crate) fs: FilesystemService,
     pub(crate) pending_action: AppAction,
     pub(crate) tab_previews: Vec<TabPreviewCache>,
+    pub(crate) closed_document_preview_memory_pending: bool,
     pub(crate) explorer_rx: Option<std::sync::mpsc::Receiver<ExplorerLoadMessage>>,
     pub(crate) update_rx: Option<
         std::sync::mpsc::Receiver<
