@@ -29,6 +29,28 @@
 
 ## 1. Reproduction and ownership evidence
 
+### Issue実装状態の正本（2026-10-19）
+
+- [/] ユーザー指摘「実装済み・未対応・上流待ちを即答できず、Issueラベルもない」を是正。全Open Issueを現在の実装・対象回帰・元DoDと照合し、GitHub本文の先頭に実施済み・残作業・根拠を記載した。元本文・DoDを保持し、実装済みだけではCloseしない。
+- `implemented`: Issueのコード実装範囲は対応済み。最終検証・merge・公開の成功とは別。
+- `partially-implemented`: 部分対応。実装または成果物確定の残件がある。
+- `not-implemented`: 要求されたコードは未実装。
+- `verification-pending`: 必要な最終CI・実動作・配布物等の検証が未完了。
+- `blocked-upstream`: 上流公開版・上流修正に依存する残件がある。独立作業まで停止する意味ではない。
+
+| 実装状態 | Issue | 残作業 |
+| --- | --- | --- |
+| 実装済み9件 | #352 / #351 / #350 / #349 / #348 / #345 / #340 / #312 / #258 | current final graphの必須CI・packaged/OS受入・公開。各Issueの対象検証済み範囲と最終受入を区別する |
+| 部分対応 | #343 | KatanA独立残件: Windows cold/warm実測、通常test/coverage実行同等性、実重複削減、trusted reuse、導入前後比較 |
+| 部分対応 | #335 | 通常運用への強制接続/公開後activation、実repo cleanup receiptとlive公開契約の証明 |
+| 部分対応 | #338 | canonical候補の参照採用と確定証跡handoff。表示欠落が残る候補を正解にしない |
+| 部分対応・上流依存あり | #339 | registry採用はKDV0.5.12/KRR0.4.23済み。KDV69供給網修正版とcurrent packaged受入・公開が残る |
+| 未実装・上流依存 | #336 | KLE公開待ち。公開後registry採用・ABI整合・実editor host E2E。KDV/KRR待ちとは別 |
+
+- [ ] #343の独立残作業を実行する。内部メモだけを読んで「独立作業なし」と報告せず、上表とIssue本文の残作業を照合する。
+- 状態更新時は、実装状態を1種類だけ付け、検証待ち/上流待ちを別軸で併記する。確認対象HEAD・証跡・未完了を同時に更新する。
+- アンチパターン: 全Issueを未分類OPENにしたまま、チャットで「実装済み」「上流待ち」とだけ答える。正: GitHubの実装状態ラベルと先頭の残作業から直ちに回答する。検索語: implemented, partially-implemented, verification-pending, blocked-upstream, Issue state management。
+
 - [x] PR346 review4291563800の文書先閉→他形式最後閉で返却要求が失われるhost不備を修復。App内部boolへ保持し全docs/previews空で既存requestに一度だけ消費、残/pinned/HTML-only/反復emptyとworker/intake保護は不変。正式caller RED48404 actual101→main73003のDOCX→MD/PDF→HTML/DOCX→PNG等10PASS、worker3749の7PASS、正式AST30/impacted strict/fmt/diff成功、独立high必須無し。通常統合/current reviewはcurrentメモへ記録し、RSS・起動障害原因・packaged/公開の完了へ代用しない。repo root `evidence/deferred-preview-memory-relief-2026-10-16.ja.md`。
 
 - [x] PR346 review4291359655のstartup smoke無制限waitを修復。実TERM無視mainで旧helper15秒timeout actual1、main/launcherともTERM後2秒grace→identity再確認KILL→追加2秒上限、終了観測後だけreap。無関係process生存・heartbeat/log/config保持・各case6秒以内を実subprocessで検証し、既存startup contract/identity回帰成功。本人app操作・Reopen原因修復・実packaged/clean-machine受入の完了ではない。正式統合/current reviewはcurrentメモで追跡。
