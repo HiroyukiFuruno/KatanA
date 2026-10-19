@@ -169,10 +169,6 @@ class InventoryTests(unittest.TestCase):
             self.assertEqual(command[0], str(Path(sys.executable).resolve()))
 
     def test_collector_kills_real_child_after_stream_limit(self) -> None:
-        if os.name != "posix":
-            with self.assertRaises(InventoryExecutionError):
-                collect_inventory((sys.executable, "--list"), Path("."), "test", InventoryConditions())
-            return
         command = (sys.executable, "-c", f"import sys; sys.stdout.write('x' * {MAX_STREAM_BYTES + 1})", "--list")
         with self.assertRaises(InventoryExecutionError):
             collect_inventory(command, Path("."), "test", InventoryConditions())

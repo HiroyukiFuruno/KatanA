@@ -7,6 +7,20 @@ from test_ci_resource_contract import current_test_job, step_block
 
 
 class WindowsCiObservationContractTest(unittest.TestCase):
+    def test_windows_inventory_has_supported_python_and_real_pipe_regressions(self):
+        job = current_test_job()
+        setup = step_block(job, "Install Python for Windows inventory")
+        self.assertIn("runner.os == 'Windows'", setup)
+        self.assertIn("actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97", setup)
+        self.assertIn("python-version: '3.14'", setup)
+        tests = step_block(job, "Verify native inventory pipes (Windows)")
+        self.assertIn("runner.os == 'Windows'", tests)
+        self.assertIn("test_native_test_pipe_reader.py", tests)
+        self.assertIn("test_native_test_run_recording.py", tests)
+        self.assertNotIn("continue-on-error", tests)
+        self.assertLess(job.index("Install Python for Windows inventory"),
+                        job.index("Verify native inventory pipes (Windows)"))
+
     def test_registry_cache_has_an_observable_identity_without_target_cache(self):
         cache = step_block(current_test_job(), "Cache Windows Cargo registry")
         self.assertIn("id: windows_registry_cache", cache)

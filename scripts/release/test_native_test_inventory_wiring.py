@@ -8,6 +8,14 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class InventoryWiringTests(unittest.TestCase):
+    def test_windows_native_listing_has_a_bounded_standard_pipe_reader(self) -> None:
+        source = (ROOT / "scripts/release/native_test_inventory_collection.py").read_text()
+        self.assertIn("from native_test_pipe_reader import read_pipes", source)
+        self.assertIn("read_pipes(process, MAX_STREAM_BYTES, TIMEOUT_SECONDS)", source)
+        self.assertNotIn("collector requires POSIX selector pipes", source)
+        self.assertIn("Python 3.12", source)
+        self.assertIn('if os.name == "posix":', source)
+
     def test_ci_compares_observed_inputs_without_replacing_existing_test_gates(self) -> None:
         source = (ROOT / ".github/workflows/test-and-build.yml").read_text()
         start = source.index("- name: Compare observed test inventory diagnostics")

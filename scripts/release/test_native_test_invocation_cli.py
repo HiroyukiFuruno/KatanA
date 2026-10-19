@@ -61,13 +61,9 @@ class InvocationCliTests(unittest.TestCase):
             self.assertFalse(report["reuse_authorized"])
             self.assertIn("Test skip/reuse authorization: false", summary.read_text())
             self.assert_real_timing(report, summary)
-            if os.name == "posix":
-                self.assertTrue(report["selection_comparison_available"])
-                self.assertEqual(len(report["normal_only_candidates"]), 1)
-                self.assertEqual(report["normal_only_candidates"][0][1], "fixture")
-            else:
-                self.assertFalse(report["selection_comparison_available"])
-                self.assertTrue(any("incomplete" in reason for reason in report["reasons"]))
+            self.assertTrue(report["selection_comparison_available"])
+            self.assertEqual(len(report["normal_only_candidates"]), 1)
+            self.assertEqual(report["normal_only_candidates"][0][1], "fixture")
             self.assert_fresh_scope_is_unavailable(output)
 
     def test_missing_phase_is_unavailable(self) -> None:

@@ -57,6 +57,12 @@ jobs:
       #     fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Install Python for Windows inventory
+        if: runner.os == 'Windows'
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.14'
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
@@ -120,6 +126,12 @@ jobs:
           python3 -B -m unittest discover -s scripts/ci -p test_observe_ci_command.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_windows_ci_observation_contract.py -v
           python3 -B -m unittest discover -s scripts/runner -p test_impacted.py -v
+
+      - name: Verify native inventory pipes (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          python3 -B -W error::ResourceWarning -m unittest discover -s scripts/release -p test_native_test_pipe_reader.py -v
+          python3 -B -W error::ResourceWarning -m unittest discover -s scripts/release -p test_native_test_run_recording.py -v
 
       - name: Install cargo-sweep
         run: |

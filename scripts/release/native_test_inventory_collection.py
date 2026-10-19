@@ -9,10 +9,12 @@ from pathlib import Path
 import selectors
 import shutil
 import subprocess
+import sys
 import time
 
 from native_test_inventory import InventoryFormatError, parse_inventory
 from native_test_inventory_record import InventoryConditions, InventoryRecord
+from native_test_pipe_reader import read_pipes
 
 
 MAX_STREAM_BYTES = 1_048_576
@@ -97,11 +99,22 @@ def _read_streams(process: subprocess.Popen[bytes]) -> tuple[int, bytes, bytes]:
                 stream.close()
 
 
+def _read_native_streams(process: subprocess.Popen[bytes]) -> tuple[int, bytes, bytes]:
+    if os.name == "posix":
+        return _read_streams(process)
+    try:
+        return read_pipes(process, MAX_STREAM_BYTES, TIMEOUT_SECONDS)
+    except (OSError, ValueError, subprocess.TimeoutExpired) as error:
+        raise InventoryExecutionError("native --list output could not be collected safely") from error
+
+
 def collect_inventory(argv: Sequence[str], cwd: Path, kind: str,
                       conditions: InventoryConditions,
                       environment: dict[str, str] | None = None) -> InventoryRecord:
-    if os.name != "posix":
-        raise InventoryExecutionError("native --list collector requires POSIX selector pipes")
+    if os.name not in {"posix", "nt"}:
+        raise InventoryExecutionError("native --list collector platform is unsupported")
+    if os.name == "nt" and sys.version_info < (3, 12):
+        raise InventoryExecutionError("native --list Windows pipes require Python 3.12 or newer")
     command = _resolve_command(argv, cwd, kind)
     try:
         process = subprocess.Popen(command, cwd=cwd, env=environment, stdin=subprocess.DEVNULL,
@@ -109,7 +122,7 @@ def collect_inventory(argv: Sequence[str], cwd: Path, kind: str,
     except OSError as error:
         raise InventoryExecutionError("native --list command could not start") from error
     try:
-        return_code, stdout, _ = _read_streams(process)
+        return_code, stdout, _ = _read_native_streams(process)
     except InventoryExecutionError:
         _stop(process)
         raise
