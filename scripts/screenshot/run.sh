@@ -15,7 +15,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 source "${SCRIPT_DIR}/build-environment.sh"
-BUILD_TARGET_DIR="${REPO_ROOT}/target"
+# WHY: 呼出元指定のCargo target rootへ全生成物を隔離し、既定配置は維持する。
+BUILD_TARGET_DIR="${CARGO_TARGET_DIR:-${REPO_ROOT}/target}"
 SCREENSHOT_TARGET_DIR="${BUILD_TARGET_DIR}/screenshot-harness"
 EXTERNAL_HYPERLINK_FIXTURE="${BUILD_TARGET_DIR}/screenshot-fixtures/representative-with-external-hyperlink.pptx"
 
