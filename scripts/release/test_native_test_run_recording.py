@@ -16,6 +16,15 @@ SCRIPT = Path(__file__).with_name("record-test-invocation.py").resolve()
 
 
 class RunRecordingTests(unittest.TestCase):
+    def assert_invocation_timing(self, manifest: dict) -> None:
+        timing = manifest["invocation_timing"]
+        self.assertEqual(timing["schema"], 1)
+        self.assertEqual(timing["clock"], "perf_counter")
+        for phase in ("command", "diagnostics"):
+            self.assertGreaterEqual(timing[phase]["elapsed_seconds"], 0.0)
+        self.assertIsInstance(timing["command"]["started_at"], str)
+        self.assertIsInstance(timing["command"]["finished_at"], str)
+
     def environment(self, root: Path) -> dict:
         result = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
         result.update({"CARGO_TARGET_DIR": str(root / "target"), "CARGO_BUILD_JOBS": "1"})
@@ -74,6 +83,7 @@ class RunRecordingTests(unittest.TestCase):
                          hashlib.sha256(listing["all"]["raw"].encode()).hexdigest())
         self.assertIn(b"test result: ok", result.stdout)
         self.assertEqual(manifest["listing_reasons"], [])
+        self.assert_invocation_timing(manifest)
 
     def test_actual_cargo_failure_cannot_be_replaced_by_successful_listing(self) -> None:
         result, manifest = self.run_fixture(True)
@@ -82,6 +92,7 @@ class RunRecordingTests(unittest.TestCase):
         self.assertFalse(manifest["complete"])
         self.assertFalse(manifest["reuse_authorized"])
         self.assertIn(b"test result: FAILED", result.stdout)
+        self.assert_invocation_timing(manifest)
 
     def test_command_preserves_selection_and_rejects_non_execution(self) -> None:
         arguments = ["cargo", "test", "--workspace", "--", "--test-threads=1", "--skip", "fixture"]

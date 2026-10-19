@@ -9,6 +9,7 @@ from pathlib import Path
 import sys
 
 from native_test_run_comparison import compare_runs
+from native_test_timing_report import timing_report, timing_summary
 
 MAX_MANIFEST_BYTES = 16 * 1024 * 1024
 COVERAGE_PHASES = ("workspace-lib-bin", "workspace-integration", "ui-parallel", "ui-serial")
@@ -96,6 +97,8 @@ def collect_comparison(directory: Path) -> dict:
         for key in ("common_candidates", "normal_only_candidates", "coverage_only_candidates"):
             report[key] = []
         report["reasons"].append("fixed coverage phase inputs are missing or selectors do not match")
+    report["invocation_timing"] = timing_report(
+        normal, coverage, not missing and not invalid and report["selection_comparison_available"])
     return report
 
 
@@ -105,7 +108,8 @@ def _summary(report: dict) -> str:
     return ("## Test inventory diagnostics\n\n"
             f"Candidate comparison available: {report['selection_comparison_available']}. {counts}.\n\n"
             "Execution equivalence: false. Test skip/reuse authorization: false.\n\n"
-            "Reasons: " + "; ".join(report["reasons"]) + "\n")
+            "Reasons: " + "; ".join(report["reasons"]) + "\n\n"
+            + timing_summary(report.get("invocation_timing")))
 
 
 def main() -> int:

@@ -26,6 +26,17 @@ def _run(directory: Path, summary: Path | None = None) -> subprocess.CompletedPr
 
 
 class InvocationCliTests(unittest.TestCase):
+    def assert_real_timing(self, report: dict, summary: Path) -> None:
+        timing = report["invocation_timing"]
+        self.assertGreater(timing["normal"]["command_seconds"], 0)
+        self.assertEqual(len(timing["coverage"]), 4)
+        for phase in timing["coverage"]:
+            self.assertGreater(phase["command_seconds"], 0)
+            self.assertGreaterEqual(phase["diagnostics_seconds"], 0)
+        self.assertFalse(timing["reuse_authorized"])
+        self.assertIn("Command seconds", summary.read_text())
+        self.assertIn("not savings", summary.read_text())
+
     def assert_fresh_scope_is_unavailable(self, populated: Path) -> None:
         fresh = populated / "fresh-run"
         result = _run(fresh)
@@ -49,6 +60,7 @@ class InvocationCliTests(unittest.TestCase):
             self.assertFalse(report["execution_equivalent"])
             self.assertFalse(report["reuse_authorized"])
             self.assertIn("Test skip/reuse authorization: false", summary.read_text())
+            self.assert_real_timing(report, summary)
             if os.name == "posix":
                 self.assertTrue(report["selection_comparison_available"])
                 self.assertEqual(len(report["normal_only_candidates"]), 1)

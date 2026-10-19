@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import uuid
 
 from native_test_artifact_listing import list_artifacts
@@ -45,7 +46,9 @@ def _consume_output(process, inventory: CargoArtifactInventory | None) -> None:
 
 
 def _execute(command: list[str], root: Path, inventory: CargoArtifactInventory | None,
-             environment: dict[str, str]) -> int:
+             environment: dict[str, str]) -> tuple[int, dict[str, object]]:
+    started_at = datetime.now(timezone.utc)
+    started_clock = time.perf_counter()
     with subprocess.Popen(command, cwd=root, env=environment, stdout=subprocess.PIPE) as process:
         try:
             _consume_output(process, inventory)
@@ -53,7 +56,11 @@ def _execute(command: list[str], root: Path, inventory: CargoArtifactInventory |
             process.kill()
             process.wait()
             raise
-        return process.wait()
+        status = process.wait()
+    finished_at = datetime.now(timezone.utc)
+    timing = {"started_at": started_at.isoformat(), "finished_at": finished_at.isoformat(),
+              "elapsed_seconds": time.perf_counter() - started_clock}
+    return status, timing
 
 
 def _save(output: Path, manifest: dict) -> None:
@@ -87,12 +94,16 @@ def run_recording(root: Path, output: Path, argv: list[str], kind: str) -> int:
         execution_environment, coverage = coverage_environment(root, execution_environment)
     environment = environment_identity(root, execution_environment)
     inventory = CargoArtifactInventory()
-    status = _execute(command, root, inventory, execution_environment)
+    status, command_timing = _execute(command, root, inventory, execution_environment)
+    diagnostics_started = time.perf_counter()
     manifest = _manifest(root, kind, argv, before, environment)
     artifacts = inventory.result()
     records, reasons = list_artifacts(artifacts["artifacts"], root, kind, execution_environment)
     after = source_identity(root)
-    manifest.update({"executed_argv": command, "exit_code": status, "source_after": after,
+    invocation_timing = {"schema": 1, "clock": "perf_counter", "command": command_timing,
+                         "diagnostics": {"elapsed_seconds": time.perf_counter() - diagnostics_started}}
+    manifest.update({"executed_argv": command, "exit_code": status,
+                     "invocation_timing": invocation_timing, "source_after": after,
                      "source_stable": before == after and before.get("clean") is True,
                      "cargo": artifacts, "native_listings": records, "listing_reasons": reasons})
     if kind == "coverage":
