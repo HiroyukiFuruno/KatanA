@@ -96,10 +96,22 @@ def collect_comparison(directory: Path) -> dict:
         report["selection_comparison_available"] = False
         for key in ("common_candidates", "normal_only_candidates", "coverage_only_candidates"):
             report[key] = []
+        report["coverage_phase_candidates"] = None
+        report["coverage_phase_overlaps"] = None
         report["reasons"].append("fixed coverage phase inputs are missing or selectors do not match")
     report["invocation_timing"] = timing_report(
         normal, coverage, not missing and not invalid and report["selection_comparison_available"])
     return report
+
+
+def _phase_summary(report: dict) -> str:
+    candidates, overlaps = report.get("coverage_phase_candidates"), report.get("coverage_phase_overlaps")
+    if not isinstance(candidates, list) or not isinstance(overlaps, list):
+        return "Coverage phase candidates/overlaps: unavailable."
+    counts = ", ".join(f"{item['run_id']}={item['candidate_count']}" for item in candidates)
+    pairs = ", ".join(f"{item['left_run_id']}∩{item['right_run_id']}={item['intersection_count']}"
+                       for item in overlaps) or "none"
+    return f"Coverage phase candidates: {counts}. Pairwise intersections: {pairs}."
 
 
 def _summary(report: dict) -> str:
@@ -108,6 +120,8 @@ def _summary(report: dict) -> str:
     return ("## Test inventory diagnostics\n\n"
             f"Candidate comparison available: {report['selection_comparison_available']}. {counts}.\n\n"
             "Execution equivalence: false. Test skip/reuse authorization: false.\n\n"
+            + _phase_summary(report) + "\n"
+            "Phase candidate counts/overlaps are inventory diagnostics, not execution counts, equivalence, or reduction.\n\n"
             "Reasons: " + "; ".join(report["reasons"]) + "\n\n"
             + timing_summary(report.get("invocation_timing")))
 

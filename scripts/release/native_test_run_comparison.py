@@ -7,6 +7,7 @@ LIMITATIONS = (
     "native binary digest measured at listing, not at test execution",
     "environment capture is selected inputs, not a hermetic environment",
 )
+PHASE_METRICS_SCOPE = "unique inventory candidates only; not execution count, equivalence, or reduction"
 
 
 def _changed_paths(left: object, right: object, prefix: str = "") -> list[str]:
@@ -48,7 +49,7 @@ def _differences(normal: dict, coverage: dict, left: dict, right: dict) -> tuple
 def _phase(normal: dict, coverage: dict, baseline: tuple, observed: tuple) -> dict:
     conditions, artifacts = _differences(normal, coverage, baseline[1], observed[1])
     return {"run_id": coverage["run_id"], "condition_paths": conditions,
-            "artifact_differences": artifacts}
+            "artifact_differences": artifacts, "candidates": observed[0]}
 
 
 def _same_source(normal: dict, coverage: dict, reasons: list[str]) -> bool:
@@ -56,6 +57,17 @@ def _same_source(normal: dict, coverage: dict, reasons: list[str]) -> bool:
         return True
     reasons.append("normal and coverage source identities differ")
     return False
+
+
+def _phase_metrics(phases: list[dict], available: bool) -> tuple[list[dict] | None, list[dict] | None]:
+    if not available:
+        return None, None
+    candidates = [{"run_id": phase["run_id"], "candidate_count": len(phase["candidates"])}
+                  for phase in phases]
+    overlaps = [{"left_run_id": left["run_id"], "right_run_id": right["run_id"],
+                 "intersection_count": len(left["candidates"] & right["candidates"])}
+                for index, left in enumerate(phases) for right in phases[index + 1:]]
+    return candidates, overlaps
 
 
 def compare_runs(normal: dict | None, coverage: list[dict]) -> dict:
@@ -83,14 +95,20 @@ def compare_runs(normal: dict | None, coverage: list[dict]) -> dict:
     if not coverage:
         reasons.append("coverage: observed invocations are missing")
     expected = baseline[0] if baseline is not None else set()
-    return _report(available, expected, observed, phases, coverage, reasons)
+    phase_candidates, phase_overlaps = _phase_metrics(phases, available)
+    return _report(available, expected, observed, phases, coverage, reasons,
+                   phase_candidates, phase_overlaps)
 
 
 def _report(available: bool, normal: set, coverage: set, phases: list,
-            runs: list[dict], reasons: list[str]) -> dict:
+            runs: list[dict], reasons: list[str], phase_candidates: list[dict] | None,
+            phase_overlaps: list[dict] | None) -> dict:
     return {"schema": 1, "diagnostic_only": True, "execution_equivalent": False,
             "reuse_authorized": False, "selection_comparison_available": available,
             "coverage_runs": [run.get("run_id") for run in runs if isinstance(run, dict)],
+            "coverage_phase_candidates": phase_candidates,
+            "coverage_phase_overlaps": phase_overlaps,
+            "coverage_phase_metrics_scope": PHASE_METRICS_SCOPE,
             "common_candidates": sorted(normal & coverage) if available else [],
             "normal_only_candidates": sorted(normal - coverage) if available else [],
             "coverage_only_candidates": sorted(coverage - normal) if available else [],

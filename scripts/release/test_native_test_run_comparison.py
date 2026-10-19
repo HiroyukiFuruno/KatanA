@@ -81,6 +81,24 @@ class RunComparisonTests(unittest.TestCase):
         self.assertEqual(len(result["common_candidates"]), 2)
         self.assertEqual(result["normal_only_candidates"], [])
         self.assertEqual(len(result["coverage_runs"]), 2)
+        self.assertEqual(result["coverage_phase_candidates"], [
+            {"run_id": "coverage", "candidate_count": 1},
+            {"run_id": "second-phase", "candidate_count": 1},
+        ])
+        self.assertEqual(result["coverage_phase_overlaps"], [{
+            "left_run_id": "coverage", "right_run_id": "second-phase", "intersection_count": 0,
+        }])
+        self.assertIn("not execution count", result["coverage_phase_metrics_scope"])
+
+    def test_three_phase_metrics_report_positive_overlap_and_disjoint_pair(self) -> None:
+        phases = [manifest("coverage"), manifest("coverage", ("--skip", "beta")),
+                  manifest("coverage", ("--skip", "alpha"))]
+        for index, phase in enumerate(phases):
+            phase["run_id"] = f"phase-{index}"
+        result = self.compare(manifest(), phases)
+        self.assertEqual([item["candidate_count"] for item in result["coverage_phase_candidates"]], [2, 1, 1])
+        self.assertEqual([item["intersection_count"] for item in result["coverage_phase_overlaps"]], [1, 1, 0])
+        self.assertEqual(len(result["common_candidates"]), 2)
 
     def test_unknown_selection_refuses_a_complete_candidate_comparison(self) -> None:
         for options in (("--future-selection",), ("--skip",), ("alpha", "--exact"),

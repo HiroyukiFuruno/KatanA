@@ -16,6 +16,8 @@ class ComparisonBoundaryTests(unittest.TestCase):
         self.assertFalse(report["selection_comparison_available"])
         self.assertTrue(report["condition_differences"])
         self.assertFalse(report["reuse_authorized"])
+        self.assertIsNone(report["coverage_phase_candidates"])
+        self.assertIsNone(report["coverage_phase_overlaps"])
 
     def test_unknown_environment_capture_version_is_unavailable(self) -> None:
         changed = manifest("coverage")
@@ -38,6 +40,8 @@ class ComparisonBoundaryTests(unittest.TestCase):
         self.assertFalse(result["execution_equivalent"])
         self.assertFalse(result["reuse_authorized"])
         self.assertEqual(result["common_candidates"], [])
+        self.assertIsNone(result["coverage_phase_candidates"])
+        self.assertIsNone(result["coverage_phase_overlaps"])
 
     def test_requested_and_executed_argv_are_both_required(self) -> None:
         for value in ([], ["cargo", "test"], ["cargo", "test", "--", "--list"], "cargo test"):
@@ -82,8 +86,10 @@ class ComparisonBoundaryTests(unittest.TestCase):
 
     def test_duplicate_run_and_target_with_changed_source_are_unavailable(self) -> None:
         duplicated = manifest("coverage")
-        self.assertFalse(compare_runs(manifest(), [duplicated, duplicated])[
-            "selection_comparison_available"])
+        duplicate_report = compare_runs(manifest(), [duplicated, duplicated])
+        self.assertFalse(duplicate_report["selection_comparison_available"])
+        self.assertIsNone(duplicate_report["coverage_phase_candidates"])
+        self.assertIsNone(duplicate_report["coverage_phase_overlaps"])
         changed = copy.deepcopy(duplicated["cargo"]["artifacts"][0])
         changed["target"]["src_path"] = "/fixture/src/different.rs"
         duplicated["cargo"]["artifacts"].append(changed)

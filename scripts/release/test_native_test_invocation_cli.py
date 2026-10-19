@@ -11,6 +11,7 @@ import tempfile
 import unittest
 
 from test_native_test_comparison_fixture import create_fixture, record_fixture, ROOT
+from native_test_run_recording import cargo_command
 
 
 CLI = ROOT / "scripts/release/compare-test-invocations.py"
@@ -34,6 +35,13 @@ class InvocationCliTests(unittest.TestCase):
             self.assertGreater(phase["command_seconds"], 0)
             self.assertGreaterEqual(phase["diagnostics_seconds"], 0)
         self.assertFalse(timing["reuse_authorized"])
+        phases = report["coverage_phase_candidates"]
+        self.assertEqual(len(phases), 4)
+        self.assertTrue(any(item["candidate_count"] > 0 for item in phases))
+        self.assertEqual(len(report["coverage_phase_overlaps"]), 6)
+        self.assertIn("Coverage phase candidates:", summary.read_text())
+        self.assertIn("Pairwise intersections:", summary.read_text())
+        self.assertIn("not execution count", report["coverage_phase_metrics_scope"])
         self.assertIn("Command seconds", summary.read_text())
         self.assertIn("not savings", summary.read_text())
 
@@ -46,6 +54,39 @@ class InvocationCliTests(unittest.TestCase):
         self.assertFalse(report["selection_comparison_available"])
         self.assertEqual(report["input_sha256"], {})
         self.assertFalse(report["reuse_authorized"])
+
+    def assert_phase_metrics_unavailable(self, report: dict, summary: Path) -> None:
+        self.assertFalse(report["selection_comparison_available"])
+        self.assertIsNone(report["coverage_phase_candidates"])
+        self.assertIsNone(report["coverage_phase_overlaps"])
+        self.assertIn("Coverage phase candidates/overlaps: unavailable.",
+                      summary.read_text())
+
+    def assert_invalid_selector(self, output: Path, phase_path: Path,
+                                original_phase: str) -> None:
+        mutated = json.loads(original_phase)
+        mutated["requested_argv"] = [
+            "cargo", "llvm-cov", "--no-report", "--no-cfg-coverage",
+            "--workspace", "--lib", "--wrong"
+        ]
+        mutated["executed_argv"] = cargo_command(mutated["requested_argv"], "coverage")
+        phase_path.write_text(json.dumps(mutated) + "\n", encoding="utf-8")
+        summary = output / "invalid-summary.md"
+        result = _run(output, summary)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        report = json.loads((output / "comparison.json").read_text())
+        self.assert_phase_metrics_unavailable(report, summary)
+
+    def assert_missing_phase(self, output: Path, phase_path: Path,
+                             original_phase: str) -> None:
+        phase_path.write_text(original_phase, encoding="utf-8")
+        phase_path.unlink()
+        summary = output / "missing-summary.md"
+        result = _run(output, summary)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        report = json.loads((output / "comparison.json").read_text())
+        self.assertFalse(report["coverage_phase_inputs_complete"])
+        self.assert_phase_metrics_unavailable(report, summary)
 
     def test_real_four_phase_inputs_report_fixture_skip_and_no_authority(self) -> None:
         with tempfile.TemporaryDirectory(prefix="inventory-cli-") as name:
@@ -64,19 +105,12 @@ class InvocationCliTests(unittest.TestCase):
             self.assertTrue(report["selection_comparison_available"])
             self.assertEqual(len(report["normal_only_candidates"]), 1)
             self.assertEqual(report["normal_only_candidates"][0][1], "fixture")
-            self.assert_fresh_scope_is_unavailable(output)
 
-    def test_missing_phase_is_unavailable(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="inventory-missing-") as name:
-            directory = Path(name)
-            (directory / "normal.json").write_text("{}\n", encoding="utf-8")
-            (directory / "coverage").mkdir()
-            result = _run(directory)
-            self.assertEqual(result.returncode, 0, result.stderr)
-            report = json.loads((directory / "comparison.json").read_text(encoding="utf-8"))
-            self.assertFalse(report["coverage_phase_inputs_complete"])
-            self.assertFalse(report["selection_comparison_available"])
-            self.assertFalse(report["reuse_authorized"])
+            phase_path = output / "coverage/workspace-lib-bin.json"
+            original_phase = phase_path.read_text(encoding="utf-8")
+            self.assert_invalid_selector(output, phase_path, original_phase)
+            self.assert_missing_phase(output, phase_path, original_phase)
+            self.assert_fresh_scope_is_unavailable(output)
 
     def test_duplicate_json_keys_and_oversize_manifest_fail_closed(self) -> None:
         for payload in ('{"schema":1,"schema":1}\n', '{"x":NaN}\n',
