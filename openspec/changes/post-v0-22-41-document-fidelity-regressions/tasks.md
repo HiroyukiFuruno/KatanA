@@ -43,11 +43,12 @@
 | 実装済み9件 | #352 / #351 / #350 / #349 / #348 / #345 / #340 / #312 / #258 | current final graphの必須CI・packaged/OS受入・公開。各Issueの対象検証済み範囲と最終受入を区別する |
 | 部分対応 | #343 | KatanA独立残件: Windows cold/warm実測、通常test/coverage実行同等性、実重複削減、trusted reuse、導入前後比較 |
 | 部分対応 | #335 | 通常運用への強制接続/公開後activation、実repo cleanup receiptとlive公開契約の証明 |
-| 部分対応 | #338 | canonical候補の参照採用と確定証跡handoff。表示欠落が残る候補を正解にしない |
+| 部分対応 | #338 | producer9aaの生成・宣言検証・handoffは完了。残るのは採点・canonical参照採用。表示欠落が残る候補を正解にしない |
 | 部分対応・上流依存あり | #339 | registry採用はKDV0.5.12/KRR0.4.23済み。KDV69供給網修正版とcurrent packaged受入・公開が残る |
 | 未実装・上流依存 | #336 | KLE公開待ち。公開後registry採用・ABI整合・実editor host E2E。KDV/KRR待ちとは別 |
 
 - [ ] #343の独立残作業を実行する。内部メモだけを読んで「独立作業なし」と報告せず、上表とIssue本文の残作業を照合する。
+- [x] 10月19日、独立5コミットのHEAD59c52078でrelease Python全474件/197.744秒/actual0を回収。#338は保持artifactのhash/crop/source再照合と既存KDV担当の受領確認により、生成・宣言検証・handoff済みを訂正した。採点・参照採用は未完了、全gate/公開成功ではない。evidence/issue338-state-and-release-tests-2026-10-19.ja.md。
 - [/] #343 Windows native inventoryの常時未取得を修復。POSIX selectorは維持し、Windows Python3.12以上では標準nonblocking pipe経路へ接続。reader thread/spool/無制限captureを使わず、各1MiB/64KiB chunk/既存30秒deadlineとparse/hash/元exitを保持。実Mac subprocessの片側EOF/両stream/境界/overflow/timeout/reapを含む対象83件PASS20.402秒。Windows限定Python3.14固定系列とreal pipe/real Cargo回帰を既存Ready CIへ接続し、CI契約38件とdefault actionlint成功。Windows実機実行は未確認であり、cold/warm測定・全実行同等性・skip/reuseを達成済みとはしない。evidence/windows-native-inventory-2026-10-19.ja.md。
 - [/] #343の時間比較に必要な通常/coverage各invocation計測を追加。既存Cargo一回の実行時間とpost-command listing/source診断時間を単調時計で分離し、既存比較CLI/CI summaryへ表示する。UTC開始終了も保存し、欠測/不正/非有限値を0秒にせず、phase欠落・不一致・重複時の合計を拒否する。元exit/argv/全test・coverageとcomplete/reuse=falseを維持。実Cargo成功/失敗と4coverage phaseを含む対象78件PASS23.909秒、構文/diff/サイズ/KML成功、独立最終reviewのP0/P1/必須P2は0件。通常統合を継続し、Windows実測・実重複削減・導入前後の効果・全job時間を達成済みとはしない。evidence/invocation-timing-2026-10-19.ja.md。
 - [/] #335の通常setup配線漏れを修復。実Lefthook再生成→installer拒否で既存dispatcherが外れるP1を実fixtureで確認し、同一ownerの再導入と失敗時のdispatcher復元を実装した。未知backup・symlink・変更bytes/modeは拒否し、対象28件PASS、実Lefthookのinstaller拒否/終了23で復元・backup保持を確認、独立最終レビュー必須所見0。実repo hooks/gitconfigは非操作で、公開後activation/cleanupの証明と全Issue完了は別。evidence/normal-setup-dispatcher-2026-10-19.md。
