@@ -59,16 +59,6 @@ on:
       version:
         description: 'Version to release (e.g. 0.18.1 or v0.18.1)'
         required: true
-      target:
-        description: 'Target to release'
-        required: true
-        default: 'all'
-        type: choice
-        options:
-          - all
-          - macOS
-          - linux
-          - windows
       force:
         description: 'Force overwrite existing release/tag'
         required: false
@@ -191,7 +181,6 @@ jobs:
     name: Build macOS
     needs: preflight
     runs-on: macos-latest
-    if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'all' || github.event.inputs.target == 'macOS'
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -260,7 +249,6 @@ jobs:
   smoke_macos:
     name: Smoke macOS (${{ matrix.arch }})
     needs: [preflight, build_macos]
-    if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'all' || github.event.inputs.target == 'macOS'
     strategy:
       fail-fast: false
       matrix:
@@ -295,7 +283,6 @@ jobs:
     name: Build Linux
     needs: preflight
     runs-on: ubuntu-latest
-    if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'all' || github.event.inputs.target == 'linux'
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -341,7 +328,6 @@ jobs:
     name: Build Windows
     needs: preflight
     runs-on: windows-latest
-    if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'all' || github.event.inputs.target == 'windows'
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

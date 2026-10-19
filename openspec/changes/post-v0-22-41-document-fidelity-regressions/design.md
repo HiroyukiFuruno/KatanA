@@ -12,6 +12,10 @@ Office の ZIP、フィルター、表示品質、変換時間は KDV/office2pdf
 
 **Goals:**
 
+2026-10-19本人決定: versionごとのOS対応は一律とし、通常・タグ・手動のどの公開入口でも全OS一括公開とする。緊急時のOS単独公開機能は残さない。手動target選択とOS別skip分岐、正規release-triggerの旧target引数を撤去する。全OS build・macOS smoke・全5配布asset・identity/checksum・供給網・既存品質条件は維持する。
+
+アンチパターン: 全OS成功を要求するpublish条件のまま、公開されない単独OS選択肢を残す。または選択肢を残すために品質ゲートを緩和する。正: 全入口を全OS一括へ統一し、失敗したOSがあれば公開しない。検索語: all-platform publication, manual target removed, 全OS一括公開。
+
 - 指摘された9項目を独立した受入項目として追跡し、未検証項目を完了扱いしない。
 - KatanA 所有のメニュー活性条件、Sheet タブ配置、フォント初期化、診断・ホストハーネスを修正する。
 - KRR の sticky layout と HTML互換性、KDV/office2pdf の ZIP、フィルター、Office品質・時間を owner 境界で修正し、公開版を KatanA から検証する。

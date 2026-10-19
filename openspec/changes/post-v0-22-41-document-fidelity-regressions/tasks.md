@@ -31,6 +31,9 @@
 
 ### Issue実装状態の正本（2026-10-19）
 
+- [/] 本人決定「version管理上OS対応は一律、緊急OS単独公開は不要」をコードと仕様へ反映。workflow_dispatchのtarget入力・OS別skip分岐・release-trigger旧引数を撤去し、全OS build/macOS smoke/全5配布asset・identity/checksum/供給網・既存品質条件を維持。回帰RED→GREEN、新契約4件・関連40件/actionlint/主査AST/独立最終必須所見0。evidence/all-os-publication-policy-2026-10-19.ja.md。公開方針の回答待ちは解消済みで、再質問しない。
+- [ ] 全OS一括公開の修復を通常pushで通してから、既存manual-target3threadsへ個別reply/resolve・fresh取得する。現在のKDV69安全性ゲートは迂回せず、ローカル修復を公開済み/Ready/全公開成功と扱わない。
+
 - [/] ユーザー指摘「実装済み・未対応・上流待ちを即答できず、Issueラベルもない」を是正。全Open Issueを現在の実装・対象回帰・元DoDと照合し、GitHub本文の先頭に実施済み・残作業・根拠を記載した。元本文・DoDを保持し、実装済みだけではCloseしない。
 - `implemented`: Issueのコード実装範囲は対応済み。最終検証・merge・公開の成功とは別。
 - `partially-implemented`: 部分対応。実装または成果物確定の残件がある。
