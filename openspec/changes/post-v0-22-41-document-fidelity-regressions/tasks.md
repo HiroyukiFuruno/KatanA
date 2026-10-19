@@ -48,6 +48,7 @@
 | 未実装・上流依存 | #336 | KLE公開待ち。公開後registry採用・ABI整合・実editor host E2E。KDV/KRR待ちとは別 |
 
 - [ ] #343の独立残作業を実行する。内部メモだけを読んで「独立作業なし」と報告せず、上表とIssue本文の残作業を照合する。
+- [/] #335の通常setup配線漏れを修復。実Lefthook再生成→installer拒否で既存dispatcherが外れるP1を実fixtureで確認し、同一ownerの再導入と失敗時のdispatcher復元を実装した。未知backup・symlink・変更bytes/modeは拒否し、対象28件PASS、実Lefthookのinstaller拒否/終了23で復元・backup保持を確認、独立最終レビュー必須所見0。実repo hooks/gitconfigは非操作で、公開後activation/cleanupの証明と全Issue完了は別。evidence/normal-setup-dispatcher-2026-10-19.md。
 - [/] #343/#338の独立caller修復: 正規screenshot runnerが呼出元の`CARGO_TARGET_DIR`を無視する不整合を修正し、既定配置・release worker・別lockのchild分離を維持。配線回帰RED→screenshot19件GREEN、実bashで未設定/空/空白を含む絶対・相対パスの3出力を確認した。標準default clean後も専用targetのartifact SHAが不変なtiny real Cargo実測も成功。実app/capture・canonical参照採用・Windows実測・95点・公開は未実施であり、この修復の成功へ含めない。
 - [x] #343の既存ローカル契約を再検証しcache4/observation3/native inventory比較71の全78件が成功。通常pushの正式preflightでもrelease Python456件等は成功したが、既存KDV経由ZIP advisoryで実exit1。hookを迂回せず、上流安全性修正版採用後に通常push/最終gateを通す。
 - 状態更新時は、実装状態を1種類だけ付け、検証待ち/上流待ちを別軸で併記する。確認対象HEAD・証跡・未完了を同時に更新する。

@@ -64,6 +64,18 @@ class InstallerTests(unittest.TestCase):
         ).stdout
         self.assertEqual(config_after, config_before)
 
+    def test_rewraps_when_lefthook_regenerates_the_same_owner(self) -> None:
+        original = b"#!/bin/sh\nprintf existing\n"
+        self.hook.write_bytes(original)
+        os.chmod(self.hook, 0o751)
+        self.assertEqual(self.install().returncode, 0)
+        self.hook.write_bytes(original)
+        os.chmod(self.hook, 0o751)
+        result = self.install()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.backup.read_bytes(), original)
+        self.assertIn(b"KATANA_PRE_PUSH_DISPATCHER_V1", self.hook.read_bytes())
+
     def test_missing_required_backup_is_rejected(self) -> None:
         self.hook.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
         self.hook.chmod(0o755)

@@ -28,6 +28,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
 CANONICAL_SKILLS_DIR="${REPO_ROOT}/.agents/skills"
+KATANA_RELEASE_REPO="${KATANA_RELEASE_REPO:-HiroyukiFuruno/KatanA}"
 
 cd "${REPO_ROOT}"
 
@@ -461,7 +462,9 @@ fi
 # Install hooks into the repo (idempotent)
 if [[ -f "lefthook.yml" ]]; then
   info "Registering lefthook hooks in this repository..."
-  lefthook install
+  # Lefthook再生成に失敗しても検証済みdispatcherをownerとして復元する。
+  python3 -B "${REPO_ROOT}/scripts/release/setup_hooks.py" \
+    --repository "${KATANA_RELEASE_REPO}"
   success "lefthook hooks installed (pre-commit + pre-push)"
 else
   warn "lefthook.yml not found in current directory — skipping hook registration."

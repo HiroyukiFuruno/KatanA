@@ -55,7 +55,10 @@ def validate_install_target(repository: str, hook: Path, backup: Path) -> None:
     if not hook.exists():
         raise FileNotFoundError("existing pre-push hook is required")
     if backup.exists() or backup.is_symlink():
-        raise FileExistsError(f"refusing unknown backup collision: {backup}")
+        if (backup.is_symlink() or not backup.is_file()
+                or backup.read_bytes() != hook.read_bytes()
+                or stat.S_IMODE(backup.stat().st_mode) != stat.S_IMODE(hook.stat().st_mode)):
+            raise FileExistsError(f"refusing unknown backup collision: {backup}")
     if not hook.stat().st_mode & stat.S_IXUSR:
         raise PermissionError(f"existing pre-push hook is not executable: {hook}")
 
@@ -75,16 +78,21 @@ def write_temporary_wrapper(repository: str, hook: Path) -> Path:
 
 def activate_wrapper(hook: Path, backup: Path, temporary: Path, original_mode: int) -> None:
     # 置換前にownerを移動すると、割込後の通常pushが既存検査を迂回するためlinkで保持する。
-    os.link(hook, backup, follow_symlinks=False)
+    created_backup = False
+    if not backup.exists():
+        os.link(hook, backup, follow_symlinks=False)
+        created_backup = True
     try:
         validate_regular(backup, "retained pre-push owner")
         validate_regular(hook, "pre-push target")
-        if (not os.path.samefile(hook, backup)
-                or stat.S_IMODE(backup.stat().st_mode) != original_mode):
+        if (stat.S_IMODE(hook.stat().st_mode) != original_mode
+                or stat.S_IMODE(backup.stat().st_mode) != original_mode
+                or backup.read_bytes() != hook.read_bytes()):
             raise ValueError("pre-push owner changed during installation")
         os.replace(temporary, hook)
     except BaseException:
-        if hook.exists() and not hook.is_symlink() and os.path.samefile(hook, backup):
+        if (created_backup and hook.exists() and not hook.is_symlink()
+                and os.path.samefile(hook, backup)):
             backup.unlink()
         raise
 
