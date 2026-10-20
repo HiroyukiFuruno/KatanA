@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
+import platform
 import shutil
 import subprocess
 import sys
@@ -11,7 +12,7 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "ci"))
 from cargo_clean_guard import cargo_command
-from native_test_run_identity import file_digest
+from native_test_run_identity import INPUT_ENVIRONMENT, file_digest
 
 NEXTEST_VERSION = "0.9.148"
 LLVM_COV_VERSION = "0.9.1"
@@ -31,13 +32,39 @@ def snapshot_worker(source: Path, destination: Path) -> str:
     return digest
 
 
-def verify_tools(cargo: list[str], environment: dict[str, str], repo: Path) -> None:
+def verify_tools(cargo: list[str], environment: dict[str, str], repo: Path) -> dict[str, str]:
+    versions = {}
     for tool, version in (("nextest", NEXTEST_VERSION), ("llvm-cov", LLVM_COV_VERSION)):
         result = subprocess.run([*cargo, tool, "--version"], cwd=repo, env=environment,
                                 capture_output=True, text=True, timeout=10, check=False)
         first = result.stdout.splitlines()[0] if result.stdout else ""
         if result.returncode or first.split()[:2] != [f"cargo-{tool}", version]:
             raise ValueError(f"shadow requires cargo-{tool} {version}: {first}")
+        versions[tool] = first
+    return versions
+
+
+def shadow_environment_identity(repo: Path, cargo: list[str], environment: dict[str, str]) -> dict:
+    observed = {}
+    rustc = environment["RUSTC"] if "RUSTC" in environment else "rustc"
+    for name, command in (("cargo", [*cargo, "-V"]), ("rustc", [rustc, "-vV"])):
+        try:
+            result = subprocess.run(command, cwd=repo, env=environment,
+                                    capture_output=True, text=True, timeout=10, check=False)
+        except (OSError, subprocess.SubprocessError) as error:
+            raise ValueError(f"shadow {name} identity unavailable") from error
+        if result.returncode or not result.stdout.strip():
+            raise ValueError(f"shadow {name} identity unavailable")
+        observed[name] = result.stdout.strip()
+    worker = environment.get("KATANA_KDV_OFFICE_WORKER")
+    try:
+        worker_sha = file_digest(repo / worker) if worker else None
+    except (OSError, ValueError) as error:
+        raise ValueError("shadow worker identity unavailable") from error
+    return {"os": platform.platform(), "machine": platform.machine(),
+            "toolchain": observed,
+            "environment": {key: environment.get(key) for key in INPUT_ENVIRONMENT},
+            "worker_sha256": worker_sha}
 
 
 def command_context(output: Path) -> tuple[list[str], dict[str, str]]:

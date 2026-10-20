@@ -28,6 +28,18 @@ Issue #343の重複削減を進めるため、KRRの正式`root-test-and-coverag
 
 ## 保持ログと次の作業
 
+### 実行入力identityの追加修復
+
+元#343のmanifest要件へ再照合し、source/argvだけでは実環境を復元できない欠落を修復した。ROOTと各phaseのchild開始前に、同じcwd/envで実CARGO wrapperの`-V`と指定RUSTCの`-vV`を取得する。phaseで変更するRUSTFLAGSに応じてwrapperのtoolchainが変わる可能性があるため、ROOTの結果はphaseへ流用しない。既存helperの親環境版取得は呼ばず、既存の環境allowlist定数・worker digest・OS/machineを使う。
+
+tool取得失敗・空出力・明示RUSTC空文字/複数commandは失敗とし、stageを開始しない。空白を含む単一executable pathは有効。相対workerはchildのrepoへ束縛する。全環境dumpは行わず、phase固有のstate/profile/workerと検証済みNextest/llvm-covの実版文字列を保存する。
+
+- 最終33件PASS1.656秒、実CARGO/RUSTC sentinel・ROOT/phase別版・失敗時stage未起動・encoded flags・相対workerを回帰化した。変更3ファイル125/134/195行、全関数30行以内。
+- 相対workerの追加前の32件成功版で、別fresh依存0 fixture`tmp/nextest-shadow-probe/2026-10-20-input-identity`の実4phase/4store・全stage0・source stable=trueを回収。Cargo/Rustc1.97.1、Nextest0.9.148、llvm-cov0.9.1とphase実環境がreceiptへ保存された。相対path追加は別の最終33件で検証し、同一版の実Rust結果へ読み替えない。
+- rawは`tmp/oct20-input-identity-success.log`と`tmp/oct20-input-identity-verify.log`。この段階も製品full shadow・同等性・削減・report合格ではない。
+
+既存正式coverageのworker再linkも別tiny fixtureで切り分けた。通常`llvm-cov test`相当の4phaseは全0、worker SHAは各phase後不変だった。Nextest側の再link結果だけで既存正式gateを不備と断定せず、既存coverage.shは変更していない。rawは`tmp/oct20-regular-worker-coverage-phases.log`。
+
 - `tmp/oct20-nextest-shadow-worker-success.log`
 - `tmp/oct20-nextest-shadow-worker-success-verify-final.log`
 - `tmp/oct20-nextest-shadow-worker-failure.log`

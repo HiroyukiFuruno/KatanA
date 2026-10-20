@@ -13,7 +13,7 @@ import uuid
 from native_test_run_identity import file_digest, source_identity
 from nextest_shadow_execution import (
     command_context, execute_stage, phase_environment, prepare_output, snapshot_worker,
-    verify_tools, write_receipt,
+    shadow_environment_identity, verify_tools, write_receipt,
 )
 from nextest_shadow_plan import phase_plan, shadow_contract
 from nextest_shadow_records import collect_records
@@ -27,22 +27,30 @@ def run_phase(repo: Path, output: Path, cargo: list[str], base: dict[str, str],
               phase: dict) -> dict:
     directory = output / phase["phase"]
     environment = phase_environment(base, directory)
+    phase_identity = shadow_environment_identity(repo, cargo, environment)
     result = execute_stage(repo, directory, [*cargo, *phase["argv"]], environment)
     try:
         result["record_files"] = collect_records(directory / "nextest-state")
     except ValueError as error:
         result["record_unavailable"] = str(error)
+    result["environment_identity"] = phase_identity
+    result["environment_identity"]["explicit"] = {
+        key: environment.get(key) for key in
+        ("NEXTEST_STATE_DIR", "LLVM_PROFILE_FILE_NAME", "KATANA_KDV_OFFICE_WORKER")}
     write_receipt(directory / "phase.json", result)
     return {"phase": phase["phase"], **result}
 
 
-def initial_receipt(repo: Path, output: Path) -> dict:
+def initial_receipt(repo: Path, output: Path, cargo: list[str], environment: dict[str, str],
+                    tool_versions: dict[str, str], identity: dict) -> dict:
     contract = shadow_contract(repo)
     config_hashes = {key: file_digest(Path(contract[key]))
                      for key in ("config_file", "user_config_file")}
     return {"schema": 1, "diagnostic_only": True, **contract,
             "producer_completed": False, "report_checked": False,
             "source_before": source_identity(repo), "output": str(output),
+            "cargo_argv": cargo, "tool_versions": tool_versions,
+            "environment_identity": identity,
             "producer_sha256": {name: file_digest(Path(__file__).parent / name) for name in
                                 ("run-nextest-shadow.py", "nextest_shadow_execution.py",
                                  "nextest_shadow_plan.py", "nextest_shadow_records.py")},
@@ -83,8 +91,9 @@ def run_shadow(repo: Path, output: Path) -> int:
     if platform.system() != "Darwin":
         raise ValueError("this shadow candidate is macOS-only; required OS checks remain unchanged")
     cargo, environment = command_context(output)
-    verify_tools(cargo, environment, repo)
-    receipt = initial_receipt(repo, output)
+    tool_versions = verify_tools(cargo, environment, repo)
+    identity = shadow_environment_identity(repo, cargo, environment)
+    receipt = initial_receipt(repo, output, cargo, environment, tool_versions, identity)
     if receipt["source_before"].get("clean") is not True:
         raise ValueError("shadow requires a clean source tree; no build was started")
     prepare_output(repo, output)
