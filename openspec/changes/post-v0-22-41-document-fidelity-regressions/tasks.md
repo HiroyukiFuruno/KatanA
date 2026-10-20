@@ -22,7 +22,7 @@
 
 - [x] 215fb879のrelease Python全478件を一回実行しactual0/409.004秒を回収。開始終了HEAD/tracked clean/共有Git設定SHA一致。tmp/oct20-215-release-python-all.log。新しい差分や全Rust/Windows/公開の成功へ流用しない。
 - [/] function-length・vendor HTML要約・URL foreground ownerの修復済み3旧leafを正しいcommit/検査/threadへ照合し状態訂正。evidence/independent-work-audit-2026-10-20.ja.md。
-- [ ] just outdatedの実Cargo.toml一時上書きを廃止し、実vendor patch graphを保持する安全な調査経路を修復・実検証する。直接tool候補は原7metadata SHA不変だが、cargo-outdated0.17の内部tempでexcluded vendorを見失いactual1。小fixture成功を代用しない。
+- [x] just outdatedの実Cargo.toml一時上書きを廃止し、実vendor patch graphを保持する原本非変更overlayへ修復。TOML構文木roundtrip・glob/exclude・member lock copy・元cwd/CARGO・非0終了/出力を保持。pure3PASS、実cargo-outdated0.17のexcluded patch/内部path metadata＋成功0/失敗1/元全metadata不変回帰actual0。実rootはvendor欠落を解消し、KDV固定libcと最新版候補の衝突をactual1として保持、元7metadata SHA不変/.bak無し。全面依存更新・供給網・公開完了ではない。evidence/independent-work-audit-2026-10-20.ja.md。
 
 ## Definition of Ready
 

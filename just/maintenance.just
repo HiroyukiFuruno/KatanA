@@ -21,12 +21,13 @@ update:
     {{CARGO}} upgrade --manifest-path scripts/screenshot/Cargo.toml -i
     {{CARGO}} update --manifest-path scripts/screenshot/Cargo.toml
 
-# List outdated dependencies (requires cargo-outdated)
+# WHY: 実manifestを書換えると中断時に作業差分が残るため、一時領域だけで診断する。
 outdated:
-    @cp Cargo.toml Cargo.toml.bak
-    @sed -e '/^\[patch\.crates-io\]/,$d' Cargo.toml.bak > Cargo.toml
-    @{{CARGO}} outdated --workspace || (mv Cargo.toml.bak Cargo.toml && exit 1)
-    @mv Cargo.toml.bak Cargo.toml
+    @{{RTK_CMD}}python3 -B scripts/dependency-diagnostic/real_contract.py --root . --cargo "{{CARGO}}"
+
+# WHY: 診断専用toolを通常検査の必須依存へ追加せず、実tool回帰を明示実行する。
+dependency-diagnostic:
+    @{{RTK_CMD}}python3 -B scripts/dependency-diagnostic/fixture_contract.py --cargo "{{CARGO}}"
 
 # Start the Linux verification environment
 linux-up:
