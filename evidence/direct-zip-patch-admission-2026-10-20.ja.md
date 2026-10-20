@@ -29,9 +29,20 @@ root/screenshotの各dry-runと実Cargo updateはactual0。新ZIP checksumは `6
 
 修復後の通常commit hookはactual0、sourceを署名Gへ統合した。作業者の英語messageを規約どおり日本語へ訂正した未公開tipは `cc5a6600`。訂正前後tree/indexは `565f3600d27f0ba3c109b2da773461fd6e9523a8` で不変、amendも通常hook actual0。署名・hookを迂回せず、他の履歴やremoteは変更していない。raw: `tmp/oct20-zip905-normal-commit-retry.log`、`tmp/oct20-zip905-normal-commit-amend.log`。
 
-上記5件の実consumer成功はこの形式・定数修復より前の実測であり、最新HEADの全製品テスト成功と読み替えない。修復後の形式検査は通常hookで成功した。単独ASTを重複実行しておらず、成功件数の新たな推定値は記載しない。最新sourceの製品core全test・全3OSは、共有検査枠と元の正式ゲートで回収する未完条件として保持する。
+上記5件の実consumer成功はこの形式・定数修復より前の実測であり、最新HEADの全製品テスト成功と読み替えない。修復後の形式検査は通常hookで成功した。単独ASTを重複実行しておらず、成功件数の新たな推定値は記載しない。最新sourceの製品core全testは次節で回収した。全3OSは元の正式ゲートで回収する未完条件として保持する。
 
 最終read-onlyレビューではP0/P1/必須P2なし。検証終了後、検証専用targetだけを新clean guardで削除しactual0/366.8MiBを回収した。source・lock・入力SHAは削除後も全一致で、fixtureとrawログを保持している。cacheは再生成できる。raw: `tmp/oct20-zip905-consumer-cache-clean.log`。実repositoryのtargetや他担当のcacheは削除していない。
+
+## 現graphの正規core回収
+
+KUCの共有検査batch実終了後、`CARGO_BUILD_JOBS=1 just test-core` を一回だけ実行しactual exit0を回収した。RTK集計は19 suites・407 passed・既存2 ignored・272.62秒。開始10:47:17Zと終了10:57:16ZのHEADは `e0e90d23f5b15ebc57e55dcecd4ec7213573a750`、source clean、両lock SHAも一致した。旧9365の失敗はこの成功とは別に保持する。
+
+- root lock: `2402275790e13ae3dbf811470a7a76fa8f5385164f1ee591af7597e0d4f9a395`
+- screenshot lock: `aea404de57de7e2ad9955adb33c3e999d0be8d4d0ae223a5e6b489ab73b32377`
+- raw集計: `tmp/oct20-e0-current-core.log`
+- identity: `tmp/oct20-e0-current-core-start.log` / `tmp/oct20-e0-current-core-end.log`
+
+形式修復後の製品core検証であり、全workspace・Windows/Linux・coverage・packaged受入・供給網・公開の成功へ広げない。実終了後にKUC/KDV担当へ枠を返し、追加Cargo検査を起動していない。
 
 ## 供給網との分離
 
