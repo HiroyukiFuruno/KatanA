@@ -152,7 +152,7 @@ class NextestShadowRunnerTests(unittest.TestCase):
             self.assertIn("environment_identity", receipt)
             self.assertEqual(receipt["environment_identity"]["explicit"], {
                 "NEXTEST_STATE_DIR": str(output / "phase-a/nextest-state"),
-                "LLVM_PROFILE_FILE_NAME": "katana-shadow-test-run-phase-a-%m-%p.profraw",
+                "LLVM_PROFILE_FILE_NAME": "katana-shadow-test-run-phase-a-%4m.profraw",
                 "KATANA_KDV_OFFICE_WORKER": None,
             })
 

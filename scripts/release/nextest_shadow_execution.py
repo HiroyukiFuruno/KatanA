@@ -84,7 +84,7 @@ def phase_environment(base: dict[str, str], directory: Path) -> dict[str, str]:
     environment = dict(base)
     environment["NEXTEST_STATE_DIR"] = str(directory / "nextest-state")
     namespace = base.get("KATANA_SHADOW_PROFILE_ID") or uuid.uuid4().hex
-    environment["LLVM_PROFILE_FILE_NAME"] = f"katana-shadow-{namespace}-{directory.name}-%m-%p.profraw"
+    environment["LLVM_PROFILE_FILE_NAME"] = f"katana-shadow-{namespace}-{directory.name}-%4m.profraw"
     encoded = environment.get("CARGO_ENCODED_RUSTFLAGS")
     if encoded is not None:
         environment["CARGO_ENCODED_RUSTFLAGS"] = (

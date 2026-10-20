@@ -66,6 +66,8 @@ class ShadowCacheFlowTests(unittest.TestCase):
         for name in PHASES:
             phase = phase_environment(first, output / name)
             self.assertIn(first["KATANA_SHADOW_PROFILE_ID"], phase["LLVM_PROFILE_FILE_NAME"])
+            self.assertIn("%4m.profraw", phase["LLVM_PROFILE_FILE_NAME"])
+            self.assertNotIn("%p", phase["LLVM_PROFILE_FILE_NAME"])
             self.assertEqual(phase["NEXTEST_STATE_DIR"], str(output / name / "nextest-state"))
 
     def test_receipt_names_cache_without_granting_test_reuse(self):

@@ -90,7 +90,7 @@ class ShadowExecutionTests(unittest.TestCase):
         result = phase_environment({"RUSTFLAGS": "-D warnings", "KATANA_SHADOW_PROFILE_ID": "one"},
                                    Path("/run/phase"))
         self.assertEqual(result["RUSTFLAGS"], "-D warnings --cfg coverage")
-        self.assertEqual(result["LLVM_PROFILE_FILE_NAME"], "katana-shadow-one-phase-%m-%p.profraw")
+        self.assertEqual(result["LLVM_PROFILE_FILE_NAME"], "katana-shadow-one-phase-%4m.profraw")
 
     def test_output_is_fresh_and_below_repository_tmp(self):
         with tempfile.TemporaryDirectory() as name:
