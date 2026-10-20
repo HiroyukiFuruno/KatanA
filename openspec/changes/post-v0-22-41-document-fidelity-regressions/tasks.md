@@ -20,6 +20,8 @@
 
 ### 2026-10-20 独立作業の再確認
 
+- [/] #343 同HEAD fa9の正規normalは89740 actual0、正式coverageは95104の全4工程/report/strict document surface100%・未実行行0でactual0。既存compareもactual0、共通候補2160/通常だけ10/coverageだけ0、工程間6組overlap0を保存。工程間の専用cache保護clean96731は6545files/7.6GiB・保存SHA一致、旧root保持。時間の対象範囲・環境差・doctest未捕捉を明記しequivalent/reuse=false維持。Windows/実重複削減/trusted reuse/全OS・公開は未完。evidence/canonical-normal-coverage-2026-10-21.ja.md。
+
 - [/] #343 既存Justfileの4profile環境とincremental設定を実child identityへ記録する限定修復。初回direct normalは設定継承不足を主査検出しtest前compileでactual130、正式比較へ不採用。正確な5環境名の回帰RED→identity6件actual0、未設定None回帰を追加して関連consumer72件/7.355秒actual0、独立必須所見なし。HTML診断directory拒否という初期推測は旧TRIPLE経路と矛盾し訂正・変更不採用。新HEAD正規normal/coverage・全OS/速度/公開は未完。evidence/profile-environment-observation-2026-10-21.ja.md。
 
 - [/] #343 新HEAD01c54d4bの製品shadow再実行はsession72117 actual0。worker build0、lib-bin1770・integration228・UI parallel144・serial18の計2160PASS/既存7skip、全4store新生成、開始終了clean同HEAD/tree/両lock一致を主査照合した。前回の容量中断130から回復したが、通常testとの同等性・coverage閾値・削減/速度・全OS・packagedは未完でfalse policyを維持する。evidence/product-shadow-01c54d4b-2026-10-20.ja.md。
