@@ -20,6 +20,8 @@
 
 ### 2026-10-20 独立作業の再確認
 
+- [/] #343 実製品coverageのUI parallel compileによるdocument-session worker再linkをraw artifact/phase前SHAで特定し、既存shadowのexclusive copy/読取専用/SHA照合を共有、正式coverageもrun-owned snapshotへ固定した。既存target/tmp内・全4工程/report/strictgate・直接CARGO_BIN_EXE検査を維持。実スニペットのhelper失敗停止・親alias拒否を含む対象22件0.429秒、consumer/CI統合62件2.250秒actual0、zsh構文0。旧fa9合格を修復後の製品実行成功へ流用しない。evidence/formal-worker-snapshot-2026-10-21.ja.md。
+
 - [/] #343 同HEAD fa9の正規normalは89740 actual0、正式coverageは95104の全4工程/report/strict document surface100%・未実行行0でactual0。既存compareもactual0、共通候補2160/通常だけ10/coverageだけ0、工程間6組overlap0を保存。工程間の専用cache保護clean96731は6545files/7.6GiB・保存SHA一致、旧root保持。時間の対象範囲・環境差・doctest未捕捉を明記しequivalent/reuse=false維持。Windows/実重複削減/trusted reuse/全OS・公開は未完。evidence/canonical-normal-coverage-2026-10-21.ja.md。
 
 - [/] #343 既存Justfileの4profile環境とincremental設定を実child identityへ記録する限定修復。初回direct normalは設定継承不足を主査検出しtest前compileでactual130、正式比較へ不採用。正確な5環境名の回帰RED→identity6件actual0、未設定None回帰を追加して関連consumer72件/7.355秒actual0、独立必須所見なし。HTML診断directory拒否という初期推測は旧TRIPLE経路と矛盾し訂正・変更不採用。新HEAD正規normal/coverage・全OS/速度/公開は未完。evidence/profile-environment-observation-2026-10-21.ja.md。

@@ -5,7 +5,6 @@ import json
 import os
 from pathlib import Path
 import platform
-import shutil
 import subprocess
 import sys
 import time
@@ -14,23 +13,10 @@ import uuid
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "ci"))
 from cargo_clean_guard import cargo_command
 from native_test_run_identity import INPUT_ENVIRONMENT, file_digest
+from worker_snapshot import snapshot_worker
 
 NEXTEST_VERSION = "0.9.148"
 LLVM_COV_VERSION = "0.9.1"
-READONLY_EXECUTABLE_MODE = 0o555
-
-
-def snapshot_worker(source: Path, destination: Path) -> str:
-    digest = file_digest(source)
-    if not os.access(source, os.X_OK):
-        raise ValueError("shadow worker is not executable")
-    # coverageによる同名binaryの再linkから非instrumented workerを分離する。
-    with source.open("rb") as original, destination.open("xb") as snapshot:
-        shutil.copyfileobj(original, snapshot, length=65536)
-    destination.chmod(READONLY_EXECUTABLE_MODE)
-    if file_digest(source) != digest or file_digest(destination) != digest:
-        raise ValueError("shadow worker changed while taking snapshot")
-    return digest
 
 
 def verify_tools(cargo: list[str], environment: dict[str, str], repo: Path) -> dict[str, str]:

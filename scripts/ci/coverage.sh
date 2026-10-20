@@ -94,7 +94,10 @@ if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ]]; then
 else
     OFFICE_WORKER_NAME=kdv-office-worker
 fi
-export KATANA_KDV_OFFICE_WORKER="${COVERAGE_TARGET_DIR:A}/debug/${OFFICE_WORKER_NAME}"
+OFFICE_WORKER_SOURCE="${COVERAGE_TARGET_DIR:A}/debug/${OFFICE_WORKER_NAME}"
+KATANA_KDV_OFFICE_WORKER=$(python3 scripts/release/worker_snapshot.py \
+    "$OFFICE_WORKER_SOURCE" --directory "$COVERAGE_TARGET_DIR/tmp")
+export KATANA_KDV_OFFICE_WORKER
 
 info "Running workspace lib/bin tests with llvm-cov (-j $JOBS)..."
 llvm_cov workspace-lib-bin --no-report --jobs "$JOBS" --workspace --lib --bins -q \

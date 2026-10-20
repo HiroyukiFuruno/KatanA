@@ -158,7 +158,7 @@ class NextestShadowRunnerTests(unittest.TestCase):
 
     def test_collect_shadow_returns_two_and_keeps_raw_success_stage(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            root = Path(directory).resolve()
             child = self.child(root)
             output = root / "output"
             output.mkdir()
