@@ -33,6 +33,25 @@ class RunIdentityTests(unittest.TestCase):
             self.assertEqual(observed["cargo"], "cargo fixture-fixture-toolchain")
             self.assertEqual(observed["rustc"], f"rustc cwd={root} flags=fixture-flags")
 
+    def test_profile_and_incremental_inputs_are_retained(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            environment = self.version_tools(root)
+            expected = {"CARGO_PROFILE_DEV_DEBUG": "0", "CARGO_PROFILE_TEST_DEBUG": "0",
+                        "CARGO_PROFILE_DEV_STRIP": "none", "CARGO_PROFILE_TEST_STRIP": "none",
+                        "CARGO_INCREMENTAL": "0"}
+            observed = environment_identity(root, {**environment, **expected})
+            self.assertEqual({key: observed["environment"][key] for key in expected}, expected)
+
+    def test_profile_inputs_keep_none_when_unset(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            environment = self.version_tools(root)
+            observed = environment_identity(root, environment)
+            keys = ("CARGO_PROFILE_DEV_DEBUG", "CARGO_PROFILE_TEST_DEBUG",
+                    "CARGO_PROFILE_DEV_STRIP", "CARGO_PROFILE_TEST_STRIP", "CARGO_INCREMENTAL")
+            self.assertTrue(all(observed["environment"][key] is None for key in keys))
+
     def test_version_failure_is_unknown_diagnostic(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()

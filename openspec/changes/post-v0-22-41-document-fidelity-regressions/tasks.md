@@ -20,6 +20,8 @@
 
 ### 2026-10-20 独立作業の再確認
 
+- [/] #343 既存Justfileの4profile環境とincremental設定を実child identityへ記録する限定修復。初回direct normalは設定継承不足を主査検出しtest前compileでactual130、正式比較へ不採用。正確な5環境名の回帰RED→identity6件actual0、未設定None回帰を追加して関連consumer72件/7.355秒actual0、独立必須所見なし。HTML診断directory拒否という初期推測は旧TRIPLE経路と矛盾し訂正・変更不採用。新HEAD正規normal/coverage・全OS/速度/公開は未完。evidence/profile-environment-observation-2026-10-21.ja.md。
+
 - [/] #343 新HEAD01c54d4bの製品shadow再実行はsession72117 actual0。worker build0、lib-bin1770・integration228・UI parallel144・serial18の計2160PASS/既存7skip、全4store新生成、開始終了clean同HEAD/tree/両lock一致を主査照合した。前回の容量中断130から回復したが、通常testとの同等性・coverage閾値・削減/速度・全OS・packagedは未完でfalse policyを維持する。evidence/product-shadow-01c54d4b-2026-10-20.ja.md。
 
 - [/] #343 shadowのLLVM profile生成を`%4m.profraw`へ限定修復。UUID/phase namespaceとfalse policyを維持し、旧PID依存`%p`を除去。契約suiteは旧期待値のRED後、42件PASS/1.918秒/actual0。実12 old/new profile実験は各0、12→4 files・4896→1632 bytes、c実証を主査実読。由来未確定のroot profileは削除せず`tmp/oct20-profile-pool-probe-20261020/`へ保管。製品shadowは容量中断130であり、今回修復後の製品全4phase成功・coverage/配布受入は未完。evidence/profile-pool-2026-10-20.ja.md。
