@@ -414,7 +414,8 @@
 - [/] 2026-10-06 root公式組立loader回帰31126 exit0: 6PASS/1880filtered/40suites/0.24秒、17既存textureと次frame先行18枚目を保持しpoll2 grace保持/poll3解除を確認。one-pixel所有回帰で17大型GPU実測ではない。primary sidebar実control pointer回帰90832も1PASS/1885filtered/0.05秒。初回はapp初期pending actionをNoneと仮定したharness assertion FAIL、初期actionを消費済み状態へ明示して再検証。本人reload無反応の製品解消/外部上書き回帰/current cloudは未確認、AST/lint/通常統合は続行。
 - [ ] 2026-10-06 a64最新review P2 PRRT_kwDORm09y86pR5n5: local画像のpath-only identityにより外部上書きが反映されない。UI同期stat/readを復活させず変更通知または非同期版管理でinvalidateし、実file上書き回帰・通常統合・個別reply/resolve・fresh取得を行う。
   - 非同期watch/revision候補は実装中で未採用。root組立focused38129はunused import等のcompile FAILでGREEN無し。Access自己invalidate・watch失敗隠蔽・reset世代/解除・通知path正規化・idle GUI repaint・queue上限のmain指摘を補正し、実file atomic replace回帰を必須にする。rootのprimary sidebar実control click追加回帰も未検証で、reload製品修正/本人症状解消は主張しない。
-- [ ] 2026-10-06 a64最新review P2 PRRT_kwDORm09y86pR5n-: Markdown slideshowの17枚以上の大型画像はactive texture16件上限で表示中の所有までevictし再decode循環となる。再利用cache上限と表示中所有を分離し、17画像の次frame同texture保持と非表示後解放を検証する。既存6件成功をこの境界の証明にしない。
+- [/] 2026-10-06 a64最新review P2 PRRT_kwDORm09y86pR5n-: Markdown slideshowの17枚以上の大型画像はactive texture16件上限で表示中の所有までevictし再decode循環となる。再利用cache上限と表示中所有を分離し、17画像の次frame同texture保持と非表示後解放を検証する。既存6件成功をこの境界の証明にしない。
+  - 2026-10-21一次照合: 実装修復・対象回帰・通常push履歴を確認。evidence/historical-host-leaf-reconciliation-2026-10-21.ja.md。native/GPU総量・新HEAD全gate・配布受入は別未完。
 - [/] macOS CI失敗stage診断のfocused回帰は1PASS/1884filtered/40suites/0.35秒、impacted lint成功。既存2秒期限・cold-start・RGB/source保護条件は不変。cfg(test)の失敗時だけ受理bool/elapsed/idle/generation/origin一致/resourceを記録し、原因修復やcloud成功とは扱わない。
   - 通常hook/署名Gでc2487c41へ正式統合、未push。初回hookは共有crateへ中間編集が重なりcompile FAIL、freeze調整後retry成功。追加画像回帰は17枚の前frame grace中に新18枚目を追加すると旧TextureIdを失うREDを確認し、表示所有trim除去候補を実装中。watcher候補との組立中compile失敗があるためGREEN/解決済みとはしない。
 
@@ -422,14 +423,16 @@
 
 - [/] 2026-10-06 current review候補のmain検証: PPTX限定背面描画停止とMarkdown継続の実経路2件PASS、PNG原寸6000x4000・同texture反復・非表示後保持解除・small結果非干渉・16件上限/resetを含む公式loader6件PASS。impacted lint成功。通常commit/push・各thread reply/resolve・fresh取得・新HEAD全gate/配布は未完了。headless既定2048pixelによる初回失敗を保持し、実context capability8192指定で検査したもので製品上限変更ではない。
 
-- [ ] 2026-10-06 c520 current review P1: PPTX slideshow時に背面previewとmodalが同DocumentSurfaceへ別viewport Resizeを毎frame送る。modal中の描画所有を一意化し、実経路回帰・通常commit/push・PRRT_kwDORm09y86pQ8GT個別reply/resolveと再取得を行う。新P2 PRRT_kwDORm09y86pQ8GXは64MiB cache上限を入力拒否にした大型PNG互換退行で、非同期読込/容量上限/原寸を維持した所有分離を検討中。既存manual-target P2二件は別判断。
+- [/] 2026-10-06 c520 current review P1: PPTX slideshow時に背面previewとmodalが同DocumentSurfaceへ別viewport Resizeを毎frame送る。modal中の描画所有を一意化し、実経路回帰・通常commit/push・PRRT_kwDORm09y86pQ8GT個別reply/resolveと再取得を行う。新P2 PRRT_kwDORm09y86pQ8GXは64MiB cache上限を入力拒否にした大型PNG互換退行で、非同期読込/容量上限/原寸を維持した所有分離を検討中。既存manual-target P2二件は別判断。
+  - 2026-10-21一次照合: 実装修復・対象回帰・通常push履歴を確認。evidence/historical-host-leaf-reconciliation-2026-10-21.ja.md。native/GPU総量・新HEAD全gate・配布受入は別未完。
 - [/] 同macOS CI dirty-targetテストの公式focused確認は1PASS/2.47秒、元2秒期限と全assert不変。ただしCI失敗の原因確定/修復ではなく、workflow進行中の単job再実行はGitHubに拒否された。Linux/Windows進行中・全gate未完了を維持する。
 
 - [/] 2026-10-06 c520076fは通常pushの正式hookを通過し、PR346の現HEADへ送信済み（ahead0/behind0）。新HEADのRelease Readiness・全3OS lint・供給網・CodeQLは成功。macOS CIは1079PASS/1FAILで、file_navigation_to_an_open_dirty_target_preserves_target_stateのHTML初回frame待ちが失敗し、後続headless証跡も未生成。Linux/Windowsと新HEAD reviewは進行中。全gate/coverage/packaged/公開成功ではない。期限延長・skip・旧CI流用をせず、同条件のfocused再現と初回起動/入力更新の条件を切り分ける。
 
 - [/] 2026-10-06 PDF Tools回帰を最小修正: ToolsをMarkdown専用Export/Story判定から分離し、既存PDFの分割/コードプレビュー切替を復元。追加pdf_keeps_view_tools_without_markdown_only_menusは旧実装RED→修正GREEN、公式just T=view_tools test-specificは既存失敗2件を含む5PASS/40suites/0.43秒、diff check/呼出元自己レビュー成功。テスト削除・閾値変更なし。通常commit/push・全gate・新HEADレビュー/配布は別途未完了。
 
-- [ ] 2026-10-06 通常push55ef95c2は正式hookのnative testで1075PASS/2FAILとなりupload前にexit1。85c032b5の形式別menu判定がPDFの既存Tools操作を無効化し、direct_view_tools_dispatch_remains_available_for_pdf_and_markdown_documents / registered_view_tools_commands_remain_available_for_pdf_and_markdown_documentsが失敗した。PDF Toolsだけを復元し、export/story/slideshowのMarkdown専用判定と画像/Office/HTML制御を維持してRED→GREEN、通常commit/pushを再実施する。旧c2 CIを新graph成功へ代用せずhook迂回しない。
+- [/] 2026-10-06 通常push55ef95c2は正式hookのnative testで1075PASS/2FAILとなりupload前にexit1。85c032b5の形式別menu判定がPDFの既存Tools操作を無効化し、direct_view_tools_dispatch_remains_available_for_pdf_and_markdown_documents / registered_view_tools_commands_remain_available_for_pdf_and_markdown_documentsが失敗した。PDF Toolsだけを復元し、export/story/slideshowのMarkdown専用判定と画像/Office/HTML制御を維持してRED→GREEN、通常commit/pushを再実施する。旧c2 CIを新graph成功へ代用せずhook迂回しない。
+  - 2026-10-21一次照合: 実装修復・対象回帰・通常push履歴を確認。evidence/historical-host-leaf-reconciliation-2026-10-21.ja.md。native/GPU総量・新HEAD全gate・配布受入は別未完。
 
 - [/] 2026-10-06 release flow追加最適化eda9c8b3: 手動check-pr-ready→通常push hook内check-pr-readyの同HEAD重複を除去し、通常pushを正本owner/手動は失敗診断のみへ統一。skill入口の旧squash指示も通常履歴へ同期。契約7件と既存CI品質維持6件をmain成功確認。PPTX/形式別menu85c032b5も通常hookで正式統合。CHANGELOG日英へhost改善と次期上流制限を同期し、未解決reload/native/全配布を解消済みにしない。
 
