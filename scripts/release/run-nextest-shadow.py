@@ -11,6 +11,7 @@ import sys
 import uuid
 
 from native_test_run_identity import file_digest, source_identity
+from nextest_shadow_cache import validate_build_cache
 from nextest_shadow_execution import (
     command_context, execute_stage, phase_environment, prepare_output, snapshot_worker,
     shadow_environment_identity, verify_tools, write_receipt,
@@ -51,9 +52,12 @@ def initial_receipt(repo: Path, output: Path, cargo: list[str], environment: dic
             "source_before": source_identity(repo), "output": str(output),
             "cargo_argv": cargo, "tool_versions": tool_versions,
             "environment_identity": identity,
+            "build_cache_target": environment["CARGO_TARGET_DIR"],
+            "profile_namespace": environment["KATANA_SHADOW_PROFILE_ID"],
             "producer_sha256": {name: file_digest(Path(__file__).parent / name) for name in
                                 ("run-nextest-shadow.py", "nextest_shadow_execution.py",
-                                 "nextest_shadow_plan.py", "nextest_shadow_records.py")},
+                                 "nextest_shadow_plan.py", "nextest_shadow_records.py",
+                                 "nextest_shadow_cache.py")},
             "config_sha256": config_hashes, "stages": [],
             "limitations": ["nextest test-per-process differs from libtest",
                             "normal/doctest/fixture checks remain required",
@@ -67,7 +71,7 @@ def collect_shadow(repo: Path, output: Path, cargo: list[str],
     receipt["stages"].append({"phase": "office-worker", **worker})
     if worker["exit_code"]:
         return worker["exit_code"]
-    worker_path = output / "coverage-target/debug/kdv-office-worker"
+    worker_path = Path(environment["CARGO_TARGET_DIR"]) / "debug/kdv-office-worker"
     if not worker_path.is_file() or not os.access(worker_path, os.X_OK):
         raise ValueError("shadow Office worker is missing or not executable")
     snapshot_path = output / "office-worker/worker-snapshot"
@@ -76,7 +80,7 @@ def collect_shadow(repo: Path, output: Path, cargo: list[str],
                     "worker_path": str(snapshot_path),
                     "worker_snapshot_sha256": snapshot_sha256})
     environment["KATANA_KDV_OFFICE_WORKER"] = str(snapshot_path)
-    for phase in phase_plan(repo, output):
+    for phase in phase_plan(repo, output, Path(environment["CARGO_TARGET_DIR"])):
         result = run_phase(repo, output, cargo, environment, phase)
         receipt["stages"].append(result)
         if result["exit_code"]:
@@ -87,10 +91,11 @@ def collect_shadow(repo: Path, output: Path, cargo: list[str],
     return 0
 
 
-def run_shadow(repo: Path, output: Path) -> int:
+def run_shadow(repo: Path, output: Path, build_cache_target: Path | None = None) -> int:
     if platform.system() != "Darwin":
         raise ValueError("this shadow candidate is macOS-only; required OS checks remain unchanged")
-    cargo, environment = command_context(output)
+    target = validate_build_cache(repo, build_cache_target) if build_cache_target else None
+    cargo, environment = command_context(output, target)
     tool_versions = verify_tools(cargo, environment, repo)
     identity = shadow_environment_identity(repo, cargo, environment)
     receipt = initial_receipt(repo, output, cargo, environment, tool_versions, identity)
@@ -116,15 +121,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--build-cache-target", type=Path,
+                        help="reuse only a validated earlier shadow Cargo build cache; rerun all tests")
     parser.add_argument("--plan", action="store_true")
     args = parser.parse_args()
     repo = args.repo
     output = args.output or repo / "tmp/nextest-shadow" / str(uuid.uuid4())
     try:
         if args.plan:
-            print(json.dumps({"phases": phase_plan(repo, output), **shadow_contract(repo)}, indent=2))
+            print(json.dumps({"phases": phase_plan(repo, output, args.build_cache_target),
+                              **shadow_contract(repo)}, indent=2))
             return 0
-        return run_shadow(repo, output)
+        return run_shadow(repo, output, args.build_cache_target)
     except (OSError, ValueError, TypeError, subprocess.SubprocessError) as error:
         print(f"nextest shadow failed: {error}", file=sys.stderr)
         return 2

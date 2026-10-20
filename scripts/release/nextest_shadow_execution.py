@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import time
+import uuid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "ci"))
 from cargo_clean_guard import cargo_command
@@ -67,10 +68,12 @@ def shadow_environment_identity(repo: Path, cargo: list[str], environment: dict[
             "worker_sha256": worker_sha}
 
 
-def command_context(output: Path) -> tuple[list[str], dict[str, str]]:
+def command_context(output: Path, build_cache_target: Path | None = None) -> tuple[list[str], dict[str, str]]:
     cargo, environment = cargo_command(os.environ.get("CARGO", "cargo"))
-    environment.update({"CARGO_TARGET_DIR": str(output / "coverage-target"),
-                        "CARGO_LLVM_COV_TARGET_DIR": str(output / "coverage-target"),
+    target = build_cache_target or output / "coverage-target"
+    environment.update({"CARGO_TARGET_DIR": str(target),
+                        "CARGO_LLVM_COV_TARGET_DIR": str(target),
+                        "KATANA_SHADOW_PROFILE_ID": uuid.uuid4().hex,
                         "CARGO_BUILD_JOBS": "1", "NEXTEST_EXPERIMENTAL_RECORD": "1"})
     for name in ("LLVM_PROFILE_FILE", "LLVM_PROFILE_FILE_NAME"):
         environment.pop(name, None)
@@ -80,7 +83,8 @@ def command_context(output: Path) -> tuple[list[str], dict[str, str]]:
 def phase_environment(base: dict[str, str], directory: Path) -> dict[str, str]:
     environment = dict(base)
     environment["NEXTEST_STATE_DIR"] = str(directory / "nextest-state")
-    environment["LLVM_PROFILE_FILE_NAME"] = f"katana-shadow-{directory.name}-%m-%p.profraw"
+    namespace = base.get("KATANA_SHADOW_PROFILE_ID") or uuid.uuid4().hex
+    environment["LLVM_PROFILE_FILE_NAME"] = f"katana-shadow-{namespace}-{directory.name}-%m-%p.profraw"
     encoded = environment.get("CARGO_ENCODED_RUSTFLAGS")
     if encoded is not None:
         environment["CARGO_ENCODED_RUSTFLAGS"] = (

@@ -17,13 +17,13 @@ BASE_ARGUMENTS = ("llvm-cov", "nextest", "--no-report", "--no-cfg-coverage", "--
                   "--ignore-default-filter")
 
 
-def phase_plan(repo: Path, output: Path) -> list[dict]:
+def phase_plan(repo: Path, output: Path, build_cache_target: Path | None = None) -> list[dict]:
     """Return four isolated invocations sharing one coverage target."""
     if not isinstance(repo, Path) or not isinstance(output, Path):
         raise TypeError("shadow plan paths must be Path values")
     config = repo / "scripts/release/nextest-shadow.toml"
     user_config = repo / "scripts/release/nextest-shadow-user.toml"
-    target = output / "coverage-target"
+    target = build_cache_target or output / "coverage-target"
     plans = []
     for phase, selection in PHASES.items():
         argv = [*BASE_ARGUMENTS, "--config-file", str(config), "--user-config-file",

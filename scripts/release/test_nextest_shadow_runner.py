@@ -97,6 +97,7 @@ class NextestShadowRunnerTests(unittest.TestCase):
                 "PATH": os.environ["PATH"],
                 "CARGO_TARGET_DIR": str(Path(directory) / "target"),
                 "CARGO_ENCODED_RUSTFLAGS": "-D\x1fwarnings",
+                "KATANA_SHADOW_PROFILE_ID": "root-run",
                 "KATANA_KDV_OFFICE_WORKER": str(worker),
             }
             identity = RUNNER.shadow_environment_identity(
@@ -141,7 +142,8 @@ class NextestShadowRunnerTests(unittest.TestCase):
             output = root / "output"
             output.mkdir()
             phase = {"phase": "phase-a", "argv": []}
-            result = run_phase(root, output, [sys.executable, str(child)], dict(os.environ), phase)
+            result = run_phase(root, output, [sys.executable, str(child)],
+                               {**os.environ, "KATANA_SHADOW_PROFILE_ID": "test-run"}, phase)
             receipt = json.loads((output / "phase-a/phase.json").read_text())
             self.assertEqual(result["exit_code"], 0)
             self.assertEqual(receipt["exit_code"], 0)
@@ -150,7 +152,7 @@ class NextestShadowRunnerTests(unittest.TestCase):
             self.assertIn("environment_identity", receipt)
             self.assertEqual(receipt["environment_identity"]["explicit"], {
                 "NEXTEST_STATE_DIR": str(output / "phase-a/nextest-state"),
-                "LLVM_PROFILE_FILE_NAME": "katana-shadow-phase-a-%m-%p.profraw",
+                "LLVM_PROFILE_FILE_NAME": "katana-shadow-test-run-phase-a-%m-%p.profraw",
                 "KATANA_KDV_OFFICE_WORKER": None,
             })
 
