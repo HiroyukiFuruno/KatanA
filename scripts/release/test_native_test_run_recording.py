@@ -94,6 +94,24 @@ class RunRecordingTests(unittest.TestCase):
         self.assertIn(b"test result: FAILED", result.stdout)
         self.assert_invocation_timing(manifest)
 
+    def test_missing_rustc_identity_keeps_real_cargo_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.fixture(root, False)
+            output = root / "target/inventory/missing-rustc.json"
+            environment = self.environment(root)
+            environment["RUSTC"] = str(root / "missing-rustc")
+            result = subprocess.run(
+                [sys.executable, "-B", str(SCRIPT), "--output", str(output), "--kind", "test",
+                 "--", "cargo", "test", "--workspace", "--offline", "--", "--nocapture"],
+                cwd=root, env=environment, capture_output=True, timeout=60)
+            manifest = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(result.returncode, 101)
+            self.assertEqual(manifest["exit_code"], 101)
+            self.assertIsNone(manifest["inputs"]["rustc"])
+            self.assertFalse(manifest["complete"])
+            self.assertFalse(manifest["reuse_authorized"])
+
     def test_command_preserves_selection_and_rejects_non_execution(self) -> None:
         arguments = ["cargo", "test", "--workspace", "--", "--test-threads=1", "--skip", "fixture"]
         observed = cargo_command(arguments, "test")

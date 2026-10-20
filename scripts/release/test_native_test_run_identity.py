@@ -6,10 +6,38 @@ import subprocess
 import tempfile
 import unittest
 
-from native_test_run_identity import file_digest, source_identity
+from native_test_run_identity import _version, environment_identity, file_digest, source_identity
 
 
 class RunIdentityTests(unittest.TestCase):
+    def version_tools(self, root: Path) -> dict[str, str]:
+        tools = root / "tools"
+        tools.mkdir()
+        cargo = tools / "cargo"
+        cargo.write_text("#!/bin/sh\nprintf 'cargo fixture-%s\\n' \"$RUSTUP_TOOLCHAIN\"\n",
+                          encoding="utf-8")
+        cargo.chmod(0o755)
+        rustc = tools / "rustc fixture"
+        rustc.write_text("#!/bin/sh\nprintf 'rustc cwd=%s flags=%s\\n' \"$PWD\" \"$RUSTFLAGS\"\n",
+                          encoding="utf-8")
+        rustc.chmod(0o755)
+        return {"PATH": str(tools), "RUSTC": str(rustc)}
+
+    def test_environment_versions_use_execution_cwd_and_environment(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            environment = self.version_tools(root)
+            environment.update({"CARGO": "ignored-cargo-wrapper", "RUSTUP_TOOLCHAIN": "fixture-toolchain",
+                                "RUSTFLAGS": "fixture-flags"})
+            observed = environment_identity(root, environment)
+            self.assertEqual(observed["cargo"], "cargo fixture-fixture-toolchain")
+            self.assertEqual(observed["rustc"], f"rustc cwd={root} flags=fixture-flags")
+
+    def test_version_failure_is_unknown_diagnostic(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            self.assertIsNone(_version([str(root / "missing"), "-V"], root, dict(os.environ)))
+
     def repository(self, root: Path) -> None:
         environment = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
         for arguments in (("init", "-q"), ("config", "user.name", "Inventory Test"),

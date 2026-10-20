@@ -34,9 +34,10 @@ def file_digest(path: Path) -> str:
     return result.hexdigest()
 
 
-def _version(command: list[str]) -> str | None:
+def _version(command: list[str], cwd: Path, environment: dict[str, str]) -> str | None:
     try:
-        result = subprocess.run(command, check=True, capture_output=True, timeout=10)
+        result = subprocess.run(command, cwd=cwd, env=environment, check=True,
+                                capture_output=True, timeout=10)
         return result.stdout.decode("utf-8").strip()
     except (OSError, UnicodeError, subprocess.SubprocessError):
         return None
@@ -63,5 +64,7 @@ def environment_identity(root: Path, execution_environment: dict[str, str] | Non
     except (OSError, ValueError):
         worker_sha = None
     return {"os": platform.platform(), "machine": platform.machine(),
-            "rustc": _version(["rustc", "-vV"]), "cargo": _version(["cargo", "-V"]),
+            "rustc": _version([inherited["RUSTC"] if "RUSTC" in inherited else "rustc", "-vV"],
+                               root, inherited),
+            "cargo": _version(["cargo", "-V"], root, inherited),
             "environment": environment, "worker_sha256": worker_sha}
