@@ -75,6 +75,7 @@
 | 未実装・上流依存 | #336 | KLE公開待ち。公開後registry採用・ABI整合・実editor host E2E。KDV/KRR待ちとは別 |
 
 - [ ] #343の独立残作業を実行する。内部メモだけを読んで「独立作業なし」と報告せず、上表とIssue本文の残作業を照合する。
+- [x] #343の保存済みNextest4工程を固定0.9.148の公式replay --exit-codeで検証。全4工程exit0、元記録2160成功/既存7skip、receiptとstoreのSHA一致・再生前後不変を確認した。evidence/retained-nextest-replay-2026-10-21.ja.md。過去01c54d4b記録の読出受入であり現HEAD品質・通常test同等性・trusted reuse・実削減・Windows実測・全公開の完了ではない。再build/再test/本人app操作無し。
 - [/] #343 coverage各工程の候補集合をunionだけに捨てる未実装を修復し、phase別候補数/pairwise intersectionを既存JSON/CI summaryへ追加。source不一致/duplicate/固定phase欠落・不正selectorはnull/unavailable。実行回数・同等性・削減量ではなく元test/exit/reuse=falseを維持。新field未実装とCLI無効化行削除のRED→関連28件/7.002秒GREEN、helper分離後の実CLI1件/6.690秒成功、主査AST30行200行/diff/構文・独立最終必須所見0。現行Ready CI実測と実削減は未完。evidence/coverage-phase-overlap-2026-10-19.ja.md。
 - [x] 10月19日、独立5コミットのHEAD59c52078でrelease Python全474件/197.744秒/actual0を回収。#338は保持artifactのhash/crop/source再照合と既存KDV担当の受領確認により、生成・宣言検証・handoff済みを訂正した。採点・参照採用は未完了、全gate/公開成功ではない。evidence/issue338-state-and-release-tests-2026-10-19.ja.md。
 - [/] #343 Windows native inventoryの常時未取得を修復。POSIX selectorは維持し、Windows Python3.12以上では標準nonblocking pipe経路へ接続。reader thread/spool/無制限captureを使わず、各1MiB/64KiB chunk/既存30秒deadlineとparse/hash/元exitを保持。実Mac subprocessの片側EOF/両stream/境界/overflow/timeout/reapを含む対象83件PASS20.402秒。Windows限定Python3.14固定系列とreal pipe/real Cargo回帰を既存Ready CIへ接続し、CI契約38件とdefault actionlint成功。Windows実機実行は未確認であり、cold/warm測定・全実行同等性・skip/reuseを達成済みとはしない。evidence/windows-native-inventory-2026-10-19.ja.md。
