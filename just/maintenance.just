@@ -8,7 +8,7 @@ sweep:
 
 # Remove build artifacts
 clean: sweep
-    cargo clean
+    @{{RTK_CMD}}python3 scripts/ci/cargo_clean_guard.py --manifest-path Cargo.toml --cargo "{{CARGO}}"
 
 # Update dependency crates safely (respects Cargo.toml SemVer)
 update-safe:

@@ -19,8 +19,12 @@ class CargoSweepGuardTest(unittest.TestCase):
         linux = (repository / "platforms/linux/ci/Dockerfile").read_text(encoding="utf-8")
         windows = (repository / "platforms/windows/ci/Dockerfile").read_text(encoding="utf-8")
         self.assertIn("scripts/ci/cargo_sweep_guard.py --dry-run", maintenance)
+        self.assertIn(
+            'scripts/ci/cargo_clean_guard.py --manifest-path Cargo.toml --cargo "{{CARGO}}"',
+            maintenance,
+        )
         self.assertRegex(tests, r"(?m)^test:.*test-cargo-sweep-contract")
-        self.assertIn("test_cargo_sweep_guard.py", tests)
+        self.assertIn("test_cargo_*guard.py", tests)
         for label, source in (("just/tests.just", tests), ("linux Dockerfile", linux),
                               ("windows Dockerfile", windows)):
             with self.subTest(entry=label):

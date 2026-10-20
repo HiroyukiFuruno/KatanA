@@ -181,7 +181,7 @@ class CiResourceContractTest(unittest.TestCase):
         self.assertIn("cargo install cargo-sweep --locked", sweep_install)
         self.assertIn("cargo sweep --version", sweep_install)
         sweep_contract = step_block(job, "Verify Cargo sweep safety contract")
-        self.assertIn("test_cargo_sweep_guard.py", sweep_contract)
+        self.assertIn("test_cargo_*guard.py", sweep_contract)
         check_types = step_block(job, "Check types")
         self.assertIn("run: cargo check --workspace", check_types)
         tests = step_block(job, "Run tests")

@@ -34,7 +34,7 @@ test-ci-resource-contract:
 
 # 実Cargoのロック競合と不明なtarget構造で、cache整理が安全に停止することを確認する。
 test-cargo-sweep-contract:
-    {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_cargo_sweep_guard.py -v
+    {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p 'test_cargo_*guard.py' -v
 
 # 原本・viewport・fragmentの誤一致を、描画実行前に検出する。
 test-html-host-contract:
