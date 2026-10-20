@@ -1,0 +1,10 @@
+[test-groups.global-shadow]
+max-threads = 1
+
+[profile.default]
+fail-fast = false
+retries = 0
+
+[[profile.default.overrides]]
+filter = "all()"
+test-group = "global-shadow"

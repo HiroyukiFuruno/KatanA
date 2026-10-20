@@ -96,6 +96,14 @@ check-platforms: check-linux check-windows
 coverage:
     JOBS={{JOBS}} {{RTK_CMD}}scripts/ci/coverage.sh
 
+# WHY: 同等性を測る候補を既存の必須検査から分離し、未証明の省略を防ぐ。
+nextest-shadow:
+    CARGO={{quote(CARGO)}} {{RTK_CMD}}python3 -B scripts/release/run-nextest-shadow.py
+
+# WHY: 比較候補の安全契約だけを、製品の重い再ビルド無しで検証する。
+test-nextest-shadow-contract:
+    {{RTK_CMD}}python3 -B -m unittest discover -s scripts/release -p 'test_nextest_shadow*.py' -v
+
 # Quick verification (skip slow fixture tests; ast-lint runs inside cargo test)
 check-light: sweep fmt-check biome-js-lint lint-impacted
     {{RTK_CMD}}scripts/runner/impacted.py test -- --skip fixture

@@ -20,6 +20,7 @@
 
 ### 2026-10-20 独立作業の再確認
 
+- [/] #343 KRRの正式Nextest経路を参考に、既存normal/coverage/CIを変更しない手動macOS shadow producerを実装。固定tool版・4phase同target共有・全process排他1・worker不変copy・source/lock/record digest・raw child exit保持を追加。対象28件PASS1.059秒、実依存0 Rust fixtureの4phase/4store成功0と意図的失敗100/後続停止を確認、独立最終必須指摘0。equivalent/reuse/report_checkedはfalse、製品full shadow・通常testとの同等性・実重複削減・時間短縮・全OS/公開は未完。evidence/nextest-shadow-producer-2026-10-20.ja.md。
 - [x] 旧HTML/Office receipt・Git fixture修復要求3件を現祖先/元証跡へ照合。正式専用Pythonのacceptance51/gate31件actual0、共有Git設定SHA不変を回収しe892e56aへ通常commit。原本比較・packaged・独立95点・公開を完了扱いしない。evidence/acceptance-checkpoint-bd559-2026-10-20.ja.md。
 - [/] #343: busy sweep後の無条件cargo clean経路を既知profile lock保護へ修復。旧実Cargo barrier中clean0/target消失/build101のRED、修復後正規13件4.132秒actual0、実wrapper child exit23/危険path拒否を検証。CI契約10件・固定actionlint成功、新suiteを3OS Ready CIへ接続。evidence/active-profile-clean-guard-2026-10-20.ja.md。新profile生成/target置換/直接cleanまで全面排他しない。実Windows CI・公開は別未完、今回V8 dep-info消失のactorは未特定。
 - [/] 直接ZIP9.0.5/lzma-rust2 0.22.0の両lockと実Deflated/Xz/Unix0755・bytes・progress回帰を実装し、通常署名G cc5a6600へ統合。形式/定数修復後のe0e90d23で正規onejob test-core一回を回収しactual0/407PASS/既存2ignored・19suites、開始終了HEAD/両lockSHA/clean一致。小consumer5件の旧成功とは分離した。全3OS/coverage/packaged/公開は未完。初回core9365はtarget消失errno2/actual101として保持、供給網は既知KDV推移旧ZIP3版のadvisoryでactual1。上流安全性不備を直接ZIP更新で解消したと扱わない。evidence/direct-zip-patch-admission-2026-10-20.ja.md。
