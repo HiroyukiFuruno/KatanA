@@ -20,6 +20,8 @@
 
 ### 2026-10-20 独立作業の再確認
 
+- [/] #343 新HEAD01c54d4bの製品shadow再実行はsession72117 actual0。worker build0、lib-bin1770・integration228・UI parallel144・serial18の計2160PASS/既存7skip、全4store新生成、開始終了clean同HEAD/tree/両lock一致を主査照合した。前回の容量中断130から回復したが、通常testとの同等性・coverage閾値・削減/速度・全OS・packagedは未完でfalse policyを維持する。evidence/product-shadow-01c54d4b-2026-10-20.ja.md。
+
 - [/] #343 shadowのLLVM profile生成を`%4m.profraw`へ限定修復。UUID/phase namespaceとfalse policyを維持し、旧PID依存`%p`を除去。契約suiteは旧期待値のRED後、42件PASS/1.918秒/actual0。実12 old/new profile実験は各0、12→4 files・4896→1632 bytes、c実証を主査実読。由来未確定のroot profileは削除せず`tmp/oct20-profile-pool-probe-20261020/`へ保管。製品shadowは容量中断130であり、今回修復後の製品全4phase成功・coverage/配布受入は未完。evidence/profile-pool-2026-10-20.ja.md。
 - [/] #343 製品shadowの容量中断対策として、厳密な既存shadow Cargo targetだけを明示利用する診断経路を実装。fresh output/state/全4工程/worker build・snapshot/run UUID profileを維持し、旧test結果再利用・target移動削除はしない。正規対象42PASS2.741秒、実依存0 Rust seed/retry両0・同target/全4工程/4store/fresh UUID/snapshotを主査回収。独立レビュー・通常commitと製品再実行は別回収する。evidence/shadow-build-cache-2026-10-20.ja.md。
 - [/] #343 既存normal/coverage recorderの版診断を実子と同cwd/env・明示RUSTCへ修復。literal Cargo・診断失敗None・raw exit/schema/reuse=falseは維持。主査対象17件PASS3.537秒、実Cargo missing-RUSTCの101とmanifestを同時検証。先行製品shadowはworker0/lib-bin1770PASS・既存2skip後に容量安全中断130、integration以降未完。KDV保護回収後free16GiB、重枠返却済み。evidence/legacy-invocation-identity-2026-10-20.ja.md。
