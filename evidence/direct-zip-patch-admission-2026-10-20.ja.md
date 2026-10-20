@@ -21,7 +21,15 @@ root/screenshotの各dry-runと実Cargo updateはactual0。新ZIP checksumは `6
 - build中に観測した製品両lock/実consumer/新testとtemp manifest/lockのSHAは終了時にも全一致。raw: `tmp/oct20-zip905-consumer-observed-inputs.sha256`。build開始前の完全なclean HEAD証明とは区別する。
 - temp graphに読み込んだ未使用の型などのwarning8件は保持し、製品strict lint成功とは扱わない。生成targetは約361MiB、one jobで実行した。
 
-この成功は現macOSの更新consumerに限定する。製品core全体・screenshot全体・全依存graph・3OS・normal hook/CI・packaged・公開の成功へ流用しない。通常commitと正規製品batchは未完条件として維持する。
+この成功は現macOSの更新consumerに限定する。製品core全体・screenshot全体・全依存graph・3OS・normal hook/CI・packaged・公開の成功へ流用しない。通常commitの結果は次節に分離し、正規製品batchは未完条件として維持する。
+
+## 通常hookと正式履歴への統合
+
+初回通常commitはAST22成功/1失敗でactual1。新testのWHY行コメント形式と0755 literalを指摘されたため、既存規約どおりblock WHYとnamed constantへ限定修復した。assertion・Unix0755の値・閾値は変更していない。raw: `tmp/oct20-zip905-normal-commit.log`、RTK tee `1792487883_cargo_test.log`。
+
+修復後の通常commit hookはactual0、sourceを署名Gへ統合した。作業者の英語messageを規約どおり日本語へ訂正した未公開tipは `cc5a6600`。訂正前後tree/indexは `565f3600d27f0ba3c109b2da773461fd6e9523a8` で不変、amendも通常hook actual0。署名・hookを迂回せず、他の履歴やremoteは変更していない。raw: `tmp/oct20-zip905-normal-commit-retry.log`、`tmp/oct20-zip905-normal-commit-amend.log`。
+
+上記5件の実consumer成功はこの形式・定数修復より前の実測であり、最新HEADの全製品テスト成功と読み替えない。修復後の形式検査は通常hookで成功した。単独ASTを重複実行しておらず、成功件数の新たな推定値は記載しない。最新sourceの製品core全test・全3OSは、共有検査枠と元の正式ゲートで回収する未完条件として保持する。
 
 最終read-onlyレビューではP0/P1/必須P2なし。検証終了後、検証専用targetだけを新clean guardで削除しactual0/366.8MiBを回収した。source・lock・入力SHAは削除後も全一致で、fixtureとrawログを保持している。cacheは再生成できる。raw: `tmp/oct20-zip905-consumer-cache-clean.log`。実repositoryのtargetや他担当のcacheは削除していない。
 
