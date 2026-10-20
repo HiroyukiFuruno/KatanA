@@ -20,6 +20,8 @@
 
 ### 2026-10-20 独立作業の再確認
 
+- [x] #343 worker snapshot修復後の正式coverageをclean同HEAD `0f612087`で一回実行し、session75161 actual0・全4工程各exit0/source_stable=true・report成功・strict document surface100%/未実行行0を回収した。4工程同一snapshot path/SHAと終了実ファイルを主査確認し、Cargo本体再link後の別SHAと分離できた。target外9証跡SHA/両binary cmpも一致。通常testの重複実行なし、equivalence/reuse・Windows/全#343・packaged/公開は未完。evidence/formal-worker-snapshot-validation-2026-10-21.ja.md。
+
 - [/] #343 実製品coverageのUI parallel compileによるdocument-session worker再linkをraw artifact/phase前SHAで特定し、既存shadowのexclusive copy/読取専用/SHA照合を共有、正式coverageもrun-owned snapshotへ固定した。既存target/tmp内・全4工程/report/strictgate・直接CARGO_BIN_EXE検査を維持。実スニペットのhelper失敗停止・親alias拒否を含む対象22件0.429秒、consumer/CI統合62件2.250秒actual0、zsh構文0。旧fa9合格を修復後の製品実行成功へ流用しない。evidence/formal-worker-snapshot-2026-10-21.ja.md。
 
 - [/] #343 同HEAD fa9の正規normalは89740 actual0、正式coverageは95104の全4工程/report/strict document surface100%・未実行行0でactual0。既存compareもactual0、共通候補2160/通常だけ10/coverageだけ0、工程間6組overlap0を保存。工程間の専用cache保護clean96731は6545files/7.6GiB・保存SHA一致、旧root保持。時間の対象範囲・環境差・doctest未捕捉を明記しequivalent/reuse=false維持。Windows/実重複削減/trusted reuse/全OS・公開は未完。evidence/canonical-normal-coverage-2026-10-21.ja.md。
@@ -385,7 +387,8 @@
 - [ ] ed8e35c1 macOS CI112131880008は1105PASS/1FAIL/既存ignore2、dirty HTML target初frame2062ms/idlefalse/generationNoneで失敗。元2秒条件を維持。同processPID37083のsampleは5秒上限kill/reapで出力0bytes、unit sleepPID38802のreportを失敗stackへ代用しない。raw tmp/ci-ed8e35c1-macos-job.log、tmp/ci-ed8e35c1-original-html-samples。Linux/全lint/供給網/CodeQL/Readiness成功、Windowsは未回収。原因修復・新HEAD全gateを継続。
 - [ ] 公開後のscope循環: 旧post-release-evidenceはlegacy strictで上流3.2/Chrome差分を再停止条件化する。legacy strictを維持した新post-release-host候補を追加し、固定3.2+実装済paired markersのみ許可、evidence/postpub未完は拒否、実packaged全target/Office/正常close/RSS/input/原本とChrome参照identityは維持する。新workflowへの自動切替・実証跡生成/合成はせず、回帰・正式統合を行う。
 
-- [ ] 最新current review ed8e35c1の画像監視overflow P2 PRRT_kwDORm09y86pVutU: backendとsubscriberの256件queue集中後にpersistent watch_errorが残り再登録できない。overflowと実登録失敗を区別し、失われたRegistered/pendingの回復・旧世代無視・実PNG再描画・実失敗保持を回帰し、通常統合/push/個別reply/resolve/freshを実施する。上流の問題へ移さない。
+- [/] 最新current review ed8e35c1の画像監視overflow P2 PRRT_kwDORm09y86pVutU: backendとsubscriberの256件queue集中後にpersistent watch_errorが残り再登録できない。overflowと実登録失敗を区別し、失われたRegistered/pendingの回復・旧世代無視・実PNG再描画・実失敗保持を回帰し、通常統合/push/個別reply/resolve/freshを実施する。上流の問題へ移さない。
+  - 2026-10-21一次照合: `2a38304b`は現HEAD祖先、実PNG/loader27・AST23・strict Clippy/fmt・通常push `b8ff6c63` exit0。GraphQL freshで対象thread `isResolved=true`、nested false、原指摘4192078113へのreply4192687749を確認。native/全OS/配布受入は別未完。evidence/historical-feedback-reconciliation-2026-10-21.ja.md。
 - [x] ed8e35c1公式coverage71777 actualexit0: UI lib1106PASS/既存ignore2、parallel143PASS/既存ignore2、serial18PASS、strict document surface100%/未実行0、meaningful gate PASS。raw tmp/ed8e35c1-current-coverage.logとtmp/ed8e35c1-coverage-report.jsonを保存。後続overflow修正graphへ流用しない。
 - [/] 同一poll未消費画像P2は67841c51をed8e35c1へ通常push85912 exit0で公開し、reply4192050416→resolve→fresh全1pageで解決確認。公式loader16PASS/AST23/Clippy/fmtと16件64MiB制約を維持。実配布/本人受入は別未完。
 
@@ -393,7 +396,8 @@
 - [x] reload受入のsession境界を補正しce3ffaa2へ通常署名commit。旧checker新契約は3ERROR、補正後scope10PASS58320/gate26PASS3424/旧strict48PASS98217。旧sessionとのframe大小比較ではなく増分session identityと新session内frameを検証し、原本hash/入力/dirty保護を維持。実配布操作の証明は別未完。
 - [/] default本人profileのTermsはreadonlyでterms_accepted_version=0.22.9、現UIはSomeを受理。再承認待ちへ戻さない。本人最終受入・隔離clean-machine profileの確認は未完、自動承認/本人app操作はしない。
 
-- [ ] 2026-10-06 HEAD04269741のcurrent review追加P2 PRRT_kwDORm09y86pUrOm: 同一pollで17件以上の画像結果が届くと、初表示前に先の未消費結果が再利用cacheから退避される。初consumerまでのframe限定所有、失敗結果、次frameの同TextureId、reset/変更世代/解放、元16件64MiB上限を回帰し、通常commit/push後に個別reply/resolve・fresh取得する。
+- [/] 2026-10-06 HEAD04269741のcurrent review追加P2 PRRT_kwDORm09y86pUrOm: 同一pollで17件以上の画像結果が届くと、初表示前に先の未消費結果が再利用cacheから退避される。初consumerまでのframe限定所有、失敗結果、次frameの同TextureId、reset/変更世代/解放、元16件64MiB上限を回帰し、通常commit/push後に個別reply/resolve・fresh取得する。
+  - 2026-10-21一次照合: `67841c51`は現HEAD祖先、実poll5回帰・loader16・AST23・strict Clippy/fmt・通常push `ed8e35c1` exit0。GraphQL freshで対象thread `isResolved=true`、nested false、原指摘4191642495へのreply4192050416を確認。native/GPU総量・配布受入は別未完。evidence/historical-feedback-reconciliation-2026-10-21.ja.md。
 - [/] 通常push48627 actualexit0、local/remote/PR346 HEAD042697416c0433cb66f120d255a9580461fb0797一致・ahead0/behind0。従前の小画像17/MathJax physics/Unicode fontの3件は個別reply4191620938/4191621452/4191622006→resolve→全1page fresh取得でresolved確認済み。新HEAD CI37415299660はLinux通常tests成功、macOS/Windows進行中。旧CI・in-process・過去coverageを新graph/実配布へ流用しない。
 
 - [/] 2026-10-06通常push23466はLinux1079PASS/1FAIL/既存ignore2でexit1、公開不成立。small17初表示前の即時cache退避を検出。helper組立案7f1b46abはconsumer検証が抜けるため撤回し、元store_result→texture回帰を復元、新規結果keyを即時退避から保護する製品補正へ変更。native85122 loader11PASS、Linux73828は別PNG初回1FAIL/10PASS、診断だけ追加し40070 loader11PASS/0.67秒。別PNG失敗原因未確定、単独再成功を解消証明にしない。AST40757=23PASS/Clippy97322/fmt36459/diffcheck exit0、上限・timeout・assert不変。CI失敗後限定DEBUG診断bc6b27ecは契約RED→7PASS/実exact50828 1PASS、正常性能やcold CI解消の証明ではない。通常push再実行/個別replyresolve/newHEAD全gate・packaged未完。
@@ -402,7 +406,8 @@
 
 - [/] c07追加review3件の候補をroot検証: MathJax実アプリ10PASS10331、JS source/bundle4PASS22expect、正式AST23PASS29799、fmt38937/strict impacted lint73275/diffcheck exit0。全UI36972はworker指定不足2FAIL、既存worker付き入口6855は1286PASS/既存ignore4/10suites/107.21秒/exit0で回収。小画像通知missとmacOS cold CI失敗の原因は未確定、全UI成功で原因解消と主張しない。正式統合/push/各replyresolve/newHEAD全gateは未完。証跡evidence/current-review-three-repairs-2026-10-06.md。
 
-- [ ] 2026-10-06 c07 current review追加P2三件: 小画像17枚の表示所有PRRT_kwDORm09y86pTsE-、MathJax physics設定PRRT_kwDORm09y86pTsFA、Unicode font identity PRRT_kwDORm09y86pTsFD。小画像回帰26472は旧実装assertion RED、最小表示所有候補で当該はGREENだがloader全体87785は既存watcher通知待ち1FAIL/10PASS。フォントcanonical回帰72295はmetadata/resolver・request dedupe・painterの3assertion RED。追加三件の正式統合・通常push・個別reply/resolve・fresh取得は未完。
+- [/] 2026-10-06 c07 current review追加P2三件: 小画像17枚の表示所有PRRT_kwDORm09y86pTsE-、MathJax physics設定PRRT_kwDORm09y86pTsFA、Unicode font identity PRRT_kwDORm09y86pTsFD。小画像回帰26472は旧実装assertion RED、最小表示所有候補で当該はGREENだがloader全体87785は既存watcher通知待ち1FAIL/10PASS。フォントcanonical回帰72295はmetadata/resolver・request dedupe・painterの3assertion RED。追加三件の正式統合・通常push・個別reply/resolve・fresh取得は未完。
+  - 2026-10-21一次照合: 小画像は`3b2a0341`/`d39245dd`、MathJaxは`177a0e26`、Unicodeは`cc8e9123`で現HEAD祖先。GraphQL freshで各thread `isResolved=true`、nested false、replyは順に4191620938/4191621452/4191622006。各replyの実回帰・通常push結果を確認し、native/全OS/配布受入は別未完。evidence/historical-feedback-reconciliation-2026-10-21.ja.md。
 - [ ] c07 macOS CI112090923848は1088PASS/1FAIL/既存ignore2。追加stage診断はstartup_accepted=true、elapsed_ms=2007、idle=Some(false)、generation=None、origin_matches=true、resources=(2,2,0,0,0,0)。HTML受理後の初frame未取得であり、受理失敗や修復済みとはしない。元2秒/cold/assertを保持して起動・描画原因を切り分ける。raw tmp/ci-c07b5028-macos.log。c07公式coverage60957 exit0/strict文書100%は新候補graphへ流用しない。
 
 - [/] 画像監視のFailed→Registered成功通知後にも旧watch_errorsが残る追加不備をunit eventprocessor回帰で再現（77891、assert watch_error.is_none、exit101）。成功通知時だけ旧エラーを解除し、公式loader10PASS82361/0.91秒・AST23PASS40982/12.91秒・impacted Clippy75863 exit0。自動再試行や失敗の隠蔽は追加しない。旧未送信normalpushは新不備修正のため所有プロセスのみ中断、hook成功/公開成功として扱わない。通常統合/newHEAD公開検証は別途継続。
@@ -412,8 +417,10 @@
 - [/] 2026-10-06 root公式画像回帰10922 exit0: loader9PASS/1880filtered/40suites/0.82秒。実PNGの相対../経路・atomic rename・両背景再decode・無関係画像保持・read通知非invalidate・reset世代に加え、実ImageLogicOps/Some(ViewerState)/egui repaint callbackでidle変更通知と新TextureIdを確認。68580の8PASS後にGUI検査を追加した。GUI初回は旧egui Context::runを使ったharness compile FAIL、既存run_ui/texture delta処理へ合わせ修正した。native実機/全OS/新HEADCI/公開成功とはしない。最終AST/impactedlint・通常commit/push・review reply/resolveを継続。
 
 - [/] 2026-10-06 root公式組立loader回帰31126 exit0: 6PASS/1880filtered/40suites/0.24秒、17既存textureと次frame先行18枚目を保持しpoll2 grace保持/poll3解除を確認。one-pixel所有回帰で17大型GPU実測ではない。primary sidebar実control pointer回帰90832も1PASS/1885filtered/0.05秒。初回はapp初期pending actionをNoneと仮定したharness assertion FAIL、初期actionを消費済み状態へ明示して再検証。本人reload無反応の製品解消/外部上書き回帰/current cloudは未確認、AST/lint/通常統合は続行。
-- [ ] 2026-10-06 a64最新review P2 PRRT_kwDORm09y86pR5n5: local画像のpath-only identityにより外部上書きが反映されない。UI同期stat/readを復活させず変更通知または非同期版管理でinvalidateし、実file上書き回帰・通常統合・個別reply/resolve・fresh取得を行う。
+- [/] 2026-10-06 a64最新review P2 PRRT_kwDORm09y86pR5n5: local画像のpath-only identityにより外部上書きが反映されない。UI同期stat/readを復活させず変更通知または非同期版管理でinvalidateし、実file上書き回帰・通常統合・個別reply/resolve・fresh取得を行う。
+  - 2026-10-21一次照合: `18b1db3f`/`ba48bf8e`は現HEAD祖先、atomic rename・両背景・reset・idle repaint・新TextureIdを含むloader10/AST23/Clippyと通常push c07を確認。GraphQL freshで対象thread `isResolved=true`、nested false、原指摘4190492654へのreply4191206635を確認。native/全OS/配布受入は別未完。evidence/historical-feedback-reconciliation-2026-10-21.ja.md。
   - 非同期watch/revision候補は実装中で未採用。root組立focused38129はunused import等のcompile FAILでGREEN無し。Access自己invalidate・watch失敗隠蔽・reset世代/解除・通知path正規化・idle GUI repaint・queue上限のmain指摘を補正し、実file atomic replace回帰を必須にする。rootのprimary sidebar実control click追加回帰も未検証で、reload製品修正/本人症状解消は主張しない。
+  - 上記の候補未採用/compile FAILは修復前の履歴。2026-10-21の現行thread照合では、上段の`18b1db3f`修復・実file回帰・reply/resolve/freshを採用状態として記録する。native/本人受入未完の範囲は維持する。
 - [/] 2026-10-06 a64最新review P2 PRRT_kwDORm09y86pR5n-: Markdown slideshowの17枚以上の大型画像はactive texture16件上限で表示中の所有までevictし再decode循環となる。再利用cache上限と表示中所有を分離し、17画像の次frame同texture保持と非表示後解放を検証する。既存6件成功をこの境界の証明にしない。
   - 2026-10-21一次照合: 実装修復・対象回帰・通常push履歴を確認。evidence/historical-host-leaf-reconciliation-2026-10-21.ja.md。native/GPU総量・新HEAD全gate・配布受入は別未完。
 - [/] macOS CI失敗stage診断のfocused回帰は1PASS/1884filtered/40suites/0.35秒、impacted lint成功。既存2秒期限・cold-start・RGB/source保護条件は不変。cfg(test)の失敗時だけ受理bool/elapsed/idle/generation/origin一致/resourceを記録し、原因修復やcloud成功とは扱わない。
