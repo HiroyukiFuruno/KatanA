@@ -18,6 +18,12 @@
 
 - 最新ユーザー指示と既存DoDを参照し、上記制約を満たす。既存release/*のみ・新規worktree禁止・Draftレビュー後Ready/必須CIという本人指示を優先し、新branchや二重PRを作らない。
 
+### 2026-10-20 独立作業の再確認
+
+- [x] 215fb879のrelease Python全478件を一回実行しactual0/409.004秒を回収。開始終了HEAD/tracked clean/共有Git設定SHA一致。tmp/oct20-215-release-python-all.log。新しい差分や全Rust/Windows/公開の成功へ流用しない。
+- [/] function-length・vendor HTML要約・URL foreground ownerの修復済み3旧leafを正しいcommit/検査/threadへ照合し状態訂正。evidence/independent-work-audit-2026-10-20.ja.md。
+- [ ] just outdatedの実Cargo.toml一時上書きを廃止し、実vendor patch graphを保持する安全な調査経路を修復・実検証する。直接tool候補は原7metadata SHA不変だが、cargo-outdated0.17の内部tempでexcluded vendorを見失いactual1。小fixture成功を代用しない。
+
 ## Definition of Ready
 
 - 最新本人指示・現worktree・残DoDを確認して既存作業を継続する。OpenSpec CLIのartifact doneは実装/公開完了を意味しない。
@@ -109,7 +115,7 @@
 
 - [/] #335 reference installerを実装。既存5scope検査を共有moduleへ手動抽出し旧prepush API/WHYを維持、commonhooks/全既存WT runtime parity・owner bytes/mode・backup非上書き・欠落owner・導入lock/冪等性を追加。unknown V0 wrapper81419assertREDと実os.replace直後SIGINTでbackup消失86734assertREDを修復。最終14760新8PASS3.931秒/割込後commit成功、98087両installer18PASS、77867全release Python302PASS126.340秒（最後の追加fixture assertion配置差は14760で別証明）、5files AST/200行/30行成功・fresh独立限定P0/P1/必須P2無し。read-only実repo validatorは旧master不一致を拒否し本番未活性。通常統合/public caller/serialization/localremote/prune/workflow・全335/Release未完。evidence/reference-hook-installer-2026-10-15.md。
 
-- [ ] current f40a review5528605915/P2 4279432020/threadPRRT_kwDORm09y86sorwg: vendor pulldownのHTML診断要約が全文collect/joinしてから80文字へ切り詰める不備を修復する。今回の診断/受入性能契約に含まれるため採用。全REST/GraphQL88240actual0、nested欠落0、既存manualpolicy3とは分離。限定workerは案/RED計画のread-only段階、main installer通常統合のfmt競合回避までRust編集/build待機。上流へ誤分類せずKatanA vendorで対応し、検証・通常統合/push後に個別reply/resolve・fresh全取得を行う。
+- [/] 旧f40a review5528605915/P2 4279432020/threadPRRT_kwDORm09y86sorwgのvendor HTML診断全文collect/joinはd0bb921dで修復済み。80 Unicode文字・最大4096 raw文字走査、正式target4PASS/root固定lock実caller compile88072actual0。正本evidence/vendor-html-trace-bounds-2026-10-15.md。通常push87932/返信4279736687/個別resolveは上記a66記録と対応する。旧worker待機記録を現状の未着手理由にしない。既存trace-target contains走査全体の定数時間化や新HEAD Ready/packaged/公開を完了とするものではない。
 
 - [/] no-intent/env隔離sourceは6c586811/62648actual0/署名Gへ通常統合。最終94024全cleanup66PASS48.221秒・独立限定review/AST/KML/diff成功。docs統合後、installer/public caller/serialization/remote/prune/workflowを続ける。未公開sourceをpublic f40a成功や全335/Release完了へ読み替えず、少量修正毎の重いnormalpush重複はしない。
 
@@ -133,7 +139,7 @@
 
 - [/] #335 cleanup公開tag結合を実装。公開名一致だけに依存せずremote annotated/lightweight tagの広告前後/commit graphとfull canonical OIDを同期前に照合する。submodule25828 actual1→再帰抑止のみ7033actual0、SHA25640prefix51967assertRED→修復後38914actual0/20件14.557秒、Python構文・200/30契約・diff/KML成功、独立fresh限定P0/P1・必須P2無し。prune候補は旧source68084で2PASSのため未再現と区別。evidence/cleanup-published-tag-2026-10-15.md。実repo同期/削除・本番hook/workflow・通常統合push・全335/公開DoDは未完。
 
-- [ ] current e0 review5527794142/P2 4278800773/threadPRRT_kwDORm09y86snOcmの新B投入済み未完了→旧A先行成功によるURL UI奪取を修復する。66005actual101のactivepath assert REDを確認し、fetch enqueue毎にownerを更新。実HTTP500/barrier両完了順のB選択・input・本文・globalエラーとA更新を維持し、正式57619全URL回帰を実行中。2276型error/77222DisconnectedとHTML document_failure過剰期待はfixture問題として製品REDと区別。通常commit/push・個別reply/resolve/fresh/全公開DoDは継続する。
+- [/] 旧e0 review5527794142/P2 4278800773/threadPRRT_kwDORm09y86snOcmの新B要求後の旧A成功による選択奪取は8a8a5328で修復済み。66005 actual101のactivepath REDからforeground enqueue owner更新へ修復、最終URL63回帰成功。normalpush59692 actual0/返信4279086323/個別resolve true、fresh4879/83564全取得済み（raw tmp/url351-pending-intent-normal-push-2026-10-15.log、公開170d56af）。file-dialog経路94151a0aと後続修復は本change配下evidence/url-selection-ownership-2026-10-15.mdおよびevidence/url-pending-intent-2026-10-15.mdへ分離して記録。旧検査runningを維持せず、新HEAD review/Ready/packaged/全公開DoDは別未完として扱う。
 
 - [/] #351追加file-dialog完了経路を11025 actual101/2PASS1assertFAILで再現。DocumentOps入口の別path activateだけownerを失効し、同path補完/非活性ロードは不変とする。最終91932公式URL56件/52490workspace5件/4680AST23件/62146全target externalfeature strict/8533fmt各actual0、限定独立review P0/P1・必須P2無し。初88919のfixture compile errorとは区別。先行4d0e0e5d/docs d375は通常push73802actual0・local/origin/PR一致clean0/0、追加補完は通常統合/upload/4278428451個別replyresolve/fresh確認が未完。全公開DoDは継続する。
 
@@ -258,7 +264,7 @@
 - [/] 2026-10-13 #312 実PDF検証: 独立した有効設定token照合込み4themesと背景置換負検査が最終22229 actual0/2PASS/56.41s。verifier境界underflow RED→checked_sub修復、table/contrast責務分離・元基準不変。evidence/pdf-current-theme-2026-10-13.md。検証source/入口の通常commit/push/Issue整理は未完。
 
 - [/] 2026-10-13 #258 host追加修復: 背景Canvasでactive Markdown表示modeを変更する実RED32763と、未変更file自動refreshでpanを失う実RED8902を保存。activate限定設定・worker SHA256 revision比較・非強制refreshのsurface保持へ修復し、現Canvas55件全PASS（tmp/canvas-current-host-revision-green-2026-10-13.log）。変更sourceのstrict lint/自己review・正式commit/push・公開は未完。
-- [ ] 2026-10-13 検査基盤の既存負債: crates/katana-linter/src/rules/structure/function_length.rs はstart/endを同じspan_locationから取得し、関数長差が常に0になる。AST成功だけで30行制約を検証済みとしない。独立回帰・修復を別関心事で扱い、Canvas修復に混在させない。
+- [/] 2026-10-13のfunction-length常時0計測は通常commit ec139db9で限定修復済み。brace open.start/close.end、30行閾値・free/impl・signature非算入を保持。旧source23101 actual101/4FAIL3PASS→88813 actual0/7PASS、正式AST40531 actual0/30PASS、fmt67524 actual0。正本evidence/function-length-contract-2026-10-15.md。共有registry KALの別実装・全repo30行遵守・Release公開まで解消したとは扱わない。
 - [/] 2026-10-13 #312: 実export経路→明示Poppler→custom/builtin dark/lightの実pixel検査を接続して実行中。tmp/issue312-real-pdf-current-first-2026-10-13.log。結果回収前に完了・IssueCloseとしない。本人app操作/設定承認代行無し。
 
 - [x] 2026-10-13 #345 harness現行検証: optimized release worker build44038 actual0、明示workerで原本PPTX3/XLSX3全6 first frame・exact test36230 actual0/1PASS/100.10秒。worker未指定負検査actual101/正確な拒否message、debug fallback無し。evidence/release-office-worker-acceptance-2026-10-13.md。旧版指定を最新承認registry0.5.12/0.4.23/0.4.1へ区別し、速度改善・3OS配布受入・全gate完了へ代用しない。証跡公開後にIssue整理する。
