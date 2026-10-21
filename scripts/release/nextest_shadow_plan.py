@@ -26,10 +26,14 @@ def phase_plan(repo: Path, output: Path, build_cache_target: Path | None = None)
     target = build_cache_target or output / "coverage-target"
     plans = []
     for phase, selection in PHASES.items():
-        argv = [*BASE_ARGUMENTS, "--config-file", str(config), "--user-config-file",
+        junit_config = output / "junit" / f"{phase}.toml"
+        junit_report = output / "junit" / f"{phase}.xml"
+        argv = [*BASE_ARGUMENTS, "--config-file", str(junit_config), "--user-config-file",
                 str(user_config), *selection]
         plans.append({"phase": phase, "argv": argv, "target_dir": str(target),
-                      "receipt_dir": str(output / phase)})
+                      "receipt_dir": str(output / phase),
+                      "junit_config": str(junit_config), "junit_report": str(junit_report),
+                      "config_template": str(config)})
     return plans
 
 

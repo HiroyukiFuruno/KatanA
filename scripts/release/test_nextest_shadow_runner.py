@@ -7,6 +7,8 @@ import tempfile
 import textwrap
 import unittest
 
+from nextest_shadow_test_support import phase, recording_child
+
 MODULE_PATH = Path(__file__).with_name("run-nextest-shadow.py")
 SPEC = importlib.util.spec_from_file_location("run_nextest_shadow", MODULE_PATH)
 RUNNER = importlib.util.module_from_spec(SPEC)
@@ -128,7 +130,7 @@ class NextestShadowRunnerTests(unittest.TestCase):
     def test_identity_failure_prevents_child_stage_start(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            output = root / "output"
+            output = (root / "output").resolve()
             output.mkdir()
             with self.assertRaises(ValueError):
                 run_phase(root, output, [str(root / "missing-cargo")], dict(os.environ),
@@ -139,15 +141,16 @@ class NextestShadowRunnerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             child = self.child(root)
-            output = root / "output"
+            output = (root / "output").resolve()
             output.mkdir()
-            phase = {"phase": "phase-a", "argv": []}
+            phase_data = phase(root, output, "phase-a")
             result = run_phase(root, output, [sys.executable, str(child)],
-                               {**os.environ, "KATANA_SHADOW_PROFILE_ID": "test-run"}, phase)
+                               {**os.environ, "KATANA_SHADOW_PROFILE_ID": "test-run"}, phase_data)
             receipt = json.loads((output / "phase-a/phase.json").read_text())
             self.assertEqual(result["exit_code"], 0)
             self.assertEqual(receipt["exit_code"], 0)
-            self.assertEqual(receipt["argv"], [sys.executable, str(child)])
+            self.assertEqual(receipt["argv"][:2], [sys.executable, str(child)])
+            self.assertEqual(receipt["argv"][-2:], ["--config-file", phase_data["junit_config"]])
             self.assertIn("record_unavailable", receipt)
             self.assertIn("environment_identity", receipt)
             self.assertEqual(receipt["environment_identity"]["explicit"], {
@@ -158,12 +161,14 @@ class NextestShadowRunnerTests(unittest.TestCase):
 
     def test_collect_shadow_returns_two_and_keeps_raw_success_stage(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory).resolve()
-            child = self.child(root)
-            output = root / "output"
+            temporary = Path(directory).resolve()
+            root = Path(__file__).resolve().parents[2]
+            child = self.child(temporary)
+            output = temporary / "output"
             output.mkdir()
             environment = dict(os.environ)
             environment["CARGO_TARGET_DIR"] = str(output / "coverage-target")
+            environment["KATANA_SHADOW_PROFILE_ID"] = "test-run"
             identity = RUNNER.shadow_environment_identity(
                 root, [sys.executable, str(child)], environment)
             receipt = {"stages": [], "environment_identity": identity}
@@ -175,22 +180,16 @@ class NextestShadowRunnerTests(unittest.TestCase):
     def test_nonzero_child_exit_is_preserved_in_phase_receipt(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            child = root / "fail.py"
-            child.write_text(textwrap.dedent("""
-                import sys
-                if "-V" in sys.argv:
-                    print("cargo 1.90.0 (shadow-test)")
-                else:
-                    raise SystemExit(7)
-            """), encoding="utf-8")
-            output = root / "output"
+            child = recording_child(root, 7)
+            output = (root / "output").resolve()
             output.mkdir()
-            result = run_phase(root, output, [sys.executable, str(child)], dict(os.environ),
-                               {"phase": "phase-fail", "argv": []})
+            result = run_phase(root, output, [sys.executable, str(child)],
+                               {**os.environ, "KATANA_SHADOW_PROFILE_ID": "test-run"},
+                               phase(root, output, "phase-fail"))
             receipt = json.loads((output / "phase-fail/phase.json").read_text())
             self.assertEqual(result["exit_code"], 7)
             self.assertEqual(receipt["exit_code"], 7)
-            self.assertIn("record_unavailable", receipt)
+            self.assertIn("junit_unavailable", receipt)
 
 
 if __name__ == "__main__":

@@ -17,6 +17,7 @@ from nextest_shadow_execution import (
     shadow_environment_identity, verify_tools, write_receipt,
 )
 from nextest_shadow_plan import phase_plan, shadow_contract
+from nextest_shadow_junit import inspect_report, record_run_uuid, write_phase_config
 from nextest_shadow_records import collect_records
 
 
@@ -24,16 +25,41 @@ def worker_command(cargo: list[str]) -> list[str]:
     return [*cargo, "build", "--locked", "-p", "katana-ui", "--bin", "kdv-office-worker"]
 
 
+def prepare_phase_junit(output: Path, base: dict[str, str], phase: dict) -> dict:
+    junit = write_phase_config(output, phase["phase"], base["KATANA_SHADOW_PROFILE_ID"],
+                               Path(phase["config_template"]))
+    if (junit["config_path"] != phase["junit_config"]
+            or junit["report_path"] != phase["junit_report"]):
+        raise ValueError("shadow JUnit phase paths disagree with the plan")
+    argv = phase["argv"]
+    if ("--config-file" not in argv or argv.index("--config-file") + 1 >= len(argv)
+            or argv[argv.index("--config-file") + 1] != junit["config_path"]):
+        raise ValueError("shadow JUnit config is not selected by the phase")
+    return junit
+
+
 def run_phase(repo: Path, output: Path, cargo: list[str], base: dict[str, str],
               phase: dict) -> dict:
     directory = output / phase["phase"]
     environment = phase_environment(base, directory)
     phase_identity = shadow_environment_identity(repo, cargo, environment)
-    result = execute_stage(repo, directory, [*cargo, *phase["argv"]], environment)
+    junit = prepare_phase_junit(output, base, phase)
+    argv = phase["argv"]
+    result = execute_stage(repo, directory, [*cargo, *argv], environment)
     try:
         result["record_files"] = collect_records(directory / "nextest-state")
-    except ValueError as error:
-        result["record_unavailable"] = str(error)
+        result["junit"] = {**inspect_report(Path(junit["report_path"]),
+                                             record_run_uuid(result["record_files"])),
+                           "config_path": junit["config_path"],
+                           "config_sha256": junit["config_sha256"]}
+        if result["exit_code"] == 0 and any(result["junit"][key] for key in
+                                             ("failure_count", "error_count")):
+            raise ValueError("shadow JUnit failures contradict the successful child exit")
+    except (OSError, ValueError) as error:
+        if "record_files" not in result:
+            result["record_unavailable"] = str(error)
+        else:
+            result["junit_unavailable"] = str(error)
     result["environment_identity"] = phase_identity
     result["environment_identity"]["explicit"] = {
         key: environment.get(key) for key in
@@ -57,7 +83,8 @@ def initial_receipt(repo: Path, output: Path, cargo: list[str], environment: dic
             "producer_sha256": {name: file_digest(Path(__file__).parent / name) for name in
                                 ("run-nextest-shadow.py", "nextest_shadow_execution.py",
                                  "nextest_shadow_plan.py", "nextest_shadow_records.py",
-                                 "nextest_shadow_cache.py")},
+                                 "nextest_shadow_cache.py", "nextest_shadow_junit.py",
+                                 "nextest_shadow_junit_io.py")},
             "config_sha256": config_hashes, "stages": [],
             "limitations": ["nextest test-per-process differs from libtest",
                             "normal/doctest/fixture checks remain required",
@@ -85,7 +112,7 @@ def collect_shadow(repo: Path, output: Path, cargo: list[str],
         receipt["stages"].append(result)
         if result["exit_code"]:
             return result["exit_code"]
-        if result.get("record_unavailable"):
+        if result.get("record_unavailable") or result.get("junit_unavailable"):
             return 2
     receipt["producer_completed"] = True
     return 0

@@ -59,6 +59,21 @@ class NextestShadowPlanTests(unittest.TestCase):
             self.assertEqual(item["target_dir"], "/tmp/shadow/coverage-target")
             self.assertNotIn("cargo", item["argv"])
 
+    def test_phase_plan_assigns_one_new_junit_config_and_report_per_phase(self):
+        output = Path("/tmp/shadow")
+        for item in phase_plan(ROOT, output):
+            with self.subTest(phase=item["phase"]):
+                config = output / "junit" / f"{item['phase']}.toml"
+                report = output / "junit" / f"{item['phase']}.xml"
+                self.assertEqual(item["junit_config"], str(config))
+                self.assertEqual(item["junit_report"], str(report))
+                self.assertEqual(item["config_template"],
+                                 str(ROOT / "scripts/release/nextest-shadow.toml"))
+                self.assertEqual(item["argv"][item["argv"].index("--config-file") + 1],
+                                 str(config))
+                self.assertEqual(item["argv"][item["argv"].index("--user-config-file") + 1],
+                                 str(ROOT / "scripts/release/nextest-shadow-user.toml"))
+
     def test_shadow_contract_is_non_authoritative(self):
         contract = shadow_contract(ROOT)
         self.assertFalse(contract["execution_equivalent"])
