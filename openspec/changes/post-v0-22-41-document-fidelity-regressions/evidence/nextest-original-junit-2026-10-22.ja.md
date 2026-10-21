@@ -33,11 +33,19 @@ Issue #343 のshadow4工程は、従来storeのhashだけを記録していた�
 [serializer](https://github.com/nextest-rs/quick-junit/blob/quick-junit-0.8.0/crates/quick-junit/src/serialize.rs)
 に合わせ、root/suiteのskippedを検査する。旧2024年XML例のdisabledは使わない。
 
-## 未完了の受入
+## 実Rust受入
 
-既存の依存なし実Rust probeで元Nextest4工程からXMLが生成されることは未確認。
-`tmp/oct22-junit-real-probe-execution.py` を準備済みだが、共有MacのKDV検査終了前に
-起動しない。上限は全体120秒、専用target100MiB、jobs1とする。
+実装commitは `82959ddb5d7adc71428d59ccb04b09d4381195ab`。
+依存なしの実Rust workspaceで、固定Nextest 0.9.148 / llvm-cov 0.9.1を実行した。
+全4工程exit 0、合計5成功・既存fixture除外1件、失敗/error/retryは0。
+各工程のXMLとstoreのrun UUID一致、工程別case名/結果、source前後不変を確認した。
+runnerは3.928秒、専用targetは8,361,318 bytes。jobs1、全体120秒・100MiB上限内。
+
+正本は `tmp/oct22-junit-real-probe/c4451243a1154d5eb99bf53f9453095a/tmp/probe-summary.json`、
+元ログは同fixtureの `tmp/runner.log`、XML/configは `tmp/fresh/junit/`。
+初回は診断logをfixture直下へ置いたためclean-source guardがbuild前にexit 2で拒否した。
+診断logを既存ignoredのtmp配下へ移した新fixtureで再実行しexit 0を回収した。
+製品source、clean-source guard、検査基準は変更していない。
 
 この変更は実行結果の取得であり、通常libtestとの同等性、trusted reuse、
 実際の検査削減、Windows cold/warm、製品full gate、packaged受入、公開を
