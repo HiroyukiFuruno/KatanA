@@ -47,6 +47,28 @@ runnerは3.928秒、専用targetは8,361,318 bytes。jobs1、全体120秒・100M
 診断logを既存ignoredのtmp配下へ移した新fixtureで再実行しexit 0を回収した。
 製品source、clean-source guard、検査基準は変更していない。
 
+## 既存normal/coverage比較の実Rust受入
+
+同じtiny fixtureで既存record-test-invocation.pyのnormal 1回と固定coverage 4工程を
+実行した。全5回exit 0/source_stable=true、比較CLIもexit 0。
+通常候補6件、coverage候補2/1/1/1、共通5件・通常のみ1件・coverageのみ0件。
+coverage各工程間の全6組の候補intersectionは0。
+通常3.347秒、coverage合計3.223秒でpost-command診断時間は別に記録した。
+これはtiny fixtureの比較導線受入であり、製品の検査短縮や実行同等性ではない。
+
+正本は同fixtureの `tmp/record-compare/inventory/comparison.json` と5つの入力JSON、
+元ログは `tmp/record-compare/` 配下。主査がnormal source前後一致・比較の未証明理由と
+false policyを再取得し確認した。独立最終レビューのP0/P1/必須P2は0件
+（`tmp/oct22-junit-final-review.md`）。
+
+## 横断回帰
+
+新sourceを含むrelease Python全体を正本のunittest discoverで一回実行し、
+545件・318.076秒・actual exit 0 / OKを回収した。
+正本logは `tmp/oct22-release-python-all-82959.log`。
+検査中sourceは82959ddbと同一で、終了時HEADはdocsのみ追加の1fe69f2d。
+製品full Cargoや本人app、別repoは操作していない。
+
 この変更は実行結果の取得であり、通常libtestとの同等性、trusted reuse、
 実際の検査削減、Windows cold/warm、製品full gate、packaged受入、公開を
 達成したとは扱わない。これらは元DoDの未完了条件として保持する。
