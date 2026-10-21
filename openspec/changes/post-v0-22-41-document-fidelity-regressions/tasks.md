@@ -55,6 +55,11 @@
 
 ### Issue実装状態の正本（2026-10-19）
 
+2026-10-22再照合: Open全14件と現source・元DoDを照合し、追加で即実装可能な欠落は確認できなかった。
+ただし上流以外にもWindows実測・保護CIでの同等性/reuse判定・本人受入・公開後処理が残る。
+実施条件とsource根拠は [独立作業の区分](evidence/independent-work-boundaries-2026-10-22.ja.md) を参照。
+これらの条件待ちを「未着手の独立コード修正」や「全DoD完了」と混同しない。
+
 - [/] 本人決定「version管理上OS対応は一律、緊急OS単独公開は不要」をコードと仕様へ反映。workflow_dispatchのtarget入力・OS別skip分岐・release-trigger旧引数を撤去し、全OS build/macOS smoke/全5配布asset・identity/checksum/供給網・既存品質条件を維持。回帰RED→GREEN、新契約4件・関連40件/actionlint/主査AST/独立最終必須所見0。evidence/all-os-publication-policy-2026-10-19.ja.md。公開方針の回答待ちは解消済みで、再質問しない。
 - [ ] 全OS一括公開の修復を通常pushで通してから、既存manual-target3threadsへ個別reply/resolve・fresh取得する。現在のKDV69安全性ゲートは迂回せず、ローカル修復を公開済み/Ready/全公開成功と扱わない。
 
