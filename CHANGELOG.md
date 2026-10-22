@@ -24,6 +24,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🐛 Bug Fixes
 
+- **HTTPS certificate validation**: Updated certificate verification and trusted roots to reject distrusted certificate chains.
 - **Document memory usage**: Removed an extra copy of document input data retained throughout a viewer session.
 - **Office tabs and memory**: Documents using the same installed font share its data across tabs instead of retaining an extra copy for every tab.
 - **Preview image stability**: Diagram and image textures remain available when image controls are hidden.
