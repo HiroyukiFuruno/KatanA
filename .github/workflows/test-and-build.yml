@@ -79,7 +79,7 @@ jobs:
         with:
           bun-version: latest
 
-      # WHY: Windowsの旧target cacheは無効化されているため、取得元だけを再利用する。
+      # WHY: 取得元とコンパイル成果物を分離し、検査結果を再利用しない。
       - name: Cache Windows Cargo registry
         id: windows_registry_cache
         if: runner.os == 'Windows'
@@ -90,6 +90,25 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/git/db
           key: ${{ runner.os }}-${{ runner.arch }}-cargo-registry-v1-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Identify Windows compiled target
+        id: windows_target_identity
+        if: runner.os == 'Windows'
+        shell: bash
+        run: >-
+          python3 -B scripts/ci/windows_target_cache_identity.py --repo .
+          --profile test --selection ci-test --github-output "$GITHUB_OUTPUT"
+
+      # WHY: 同一source/toolchainだけを許可し、識別不能なら通常のfresh buildへ戻す。
+      - name: Cache Windows compiled target
+        id: windows_target_cache
+        if: runner.os == 'Windows' && steps.windows_target_identity.outputs.cache_eligible == 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            target/debug
+            target/.rustc_info.json
+          key: ${{ steps.windows_target_identity.outputs.cache_key }}
 
       - name: Cache Cargo registry & target
         if: runner.os != 'Windows'
@@ -125,6 +144,9 @@ jobs:
           python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_observe_ci_command.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_windows_ci_observation_contract.py -v
+          python3 -B -m unittest discover -s scripts/ci -p test_windows_compiled_cache_contract.py -v
+          python3 -B -m unittest discover -s scripts/ci -p test_observe_compiled_cache.py -v
+          python3 -B -m unittest discover -s scripts/release -p test_windows_target_cache_identity.py -v
           python3 -B -m unittest discover -s scripts/runner -p test_impacted.py -v
 
       - name: Verify native inventory pipes (Windows)
@@ -166,11 +188,17 @@ jobs:
           KATANA_HTML_FAILURE_SAMPLE: ${{ runner.os == 'macOS' && '1' || '0' }}
           KATANA_TEST_INVENTORY_OUTPUT: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/normal.json
           WINDOWS_REGISTRY_CACHE_HIT: ${{ steps.windows_registry_cache.outputs.cache-hit }}
+          WINDOWS_TARGET_CACHE_HIT: ${{ steps.windows_target_cache.outputs.cache-hit }}
+          WINDOWS_TARGET_CACHE_KEY: ${{ steps.windows_target_identity.outputs.cache_key }}
+          WINDOWS_TARGET_CACHE_ELIGIBLE: ${{ steps.windows_target_identity.outputs.cache_eligible }}
         run: |
           if [[ "${RUNNER_OS}" == "Windows" ]]; then
             python3 -B scripts/ci/observe-ci-command.py \
               --output "${KATANA_TEST_INVENTORY_ROOT}/windows-timing.json" \
               --cache-hit "${WINDOWS_REGISTRY_CACHE_HIT}" \
+              --compiled-cache-hit "${WINDOWS_TARGET_CACHE_HIT}" \
+              --compiled-cache-key "${WINDOWS_TARGET_CACHE_KEY}" \
+              --compiled-cache-eligible "${WINDOWS_TARGET_CACHE_ELIGIBLE}" \
               -- bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
           else
             bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'

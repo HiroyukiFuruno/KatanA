@@ -10,6 +10,7 @@ from html import escape
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
@@ -23,6 +24,19 @@ def cache_value(raw: str) -> bool | None:
     if normalized == "false":
         return False
     return None
+
+
+def compiled_cache(eligible: str, key: str, hit: str) -> dict:
+    if not eligible and not key and not hit:
+        return {"eligible": None, "key": None, "hit": None}
+    allowed = cache_value(eligible)
+    if allowed is None or (allowed and not re.fullmatch(r"windows-target-v1-[a-f0-9]{64}", key)):
+        raise ValueError("compiled cache identity is invalid")
+    if not allowed and (key or hit):
+        raise ValueError("ineligible compiled cache cannot have a key or hit")
+    if hit not in ("", "true", "false"):
+        raise ValueError("compiled cache hit is invalid")
+    return {"eligible": allowed, "key": key or None, "hit": cache_value(hit)}
 
 
 def lock_digest(root: Path) -> dict[str, str | None]:
@@ -95,6 +109,7 @@ def append_summary(path: Path, payload: dict) -> None:
         f"- Elapsed seconds: `{payload['elapsed_seconds']:.6f}`",
         f"- Cargo registry cache hit: `{payload['cache_hit']}`",
         "- Build cache state: `not_measured`",
+        f"- Compiled target cache hit: `{payload['compiled_target_cache']['hit']}`",
         "- Cold/warm equivalence: `not_evaluated`",
         "- Test reuse authorized: `false`",
         "",
@@ -123,6 +138,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--cache-hit", required=True)
+    parser.add_argument("--compiled-cache-hit", default="")
+    parser.add_argument("--compiled-cache-key", default="")
+    parser.add_argument("--compiled-cache-eligible", default="")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     arguments = parser.parse_args(argv)
     command = arguments.command[1:] if arguments.command[:1] == ["--"] else arguments.command
@@ -133,6 +151,9 @@ def main(argv: list[str] | None = None) -> int:
     try:
         root = Path.cwd().resolve()
         payload = report(arguments.cache_hit, command, elapsed, status, normalized, spawned, root)
+        payload["compiled_target_cache"] = compiled_cache(
+            arguments.compiled_cache_eligible, arguments.compiled_cache_key,
+            arguments.compiled_cache_hit)
         save_json(arguments.output, payload)
         summary = os.environ.get("GITHUB_STEP_SUMMARY")
         if summary:
