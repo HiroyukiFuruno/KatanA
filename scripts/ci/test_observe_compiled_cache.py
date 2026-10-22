@@ -34,6 +34,7 @@ class ObserveCompiledCacheTests(unittest.TestCase):
                 payload = json.loads((root / "timing.json").read_text())
                 self.assertEqual(payload["compiled_target_cache"],
                                  {"eligible": True, "key": KEY, "hit": True})
+                self.assertEqual(payload["cache_scope"], "cargo_registry_and_exact_compiled_target")
                 self.assertFalse(payload["reuse_authorized"])
                 self.assertEqual(payload["cold_warm_equivalence"], "not_evaluated")
             self.assertEqual((root / "counter").read_text(), "xx")
@@ -43,8 +44,10 @@ class ObserveCompiledCacheTests(unittest.TestCase):
             root = Path(name)
             result = self.run_child(root, 0, "false", "", "")
             self.assertEqual(result.returncode, 0, result.stderr)
-            cache = json.loads((root / "timing.json").read_text())["compiled_target_cache"]
+            payload = json.loads((root / "timing.json").read_text())
+            cache = payload["compiled_target_cache"]
             self.assertEqual(cache, {"eligible": False, "key": None, "hit": None})
+            self.assertEqual(payload["cache_scope"], "cargo_registry_sources_only")
             self.assertEqual((root / "counter").read_text(), "x")
 
     def test_invalid_cache_metadata_never_hides_child_failure(self):

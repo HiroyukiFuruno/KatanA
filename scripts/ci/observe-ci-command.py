@@ -154,6 +154,8 @@ def main(argv: list[str] | None = None) -> int:
         payload["compiled_target_cache"] = compiled_cache(
             arguments.compiled_cache_eligible, arguments.compiled_cache_key,
             arguments.compiled_cache_hit)
+        if payload["compiled_target_cache"]["eligible"]:
+            payload["cache_scope"] = "cargo_registry_and_exact_compiled_target"
         save_json(arguments.output, payload)
         summary = os.environ.get("GITHUB_STEP_SUMMARY")
         if summary:
