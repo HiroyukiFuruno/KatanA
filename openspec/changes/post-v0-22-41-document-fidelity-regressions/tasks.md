@@ -55,10 +55,14 @@
 
 ### Issue実装状態の正本（2026-10-19）
 
-2026-10-22再照合: Open全14件と現source・元DoDを照合し、追加で即実装可能な欠落は確認できなかった。
-ただし上流以外にもWindows実測・保護CIでの同等性/reuse判定・本人受入・公開後処理が残る。
-実施条件とsource根拠は [独立作業の区分](evidence/independent-work-boundaries-2026-10-22.ja.md) を参照。
-これらの条件待ちを「未着手の独立コード修正」や「全DoD完了」と混同しない。
+2026-10-22本人再指示により、旧「即実装可能な欠落なし」という判定を撤回する。
+Windowsの実測未実施は、cache key/誤再利用拒否/Ready後の配線を実装しない理由にはしない。
+検査結果の信頼条件を維持しながら、以下の独立コード実装・実受入を先行する。
+旧 [独立作業の区分](evidence/independent-work-boundaries-2026-10-22.ja.md) は履歴であり、停止条件の正本にしない。
+
+- [x] #343 Windows compiled-target cacheをexact source/toolchain/OS/arch/target/profile/optionsへ束縛し、識別不能ならcacheを使わず元検査を実行する実装とCI配線を追加。対象RED→GREEN/identity11/observer14/既存CI14成功。Ready後のWindows実測は別の未完項目として維持。
+- [x] #343 同一prepared sourceの既存standard coverage/listing検査で実Rust compileを共有。全test/新結果/listing/profileを毎回生成し、実Cargo fresh=false→trueを確認。最終guard7/実recording等13成功。製品同等性/trusted reuse/実削減は未完。
+- [x] #335/#338 独立可能な実fixture・正規validator・retained artifact入力供給を実検証。335は36、338はacceptance51/gate31・manifest/producer成功。公開後cleanup/owner採点/本人受入は未完。[今回の実装・検証証跡](evidence/independent-implementation-2026-10-22.ja.md)を参照。
 
 - [/] 本人決定「version管理上OS対応は一律、緊急OS単独公開は不要」をコードと仕様へ反映。workflow_dispatchのtarget入力・OS別skip分岐・release-trigger旧引数を撤去し、全OS build/macOS smoke/全5配布asset・identity/checksum/供給網・既存品質条件を維持。回帰RED→GREEN、新契約4件・関連40件/actionlint/主査AST/独立最終必須所見0。evidence/all-os-publication-policy-2026-10-19.ja.md。公開方針の回答待ちは解消済みで、再質問しない。
 - [ ] 全OS一括公開の修復を通常pushで通してから、既存manual-target3threadsへ個別reply/resolve・fresh取得する。現在のKDV69安全性ゲートは迂回せず、ローカル修復を公開済み/Ready/全公開成功と扱わない。
