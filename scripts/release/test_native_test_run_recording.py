@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+from contextlib import nullcontext
 from pathlib import Path
 import subprocess
 import sys
@@ -10,6 +11,7 @@ import tempfile
 import unittest
 
 from native_test_run_recording import cargo_command
+from test_native_fixture_build_cache import prepared_fixture
 import test_native_test_run_identity as identity_fixtures
 
 SCRIPT = Path(__file__).with_name("record-test-invocation.py").resolve()
@@ -52,20 +54,26 @@ class RunRecordingTests(unittest.TestCase):
         subprocess.run(["git", "-c", "commit.gpgsign=false", "commit", "-qm", "Cargo fixture"],
                        cwd=root, env=environment, check=True)
 
-    def run_fixture(self, failing: bool) -> tuple:
+    def run_fixture(self, failing: bool, prepared: bool = False,
+                    cache_key: str = "pass-normal") -> tuple:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            self.fixture(root, failing)
-            output = root / "target/inventory/normal.json"
-            result = subprocess.run(
-                [sys.executable, "-B", str(SCRIPT), "--output", str(output), "--kind", "test",
-                 "--", "cargo", "test", "--workspace", "--offline", "--", "--nocapture"],
-                cwd=root, env=self.environment(root), capture_output=True, timeout=60)
-            self.assertTrue(output.is_file(), result.stderr.decode(errors="replace"))
-            return result, json.loads(output.read_text(encoding="utf-8"))
+            if prepared:
+                roots = prepared_fixture(cache_key, lambda prepared_root: self.fixture(prepared_root, False))
+            else:
+                self.fixture(root, failing)
+                roots = nullcontext(root)
+            with roots as root:
+                output = root / "target/inventory/normal.json"
+                result = subprocess.run(
+                    [sys.executable, "-B", str(SCRIPT), "--output", str(output), "--kind", "test",
+                     "--", "cargo", "test", "--workspace", "--offline", "--", "--nocapture"],
+                    cwd=root, env=self.environment(root), capture_output=True, timeout=60)
+                self.assertTrue(output.is_file(), result.stderr.decode(errors="replace"))
+                return result, json.loads(output.read_text(encoding="utf-8"))
 
     def test_actual_cargo_records_native_and_ignored_without_claiming_doctests(self) -> None:
-        result, manifest = self.run_fixture(False)
+        result, manifest = self.run_fixture(False, prepared=True)
         self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
         self.assertEqual(manifest["exit_code"], 0)
         self.assertTrue(manifest["source_stable"])
@@ -84,6 +92,19 @@ class RunRecordingTests(unittest.TestCase):
         self.assertIn(b"test result: ok", result.stdout)
         self.assertEqual(manifest["listing_reasons"], [])
         self.assert_invocation_timing(manifest)
+
+    def test_prepared_fixture_rebuilds_tests_while_reusing_only_cargo_artifacts(self) -> None:
+        first, first_manifest = self.run_fixture(False, prepared=True, cache_key="pass-normal-probe")
+        second, second_manifest = self.run_fixture(False, prepared=True, cache_key="pass-normal-probe")
+        self.assertEqual(first.returncode, 0, first.stderr.decode(errors="replace"))
+        self.assertEqual(second.returncode, 0, second.stderr.decode(errors="replace"))
+        first_artifact, = first_manifest["cargo"]["artifacts"]
+        second_artifact, = second_manifest["cargo"]["artifacts"]
+        self.assertFalse(first_artifact["fresh"])
+        self.assertTrue(second_artifact["fresh"])
+        self.assertNotEqual(first_manifest["run_id"], second_manifest["run_id"])
+        self.assertEqual(first_manifest["native_listings"][0]["all"]["cases"],
+                         second_manifest["native_listings"][0]["all"]["cases"])
 
     def test_actual_cargo_failure_cannot_be_replaced_by_successful_listing(self) -> None:
         result, manifest = self.run_fixture(True)

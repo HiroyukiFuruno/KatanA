@@ -9,6 +9,7 @@ import tempfile
 import unittest
 
 from native_test_artifact_listing import list_artifacts
+from test_native_fixture_build_cache import prepared_fixture
 import test_native_test_coverage_recording as coverage_fixtures
 import test_native_test_run_recording as run_fixtures
 
@@ -44,9 +45,10 @@ class ListingProfileIsolationTests(unittest.TestCase):
             self.assertEqual(len(profile_snapshot(profile_root)), 1)
 
     def test_recording_creates_only_the_real_test_process_profile(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="katana listing profiles ") as directory:
-            root = Path(directory).resolve()
-            result, manifest = coverage_fixtures.CoverageRecordingTests().execute(root, False)
+        with prepared_fixture("pass-coverage-standard",
+                              coverage_fixtures.prepare_standard_fixture) as root:
+            result, manifest = coverage_fixtures.CoverageRecordingTests().execute(
+                root, False, prepared=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
             profile_root = Path(manifest["coverage"]["environment"]["LLVM_PROFILE_FILE"]).parent
             profiles = profile_snapshot(profile_root)
@@ -54,10 +56,10 @@ class ListingProfileIsolationTests(unittest.TestCase):
             self.assertTrue(manifest["native_listings"])
 
     def test_real_listing_leaves_existing_profiles_unchanged_for_both_kinds(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="katana listing repeat ") as directory:
-            root = Path(directory).resolve()
+        with prepared_fixture("pass-coverage-standard",
+                              coverage_fixtures.prepare_standard_fixture) as root:
             fixture = coverage_fixtures.CoverageRecordingTests()
-            result, manifest = fixture.execute(root, False)
+            result, manifest = fixture.execute(root, False, prepared=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
             environment = fixture.environment(root) | manifest["coverage"]["environment"]
             profile_root = Path(environment["LLVM_PROFILE_FILE"]).parent

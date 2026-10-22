@@ -7,9 +7,14 @@ import sys
 import tempfile
 import unittest
 
+from test_native_fixture_build_cache import prepared_fixture
 import test_native_test_run_recording as fixtures
 
 SCRIPT = Path(__file__).with_name("record-test-invocation.py").resolve()
+
+
+def prepare_standard_fixture(root: Path) -> None:
+    fixtures.RunRecordingTests().fixture(root, False)
 
 
 class CoverageRecordingTests(unittest.TestCase):
@@ -21,8 +26,10 @@ class CoverageRecordingTests(unittest.TestCase):
         return environment
 
     def execute(self, root: Path, failing: bool, custom_target: bool = True,
-                separate_build: bool = False, configured_build: bool = False) -> tuple:
-        fixtures.RunRecordingTests().fixture(root, failing)
+                separate_build: bool = False, configured_build: bool = False,
+                prepared: bool = False) -> tuple:
+        if not prepared:
+            fixtures.RunRecordingTests().fixture(root, failing)
         output = root / "target/inventory/coverage.json"
         requested = ["cargo", "llvm-cov", "--no-cfg-coverage", "--no-report", "--offline",
                      "--lib", "--", "--test-threads=1", "--skip", "not_present"]
@@ -44,18 +51,17 @@ class CoverageRecordingTests(unittest.TestCase):
         return result, manifest
 
     def test_separate_build_directory_preserves_original_report_contract(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="katana coverage split ") as directory:
-            root = Path(directory).resolve()
-            result, manifest = self.execute(root, False, separate_build=True)
+        with prepared_fixture("pass-coverage-separate", prepare_standard_fixture) as root:
+            result, manifest = self.execute(root, False, separate_build=True, prepared=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
             self.assertTrue(manifest["cargo"]["native_artifacts_complete"])
             self.assertTrue(manifest["native_listings"])
             self.report(root, manifest, separate_build=True)
 
     def test_configured_separate_build_directory_produces_original_report(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="katana coverage configured ") as directory:
-            root = Path(directory).resolve()
-            result, manifest = self.execute(root, False, separate_build=True, configured_build=True)
+        with prepared_fixture("pass-coverage-configured", prepare_standard_fixture) as root:
+            result, manifest = self.execute(root, False, separate_build=True,
+                                            configured_build=True, prepared=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
             self.assertTrue(manifest["cargo"]["native_artifacts_complete"])
             self.assertEqual(manifest["coverage"]["environment"]["CARGO_BUILD_BUILD_DIR"],
@@ -63,9 +69,8 @@ class CoverageRecordingTests(unittest.TestCase):
             self.report(root, manifest, separate_build=True, configured_build=True)
 
     def test_default_target_warm_repeat_keeps_profiles_and_report_together(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="katana coverage warm ") as directory:
-            root = Path(directory).resolve()
-            result, first = self.execute(root, False, custom_target=False)
+        with prepared_fixture("pass-coverage-default", prepare_standard_fixture) as root:
+            result, first = self.execute(root, False, custom_target=False, prepared=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
             self.assertEqual(first["coverage"]["environment"]["CARGO_TARGET_DIR"],
                              str(root / "target/llvm-cov-target"))
@@ -89,9 +94,8 @@ class CoverageRecordingTests(unittest.TestCase):
             self.report(root, repeated)
 
     def test_real_instrumented_test_records_artifacts_and_produces_report(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="katana coverage ") as directory:
-            root = Path(directory).resolve()
-            result, manifest = self.execute(root, False)
+        with prepared_fixture("pass-coverage-standard", prepare_standard_fixture) as root:
+            result, manifest = self.execute(root, False, prepared=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
             self.assertTrue(manifest["cargo"]["native_artifacts_complete"])
             self.assertEqual(manifest["executed_argv"][:2], ["cargo", "test"])
