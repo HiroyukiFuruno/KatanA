@@ -23,6 +23,13 @@
 - [x] 現9d589872 clean graphの元 `just test-document-fixtures` を実行、session22823 actual0。原本Office6件、PPTX3件のready/next/stale拒否/close、HTML原本#s15がすべて成功。元release workerの絶対path/SHA、両lock、開始終了HEAD/tree/cleanと原本hash不変を回収。旧f8cや通常testの成功で代用していない。packaged/全メモリ/本人受入とは別。[証跡](evidence/independent-host-acceptance-2026-10-23.ja.md)。
 - [x] 同graphの元 `just test-pdf-theme` を明示Poppler26.05.0で実行、session88363 actual0/2テスト47.01秒。実PDF4テーマの背景・文字コントラスト・表・図の画素と背景置換拒否を検査し、PDF4/PNG4とrawのSHAを保持。normal1317対external1322の差分5件は上記3件と本2件のみ、全追加検査実行済み。Issue312/345/349の最終CI・配布・公開は未完を維持する。
 
+### 2026-10-23 配布候補の独立検証
+
+- [x] 固定1b7c4b04から元macOS universal app・ZIP・DMGを生成し、両binary/全4slice minOS13・署名・同梱・実DMG payload一致を確認した。ZIPを作業tree外へ新展開した元nativeARM smoke actual0、Terms前の基本UI進行・RSS244256KiB/font27093388/worker0を確認。共有tree内の権限変化による失敗を隠さず、本人/Intel/idle workspace/physical footprint/全配布受入とは区分。[証跡](evidence/independent-distribution-candidates-2026-10-23.ja.md)。
+- [x] ZIP同梱workerで元Office5二回とmixed cold1/warm10を診断OFF実行、全step/quit/資源idle0・元RSS予算を満たした。Office RSS差168896/196592KiB（後者余裕16のみ）、mixed154128/-6000KiB。実mainや安定解消・physical footprintへ代用しない。同証跡を参照。
+- [x] Windowsの実release link失敗を隔離SDKの2entry case mapで修復し、元shared cache不変とtiny actual RED/GREEN/PE importsを確認。same locked release build0・x86_64 PE2本/正確な2file ZIP/元配布契約0を回収。native Windows/MSIとは別。同証跡を参照。
+- [x] LinuxはQEMU cargo停滞137を保持し、ARM-nativeから元x86_64 GNUへcross release build0・元tar配布契約0/実0755/GLIBC情報・SHAを回収。musl化やidentity検査緩和をせず、Linux native起動・clean-machineとは区分。同証跡を参照。
+
 ### 2026-10-20 独立作業の再確認
 
 - [x] #343 worker snapshot修復後の正式coverageをclean同HEAD `0f612087`で一回実行し、session75161 actual0・全4工程各exit0/source_stable=true・report成功・strict document surface100%/未実行行0を回収した。4工程同一snapshot path/SHAと終了実ファイルを主査確認し、Cargo本体再link後の別SHAと分離できた。target外9証跡SHA/両binary cmpも一致。通常testの重複実行なし、equivalence/reuse・Windows/全#343・packaged/公開は未完。evidence/formal-worker-snapshot-validation-2026-10-21.ja.md。
