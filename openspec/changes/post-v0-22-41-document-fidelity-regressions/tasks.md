@@ -86,6 +86,7 @@ Windowsの実測未実施は、cache key/誤再利用拒否/Ready後の配線を
 | 部分対応・上流依存あり | #339 | registry採用はKDV0.5.12/KRR0.4.23済み。KDV69供給網修正版とcurrent packaged受入・公開が残る |
 | 未実装・上流依存 | #336 | KLE公開待ち。公開後registry採用・ABI整合・実editor host E2E。KDV/KRR待ちとは別 |
 
+- [x] 2026-10-23のWindows実測経路を再監査。登録self-hosted runner0、UTM/Parallels/VMware/VirtualBoxアプリと各CLI未検出、DockerはLinux/aarch64。既存Windows実行経路はレビュー対応・Ready後CIで、未push/Draftの現在は重CI停止を維持する。Windows ARMのx64エミュレーションをx64ネイティブ速度の証明にしないようplatforms/windows/README.mdの過大な成功表現と基本smokeだけで完了とする説明を修正。KMLの既存indent4件も規約通り補正しactual0、実測未完を維持。tmp/oct23-windows-execution-route-reaudit.ja.mdを参照。
 - [ ] #343の独立残作業を実行する。内部メモだけを読んで「独立作業なし」と報告せず、上表とIssue本文の残作業を照合する。
 - [x] #343 元shadow4工程の公式JUnit取得を実装し、ケース名/結果/UUID/件数と安全な工程別保存を回帰化。対象53件actual0、producer hash欠落/exit0失敗XMLのRED→修復GREEN。実装82959ddbの実Rust probeは4工程actual0・5成功/既存skip1・3.928秒・target8,361,318 bytes、UUID一致/source前後不変。evidence/nextest-original-junit-2026-10-22.ja.md。元selector/skip/retries/全品質とequivalence/reuse=falseを維持し、実同等性・検査削減・Windows・公開を完了扱いしない。
 - [x] 同tinyの既存normal1+固定coverage4を実行し、全5actual0/source_stableと比較CLI actual0を回収。候補共通5/normalのみ1/coverageのみ0、normal3.347秒/coverage計3.223秒で診断は別。新source込みrelease Python全545件318.076秒actual0、独立最終必須所見0。evidence/nextest-original-junit-2026-10-22.ja.md。製品実行同等性・実削減・Windows・公開の証明ではない。
