@@ -18,6 +18,11 @@
 
 - 最新ユーザー指示と既存DoDを参照し、上記制約を満たす。既存release/*のみ・新規worktree禁止・Draftレビュー後Ready/必須CIという本人指示を優先し、新branchや二重PRを作らない。
 
+### 2026-10-23 原本・PDF専用受入の欠測解消
+
+- [x] 現9d589872 clean graphの元 `just test-document-fixtures` を実行、session22823 actual0。原本Office6件、PPTX3件のready/next/stale拒否/close、HTML原本#s15がすべて成功。元release workerの絶対path/SHA、両lock、開始終了HEAD/tree/cleanと原本hash不変を回収。旧f8cや通常testの成功で代用していない。packaged/全メモリ/本人受入とは別。[証跡](evidence/independent-host-acceptance-2026-10-23.ja.md)。
+- [x] 同graphの元 `just test-pdf-theme` を明示Poppler26.05.0で実行、session88363 actual0/2テスト47.01秒。実PDF4テーマの背景・文字コントラスト・表・図の画素と背景置換拒否を検査し、PDF4/PNG4とrawのSHAを保持。normal1317対external1322の差分5件は上記3件と本2件のみ、全追加検査実行済み。Issue312/345/349の最終CI・配布・公開は未完を維持する。
+
 ### 2026-10-20 独立作業の再確認
 
 - [x] #343 worker snapshot修復後の正式coverageをclean同HEAD `0f612087`で一回実行し、session75161 actual0・全4工程各exit0/source_stable=true・report成功・strict document surface100%/未実行行0を回収した。4工程同一snapshot path/SHAと終了実ファイルを主査確認し、Cargo本体再link後の別SHAと分離できた。target外9証跡SHA/両binary cmpも一致。通常testの重複実行なし、equivalence/reuse・Windows/全#343・packaged/公開は未完。evidence/formal-worker-snapshot-validation-2026-10-21.ja.md。
