@@ -25,8 +25,10 @@
 
 ### 2026-10-23 配布候補の独立検証
 
+- [/] 最新本人指定のDocker/QEMU機能受入を完了。元x64tarの実maps/argv/SHA・architectureを確認し、新規設定で描画/900×700 resize/本文wheel/言語popup開閉/WM closeを実操作した。最終正規入口14884はdriver0/app通常終了0/OOMfalse・frame117、Terms=nullのまま、証跡exportと所有Docker資源整理後の不存在も確認。観測側の初期blank早判定とOCR誤認を修復、実プロセス4回帰0。既存native厳密gateは不変で、native性能・同意後workspace/文書操作・全公開の証明ではない。[証跡](evidence/docker-functional-ui-2026-10-23.ja.md)。
+
 - [x] Linux x64実機の既存経路をライブ監査。ローカルDocker/ColimaはARM・repo runner0・接続済みCodex hostはlocalのみ、Codespacesは403で未確認。既存hosted x64はDraft/未pushのcurrent sourceを今実行できず、Release dispatchの公開副作用を避けた。これは環境調査完了でありnative受入成功ではない。[証跡](evidence/linux-native-execution-routes-2026-10-23.ja.md)。
-- [ ] Linux x64 nativeで元packaged smokeを実行する。未実施。直接実行は今回利用可能な接続先/実行権限の提供が必要、通常CI経路は安全公開版採用→通常push/current review→Ready後の元工程に従う。新たなDoDや本人承認条件を作らず、既存native受入の実行先だけを未充足と記録する。
+- [ ] Linux x64 nativeで元packaged smokeを実行する。未実施の元公式CI/native条件として維持するが、最新本人指定のDocker機能受入は上記で完了しており、その停止理由や追加SSH提供要求にはしない。通常CI経路は安全公開版採用→通常push/current review→Ready後の元工程に従う。
 
 - [/] Linux起動FAILを同一tar・実PIDで切り分け、ゲストKatanAの`/proc/exe`がQEMU像であることを確認。KatanA検査のFAIL時image診断を修復し、実子プロセスRED127→正式契約macOS0/Linux ARM0、元QEMU smokeは1を保持。合否/期限/予算不変、native x64未検証。[証跡](evidence/linux-startup-process-identity-2026-10-23.ja.md)。
 
