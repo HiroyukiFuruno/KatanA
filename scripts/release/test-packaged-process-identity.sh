@@ -23,6 +23,16 @@ for _ in {1..20}; do
     if pid=$(packaged_find_matching_pid "$child" "$expected"); then
         [[ "$pid" != "$child" ]]
         packaged_verify_process_identity "$pid" "$expected" "$expected_sha"
+        observed_image=$(packaged_process_image "$pid")
+        image_report=$(packaged_report_process_images "$child")
+        [[ "$image_report" == *"pid=${pid}; image=${observed_image}"* ]] || {
+            echo "FAIL: process image diagnostic omitted the real child image" >&2
+            exit 1
+        }
+        if packaged_report_process_images ""; then
+            echo "FAIL: process image diagnostic accepted an empty root PID" >&2
+            exit 1
+        fi
         if packaged_verify_process_identity "$pid" "/definitely/wrong" "$expected_sha"; then
             echo "FAIL: wrong expected path was accepted" >&2
             exit 1

@@ -104,11 +104,14 @@ for _ in {1..10}; do
 done
 if [[ -z "$MAIN_PID" ]]; then
     echo "FAIL: launched process image did not match packaged executable ($MODE)" >&2
+    echo "Expected process image: executable=${EXPECTED_EXECUTABLE}; sha256=${EXPECTED_SHA256}" >&2
+    packaged_report_process_images "$APP_PID" >&2 || true
     cat "$LOG_PATH" >&2
     exit 1
 fi
 if ! packaged_verify_process_identity "$MAIN_PID" "$EXPECTED_EXECUTABLE" "$EXPECTED_SHA256"; then
     echo "FAIL: running process identity mismatch ($MODE): expected=${EXPECTED_EXECUTABLE}; sha256=${EXPECTED_SHA256}" >&2
+    packaged_report_process_images "$APP_PID" >&2 || true
     exit 1
 fi
 
@@ -152,6 +155,7 @@ if (( FONT_BYTES > MAX_FONT_BYTES )); then
 fi
 if ! kill -0 "$MAIN_PID" 2>/dev/null || ! packaged_verify_process_identity "$MAIN_PID" "$EXPECTED_EXECUTABLE" "$EXPECTED_SHA256"; then
     echo "FAIL: packaged main process identity was not retained through smoke ($MODE)" >&2
+    packaged_report_process_images "$APP_PID" >&2 || true
     exit 1
 fi
 

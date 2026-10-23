@@ -25,6 +25,8 @@
 
 ### 2026-10-23 配布候補の独立検証
 
+- [/] Linux起動FAILを同一tar・実PIDで切り分け、ゲストKatanAの`/proc/exe`がQEMU像であることを確認。KatanA検査のFAIL時image診断を修復し、実子プロセスRED127→正式契約macOS0/Linux ARM0、元QEMU smokeは1を保持。合否/期限/予算不変、native x64未検証。[証跡](evidence/linux-startup-process-identity-2026-10-23.ja.md)。
+
 - [x] 固定1b7c4b04から元macOS universal app・ZIP・DMGを生成し、両binary/全4slice minOS13・署名・同梱・実DMG payload一致を確認した。ZIPを作業tree外へ新展開した元nativeARM smoke actual0、Terms前の基本UI進行・RSS244256KiB/font27093388/worker0を確認。共有tree内の権限変化による失敗を隠さず、本人/Intel/idle workspace/physical footprint/全配布受入とは区分。[証跡](evidence/independent-distribution-candidates-2026-10-23.ja.md)。
 - [x] ZIP同梱workerで元Office5二回とmixed cold1/warm10を診断OFF実行、全step/quit/資源idle0・元RSS予算を満たした。Office RSS差168896/196592KiB（後者余裕16のみ）、mixed154128/-6000KiB。実mainや安定解消・physical footprintへ代用しない。同証跡を参照。
 - [x] Windowsの実release link失敗を隔離SDKの2entry case mapで修復し、元shared cache不変とtiny actual RED/GREEN/PE importsを確認。same locked release build0・x86_64 PE2本/正確な2file ZIP/元配布契約0を回収。native Windows/MSIとは別。同証跡を参照。

@@ -77,6 +77,19 @@ packaged_find_matching_pid() {
     return 1
 }
 
+packaged_report_process_images() {
+    local pid="$1" depth="${2:-0}" max_depth=8
+    local image child
+    [[ "$pid" =~ ^[1-9][0-9]*$ ]] || return 1
+    image=$(packaged_process_image "$pid" || true)
+    printf 'Observed process image: pid=%s; image=%s\n' "$pid" "${image:-unavailable}"
+    (( depth < max_depth )) || return 0
+    while IFS= read -r child; do
+        [[ -n "$child" ]] || continue
+        packaged_report_process_images "$child" "$((depth + 1))"
+    done < <(pgrep -P "$pid" 2>/dev/null || true)
+}
+
 packaged_verify_process_identity() {
     local pid="$1"
     local expected_path="$2"
