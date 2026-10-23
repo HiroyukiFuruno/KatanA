@@ -25,6 +25,9 @@
 
 ### 2026-10-23 配布候補の独立検証
 
+- [x] Linux x64実機の既存経路をライブ監査。ローカルDocker/ColimaはARM・repo runner0・接続済みCodex hostはlocalのみ、Codespacesは403で未確認。既存hosted x64はDraft/未pushのcurrent sourceを今実行できず、Release dispatchの公開副作用を避けた。これは環境調査完了でありnative受入成功ではない。[証跡](evidence/linux-native-execution-routes-2026-10-23.ja.md)。
+- [ ] Linux x64 nativeで元packaged smokeを実行する。未実施。直接実行は今回利用可能な接続先/実行権限の提供が必要、通常CI経路は安全公開版採用→通常push/current review→Ready後の元工程に従う。新たなDoDや本人承認条件を作らず、既存native受入の実行先だけを未充足と記録する。
+
 - [/] Linux起動FAILを同一tar・実PIDで切り分け、ゲストKatanAの`/proc/exe`がQEMU像であることを確認。KatanA検査のFAIL時image診断を修復し、実子プロセスRED127→正式契約macOS0/Linux ARM0、元QEMU smokeは1を保持。合否/期限/予算不変、native x64未検証。[証跡](evidence/linux-startup-process-identity-2026-10-23.ja.md)。
 
 - [x] 固定1b7c4b04から元macOS universal app・ZIP・DMGを生成し、両binary/全4slice minOS13・署名・同梱・実DMG payload一致を確認した。ZIPを作業tree外へ新展開した元nativeARM smoke actual0、Terms前の基本UI進行・RSS244256KiB/font27093388/worker0を確認。共有tree内の権限変化による失敗を隠さず、本人/Intel/idle workspace/physical footprint/全配布受入とは区分。[証跡](evidence/independent-distribution-candidates-2026-10-23.ja.md)。
