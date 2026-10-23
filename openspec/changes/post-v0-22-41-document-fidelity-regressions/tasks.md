@@ -63,7 +63,9 @@ Windowsの実測未実施は、cache key/誤再利用拒否/Ready後の配線を
 - [x] #343 Windows compiled-target cacheをexact source/toolchain/OS/arch/target/profile/optionsへ束縛し、識別不能ならcacheを使わず元検査を実行する実装とCI配線を追加。対象RED→GREEN/identity11/observer14/既存CI14成功。Ready後のWindows実測は別の未完項目として維持。
 - [x] #343 同一prepared sourceの既存standard coverage/listing検査で実Rust compileを共有。全test/新結果/listing/profileを毎回生成し、実Cargo fresh=false→trueを確認。最終guard7/実recording等13成功。製品同等性/trusted reuse/実削減は未完。
 - [x] #335/#338 独立可能な実fixture・正規validator・retained artifact入力供給を実検証。335は36、338はacceptance51/gate31・manifest/producer成功。公開後cleanup/owner採点/本人受入は未完。[今回の実装・検証証跡](evidence/independent-implementation-2026-10-22.ja.md)を参照。
-- [ ] 2026-10-22の再開後に、既知の上流ZIPとは別のTLS2件（RUSTSEC-2026-0381/0382）を現graphで検出。公開registryの最新互換patch rustls-webpki0.103.16/webpki-roots1.0.10へroot/screenshot両lockを更新し、直接所有の不備として修復・通常統合・変更graphの全検証を回収する。元7dd normalは自processを安全中断してactual130を保持し、PASSへ代用せず新graphで再開する。上流ZIP3版の拒否、元供給網設定・全品質条件・Draft重CI停止を維持する。
+- [x] 独立発見したTLS2件（RUSTSEC-2026-0381/0382）を両lockの公開registry patch rustls-webpki0.103.16/webpki-roots1.0.10へ更新しba072801へ通常統合。現graphのMac通常2170成功/既存6ignored、正式coverage全4工程actual0・strict document100%、vendor3/strictlint/fmt/actionlint、Linux実workspace2142成功/既存6ignored、Windows test-inclusive cross actual0、release Python564成功を回収。旧7dd中断130とcoverage初回HTML timeout101を保持し、再実行の成功を恒久修復としない。上流ZIP3版の供給網拒否は残り全公開成功ではない。[現graph証跡](evidence/current-graph-cross-and-screenshot-validation-2026-10-23.ja.md)。
+- [x] Linux→Windowsクロス検証を結果回収。中断後も生存したLinux実containerは重複再起動せずdocker wait actual0/全ログを回収し、Windowsは元just check-windows actual0・HEAD/tree/両lock不変を確認。Windows実測/cold-warm/packaged受入とは区別し、未検証の通常test/coverageは削除しない。同証跡を参照。
+- [x] 新Issue #353の撮影lockは現release graphへ同期済みで重複実装せず、独立workspaceのlocked check actual0、配布locked release build actual0、元CIのrelease契約test54成功/0失敗を回収。実runner SHA2208feac...f78953、同ba/source/両lock不変。公開masterへの反映・website素材取得は未完としてIssueを維持し、本人app/設定/Termsは非操作。同証跡を参照。
 
 - [/] 本人決定「version管理上OS対応は一律、緊急OS単独公開は不要」をコードと仕様へ反映。workflow_dispatchのtarget入力・OS別skip分岐・release-trigger旧引数を撤去し、全OS build/macOS smoke/全5配布asset・identity/checksum/供給網・既存品質条件を維持。回帰RED→GREEN、新契約4件・関連40件/actionlint/主査AST/独立最終必須所見0。evidence/all-os-publication-policy-2026-10-19.ja.md。公開方針の回答待ちは解消済みで、再質問しない。
 - [ ] 全OS一括公開の修復を通常pushで通してから、既存manual-target3threadsへ個別reply/resolve・fresh取得する。現在のKDV69安全性ゲートは迂回せず、ローカル修復を公開済み/Ready/全公開成功と扱わない。
@@ -77,7 +79,7 @@ Windowsの実測未実施は、cache key/誤再利用拒否/Ready後の配線を
 
 | 実装状態 | Issue | 残作業 |
 | --- | --- | --- |
-| 実装済み9件 | #352 / #351 / #350 / #349 / #348 / #345 / #340 / #312 / #258 | current final graphの必須CI・packaged/OS受入・公開。各Issueの対象検証済み範囲と最終受入を区別する |
+| 実装済み10件 | #353 / #352 / #351 / #350 / #349 / #348 / #345 / #340 / #312 / #258 | #353の現graph locked build/契約testも成功。current final graphの必須CI・packaged/OS受入・公開、website側素材取得は未完。各Issueの対象検証済み範囲と最終受入を区別する |
 | 部分対応 | #343 | KatanA独立残件: Windows cold/warm実測、通常test/coverage実行同等性、実重複削減、trusted reuse、導入前後比較 |
 | 部分対応 | #335 | 通常運用への強制接続/公開後activation、実repo cleanup receiptとlive公開契約の証明 |
 | 部分対応 | #338 | producer9aaの生成・宣言検証・handoffは完了。残るのは採点・canonical参照採用。表示欠落が残る候補を正解にしない |
