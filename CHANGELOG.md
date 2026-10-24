@@ -2,7 +2,7 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
-## [0.22.42] - 2026-10-24 01:45:58 (UTC)
+## [0.22.42] - 2026-10-24 03:20:09 (UTC)
 
 ### 🚀 Features
 
@@ -16,7 +16,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Local image loading**: Image decoding runs in the background with a bounded cache, avoiding synchronous reads when switching previews.
 - **Preview setup**: Image, HTML and Office previews no longer load unused code-highlighting dictionaries and themes when they are created.
 - **HTML scrolling**: Smooth scrolling continues forwarding movement after the initial wheel event instead of dropping its remaining motion.
-- **HTML diagnostics responsiveness**: When diagnostic logging is enabled, HTML layout summaries avoid copying large document bodies repeatedly.
+- **HTML diagnostics responsiveness**: Normal rendering skips diagnostic-only full-text collection and character counting. When diagnostic logging is enabled, layout summaries avoid copying large document bodies repeatedly.
 - **Excel filters**: Column headers provide value filters, blank-value selection, and filter clearing.
 - **Office loading responsiveness**: Initial file reads run in the background so a slow disk read does not stop the interface.
 - **Cancelled preview reads**: Closed documents and reset image previews stop further file reads at cancellation checkpoints, freeing their existing loading slots for following previews once the current operating-system read returns.
