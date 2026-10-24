@@ -2,7 +2,7 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
-## [0.22.42] - 2026-10-24 03:20:09 (UTC)
+## [0.22.42] - 2026-10-24 05:52:32 (UTC)
 
 ### 🚀 Features
 
@@ -32,6 +32,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Missing image recovery**: If an image folder is temporarily unavailable, the preview retries in the background and recovers after the folder and image become available, without reopening the workspace.
 - **Failed image previews**: Unavailable images show an error without leaving their preview section permanently loading, and retain document navigation positions.
 - **Readable images without file watching**: Images still load when background file-change monitoring is unavailable, and recover from earlier loading failures when the image becomes readable.
+- **Recovering image monitoring**: Already displayed images retry temporarily unavailable file-change monitoring without discarding the current image.
 - **Image folder changes**: Notifications from a deleted image folder no longer mark unrelated image previews as failed; recreating the folder restores monitoring of subsequent image updates.
 - **Image updates after fullscreen**: Closing a full-screen image keeps normal previews monitoring external image updates.
 - **Custom cursor updates**: Custom cursors retain the correct size and click position when their appearance changes.
