@@ -3,6 +3,8 @@
 import time
 from pathlib import Path
 
+from docker_ui_document_terms import TermsController
+
 
 class ReceiptVerifier:
     def __init__(self, path: Path, run_id: str, pid: int, parser):
@@ -43,7 +45,7 @@ class ReceiptVerifier:
 
 def observe_terms(owner, name: str):
     text = owner.capture(name)
-    if "terms" in text.lower():
+    if TermsController.is_terms_modal(text):
         owner.report["terms_state"] = "blocked_terms"
         owner.record("blocked_terms", reason="Terms modal appeared during packaged observation")
         owner.close_window()

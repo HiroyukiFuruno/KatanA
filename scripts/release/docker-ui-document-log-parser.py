@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 import re
 
+from docker_ui_document_terms import validate_fresh_config
+
 
 PREFIX = "[KATANA_DEBUG] event="
 NAME = re.compile(r"[a-z_]+")
@@ -169,6 +171,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--validate-prepared-config", type=Path)
+    group.add_argument("--validate-fresh-config", type=Path)
     group.add_argument("--read-terms-version", type=Path)
     group.add_argument("--write-fresh-config", nargs=2, type=Path, metavar=("SETTINGS", "WORKSPACE"))
     parser.add_argument("--document", type=str)
@@ -177,6 +180,11 @@ def main() -> int:
         if options.document is None:
             parser.error("--document is required with --write-fresh-config")
         write_fresh_config(*options.write_fresh_config, options.document)
+    elif options.validate_fresh_config is not None:
+        if options.document is None:
+            parser.error("--document is required with --validate-fresh-config")
+        settings = json.loads(options.validate_fresh_config.read_text(encoding="utf-8"))
+        validate_fresh_config(settings, options.document)
     elif options.validate_prepared_config is not None:
         if options.document is None:
             parser.error("--document is required with --validate-prepared-config")

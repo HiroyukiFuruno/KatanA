@@ -24,6 +24,18 @@ class DocumentCliTests(unittest.TestCase):
             with self.subTest(format=format_name):
                 options = CLI.options_from(arguments + ["--format", format_name])
                 self.assertEqual(options.format, format_name)
+                self.assertFalse(options.accept_terms)
+
+    def test_terms_opt_in_is_explicit_and_fresh_only(self):
+        arguments = [
+            "--evidence", "/evidence", "--expected-sha256", "a" * 64,
+            "--document", "/fixture/only", "--format", "xlsx",
+            "--debug-log", "/evidence/app.log", "--receipt-dir", "/evidence/receipts",
+            "--receipt-run-id", "run-1", "--accept-terms",
+        ]
+        self.assertTrue(CLI.options_from(arguments).accept_terms)
+        with self.assertRaises(SystemExit):
+            CLI.options_from(arguments + ["--prepared-settings", "/prepared/settings.json"])
 
 
 if __name__ == "__main__":

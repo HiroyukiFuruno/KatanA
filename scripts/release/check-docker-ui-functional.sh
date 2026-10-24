@@ -5,6 +5,8 @@ DOCUMENT_MODE=false
 DOCUMENT_SOURCE=
 DOCUMENT_FORMAT=
 PREPARED_CONFIG=
+ACCEPT_TERMS=false
+DRIVER_TERMS_ARGS=()
 if [[ ${1:-} == --document ]]; then
     DOCUMENT_MODE=true
     DOCUMENT_SOURCE=${2:?--document requires a source file}
@@ -14,8 +16,16 @@ if [[ ${1:-} == --document ]]; then
         PREPARED_CONFIG=${2:?--prepared-config requires an isolated directory}
         shift 2
     fi
+    if [[ ${1:-} == --accept-terms ]]; then
+        ACCEPT_TERMS=true
+        shift
+    fi
+    if [[ "$ACCEPT_TERMS" == true && -n "$PREPARED_CONFIG" ]]; then
+        echo "FAIL: --accept-terms requires the fresh isolated config" >&2
+        exit 2
+    fi
 fi
-ARCHIVE=${1:?Usage: check-docker-ui-functional.sh [--document source docx|xlsx|pptx|pdf [--prepared-config dir]] archive observer-image app-image}
+ARCHIVE=${1:?Usage: check-docker-ui-functional.sh [--document source docx|xlsx|pptx|pdf [--prepared-config dir] [--accept-terms]] archive observer-image app-image}
 OBSERVER_IMAGE=${2:?observer image is required}
 APP_IMAGE=${3:?application runtime image is required}
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
@@ -130,6 +140,16 @@ if [[ "$DOCUMENT_MODE" == true && -z "$PREPARED_CONFIG" ]]; then
     docker exec "$OBSERVER" python3 /app/scripts/release/docker-ui-document-log-parser.py \
         --write-fresh-config /evidence/config/settings.json /evidence/config/workspace.json \
         --document "$DOCUMENT_PATH"
+    docker exec "$OBSERVER" python3 /app/scripts/release/docker-ui-document-log-parser.py \
+        --validate-fresh-config /evidence/config/settings.json --document "$DOCUMENT_PATH" \
+        >"$RUN_DIR/fresh-config.validation.txt"
+    docker exec "$OBSERVER" sha256sum /evidence/config/settings.json \
+        >"$RUN_DIR/fresh-config.prelaunch.sha256"
+    docker exec "$OBSERVER" cp /evidence/config/settings.json /evidence/fresh-config.prelaunch.json
+    printf '%s\n' "fresh-config-strict-validation=passed" >"$RUN_DIR/fresh-config.prelaunch.marker"
+fi
+if [[ "$ACCEPT_TERMS" == true ]]; then
+    DRIVER_TERMS_ARGS=(--accept-terms)
 fi
 if [[ "$DOCUMENT_MODE" == true ]]; then
     docker exec "$OBSERVER" mkdir -p "$RECEIPT_DIR"
@@ -167,6 +187,7 @@ if [[ "$DOCUMENT_MODE" == true ]]; then
         --document "$DOCUMENT_PATH" --format "$DOCUMENT_FORMAT" \
         --debug-log /evidence/application-debug.log \
         --receipt-dir "$RECEIPT_DIR" --receipt-run-id "$RUN_ID" \
+        "${DRIVER_TERMS_ARGS[@]}" \
         "${DRIVER_PREPARED_ARGS[@]}" \
         | tee "$RUN_DIR/document-functional.log"
     DRIVER_EXIT=${PIPESTATUS[0]}

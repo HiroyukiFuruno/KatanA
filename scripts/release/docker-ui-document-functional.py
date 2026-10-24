@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Observe packaged document open/close mechanics without accepting Terms."""
+"""Observe packaged document mechanics with an explicit fresh Terms boundary."""
 import importlib.util
 import json
 import sys
 import time
 from pathlib import Path
+
+from docker_ui_document_terms import TermsController
 
 
 BASE_PATH = Path(__file__).with_name("docker-ui-functional.py")
@@ -44,13 +46,14 @@ class DocumentAcceptance(BASE.DesktopAcceptance):
 
     def __init__(self, evidence: Path, expected_sha256: str, document: Path, fmt: str,
                  debug_log: Path, receipt_dir: Path, receipt_run_id: str,
-                 prepared_settings: Path | None):
+                 prepared_settings: Path | None, accept_terms: bool = False):
         super().__init__(evidence, expected_sha256)
         self.expected_uri = document.resolve().as_uri()
         self.format = fmt
         self.debug_log = debug_log
         self.receipt_dir = receipt_dir
         self.receipt_run_id = receipt_run_id
+        self.terms = TermsController(self, document, prepared_settings, accept_terms)
         self.report.update({
             "mode": "packaged_document_debug_diagnostic",
             "terms_accepted": None,
@@ -73,6 +76,7 @@ class DocumentAcceptance(BASE.DesktopAcceptance):
         return len(self.debug_lines())
 
     def start_document(self):
+        deadline = time.monotonic() + BASE.FUNCTIONAL_DEADLINE_SECONDS
         self.window_id = BASE.until("visible KatanA window", self.find_window)
         BASE.until("completed UI frame", self.frame)
         try:
@@ -81,15 +85,10 @@ class DocumentAcceptance(BASE.DesktopAcceptance):
             raise AssertionError(f"application pid receipt is unavailable: {error}") from error
         self.provenance()
         text = self.rendered("terms-probe", lambda value: bool(value.strip()))
-        if "terms" in text.lower():
-            self.report["terms_state"] = "blocked_terms"
-            self.record("blocked_terms", reason="existing Terms modal was visible")
-            self.close_window()
-            raise TermsBlocked("Terms were not accepted through the packaged UI")
-        self.report["terms_state"] = "modal_not_observed"
+        self.terms.observe(text, deadline)
+        self.terms.open_fixture(deadline)
         self.receipt = OBSERVER.ReceiptVerifier(self.receipt_dir, self.receipt_run_id, receipt_pid, PARSER)
         self.receipt.baseline()
-        deadline = time.monotonic() + BASE.FUNCTIONAL_DEADLINE_SECONDS
         intake_index, intake = OBSERVER.wait_for_debug(
             self, "document source intake", 0, "document_source_intake", deadline,
             format=self.format, uri=self.expected_uri,
