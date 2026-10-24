@@ -1,7 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ARCHIVE=${1:?Usage: check-docker-ui-functional.sh archive observer-image app-image}
+DOCUMENT_MODE=false
+DOCUMENT_SOURCE=
+DOCUMENT_FORMAT=
+PREPARED_CONFIG=
+if [[ ${1:-} == --document ]]; then
+    DOCUMENT_MODE=true
+    DOCUMENT_SOURCE=${2:?--document requires a source file}
+    DOCUMENT_FORMAT=${3:?--document requires xlsx or pptx}
+    shift 3
+    if [[ ${1:-} == --prepared-config ]]; then
+        PREPARED_CONFIG=${2:?--prepared-config requires an isolated directory}
+        shift 2
+    fi
+fi
+ARCHIVE=${1:?Usage: check-docker-ui-functional.sh [--document source xlsx|pptx [--prepared-config dir]] archive observer-image app-image}
 OBSERVER_IMAGE=${2:?observer image is required}
 APP_IMAGE=${3:?application runtime image is required}
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
@@ -24,6 +38,34 @@ python3 "$ROOT_DIR/scripts/release/verify-binary-architecture.py" linux "$ARCHIV
 docker info --format '{{.OSType}}/{{.Architecture}}' >"$RUN_DIR/host.txt"
 shasum -a 256 "$ARCHIVE" >"$RUN_DIR/archive.sha256"
 EXPECTED_SHA256=$(tar -xOf "$ARCHIVE" KatanA | shasum -a 256 | awk '{print $1}')
+OBSERVER_DOCUMENT_MOUNTS=()
+APP_DOCUMENT_MOUNTS=()
+DRIVER_PREPARED_ARGS=()
+APP_RECEIPT_ENV=()
+APP_CONFIG_DIR=/evidence/config
+RECEIPT_DIR=/evidence/resource-receipt
+if [[ "$DOCUMENT_MODE" == true ]]; then
+    DOCUMENT_SOURCE=$(cd "$(dirname "$DOCUMENT_SOURCE")" && printf '%s/%s' "$PWD" "$(basename "$DOCUMENT_SOURCE")")
+    [[ -f "$DOCUMENT_SOURCE" ]] || { echo "FAIL: document source missing" >&2; exit 1; }
+    case "$DOCUMENT_FORMAT" in xlsx|pptx) ;; *) echo "FAIL: document format must be xlsx or pptx" >&2; exit 1;; esac
+    DOCUMENT_NAME=$(basename "$DOCUMENT_SOURCE")
+    DOCUMENT_PATH="/fixture/$DOCUMENT_NAME"
+    OBSERVER_DOCUMENT_MOUNTS+=(--mount "type=bind,src=$DOCUMENT_SOURCE,dst=$DOCUMENT_PATH,readonly")
+    APP_DOCUMENT_MOUNTS+=(--mount "type=bind,src=$DOCUMENT_SOURCE,dst=$DOCUMENT_PATH,readonly")
+    if [[ -n "$PREPARED_CONFIG" ]]; then
+        PREPARED_CONFIG=$(cd "$PREPARED_CONFIG" && pwd)
+        [[ -f "$PREPARED_CONFIG/settings.json" ]] || { echo "FAIL: prepared settings missing" >&2; exit 1; }
+        python3 "$ROOT_DIR/scripts/release/docker-ui-document-log-parser.py" \
+            --validate-prepared-config "$PREPARED_CONFIG/settings.json" --document "$DOCUMENT_PATH" \
+            >"$RUN_DIR/prepared-terms-version.before.txt"
+        shasum -a 256 "$PREPARED_CONFIG/settings.json" >"$RUN_DIR/prepared-settings.before.sha256"
+        cp "$PREPARED_CONFIG/settings.json" "$RUN_DIR/prepared-settings.before.json"
+        OBSERVER_DOCUMENT_MOUNTS+=(--mount "type=bind,src=$PREPARED_CONFIG,dst=/prepared-config,readonly")
+        APP_DOCUMENT_MOUNTS+=(--mount "type=bind,src=$PREPARED_CONFIG,dst=/prepared-config")
+        DRIVER_PREPARED_ARGS=(--prepared-settings /prepared-config/settings.json)
+        APP_CONFIG_DIR=/prepared-config
+    fi
+fi
 
 remove_owned_resources() {
     local id_file container_id
@@ -38,6 +80,8 @@ remove_owned_resources() {
 
 cleanup() {
     local status=$?
+    local initial_status=$status
+    local cleanup_failed=0
     trap - EXIT
     docker logs "$APP" >"$RUN_DIR/application.log" 2>&1 || true
     docker inspect "$OBSERVER" "$APP" >"$RUN_DIR/containers.json" 2>/dev/null || true
@@ -45,18 +89,21 @@ cleanup() {
     if ! docker exec "$OBSERVER" tar --exclude='./package' -C /evidence -cf - . \
         | tar -xf - -C "$RUN_DIR/evidence"; then
         echo "FAIL: functional evidence export failed" >&2
-        status=1
+        cleanup_failed=1
     fi
     if [[ "$(docker inspect -f '{{.State.Running}}' "$APP" 2>/dev/null)" == true ]]; then
         echo "Forced cleanup, not normal exit" >"$RUN_DIR/forced-cleanup.txt"
-        status=1
+        cleanup_failed=1
         docker stop -t 5 "$APP" >/dev/null || true
     fi
     docker stop -t 5 "$OBSERVER" >/dev/null 2>&1 || true
-    if [[ "$status" == 0 ]] && ! remove_owned_resources; then
-        echo "FAIL: owned Docker resource cleanup failed" >&2
-        status=1
+    if [[ "$initial_status" == 0 || "$initial_status" == 2 ]] && [[ "$cleanup_failed" == 0 ]]; then
+        if ! remove_owned_resources; then
+            echo "FAIL: owned Docker resource cleanup failed" >&2
+            cleanup_failed=1
+        fi
     fi
+    if [[ "$cleanup_failed" == 1 ]]; then status=1; else status=$initial_status; fi
     printf '%s\n' "$status" >"$RUN_DIR/driver-exit.txt"
     echo "Functional evidence retained: $RUN_DIR"
     exit "$status"
@@ -67,6 +114,8 @@ docker run -d --name "$OBSERVER" --cpus 1 --memory 1g \
     --mount "type=volume,src=$X11_VOLUME,dst=/tmp/.X11-unix" \
     --mount "type=volume,src=$EVIDENCE_VOLUME,dst=/evidence" \
     --mount "type=bind,src=$ROOT_DIR,dst=/app,readonly" --env DISPLAY=:99 \
+    --env OMP_THREAD_LIMIT=1 \
+    "${OBSERVER_DOCUMENT_MOUNTS[@]}" \
     "$OBSERVER_IMAGE" bash -c '
         set -e
         Xvfb :99 -screen 0 1280x900x24 -nolisten tcp -ac &
@@ -76,13 +125,26 @@ docker run -d --name "$OBSERVER" --cpus 1 --memory 1g \
         done
         exit 1
     ' >"$RUN_DIR/observer.id"
+if [[ "$DOCUMENT_MODE" == true && -z "$PREPARED_CONFIG" ]]; then
+    docker exec "$OBSERVER" mkdir -p /evidence/config
+    docker exec "$OBSERVER" python3 /app/scripts/release/docker-ui-document-log-parser.py \
+        --write-fresh-config /evidence/config/settings.json /evidence/config/workspace.json \
+        --document "$DOCUMENT_PATH"
+fi
+if [[ "$DOCUMENT_MODE" == true ]]; then
+    docker exec "$OBSERVER" mkdir -p "$RECEIPT_DIR"
+    APP_RECEIPT_ENV=(--env "KATANA_DOCUMENT_RESOURCE_RECEIPT_DIR=$RECEIPT_DIR" --env "KATANA_DOCUMENT_RESOURCE_RUN_ID=$RUN_ID")
+fi
 docker run -d --name "$APP" --platform linux/amd64 --pid="container:$OBSERVER" \
     --cpus 3 --memory 3g \
     --mount "type=volume,src=$X11_VOLUME,dst=/tmp/.X11-unix" \
     --mount "type=volume,src=$EVIDENCE_VOLUME,dst=/evidence" \
     --mount "type=bind,src=$ARCHIVE,dst=/run/candidate.tar.gz,readonly" \
+    "${APP_DOCUMENT_MOUNTS[@]}" \
     --env DISPLAY=:99 --env LIBGL_ALWAYS_SOFTWARE=1 --env LANG=C.UTF-8 \
-    --env KATANA_CONFIG_DIR=/evidence/config \
+    --env KATANA_CONFIG_DIR="$APP_CONFIG_DIR" --env DOCUMENT_MODE="$DOCUMENT_MODE" \
+    --env DOCUMENT_PATH="${DOCUMENT_PATH:-}" \
+    "${APP_RECEIPT_ENV[@]}" \
     --env KATANA_STARTUP_HEARTBEAT=/evidence/heartbeat.txt --env DEBUG=true \
     "$APP_IMAGE" bash -c '
         set -e
@@ -91,11 +153,28 @@ docker run -d --name "$APP" --platform linux/amd64 --pid="container:$OBSERVER" \
         mkdir /evidence/package
         tar -xzf /run/candidate.tar.gz -C /evidence/package
         sha256sum /run/candidate.tar.gz /evidence/package/KatanA
+        if [[ "${DOCUMENT_MODE:-false}" == true ]]; then
+            : > /evidence/application-debug.log
+            exec > >(tee /evidence/application-debug.log) 2>&1
+        fi
         printf "%s\n" "$$" > /evidence/app.pid
         exec /evidence/package/KatanA
     ' >"$RUN_DIR/app.id"
-docker exec "$OBSERVER" python3 /app/scripts/release/docker-ui-functional.py \
-    --evidence /evidence --expected-sha256 "$EXPECTED_SHA256" | tee "$RUN_DIR/functional.log"
+if [[ "$DOCUMENT_MODE" == true ]]; then
+    set +e
+    docker exec "$OBSERVER" python3 /app/scripts/release/docker-ui-document-functional.py \
+        --evidence /evidence --expected-sha256 "$EXPECTED_SHA256" \
+        --document "$DOCUMENT_PATH" --format "$DOCUMENT_FORMAT" \
+        --debug-log /evidence/application-debug.log \
+        --receipt-dir "$RECEIPT_DIR" --receipt-run-id "$RUN_ID" \
+        "${DRIVER_PREPARED_ARGS[@]}" \
+        | tee "$RUN_DIR/document-functional.log"
+    DRIVER_EXIT=${PIPESTATUS[0]}
+    set -e
+else
+    docker exec "$OBSERVER" python3 /app/scripts/release/docker-ui-functional.py \
+        --evidence /evidence --expected-sha256 "$EXPECTED_SHA256" | tee "$RUN_DIR/functional.log"
+fi
 for _ in {1..300}; do
     if [[ "$(docker inspect -f '{{.State.Running}}' "$APP")" == false ]]; then
         break
@@ -110,4 +189,25 @@ APP_EXIT=$(docker wait "$APP")
 printf '%s\n' "$APP_EXIT" >"$RUN_DIR/application-exit.txt"
 [[ "$APP_EXIT" == 0 ]] || { echo "FAIL: application exit=$APP_EXIT" >&2; exit 1; }
 shasum -a 256 -c "$RUN_DIR/archive.sha256"
+if [[ "$DOCUMENT_MODE" == true && -n "$PREPARED_CONFIG" ]]; then
+    shasum -a 256 "$PREPARED_CONFIG/settings.json" >"$RUN_DIR/prepared-settings.after.sha256"
+    cp "$PREPARED_CONFIG/settings.json" "$RUN_DIR/prepared-settings.after.json"
+    python3 "$ROOT_DIR/scripts/release/docker-ui-document-log-parser.py" \
+        --read-terms-version "$PREPARED_CONFIG/settings.json" \
+        >"$RUN_DIR/prepared-terms-version.after.txt"
+    cmp "$RUN_DIR/prepared-terms-version.before.txt" "$RUN_DIR/prepared-terms-version.after.txt" \
+        || { echo "FAIL: Terms version changed" >&2; exit 1; }
+fi
+if [[ "$DOCUMENT_MODE" == true ]]; then
+    if [[ "${DRIVER_EXIT:-1}" == 2 ]]; then
+        echo "BLOCKED: real Terms modal requires human action" >&2
+        exit 2
+    fi
+    [[ "${DRIVER_EXIT:-1}" == 0 ]] || {
+        echo "FAIL: document driver exit=${DRIVER_EXIT:-1}" >&2
+        exit 1
+    }
+    echo "PARTIAL: packaged document UI mechanics and raw resource receipt observed; performance/coverage not asserted"
+    exit 0
+fi
 echo "PASS: Docker functional UI and normal exit; native_performance=false"
