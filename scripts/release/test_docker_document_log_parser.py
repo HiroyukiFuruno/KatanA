@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pure parser/config regression tests; no UI, Docker, or process mocks."""
+"""Discoverable parser/config regressions; no UI, Docker, or process mocks."""
 
 import importlib.util
 import json
