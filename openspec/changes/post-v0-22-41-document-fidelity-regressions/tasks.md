@@ -1,9 +1,12 @@
 ### 2026-10-25 配布版の機能検証と残る修復
 
+- [x] `079b392c` の新universal配布候補でOffice7種類と原本HTMLを各10回、7つの独立実行で計140件の実描画・close後全資源/worker 0・7回の通常終了0を回収。元メモリ予算は5種類が成功し、大型XLSXのsteadyと40MB PPTXのcoldは未達。PPTX遅延の承認をメモリ免除に使わず、全OS/95点/clean-machine/公開を完了扱いしない。[元基準の結果](evidence/macos-seven-pair-baseline-2026-10-25.ja.md)。
+- [/] 大型XLSXを10回表示した間の42回の原本全量読込を `08ec21a1` へ通常署名commit。自動更新の完全hash判定・実変更・手動reload・取消・上限を維持し、同一内容の確認時は64KiB固定バッファを使いowned Vecを再確保しない。正式対象161件/AST30件/Clippy/fmt成功、FIFO/Interruptedのレビュー指摘も修復し未対応P0/P1なし。修復後配布の元cold/steady予算と実reloadは未検証。[原因・修復・結果](evidence/document-refresh-buffer-2026-10-25.ja.md)。
+- [/] 通常pushの検査全期間を、Cargo内部lockとは別のleaseでcache整理から保護する修復を `c6586270` へ通常署名commit。元guardを維持し、親のTERM/INT/KILL・中間leader終了後も生きる孫・危険pathの独立再現を修復。正式guard契約18件/owner9件が主査で成功、独立最終P0/P1/P2なし。削除した個別workerは未特定のまま保持し、旧push失敗やnative Windows未検証を成功に読み替えない。[原因・契約・実検証](evidence/cargo-check-cleanup-lease-2026-10-25.ja.md)。
 - [/] Windowsの親directory rename修復に伴う同秒・同mtime画像更新の通知欠落を修復。親metadata監視を維持し、内容比較は登録済み画像だけへ限定。実画像を使う監視32件・strict Clippy/fmt成功。`b0ba969b` の通常push・個別reply/resolve・current review未解決0を回収し、Windows nativeでもunit1307件と当該監視/rename回帰は成功した。別の原本READMEテストが描画前の見出し抽出で失敗したため、LF/CRLF対応を対象4件で修復し、新Windows CIを継続する。[監視証跡](evidence/windows-image-content-watch-2026-10-25.ja.md)、[CI修復](evidence/windows-readme-line-endings-2026-10-25.ja.md)。
 - [x] c05配布版で原本Office6/HTML各10回と本人報告DOCX/PDF6件、計76件の表示・close後全資源0・新receiptを回収。正常終了も実exit0。DEBUG付き機能検証と通常性能・95点・公開を区別する。[証跡](evidence/macos-packaged-functional-2026-10-25.ja.md)。
-- [ ] 資源0でも増えるmacOS mainのメモリを調査し、既存回収のHTML単独close漏れの修正候補を配布版で再検証する。`b0ba969b` の新universalで原本HTML/PPTX各1件の描画/close資源0/通常exit0は確認したが、性能合格ではない。字体照合前にフォント候補を全量読込するKatanA側の不要IOを特定し、metadata読取への限定修復と再測定を続ける。元予算を変更しない。
-- [/] 不要な候補フォント全量読込を `f13b92ca` へ通常署名commit。既存の字体選択・候補順・fallback・取消・TTC・破損診断を維持し、正式対象43件/AST30件/Clippy/fmt成功、独立P0/P1なし。修正版配布の元cold/steady予算は未検証。[根拠と対照](evidence/font-candidate-io-2026-10-25.ja.md)。
+- [ ] 資源0でも増えるmacOS mainのメモリを、同親の実配布で調査・再検証する。字体候補の不要IOと文書更新確認の不要な全量再確保を別のKatanA原因として修復した。`079b392c` の原本7種類は5成功/2未達を保持し、上記 `08ec21a1` の新配布結果を回収する。HTML単独closeの回収修復や資源0だけを性能合格の証明にせず、元予算を変更しない。
+- [/] 不要な候補フォント全量読込を `f13b92ca` へ通常署名commit。既存の字体選択・候補順・fallback・取消・TTC・破損診断を維持し、正式対象43件/AST30件/Clippy/fmt成功、独立P0/P1なし。`079b392c` 配布では原本7種類の元メモリ予算が5成功/2未達で、全体達成とはしない。文書再読込の追加修復後に再測定する。[根拠と対照](evidence/font-candidate-io-2026-10-25.ja.md)。
 - [x] c05 Ready Readinessのnative helper初回ビルド30秒超過を修復し、`b0ba969b` の[正式Readiness](https://github.com/HiroyukiFuruno/KatanA/actions/runs/40129549656/job/120978129639)成功を回収した。ビルドと判定を分け、判定の30秒上限は維持する。これを後続HEADのCI成功へ流用しない。
 
 ## 要件(Verbatim Requirements)
