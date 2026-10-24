@@ -91,9 +91,10 @@ impl ActionOps for KatanaApp {
             .collect();
         let removed_document_preview = self.tab_previews.iter().any(|preview| {
             !open_paths.contains(&preview.path)
-                && katana_core::workspace::TreeEntry::path_is_document(&preview.path)
+                && (katana_core::workspace::TreeEntry::path_is_document(&preview.path)
+                    || katana_core::workspace::TreeEntry::path_is_html(&preview.path))
         });
-        /* WHY: 文書を先に閉じても、最後のMarkdown/HTMLを閉じるまで解放意図を保持する。 */
+        /* WHY: HTMLも描画メモリを確保するため、最後のプレビュー終了後に返却する。 */
         self.closed_document_preview_memory_pending |= removed_document_preview;
         self.tab_previews.retain(|t| open_paths.contains(&t.path));
         self.state
@@ -362,6 +363,11 @@ mod closed_preview_memory_tests {
     #[test]
     fn close_pdf_then_last_html_retains_relief_intent_until_all_previews_close() {
         assert_deferred_relief("closed.pdf", "index.html");
+    }
+
+    #[test]
+    fn close_html_then_last_markdown_retains_relief_intent_until_all_previews_close() {
+        assert_deferred_relief("index.html", "notes.md");
     }
 
     #[test]

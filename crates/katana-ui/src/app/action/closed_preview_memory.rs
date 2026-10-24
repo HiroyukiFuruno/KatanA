@@ -55,7 +55,7 @@ mod tests {
     }
 
     #[test]
-    fn html_and_markdown_are_not_document_memory_candidates() {
+    fn html_and_markdown_remain_outside_office_document_classification() {
         assert!(!katana_core::workspace::TreeEntry::path_is_document(
             std::path::Path::new("preview.html")
         ));
