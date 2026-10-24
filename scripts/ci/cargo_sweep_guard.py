@@ -15,6 +15,7 @@ from cargo_sweep_target import (
     profile_directories,
     require_local_lock_filesystem,
 )
+from cargo_target_lease import LeaseUnavailable, target_lease
 
 try:
     import fcntl
@@ -87,15 +88,16 @@ def run_guard(manifest: Path, dry_run: bool) -> int:
         if not profiles:
             print("Cargo target is absent; cleanup skipped")
             return 0
-        require_local_lock_filesystem(target)
-        descriptors = acquire_profile_locks(profiles)
-    except (CleanupUnavailable, OSError) as error:
+        with target_lease(target, exclusive=True, nonblocking=True):
+            require_local_lock_filesystem(target)
+            descriptors = acquire_profile_locks(profiles)
+            try:
+                return run_sweep(manifest, dry_run)
+            finally:
+                release_profile_locks(descriptors)
+    except (CleanupUnavailable, LeaseUnavailable, OSError) as error:
         print(f"Cargo sweep skipped safely: {error}")
         return 0
-    try:
-        return run_sweep(manifest, dry_run)
-    finally:
-        release_profile_locks(descriptors)
 
 
 def run_sweep(manifest: Path, dry_run: bool) -> int:

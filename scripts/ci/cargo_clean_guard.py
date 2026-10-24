@@ -19,6 +19,7 @@ from cargo_sweep_guard import (
     release_profile_locks,
     require_local_lock_filesystem,
 )
+from cargo_target_lease import LeaseUnavailable, target_lease
 
 REFUSED = 75
 
@@ -104,16 +105,17 @@ def run_guard(manifest: Path, cargo_spec: str) -> int:
         if not target.exists():
             print("Cargo target is absent; clean skipped")
             return 0
-        profiles = profile_directories(target)
-        require_local_lock_filesystem(target)
-        descriptors = acquire_profile_locks(profiles)
-    except (CleanupUnavailable, OSError) as error:
+        with target_lease(target, exclusive=True, nonblocking=True):
+            profiles = profile_directories(target)
+            require_local_lock_filesystem(target)
+            descriptors = acquire_profile_locks(profiles)
+            try:
+                return run_clean(manifest, target, cargo_spec)
+            finally:
+                release_profile_locks(descriptors)
+    except (CleanupUnavailable, LeaseUnavailable, OSError) as error:
         print(f"Cargo clean refused safely: {error}", file=sys.stderr)
         return REFUSED
-    try:
-        return run_clean(manifest, target, cargo_spec)
-    finally:
-        release_profile_locks(descriptors)
 
 
 def main() -> int:

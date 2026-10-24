@@ -6,6 +6,7 @@ from pathlib import Path
 import secrets
 import stat
 import subprocess
+import sys
 import tempfile
 
 SESSION_DIRECTORY = "KATANA_OWNER_CHECK_DIRECTORY"
@@ -13,6 +14,9 @@ SESSION_TOKEN = "KATANA_OWNER_CHECK_TOKEN"
 RECEIPT_NAME = "verification.json"
 COMMAND = ["just", "check"]
 MAX_RECEIPT_BYTES = 4096
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "ci"))
+from cargo_target_lease import cargo_target_directory, run_process_group
 
 
 def source_revision(root: Path) -> str:
@@ -94,7 +98,17 @@ def run_owned_check(root: Path) -> int:
     before = source_revision(root) if directory else None
     if directory:
         _private_directory(Path(directory))
-    status = subprocess.run(COMMAND, cwd=root, check=False).returncode
+    manifest = root / "Cargo.toml"
+    if manifest.is_file():
+        target = cargo_target_directory(manifest, os.environ.copy())
+        lease_runner = Path(__file__).resolve().parents[1] / "ci" / "cargo_target_lease.py"
+        status = run_process_group(
+            [sys.executable, str(lease_runner), "--target-dir", str(target), "--", *COMMAND],
+            root,
+            os.environ.copy(),
+        )
+    else:
+        status = subprocess.run(COMMAND, cwd=root, check=False).returncode
     if status == 0 and directory:
         if source_revision(root) != before:
             raise ValueError("owner check changed its source revision")
