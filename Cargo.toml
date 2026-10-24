@@ -21,11 +21,11 @@ description = "A context-aware AI desktop application."
 eframe = { version = "=0.36.2", features = ["default"] }
 egui = "=0.36.2"
 egui_extras = { version = "=0.36.2", features = ["image", "file", "http", "svg", "svg_text"] }
-egui_commonmark = { version = "0.25", default-features = false, features = ["better_syntax_highlighting", "load-images", "pulldown_cmark"] }
+egui_commonmark = { version = "=0.25.0", default-features = false, features = ["better_syntax_highlighting", "load-images", "pulldown_cmark"] }
 egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonmark_backend" }
 
 # Markdown
-comrak = { version = "0.56", default-features = false, features = ["shortcodes"] }
+comrak = { version = "0.57", default-features = false, features = ["shortcodes"] }
 katana-document-viewer = "=0.5.12"
 katana-render-runtime = "=0.4.23"
 katana-markdown-model = "0.2.3"
@@ -45,7 +45,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Networking / Auto Update
-ureq = { version = "3.4", features = ["json"] }
+ureq = { version = "3.5", features = ["json"] }
 semver = "1.0"
 zip = "9.0"
 tar = "0.4.46"
