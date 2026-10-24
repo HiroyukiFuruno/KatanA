@@ -8,6 +8,15 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class InventoryWiringTests(unittest.TestCase):
+    def test_tool_installers_share_the_pinned_coverage_compatible_revision(self) -> None:
+        for filename, expected_count in (("release-readiness.yml", 1),
+                                         ("build-and-release.yml", 2),
+                                         ("test-and-build.yml", 3)):
+            with self.subTest(workflow=filename):
+                source = (ROOT / ".github/workflows" / filename).read_text()
+                revisions = re.findall(r"uses: taiki-e/install-action@([^\s]+)", source)
+                self.assertEqual(revisions, ["1e29709c0ec63babbe8f266397a465f29a825f91"] * expected_count)
+
     def test_windows_native_listing_has_a_bounded_standard_pipe_reader(self) -> None:
         source = (ROOT / "scripts/release/native_test_inventory_collection.py").read_text()
         self.assertIn("from native_test_pipe_reader import read_pipes", source)

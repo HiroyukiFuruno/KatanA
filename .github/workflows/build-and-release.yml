@@ -126,7 +126,7 @@ jobs:
           components: llvm-tools-preview
 
       - name: Install release validation tools
-        uses: taiki-e/install-action@5b4d68e2e660441203ab128a23676f1e4faf1532 # v2.86.3
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
         with:
           tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1
           fallback: none
@@ -537,7 +537,7 @@ jobs:
           toolchain: stable
           components: rustfmt, clippy
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
-      - uses: taiki-e/install-action@5b4d68e2e660441203ab128a23676f1e4faf1532 # v2.86.3
+      - uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
         with:
           tool: just,cargo-deny@0.20.2,cargo-sweep@0.8.0
           fallback: none

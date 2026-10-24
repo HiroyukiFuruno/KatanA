@@ -30,7 +30,7 @@ jobs:
           toolchain: stable
           components: llvm-tools-preview
       - name: Install release validation tools
-        uses: taiki-e/install-action@5b4d68e2e660441203ab128a23676f1e4faf1532 # v2.86.3
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
         with:
           tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1
           fallback: none
