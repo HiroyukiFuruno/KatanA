@@ -82,43 +82,18 @@ impl KatanaApp {
 
     #[doc(hidden)]
     pub fn preview_resource_counts_for_test(&self) -> (usize, usize, usize, usize, usize, usize) {
-        let previews = self.tab_previews.len();
-        let mut html_surfaces = 0;
-        let mut document_surfaces = 0;
-        let mut frames = 0;
-        let mut textures = 0;
-        let mut cache_entries = 0;
-        for preview in &self.tab_previews {
-            let (preview_html_surfaces, html_frames, html_textures) =
-                preview.pane.html_browser_resource_counts_for_test();
-            let (preview_document_surfaces, document_frames, document_textures) =
-                preview.pane.document_resource_counts_for_test();
-            html_surfaces += preview_html_surfaces;
-            document_surfaces += preview_document_surfaces;
-            frames += html_frames + document_frames;
-            textures += html_textures + document_textures;
-            cache_entries += preview.pane.sections.len()
-                + preview.pane.image_cache.len()
-                + preview.pane.viewer_states.len();
-        }
-        (
-            previews,
-            html_surfaces,
-            document_surfaces,
-            frames,
-            textures,
-            cache_entries,
-        )
+        super::resource_snapshot::UiResourceSnapshot::capture(self)
+            .0
+            .preview_counts_tuple()
     }
 
     #[doc(hidden)]
     pub fn document_lifecycle_resources_for_test(
         &self,
     ) -> (usize, super::DocumentResourceSnapshotForTest) {
-        (
-            crate::preview_pane::DocumentWorkerLifecycle::live_count(),
-            katana_document_viewer::DocumentSession::resource_snapshot(),
-        )
+        super::resource_snapshot::UiResourceSnapshot::capture(self)
+            .0
+            .document_lifecycle_tuple()
     }
 
     #[doc(hidden)]

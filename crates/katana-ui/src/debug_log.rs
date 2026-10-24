@@ -2,9 +2,13 @@ pub(crate) struct DebugLog;
 
 impl DebugLog {
     pub(crate) fn write(event: &str, details: std::fmt::Arguments<'_>) {
-        if enabled_from(std::env::var("DEBUG").ok().as_deref()) {
+        if Self::is_enabled() {
             eprintln!("[KATANA_DEBUG] event={event} {details}");
         }
+    }
+
+    pub(crate) fn is_enabled() -> bool {
+        enabled_from(std::env::var("DEBUG").ok().as_deref())
     }
 }
 

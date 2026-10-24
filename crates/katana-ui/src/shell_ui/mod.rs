@@ -111,6 +111,7 @@ impl eframe::App for KatanaApp {
         let theme_colors = self.poll_and_prepare(&ctx);
 
         if !self.show_main_panels(ui, &theme_colors) {
+            self.record_completed_frame_resources();
             crate::startup_heartbeat::StartupHeartbeat::record_completed_frame();
             return;
         }
@@ -133,6 +134,7 @@ impl eframe::App for KatanaApp {
         crate::views::app_frame::AppFrameOps::intercept_url_commands(&ctx, self);
 
         self.show_splash(&ctx);
+        self.record_completed_frame_resources();
         crate::startup_heartbeat::StartupHeartbeat::record_completed_frame();
     }
 

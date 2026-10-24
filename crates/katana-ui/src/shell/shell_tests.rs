@@ -1515,6 +1515,7 @@ mod tests_extra {
             pending_dialog_action: None,
             pending_html_preview_refresh: None,
             html_preview_observer: None,
+            resource_receipt: None,
         }
     }
 

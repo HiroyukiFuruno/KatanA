@@ -112,10 +112,17 @@ impl PreviewPane {
         self.document_surface.as_ref()?.frame_state_for_test()
     }
 
-    pub(crate) fn document_resource_counts_for_test(&self) -> (usize, usize, usize) {
+    pub(crate) fn document_resource_counts(&self) -> (usize, usize, usize) {
         self.document_surface.as_ref().map_or((0, 0, 0), |surface| {
-            let (frames, textures) = surface.resource_counts_for_test();
+            let (frames, textures) = surface.resource_counts();
             (1, frames, textures)
+        })
+    }
+
+    pub(crate) fn document_resource_identity(&self) -> Option<(String, u64)> {
+        self.document_surface.as_ref().map(|surface| {
+            let (uri, generation) = surface.resource_identity();
+            (uri.to_owned(), generation)
         })
     }
 

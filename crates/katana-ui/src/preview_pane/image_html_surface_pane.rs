@@ -49,7 +49,7 @@ impl PreviewPane {
             .and_then(HtmlBrowserSurface::frame_generation)
     }
 
-    pub(crate) fn html_browser_resource_counts_for_test(&self) -> (usize, usize, usize) {
+    pub(crate) fn html_browser_resource_counts(&self) -> (usize, usize, usize) {
         self.html_browser.as_ref().map_or((0, 0, 0), |browser| {
             let (frames, textures) = browser.resource_counts();
             (1, frames, textures)

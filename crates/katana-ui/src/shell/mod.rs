@@ -9,6 +9,8 @@ use crate::{
     app_state::{AppAction, AppState},
     preview_pane::PreviewPane,
 };
+mod resource_receipt;
+mod resource_snapshot;
 mod startup_workspace;
 mod test_hooks;
 mod transient_workspace;
@@ -41,6 +43,7 @@ pub(crate) const ACTIVE_FILE_HIGHLIGHT_ROUNDING: f32 = 3.0;
 impl KatanaApp {
     pub fn new(state: AppState) -> Self {
         tracing::debug!("KatanaApp::new: Start");
+        let resource_receipt = resource_receipt::ResourceReceiptState::from_environment();
         let mut app = Self {
             state,
             fs: FilesystemService::new(),
@@ -78,6 +81,7 @@ impl KatanaApp {
             pending_dialog_action: None,
             pending_html_preview_refresh: None,
             html_preview_observer: None,
+            resource_receipt,
         };
         let current_version = env!("CARGO_PKG_VERSION");
         let mut show_changelog = false;

@@ -4,6 +4,10 @@ use super::types::{DocumentFailure, DocumentSurface};
 use super::worker::DocumentWorkerCommand;
 
 impl DocumentSurface {
+    pub(crate) fn resource_identity(&self) -> (&str, u64) {
+        (&self.source.uri, self.generation)
+    }
+
     pub(crate) fn frame_state_for_test(&self) -> Option<(String, usize, usize, String)> {
         let frame = self.frame.as_ref()?;
         Some((
@@ -14,7 +18,7 @@ impl DocumentSurface {
         ))
     }
 
-    pub(crate) fn resource_counts_for_test(&self) -> (usize, usize) {
+    pub(crate) fn resource_counts(&self) -> (usize, usize) {
         (
             usize::from(self.frame.is_some()),
             usize::from(self.painter.texture.is_some()),
