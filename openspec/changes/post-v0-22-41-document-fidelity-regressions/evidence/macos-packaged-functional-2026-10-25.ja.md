@@ -10,7 +10,7 @@ source `c05b7f03588c2e631ece377a9238cb6e6659b953` の既存 `just package-mac` �
 
 ## 回収結果
 
-原本Office6件・HTML1件を各10回開閉し、本人報告のDOCX/PDF6件も表示・終了した。計76件すべてで実frameとactive文書、閉じた後の新しいreceiptを確認した。各closeでhostのpreview/surface/frame/texture/cache、文書worker、KDVの全8資源値が0。`functional-summary.json`、各AX/PNG/result/receiptを上記runに保存。個人文書の画像・本文は公開しない。
+原本Office6件・HTML1件を各10回開閉した70件と、本人報告のDOCX/PDF6件を各1回表示・終了した6件の計76件で、実frameとactive文書、閉じた後の新しいreceiptを確認した。各closeでhostのpreview/surface/frame/texture/cache、文書worker、KDVの全8資源値が0。`validated-functional-results.json`、各AX/画像/result/receiptを上記runに保存。画像は拡張子がpngでも実データはJPEGであり、PNG画質・画素一致の評価には使用していない。14件では撮影中にreceiptが1frame進んでおり、初回readyと撮影時のsequenceを区別して保存した。個人文書の画像・本文は公開しない。
 
 両隔離実行は通常の終了メニューから終了し、helper実exit0とアプリexit0を回収した。source・入力の不変性も確認した。これはDEBUG付きの機能・資源検証であり、通常OFF性能、Chrome比較、独立95点、Intel/他OSの実行、公開後の最終配布受入の証明ではない。
 
