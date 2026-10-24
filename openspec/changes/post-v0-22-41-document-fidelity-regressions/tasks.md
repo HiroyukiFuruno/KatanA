@@ -10,6 +10,7 @@
 - [x] #354 公開v0.22.41と候補の差・Office読込APIを記録し、例外の期限/経路/source制限16件と標準入口の実3graphcargo-deny全項目、入口契約10件の成功を回収。11月7日UTC以降拒否、全経路安全や公開完了とは別。同証跡を参照。
 - [x] 本人の`just update`更新を保持し、KDV固定libcとparking_lot0.13の競合・既存commonmark patch無効化を解消。両lock更新・全体typecheck actual0、通常署名commit83b8bbbaへ統合。[非互換版の不採用理由と検証](evidence/dependency-update-2026-10-24.ja.md)。
 - [x] 公開48742c9dの通常push・全review回収・未解決0確認を完了。Ready後のUbuntu fmt差分をmacro改行のみで修復し旧stable/1.99.1両対応を確認。Readinessの取得失敗は公式installer v2.87.31固定SHAへ更新、元llvm-cov0.9.1/tool版/品質条件は不変。契約8件成功、公式macOS ARM配布物のSHA一致と実versionを確認。新HEADのreview/CI成功は下記で別回収する。
+- [/] 遅着レビューの通常HTML描画負荷指摘を採用。診断用の全文収集・文字数計算を診断active時の遅延処理へ限定し、OFF/ONの実行有無を直接確認するUTを追加。対象HTML描画5件actual0、独立P0/P1なし。通常push36361 actual0でCI修復97a8dc3cまで公開済みだが、本追加修復のpush・個別reply/resolve・fresh確認は下記で続行する。全文書の遅さが解消したとは外挿しない。
 - [ ] 関心事別通常commit→通常push hook→PR346 fresh全review/修復/各thread reply/resolve→Ready→必須CI→merge→Actions全OS公開→全5asset/checksum受入→Issue/OpenSpec/安全cleanupまで続行する。旧HEADの検査を新graphの合格に流用しない。
 
 > なら上流待ちじゃないものは手を動かして対応して。実装済みのIssueは検証して整理、未対応は着手して、報告だけで止まらず、上流のKDV,KRRの取り込みが完了次第、リリースできるように進めて下さい。

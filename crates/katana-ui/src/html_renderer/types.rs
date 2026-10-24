@@ -11,6 +11,13 @@ pub struct HtmlRenderer<'a> {
 }
 
 impl HtmlRenderer<'_> {
+    pub(super) fn trace_layout_lazy(&self, stage: &str, details: impl FnOnce() -> String) {
+        if !crate::preview_pane::HtmlLogicOps::layout_trace_active(self.ui.ctx()) {
+            return;
+        }
+        self.trace_layout(stage, format_args!("{}", details()));
+    }
+
     pub(crate) fn trace_layout(&self, stage: &str, details: std::fmt::Arguments<'_>) {
         if !crate::preview_pane::HtmlLogicOps::layout_trace_active(self.ui.ctx()) {
             return;

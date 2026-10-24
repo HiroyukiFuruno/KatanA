@@ -122,9 +122,8 @@ impl<'a> HtmlRenderer<'a> {
         } else {
             self.ui.add(label)
         };
-        self.trace_layout(
-            "text_batch_response",
-            format_args!(
+        self.trace_layout_lazy("text_batch_response", || {
+            format!(
                 "centered={centered} chars={} response=({:.1},{:.1},{:.1},{:.1})",
                 batch
                     .iter()
@@ -134,8 +133,8 @@ impl<'a> HtmlRenderer<'a> {
                 response.rect.min.y,
                 response.rect.max.x,
                 response.rect.max.y,
-            ),
-        );
+            )
+        });
     }
 
     pub(super) fn render_centered_children(&mut self, children: &[HtmlNode]) -> Option<LinkAction> {
