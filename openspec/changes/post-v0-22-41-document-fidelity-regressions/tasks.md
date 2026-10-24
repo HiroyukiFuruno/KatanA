@@ -4,6 +4,8 @@
 
 ### 2026-10-24 最新本人承認: 上流更新を待たない先行公開
 
+- [x] 本人承認と公開判定を整合: `b396bdc6` は `katana-host` の PPTX 初回15秒超過だけを固定8fieldの生値/未達/今回版/承認記録で扱う。strict・DOCX/XLSX・close/RSS/cycle/fidelity等は不変。旧RED終了1→契約54件/追加境界3件/差分10件成功、独立必須指摘なし。実配布・性能合格の主張ではない。`fcfd7034` のDOCX/PDF CLI接続も対象15件成功。
+
 最新状態: 読取専用記録機構は通常署名commit `0d76e2a3`、Windows実watch診断は `d9bf0a8e` へ統合。receipt 8件・shell 92件・strict Clippy/fmt・正式AST30件が成功。外部driverは同一run資源の読取を実装、実Dockerで未承認Terms拒否/本体正常終了と従来UI操作の回帰を回収したが、新配布版の文書受入は未完。557のMac headlessはDraft戻しに伴うworkflow取消で成功未確認、Windowsの実失敗は保持して新CIで切分けを続ける。[記録と未完条件](evidence/packaged-recording-2026-10-24.ja.md)。
 
 > pptxの抜本改革はkrrなので先行公開で良いです。

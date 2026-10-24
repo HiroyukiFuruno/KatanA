@@ -54,4 +54,28 @@ Rust 機構は署名付き通常 commit `0d76e2a3`、Windows 診断は `d9bf0a8e
 CLI の import は依存が揃った observer image 内で実行して成功した。
 host Python の CLI 試行は PIL 不在で終了 1 であり、実環境成功へ付け替えない。
 CLI の責務分離後は対象検査を回収し、先の Docker 成功は整理前 source の結果として保持する。
-ログは `tmp/oct24-recording-ast.log`。通常 push と新 HEAD の全 CI は未完了である。
+ログは `tmp/oct24-recording-ast.log`。
+
+通常 push は session 5962 actual 0、`tmp/oct24-packaged-recording-normal-push.log` で回収した。
+local/origin/PR の `0d057ec6d9b4cf9d75c4207f726358ac13c11d16` 一致を確認し、
+Issue #338 の [状態コメント](https://github.com/HiroyukiFuruno/KatanA/issues/338#issuecomment-6382401268) を確定更新した。
+Draft の CI 40081054726 と Readiness 40081054722 は skip であり、必須検査成功とは扱わない。
+
+## 承認範囲と公開判定の整合
+
+`katana-host` の PPTX 初回表示が 15000 ms を超える場合だけ、固定 8 field の
+`first_frame_disposition` を要求する。生の実測値、未達、本人承認 token、今回の版を保持する。
+strict、DOCX/XLSX、正常終了、RSS、資源 cycle、描画条件は変更しない。
+記録がない、測定値が異なる、他形式への流用、未知 field、NaN/inf/bool は拒否する。
+閾値の緩和でも性能合格の主張でもなく、承認された既知制限の明示だけである。
+
+旧実装に対する RED は `tmp/oct24-pptx-first-frame-contract-red.log`、終了 1。
+対象契約 54 件は `tmp/oct24-pptx-first-frame-full-final.log`（78.444 秒）、追加境界 3 件は
+`tmp/oct24-pptx-first-frame-focused-final.log`、差分 10 件は
+`tmp/oct24-pptx-first-frame-divergence.log` で終了 0 を回収した。
+これらは契約試験であり、実 manifest や実配布版の成功へ付け替えない。
+
+DOCX/PDF の CLI 接続は通常署名 commit `fcfd7034`、指定できる形式と記録処理の
+15 件は `tmp/oct24-document-driver-all-formats-contracts.log` で成功した。
+実 observer image 内の CLI も 4 形式を表示して終了 0。
+新 HEAD のレビュー、必須 CI、新配布版の受入、公開は未完了である。
