@@ -1,9 +1,41 @@
 use super::types::UpdateCleanupOps;
 
+#[cfg(all(target_os = "macos", not(coverage)))]
+const CONFIG_DIR_ENV: &str = "KATANA_CONFIG_DIR";
+
+#[cfg(all(target_os = "macos", any(not(coverage), test)))]
+fn should_perform_background_cleanup(configured: Option<&std::ffi::OsStr>) -> bool {
+    /* WHY: 隔離プロファイルの検査では利用者の Homebrew 設定を変更しない。 */
+    configured.is_none_or(std::ffi::OsStr::is_empty)
+}
+
+#[cfg(all(test, target_os = "macos"))]
+mod tests {
+    use super::should_perform_background_cleanup;
+    use std::ffi::OsStr;
+
+    #[test]
+    fn configured_profile_skips_global_homebrew_cleanup() {
+        assert!(!should_perform_background_cleanup(Some(OsStr::new(
+            "/tmp/katana-isolated"
+        ))));
+    }
+
+    #[test]
+    fn absent_or_empty_config_keeps_normal_cleanup() {
+        assert!(should_perform_background_cleanup(None));
+        assert!(should_perform_background_cleanup(Some(OsStr::new(""))));
+    }
+}
+
 #[cfg(target_os = "macos")]
 impl UpdateCleanupOps {
     #[cfg(not(coverage))]
     pub fn perform_background_cleanup() {
+        if !should_perform_background_cleanup(std::env::var_os(CONFIG_DIR_ENV).as_deref()) {
+            return;
+        }
+
         /* WHY: Untap the Homebrew tap on every macOS startup so that brew can no
          * longer push automatic updates. The app itself stays installed and running —
          * only the tap (update source) is removed. Future updates come through the

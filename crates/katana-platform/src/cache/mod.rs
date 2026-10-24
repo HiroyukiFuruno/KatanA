@@ -5,7 +5,7 @@ Provides both an in-memory ephemeral cache and a persistent on-disk cache. */
 mod default;
 mod memory;
 
-pub use default::DefaultCacheService;
+pub use default::{DefaultCacheService, PlatformCachePathResolver};
 pub use memory::InMemoryCacheService;
 
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};

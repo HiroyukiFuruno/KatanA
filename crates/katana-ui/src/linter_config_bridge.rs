@@ -1,4 +1,9 @@
-use std::path::{Path, PathBuf};
+use std::{
+    ffi::OsString,
+    path::{Path, PathBuf},
+};
+
+const CONFIG_DIR_ENV: &str = "KATANA_CONFIG_DIR";
 
 pub(crate) struct MarkdownLinterConfigOps;
 
@@ -104,9 +109,22 @@ impl MarkdownLinterConfigOps {
     }
 
     fn global_config_path() -> PathBuf {
-        dirs::config_dir()
-            .unwrap_or_else(|| PathBuf::from("."))
-            .join("KatanA")
+        Self::resolve_global_config_path(std::env::var_os(CONFIG_DIR_ENV), dirs::config_dir())
+    }
+
+    pub(crate) fn resolve_global_config_path(
+        configured: Option<OsString>,
+        platform_config_dir: Option<PathBuf>,
+    ) -> PathBuf {
+        /* WHY: 隔離プロファイルでは利用者の Markdown lint 設定を読ませない。 */
+        configured
+            .filter(|value| !value.is_empty())
+            .map(PathBuf::from)
+            .unwrap_or_else(|| {
+                platform_config_dir
+                    .unwrap_or_else(|| PathBuf::from("."))
+                    .join("KatanA")
+            })
             .join(".markdownlint.json")
     }
 

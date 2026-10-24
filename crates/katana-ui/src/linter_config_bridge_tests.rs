@@ -1,5 +1,7 @@
 use crate::linter_config_bridge::MarkdownLinterConfigOps;
 use katana_core::workspace::Workspace;
+use std::ffi::OsString;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 fn make_state() -> crate::app_state::AppState {
@@ -40,6 +42,19 @@ fn target_config_path_uses_global_or_workspace_config() {
     assert_eq!(
         MarkdownLinterConfigOps::target_config_path(&state),
         dir.path().join(".markdownlint.json")
+    );
+}
+
+#[test]
+fn global_config_path_stays_inside_configured_profile() {
+    let path = MarkdownLinterConfigOps::resolve_global_config_path(
+        Some(OsString::from("/tmp/katana-isolated")),
+        Some(PathBuf::from("/Users/test/Library/Application Support")),
+    );
+
+    assert_eq!(
+        path,
+        PathBuf::from("/tmp/katana-isolated/.markdownlint.json")
     );
 }
 
