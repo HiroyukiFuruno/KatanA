@@ -4,6 +4,8 @@
 
 ### 2026-10-24 最新本人承認: 上流更新を待たない先行公開
 
+- [/] キャッシュ済み画像で監視登録の再試行が止まる4経路を修復。実PNGからの新規4回帰は旧実装で再試行0対期待1の全4件RED、修復後は実ファイル変更・監視復旧を含む画像ローダー57件GREEN。正式AST30件・対象Clippy・既存fmt・変更文書KML成功、独立差分レビュー必須所見なし。新候補の原本受入・通常commit/push・指摘への個別reply/resolve・新HEAD review/CIは継続中。[証跡](evidence/cached-image-watch-retry-2026-10-24.ja.md)。
+
 - 旧「KDV #69の公開修正版が必須」という停止条件は今回の明示承認に従い置き換える。KDV0.5.12/KRR0.4.23の公開registry依存を維持し、上流repoを編集しない。
 - 例外はRUSTSEC-2026-0367/0368/0369の既存Office依存経路だけ。根拠・解除条件・期限を記録し、期限切れと新たな依存経路を正式検査で拒否する。他の脆弱性・ライセンス・品質条件は維持する。
 - [x] #354 KatanA更新ZIPの特権permissionとsymlink経路を修正。実ZIP/実filesystemで旧3件RED・修復後通常更新を含む10件GREEN、正式AST成功。SUIDはZIP9側で既に除去されており、今回新規権限昇格を解消したとは扱わない。[根拠](evidence/zip-risk-acceptance-2026-10-24.ja.md)。

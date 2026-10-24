@@ -63,6 +63,7 @@ pub(super) fn show_fullscreen_local(
                 }
                 viewer_state.texture.clone()
             } else {
+                loader.retry_watch(path);
                 viewer_state.texture.clone()
             };
 

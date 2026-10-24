@@ -60,7 +60,7 @@ impl LocalImageLoader {
         failure.deadline = Instant::now() + WatchFailure::next_delay(failure.attempts);
     }
 
-    pub(super) fn retry_watch(&self, path: &std::path::Path) {
+    pub(crate) fn retry_watch(&self, path: &std::path::Path) {
         let now = Instant::now();
         let Ok(mut errors) = self.inner.watch_errors.lock() else {
             return;

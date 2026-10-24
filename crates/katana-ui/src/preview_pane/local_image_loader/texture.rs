@@ -23,10 +23,12 @@ impl LocalImageLoader {
             background,
         };
         if let Some(texture) = self.cached_texture(&key) {
+            self.retry_watch(path);
             self.store_active_texture(key, texture.clone());
             return LocalTextureStatus::Ready(texture);
         }
         if let Some(texture) = self.active_texture(&key) {
+            self.retry_watch(path);
             return LocalTextureStatus::Ready(texture.clone());
         }
         match self.request(path, background) {

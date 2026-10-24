@@ -4,6 +4,8 @@ use eframe::egui;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
+const READY_TEXTURE_TIMEOUT_SECS: u64 = 5;
+
 fn show_image(
     context: &egui::Context,
     loader: &LocalImageLoader,
@@ -15,6 +17,74 @@ fn show_image(
             ImageLogicOps::show_local_image(ui, path, 0, loader, Some(state), None, |_, _, _| {});
     });
     output.textures_delta.clear();
+}
+
+fn show_fullscreen_image(
+    context: &egui::Context,
+    loader: &LocalImageLoader,
+    path: &std::path::Path,
+    state: &mut ViewerState,
+) {
+    let mut output = context.run_ui(Default::default(), |_| {
+        crate::preview_pane::fullscreen_local::show_fullscreen_local(
+            context, path, "close", state, 0, loader,
+        );
+    });
+    output.textures_delta.clear();
+}
+
+fn seed_due_watch_failure(loader: &LocalImageLoader, path: &std::path::Path) {
+    loader.store_watch_error(
+        path.to_path_buf(),
+        "watch unavailable".to_owned(),
+        loader.generation(),
+    );
+    loader.clear_watch_state(path);
+    loader
+        .inner
+        .watch_errors
+        .lock()
+        .expect("watch errors")
+        .get_mut(path)
+        .expect("watch failure")
+        .deadline = Instant::now();
+    loader
+        .inner
+        .watch_pending
+        .lock()
+        .expect("watch pending")
+        .insert(path.to_path_buf());
+}
+
+fn retry_attempts(loader: &LocalImageLoader, path: &std::path::Path) -> u32 {
+    loader
+        .inner
+        .watch_errors
+        .lock()
+        .expect("watch errors")
+        .get(path)
+        .expect("watch failure")
+        .attempts
+}
+
+fn wait_ready_texture(
+    loader: &LocalImageLoader,
+    context: &egui::Context,
+    path: &std::path::Path,
+) -> egui::TextureHandle {
+    let deadline = Instant::now() + Duration::from_secs(READY_TEXTURE_TIMEOUT_SECS);
+    let mut frame = 0;
+    while Instant::now() < deadline {
+        loader.poll(frame);
+        if let LocalTextureStatus::Ready(texture) =
+            loader.texture(context, path, crate::theme_bridge::WHITE, 0)
+        {
+            return texture;
+        }
+        frame += 1;
+        std::thread::yield_now();
+    }
+    panic!("image texture did not become ready");
 }
 
 fn settle_initial_repaints(context: &egui::Context) {
@@ -101,4 +171,126 @@ fn viewer_state_entry_repaints_and_replaces_texture_after_atomic_write() {
         state.texture.as_ref().expect("replacement texture").id(),
         initial_texture
     );
+}
+
+#[test]
+fn cached_regular_viewer_texture_drives_watch_retry_without_replacement() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
+    let directory = tempfile::tempdir().expect("fixture directory");
+    let path = directory.path().join("image.png");
+    image::RgbaImage::from_pixel(1, 1, image::Rgba([255, 0, 0, 255]))
+        .save(&path)
+        .expect("initial PNG");
+    let loader = LocalImageLoader::default();
+    let context = egui::Context::default();
+    let mut state = ViewerState::default();
+    let deadline = Instant::now() + Duration::from_secs(5);
+    while state.texture.is_none() && Instant::now() < deadline {
+        loader.poll(0);
+        show_image(&context, &loader, &path, &mut state);
+        std::thread::yield_now();
+    }
+    let initial = state.texture.as_ref().expect("initial texture").id();
+    seed_due_watch_failure(&loader, &path);
+    assert_eq!(retry_attempts(&loader, &path), 0);
+    show_image(&context, &loader, &path, &mut state);
+    assert_eq!(retry_attempts(&loader, &path), 1);
+    assert_eq!(
+        state.texture.as_ref().expect("cached texture").id(),
+        initial
+    );
+}
+
+#[test]
+fn cached_fullscreen_viewer_texture_drives_watch_retry_without_replacement() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
+    let directory = tempfile::tempdir().expect("fixture directory");
+    let path = directory.path().join("image.png");
+    image::RgbaImage::from_pixel(1, 1, image::Rgba([255, 0, 0, 255]))
+        .save(&path)
+        .expect("initial PNG");
+    let loader = LocalImageLoader::default();
+    let context = egui::Context::default();
+    let mut state = ViewerState::default();
+    let deadline = Instant::now() + Duration::from_secs(5);
+    while state.texture.is_none() && Instant::now() < deadline {
+        loader.poll(0);
+        show_fullscreen_image(&context, &loader, &path, &mut state);
+        std::thread::yield_now();
+    }
+    let initial = state.texture.clone().expect("initial texture");
+    seed_due_watch_failure(&loader, &path);
+    assert_eq!(retry_attempts(&loader, &path), 0);
+    show_fullscreen_image(&context, &loader, &path, &mut state);
+    assert_eq!(retry_attempts(&loader, &path), 1);
+    assert_eq!(
+        state.texture.as_ref().expect("cached texture").id(),
+        initial.id()
+    );
+}
+
+#[test]
+fn cached_loader_texture_drives_watch_retry_without_replacement() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
+    let directory = tempfile::tempdir().expect("fixture directory");
+    let path = directory.path().join("image.png");
+    image::RgbaImage::from_pixel(1, 1, image::Rgba([255, 0, 0, 255]))
+        .save(&path)
+        .expect("initial PNG");
+    let loader = LocalImageLoader::default();
+    let context = egui::Context::default();
+    let initial = wait_ready_texture(&loader, &context, &path);
+    seed_due_watch_failure(&loader, &path);
+    assert_eq!(retry_attempts(&loader, &path), 0);
+    let LocalTextureStatus::Ready(current) =
+        loader.texture(&context, &path, crate::theme_bridge::WHITE, 0)
+    else {
+        panic!("cached texture must remain ready");
+    };
+    assert_eq!(retry_attempts(&loader, &path), 1);
+    assert_eq!(current.id(), initial.id());
+}
+
+#[test]
+fn active_loader_texture_drives_watch_retry_without_replacement() {
+    let _watch_guard = crate::test_render_env::RenderEnvLock::lock();
+    let directory = tempfile::tempdir().expect("fixture directory");
+    let path = directory.path().join("image.png");
+    image::RgbaImage::from_pixel(1, 1, image::Rgba([255, 0, 0, 255]))
+        .save(&path)
+        .expect("initial PNG");
+    let loader = LocalImageLoader::default();
+    let context = egui::Context::default();
+    let initial = wait_ready_texture(&loader, &context, &path);
+    let key = RequestKey {
+        path: path.clone(),
+        background: crate::theme_bridge::WHITE,
+    };
+    loader
+        .inner
+        .cache
+        .lock()
+        .expect("cache lock")
+        .textures
+        .remove(&key);
+    {
+        let cache = loader.inner.cache.lock().expect("cache lock");
+        assert!(!cache.textures.contains_key(&key));
+        assert_eq!(
+            cache
+                .active_textures
+                .get(&key)
+                .map(|(texture, _)| texture.id()),
+            Some(initial.id())
+        );
+    }
+    seed_due_watch_failure(&loader, &path);
+    assert_eq!(retry_attempts(&loader, &path), 0);
+    let LocalTextureStatus::Ready(current) =
+        loader.texture(&context, &path, crate::theme_bridge::WHITE, 0)
+    else {
+        panic!("active texture must remain ready");
+    };
+    assert_eq!(retry_attempts(&loader, &path), 1);
+    assert_eq!(current.id(), initial.id());
 }

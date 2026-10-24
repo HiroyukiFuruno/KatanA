@@ -52,6 +52,8 @@ impl ImageLogicOps {
                         );
                     }
                 }
+            } else {
+                loader.retry_watch(path);
             }
             state.texture.clone()
         } else {
