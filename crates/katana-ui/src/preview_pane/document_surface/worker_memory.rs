@@ -78,7 +78,11 @@ impl WorkerMemoryState {
             && self.intakes.load(Ordering::Acquire) == 0
         {
             *pending = false;
-            let _released = relieve();
+            let released = relieve();
+            super::debug_log::DebugLog::write(
+                "document_memory_relief",
+                format_args!("released_bytes={released}"),
+            );
         }
     }
 }
