@@ -189,3 +189,5 @@ mod rename_tests;
 mod tests;
 #[cfg(test)]
 mod topology_tests;
+#[cfg(all(test, target_os = "windows"))]
+mod windows_rename_diagnostics;
