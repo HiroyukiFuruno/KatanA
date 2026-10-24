@@ -4,7 +4,19 @@
 
 - PPTX の抜本改善は KRR の次期対応とし、初回読込の遅延未達を明記して先行公開する。
 - 隔離環境で配布版本体の操作・描画・終了を記録する仕組みを追加する。
-- 利用規約の承認を代行せず、配布版の公開条件を省略しない。
+- 最新の本人直接承認で、今回fresh隔離QAに限る自動同意を許可。本人用アプリ・設定・prepared profileには適用せず、公開条件や最終本人受入を省略しない。
+
+## 最新のmacOS検証への移行
+
+本人はDocker制約を了承し、保護を無効化せずmacOS隔離配布版で文書操作・描画・終了を検証するよう指示した。承認済み[更新目標](release-goal-2026-10-24.ja.md)を物理正本へ固定したが、Codex画面の目標編集は安全上拒否され、画面上の旧目標は未変更と明示している。
+
+新fe2ae190のLinux archive生成・構成検査は実終了0。fresh規約の実クリック・42保存・Explorer exact filename double-click・source intake/worker handoffは確認したが、QEMUのLandlock ABIがENOSYS38で、KDVがfail-closedとして文書描画を拒否し、全体は実終了1。ARM native observerはABI4を返した。保護を無効化して合格扱いにしない。default同意なしの新配布検査はdriver2/app正常終了0を確認した。
+
+外部メモリ観測は865b1f6b、HTML受理済み状態はf0f654db、明示profileのcache/lint保存先・Homebrew副作用分離はc7f3a2b7へ通常署名commit済み。対象の単体検査・独立レビューは各証跡に記録した。旧通常commitのAST失敗や中断130も保持し、成功へ付替えていない。
+
+Dockerの単語部分一致によるTerms誤検出は共有heading/version/controls判定へ修復したが、OCR座標を同一modal領域へ結合するP2は未完として残す。macOSは外部UI操作で別途検証し、Linux診断結果を成功へ代用しない。
+
+最新macOS配布物の生成・署名・隔離profileでの実文書受入は次工程である。本人の通常profileへcacheが漏れないよう、実行前に[profile境界](isolated-profile-boundary-2026-10-24.ja.md)を修復した。
 
 ## 実装範囲
 
