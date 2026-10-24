@@ -51,9 +51,12 @@ source "$IDENTITY_HELPER"
 source "$CLEANUP_HELPER"
 launcher_pid=""
 unrelated_pid=""
+grace_pid=""
 cleanup_process_regression() {
     [[ -z "$launcher_pid" ]] || kill "$launcher_pid" 2>/dev/null || true
     [[ -z "$launcher_pid" ]] || wait "$launcher_pid" 2>/dev/null || true
+    [[ -z "$grace_pid" ]] || kill -KILL "$grace_pid" 2>/dev/null || true
+    [[ -z "$grace_pid" ]] || wait "$grace_pid" 2>/dev/null || true
     [[ -z "$unrelated_pid" ]] || kill "$unrelated_pid" 2>/dev/null || true
     [[ -z "$unrelated_pid" ]] || wait "$unrelated_pid" 2>/dev/null || true
 }
@@ -86,6 +89,30 @@ wait_for_exit() {
         sleep 0.05
     done
     return 1
+}
+
+verify_wait_grace_uses_elapsed_time() {
+    local pid wait_started
+    bash -c 'trap "" TERM; exec sleep 30' &
+    pid=$!
+    grace_pid="$pid"
+    wait_started=$SECONDS
+    sleep() {
+        command sleep "$1"
+        command sleep 0.2
+    }
+    if startup_wait_for_exit "$pid"; then
+        echo 'FAIL: startup wait accepted a live TERM-ignoring process' >&2
+        exit 1
+    fi
+    unset -f sleep
+    (( SECONDS - wait_started <= 3 )) || {
+        echo 'FAIL: startup wait counted polling attempts instead of elapsed termination grace' >&2
+        exit 1
+    }
+    kill -KILL "$pid" 2>/dev/null || true
+    wait "$pid" 2>/dev/null || true
+    grace_pid=""
 }
 
 run_cleanup_case() {
@@ -145,6 +172,7 @@ run_cleanup_case() {
     }
 }
 
+verify_wait_grace_uses_elapsed_time
 run_cleanup_case verified
 run_cleanup_case discover
 run_cleanup_case direct_ignoring

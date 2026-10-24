@@ -9,15 +9,28 @@ launcher_is_owned_child() {
 }
 
 startup_wait_for_exit() {
-    local pid="$1" attempt
-    for attempt in {1..40}; do
+    local pid="$1" deadline_pid exit_trap
+    # sleep の粒度が粗い環境でも、試行回数ではなく実時間で終了猶予を制限する。
+    exit_trap=$(trap -p EXIT)
+    trap - EXIT
+    command sleep 2 &
+    deadline_pid=$!
+    if [[ -n "$exit_trap" ]]; then
+        eval "$exit_trap"
+    fi
+    while :; do
         if ! kill -0 "$pid" 2>/dev/null; then
+            kill "$deadline_pid" 2>/dev/null || true
+            wait "$deadline_pid" 2>/dev/null || true
             wait "$pid" 2>/dev/null || true
             return 0
         fi
+        if ! kill -0 "$deadline_pid" 2>/dev/null; then
+            wait "$deadline_pid" 2>/dev/null || true
+            return 1
+        fi
         sleep 0.05
     done
-    return 1
 }
 
 startup_terminate_process() {

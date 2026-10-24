@@ -13,6 +13,7 @@
 - [/] 遅着レビューの通常HTML描画負荷指摘を採用。診断用の全文収集・文字数計算を診断active時の遅延処理へ限定し、OFF/ONの実行有無を直接確認するUTを追加。対象HTML描画5件actual0、独立P0/P1なし。通常push36361 actual0でCI修復97a8dc3cまで公開済みだが、本追加修復のpush・個別reply/resolve・fresh確認は下記で続行する。全文書の遅さが解消したとは外挿しない。
 - [ ] 関心事別通常commit→通常push hook→PR346 fresh全review/修復/各thread reply/resolve→Ready→必須CI→merge→Actions全OS公開→全5asset/checksum受入→Issue/OpenSpec/安全cleanupまで続行する。旧HEADの検査を新graphの合格に流用しない。
 - [/] 63dd4113のWindows CI実失敗を修復。日本語sourceの読込4箇所をUTF-8明示、複数Python検査はfail-fast Bashへ統一、観測Pythonへ実行中Git Bashのnative絶対pathを渡しWSL誤選択を防止。対象契約20件成功・独立P0/P1なし。所有Git fixtureのreadonly通常file削除だけをWinError5時に再試行し、実Git/実file/拒否境界10件が主査検査で成功（tmp/oct24-windows-fixture-cleanup-main.log）。通常workspace検査や品質条件を省略せず、新HEADの実Windows CIは未完として続行する。
+- [/] 63dd4113のReadiness実失敗（startup cleanup6秒超過）を修復。固定40回のsleep待機から実時間2秒のtimerへ変更し、timerのEXIT trap継承を防止、失敗時の検査子processもKILL/waitで回収。元6秒上限・identity/hash・TERM後再検証・無関係process保持を変更せず、macOS/Ubuntu24.04の実子process契約が各exit0（tmp/oct24-startup-cleanup-macos.log、tmp/oct24-startup-cleanup-linux.log）。構文/差分/cleanup helper ShellCheck成功、独立P0/P1なし。新HEADの通常push/Readiness/公開は別未完として続行する。
 
 > なら上流待ちじゃないものは手を動かして対応して。実装済みのIssueは検証して整理、未対応は着手して、報告だけで止まらず、上流のKDV,KRRの取り込みが完了次第、リリースできるように進めて下さい。
 >
