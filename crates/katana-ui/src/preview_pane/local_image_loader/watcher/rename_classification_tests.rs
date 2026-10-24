@@ -1,8 +1,10 @@
 use super::super::LocalImageLoader;
+use super::ImageWatcher;
+use super::backend::Backend;
 use super::directory_recovery::DirectoryRecovery;
 use super::registration::{Targets, WatchTarget};
 use notify::event::{ModifyKind, RenameMode};
-use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{Event, EventKind, RecursiveMode, Watcher};
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -21,7 +23,7 @@ fn assert_mode_detaches(mode: RenameMode) {
     let loader = LocalImageLoader::default();
     let mut targets = Targets::new();
     add_target(&mut targets, &loader, &path);
-    let mut watcher = RecommendedWatcher::new(|_| {}, Config::default()).expect("watcher");
+    let mut watcher = Backend::create(|_| {}).expect("image watcher");
     watch_directory(&mut watcher, &directory);
     let mut watched = HashSet::from([directory.clone()]);
     DirectoryRecovery::recover(
@@ -46,7 +48,7 @@ fn add_target(targets: &mut Targets, loader: &LocalImageLoader, path: &std::path
     );
 }
 
-fn watch_directory(watcher: &mut RecommendedWatcher, path: &std::path::Path) {
+fn watch_directory(watcher: &mut ImageWatcher, path: &std::path::Path) {
     watcher
         .watch(path, RecursiveMode::NonRecursive)
         .expect("watch");
@@ -57,7 +59,7 @@ fn file_name_to_and_modify_events_keep_directory_tracking() {
     let root = tempfile::tempdir().expect("fixture directory");
     let directory = root.path().join("tracked");
     std::fs::create_dir(&directory).expect("tracked directory");
-    let mut watcher = RecommendedWatcher::new(|_| {}, Config::default()).expect("watcher");
+    let mut watcher = Backend::create(|_| {}).expect("image watcher");
     watch_directory(&mut watcher, &directory);
     for kind in [
         EventKind::Modify(ModifyKind::Name(RenameMode::To)),
@@ -82,7 +84,7 @@ fn both_event_detaches_old_registered_directory_but_keeps_new() {
     let new = root.path().join("new");
     std::fs::create_dir_all(&old).expect("old directory");
     std::fs::create_dir_all(&new).expect("new directory");
-    let mut watcher = RecommendedWatcher::new(|_| {}, Config::default()).expect("watcher");
+    let mut watcher = Backend::create(|_| {}).expect("image watcher");
     watch_directory(&mut watcher, &old);
     watch_directory(&mut watcher, &new);
     let mut watched = HashSet::from([old.clone(), new.clone()]);

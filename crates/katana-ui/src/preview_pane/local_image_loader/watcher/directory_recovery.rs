@@ -1,8 +1,9 @@
+use super::ImageWatcher;
 use super::WatchEvent;
 use super::events::{notify_overflow, send_event};
 use super::registration::Targets;
 use notify::event::{ModifyKind, RenameMode};
-use notify::{Event, EventKind, RecommendedWatcher, Watcher};
+use notify::{Event, EventKind, Watcher};
 use std::collections::HashSet;
 use std::path::PathBuf;
 
@@ -11,7 +12,7 @@ pub(super) struct DirectoryRecovery;
 impl DirectoryRecovery {
     pub(super) fn recover(
         event: &Event,
-        watcher: &mut RecommendedWatcher,
+        watcher: &mut ImageWatcher,
         watched_dirs: &mut HashSet<PathBuf>,
         targets: &Targets,
     ) {
@@ -54,7 +55,7 @@ impl DirectoryRecovery {
     }
 
     fn detach(
-        watcher: &mut RecommendedWatcher,
+        watcher: &mut ImageWatcher,
         watched_dirs: &mut HashSet<PathBuf>,
         removed: &HashSet<PathBuf>,
     ) -> bool {

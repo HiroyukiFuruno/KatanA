@@ -1,5 +1,6 @@
+use super::ImageWatcher;
 use super::{Inner, WatchEvent, WatchRequest};
-use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{RecursiveMode, Watcher};
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Weak;
@@ -33,7 +34,7 @@ impl Registration {
 
     pub(super) fn register(
         request: WatchRequest,
-        watcher: &mut RecommendedWatcher,
+        watcher: &mut ImageWatcher,
         watched_dirs: &mut HashSet<PathBuf>,
         targets: &mut Targets,
     ) {
@@ -57,7 +58,7 @@ impl Registration {
 
     fn install(
         request: &WatchRequest,
-        watcher: &mut RecommendedWatcher,
+        watcher: &mut ImageWatcher,
         watched_dirs: &mut HashSet<PathBuf>,
         targets: &mut Targets,
     ) -> Result<(), String> {
@@ -83,7 +84,7 @@ impl Registration {
     }
 
     fn watch_directory(
-        watcher: &mut RecommendedWatcher,
+        watcher: &mut ImageWatcher,
         parent: &Path,
         targets: &Targets,
     ) -> Result<(), String> {

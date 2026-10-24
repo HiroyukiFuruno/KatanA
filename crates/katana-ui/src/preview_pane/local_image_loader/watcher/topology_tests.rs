@@ -1,9 +1,9 @@
 use super::super::watcher_tests::{RGBA_CHANNELS, fixture_path, wait_ready};
 use super::super::{LocalImageLoader, LocalImageStatus};
+use super::backend::Backend;
 use super::registration::Registration;
 use super::tests::save_png;
-use super::{Targets, WatchRequest, unwatch_unused_dirs};
-use notify::{Config, RecommendedWatcher, Watcher};
+use super::{ImageWatcher, Targets, WatchRequest, unwatch_unused_dirs};
 use std::collections::HashSet;
 use std::path::Path;
 use std::sync::Arc;
@@ -14,7 +14,7 @@ const RED_PIXEL: [u8; RGBA_CHANNELS] = [255, 0, 0, 255];
 fn register(
     loader: &LocalImageLoader,
     path: &Path,
-    watcher: &mut RecommendedWatcher,
+    watcher: &mut ImageWatcher,
     directories: &mut HashSet<std::path::PathBuf>,
     targets: &mut Targets,
 ) {
@@ -41,7 +41,7 @@ fn adding_a_directory_invalidates_existing_subscription_after_backend_restart() 
     let first = LocalImageLoader::default();
     let second = LocalImageLoader::default();
     wait_ready(&first, &first_path, TEST_BACKGROUND, RED_PIXEL);
-    let mut watcher = RecommendedWatcher::new(|_| {}, Config::default()).expect("native watcher");
+    let mut watcher = Backend::create(|_| {}).expect("image watcher");
     let mut directories = HashSet::new();
     let mut targets = Targets::new();
     register(
@@ -79,7 +79,7 @@ fn removing_a_directory_invalidates_remaining_subscription_after_backend_restart
     let first = LocalImageLoader::default();
     let second = LocalImageLoader::default();
     wait_ready(&first, &first_path, TEST_BACKGROUND, RED_PIXEL);
-    let mut watcher = RecommendedWatcher::new(|_| {}, Config::default()).expect("native watcher");
+    let mut watcher = Backend::create(|_| {}).expect("image watcher");
     let mut directories = HashSet::new();
     let mut targets = Targets::new();
     register(
@@ -120,7 +120,7 @@ fn backend_rescan_flag_invalidates_registered_image_without_a_path() {
     save_png(&path, RED_PIXEL);
     let loader = LocalImageLoader::default();
     wait_ready(&loader, &path, TEST_BACKGROUND, RED_PIXEL);
-    let mut watcher = RecommendedWatcher::new(|_| {}, Config::default()).expect("native watcher");
+    let mut watcher = Backend::create(|_| {}).expect("image watcher");
     let mut directories = HashSet::new();
     let mut targets = Targets::new();
     register(&loader, &path, &mut watcher, &mut directories, &mut targets);

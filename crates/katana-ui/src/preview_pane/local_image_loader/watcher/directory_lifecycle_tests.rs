@@ -1,9 +1,11 @@
 use super::super::LocalImageLoader;
 use super::super::watcher::tests::save_png;
+use super::ImageWatcher;
+use super::backend::Backend;
 use super::directory_recovery::DirectoryRecovery;
 use super::events::notify_error;
 use super::registration::{Targets, WatchTarget};
-use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{Event, EventKind, RecursiveMode, Watcher};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -31,7 +33,7 @@ fn add_watched_path(loader: &LocalImageLoader, path: &Path) {
 }
 
 fn register_directory(
-    watcher: &mut RecommendedWatcher,
+    watcher: &mut ImageWatcher,
     watched_dirs: &mut HashSet<PathBuf>,
     directory: &Path,
 ) {
@@ -50,7 +52,7 @@ struct Fixture {
     exact_loader: LocalImageLoader,
     descendant_loader: LocalImageLoader,
     unrelated_loader: LocalImageLoader,
-    watcher: RecommendedWatcher,
+    watcher: ImageWatcher,
     watched_dirs: HashSet<PathBuf>,
     targets: Targets,
 }
@@ -91,7 +93,7 @@ impl Fixture {
         add_target(&mut targets, &exact_loader, &exact_path);
         add_target(&mut targets, &descendant_loader, &descendant_path);
         add_target(&mut targets, &unrelated_loader, &unrelated_path);
-        let watcher = RecommendedWatcher::new(|_| {}, Config::default()).expect("native watcher");
+        let watcher = Backend::create(|_| {}).expect("image watcher");
         let mut fixture = Self {
             _root: root,
             _live_root: live_root,

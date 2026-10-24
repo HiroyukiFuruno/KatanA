@@ -1,6 +1,7 @@
+use super::ImageWatcher;
 use super::WatchEvent;
 use super::registration::{Registration, Targets};
-use notify::{EventKind, RecommendedWatcher, Watcher};
+use notify::{EventKind, Watcher};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
@@ -85,7 +86,7 @@ pub(super) fn notify_error(targets: &mut Targets, error: String) {
 }
 
 pub(super) fn retain_live_targets(
-    watcher: &mut RecommendedWatcher,
+    watcher: &mut ImageWatcher,
     watched_dirs: &mut HashSet<PathBuf>,
     targets: &mut Targets,
 ) {
@@ -102,7 +103,7 @@ pub(super) fn retain_live_targets(
 }
 
 pub(super) fn unwatch_unused_dirs(
-    watcher: &mut RecommendedWatcher,
+    watcher: &mut ImageWatcher,
     watched_dirs: &mut HashSet<PathBuf>,
     targets: &Targets,
 ) {
@@ -129,7 +130,7 @@ pub(super) fn unwatch_unused_dirs(
     }
 }
 
-fn unwatch_directory(watcher: &mut RecommendedWatcher, directory: &Path) -> bool {
+fn unwatch_directory(watcher: &mut ImageWatcher, directory: &Path) -> bool {
     let result = watcher.unwatch(directory);
     let Err(error) = result else {
         return true;

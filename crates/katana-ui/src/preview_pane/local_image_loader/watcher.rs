@@ -1,5 +1,4 @@
 use super::Inner;
-use notify::{Config, RecommendedWatcher, Watcher};
 use std::collections::HashSet;
 use std::path::PathBuf;
 use std::sync::{
@@ -9,9 +8,12 @@ use std::sync::{
 };
 use std::time::Duration;
 
+mod backend;
 mod directory_recovery;
 mod events;
 mod registration;
+
+use backend::{Backend, ImageWatcher};
 
 use registration::{Registration, Targets};
 
@@ -89,14 +91,11 @@ fn run(request_rx: mpsc::Receiver<WatchCommand>) {
     let (event_tx, event_rx) = mpsc::sync_channel(256);
     let event_overflow = Arc::new(AtomicBool::new(false));
     let callback_overflow = Arc::clone(&event_overflow);
-    let watcher = RecommendedWatcher::new(
-        move |event| {
-            if event_tx.try_send(event).is_err() {
-                callback_overflow.store(true, Ordering::Release);
-            }
-        },
-        Config::default(),
-    );
+    let watcher = Backend::create(move |event| {
+        if event_tx.try_send(event).is_err() {
+            callback_overflow.store(true, Ordering::Release);
+        }
+    });
     let mut watcher = match watcher {
         Ok(watcher) => watcher,
         Err(error) => {
@@ -144,7 +143,7 @@ fn run_without_watcher(request_rx: mpsc::Receiver<WatchCommand>, error: String) 
 
 fn drain_requests(
     request_rx: &mpsc::Receiver<WatchCommand>,
-    watcher: &mut RecommendedWatcher,
+    watcher: &mut ImageWatcher,
     watched_dirs: &mut HashSet<PathBuf>,
     targets: &mut Targets,
 ) {
@@ -159,7 +158,7 @@ fn drain_requests(
 
 fn clear_owner(
     command: WatchCommand,
-    watcher: &mut RecommendedWatcher,
+    watcher: &mut ImageWatcher,
     watched_dirs: &mut HashSet<PathBuf>,
     targets: &mut Targets,
 ) {

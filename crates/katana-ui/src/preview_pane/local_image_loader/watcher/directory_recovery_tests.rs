@@ -1,10 +1,12 @@
 use super::super::{LocalImageLoader, watcher_tests::RGBA_CHANNELS};
+use super::ImageWatcher;
 use super::WatchRequest;
+use super::backend::Backend;
 use super::directory_recovery::DirectoryRecovery;
 use super::events::notify_event;
 use super::registration::{Registration, Targets, WatchTarget};
 use super::tests::save_png;
-use notify::{Config, EventKind, RecommendedWatcher, Watcher};
+use notify::{EventKind, Watcher};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, mpsc};
@@ -17,7 +19,7 @@ const NATIVE_EVENT_WAIT: Duration = Duration::from_secs(5);
 fn register(
     loader: &LocalImageLoader,
     path: &Path,
-    watcher: &mut RecommendedWatcher,
+    watcher: &mut ImageWatcher,
     watched_dirs: &mut HashSet<PathBuf>,
     targets: &mut Targets,
 ) {
@@ -95,13 +97,10 @@ fn recreated_watched_parent_receives_later_overwrite() {
     let removed = LocalImageLoader::default();
     let live = LocalImageLoader::default();
     let (event_tx, event_rx) = mpsc::channel();
-    let mut watcher = RecommendedWatcher::new(
-        move |event| {
-            let _ = event_tx.send(event);
-        },
-        Config::default(),
-    )
-    .expect("native watcher");
+    let mut watcher = Backend::create(move |event| {
+        let _ = event_tx.send(event);
+    })
+    .expect("image watcher");
     let mut watched_dirs = HashSet::new();
     let mut targets = Targets::new();
     let image_path = std::fs::canonicalize(&image_path).expect("image path");

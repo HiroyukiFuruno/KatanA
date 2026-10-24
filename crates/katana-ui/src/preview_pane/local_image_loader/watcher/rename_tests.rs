@@ -1,8 +1,13 @@
 use super::super::LocalImageLoader;
+use super::ImageWatcher;
+use super::backend::Backend;
 use super::directory_recovery::DirectoryRecovery;
 use super::registration::{Targets, WatchTarget};
+#[cfg(windows)]
+use notify::event::RemoveKind;
+#[cfg(not(windows))]
 use notify::event::{ModifyKind, RenameMode};
-use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{Event, EventKind, RecursiveMode, Watcher};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, mpsc};
@@ -29,7 +34,7 @@ struct RenameFixture {
     exact: LocalImageLoader,
     descendant: LocalImageLoader,
     other: LocalImageLoader,
-    watcher: RecommendedWatcher,
+    watcher: ImageWatcher,
     events: mpsc::Receiver<Result<Event, notify::Error>>,
 }
 
@@ -84,21 +89,19 @@ impl RenameFixture {
     }
 
     fn watcher(
-        root: &tempfile::TempDir,
+        _root: &tempfile::TempDir,
         old: &Path,
         nested: &Path,
         unrelated: &Path,
-    ) -> (RecommendedWatcher, WatcherEvents) {
+    ) -> (ImageWatcher, WatcherEvents) {
         let (tx, events) = mpsc::channel();
-        let mut watcher = RecommendedWatcher::new(
-            move |event| {
-                let _ = tx.send(event);
-            },
-            Config::default(),
-        )
-        .expect("native watcher");
+        let mut watcher = Backend::create(move |event| {
+            let _ = tx.send(event);
+        })
+        .expect("image watcher");
+        #[cfg(not(windows))]
         watcher
-            .watch(root.path(), RecursiveMode::Recursive)
+            .watch(_root.path(), RecursiveMode::Recursive)
             .expect("root watch");
         for path in [old, nested, unrelated] {
             watcher
@@ -120,7 +123,7 @@ impl RenameFixture {
                 Ok(Err(error)) => panic!("native watcher error: {error}; observed={observed:?}"),
                 Err(error) => panic!("native rename event {error}; observed={observed:?}"),
             };
-            if is_directory_rename(&event) && event.paths.iter().any(|path| path == &self.old) {
+            if is_directory_loss(&event) && event.paths.iter().any(|path| path == &self.old) {
                 return event;
             }
             observed.push(format!("{:?}:{:?}", event.kind, event.paths));
@@ -151,13 +154,20 @@ fn mark_watched(loader: &LocalImageLoader, path: &Path) {
         .insert(path.to_path_buf());
 }
 
-fn is_directory_rename(event: &Event) -> bool {
-    matches!(
+fn is_directory_loss(event: &Event) -> bool {
+    #[cfg(windows)]
+    let is_directory_change = matches!(
+        event.kind,
+        EventKind::Remove(RemoveKind::Folder | RemoveKind::Any)
+    );
+    #[cfg(not(windows))]
+    let is_directory_change = matches!(
         event.kind,
         EventKind::Modify(ModifyKind::Name(
             RenameMode::From | RenameMode::Any | RenameMode::Both
         ))
-    )
+    );
+    is_directory_change
 }
 
 fn recover(fixture: &mut RenameFixture, event: Event) {
