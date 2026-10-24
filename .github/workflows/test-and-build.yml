@@ -257,13 +257,19 @@ jobs:
           path: target/multi-format-headless-${{ runner.os }}
           if-no-files-found: error
 
+      - name: Install coverage tool
+        if: runner.os == 'macOS' && github.event_name == 'pull_request'
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
+        with:
+          tool: cargo-llvm-cov@0.9.1
+          fallback: none
+
       - name: Run coverage
         if: runner.os == 'macOS' && github.event_name == 'pull_request'
         env:
           KATANA_TEST_INVENTORY_DIRECTORY: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/coverage
         run: |
           rustup component add llvm-tools-preview
-          curl -LsSf https://github.com/taiki-e/cargo-llvm-cov/releases/latest/download/cargo-llvm-cov-x86_64-apple-darwin.tar.gz | tar xz -C ~/.cargo/bin
           JOBS=1 just coverage
 
       - name: Compare observed test inventory diagnostics

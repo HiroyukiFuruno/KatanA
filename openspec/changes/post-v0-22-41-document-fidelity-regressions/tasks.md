@@ -80,6 +80,8 @@
 
 ## Definition of Ready
 
+- [/] #343: CI coverageだけ残っていた未固定の最新版curl取得を、既存SHA固定installer・cargo-llvm-cov0.9.1・fallback noneへ統一。元macOS PR条件/llvm-tools/JOBS1/全coverage条件を維持。対象RED→11GREEN/actionlint成功、通常commit/pushと現HEAD CIは続行する。[証跡](evidence/coverage-installer-pin-2026-10-24.ja.md)。
+
 - [x] 2026-10-24: clean93abd651の原本Office6件・PPTX3操作・HTML・PDF4テーマを元期限で回収、session56353実終了0。過去の期限超過を保持し、配布版本体の受入や性能安定化へ読み替えない。[最新結果と残件](evidence/cached-image-watch-retry-2026-10-24.ja.md)を参照。
 - [ ] 2026-10-24追加監査: canonical配布版manifestと本体の文書操作を記録する実運用経路が未接続。既存checkerは実終了1で欠落を拒否する。単なる再検査・コピーの試作は不採用。隔離した配布本体の操作記録方式を確認し、各OSの実証跡を取得して既存公開条件を満たす。本人の利用規約承認は代行しない。
 

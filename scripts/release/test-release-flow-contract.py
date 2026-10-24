@@ -80,6 +80,21 @@ class WorkflowContractTests(unittest.TestCase):
         recipe = (ROOT / "just/quality.just").read_text(encoding="utf-8")
         self.assertNotIn("{{RTK_CMD}}" + entry, recipe)
 
+    def test_coverage_installer_is_pinned_before_execution(self) -> None:
+        workflow = (ROOT / ".github/workflows/test-and-build.yml").read_text(encoding="utf-8")
+        self.assertNotIn("/releases/latest/download/cargo-llvm-cov", workflow)
+        install = workflow.split("- name: Install coverage tool\n", 1)[1].split("- name: Run coverage\n", 1)[0]
+        self.assertIn("uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91", install)
+        self.assertIn("tool: cargo-llvm-cov@0.9.1", install)
+        self.assertIn("fallback: none", install)
+        condition = "if: runner.os == 'macOS' && github.event_name == 'pull_request'"
+        self.assertIn(condition, install)
+        coverage_step = workflow.split("- name: Run coverage\n", 1)[1].split("\n      - name:", 1)[0]
+        self.assertIn(condition, coverage_step)
+        coverage = next(block for block in run_blocks(workflow) if "JOBS=1 just coverage" in block)
+        self.assertNotIn("curl", coverage)
+        self.assertIn("rustup component add llvm-tools-preview", coverage)
+
     def test_post_release_host_mode_is_opt_in(self) -> None:
         check_pr_ready = (ROOT / "scripts/release/check-pr-ready.sh").read_text(
             encoding="utf-8"
