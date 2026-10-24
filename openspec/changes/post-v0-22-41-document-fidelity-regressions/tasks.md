@@ -1,9 +1,10 @@
 ### 2026-10-25 配布版の機能検証と残る修復
 
-- [/] Windowsの親directory rename修復に伴う同秒・同mtime画像更新の通知欠落を修復。親metadata監視を維持し、内容比較は登録済み画像だけへ限定。実画像を使う監視32件・strict Clippy/fmt成功。新HEADの通常push・個別review reply/resolve・Windows CIは未完。[証跡](evidence/windows-image-content-watch-2026-10-25.ja.md)。
+- [/] Windowsの親directory rename修復に伴う同秒・同mtime画像更新の通知欠落を修復。親metadata監視を維持し、内容比較は登録済み画像だけへ限定。実画像を使う監視32件・strict Clippy/fmt成功。`b0ba969b` の通常push・個別reply/resolve・current review未解決0を回収し、Windows nativeでもunit1307件と当該監視/rename回帰は成功した。別の原本READMEテストが描画前の見出し抽出で失敗したため、LF/CRLF対応を対象4件で修復し、新Windows CIを継続する。[監視証跡](evidence/windows-image-content-watch-2026-10-25.ja.md)、[CI修復](evidence/windows-readme-line-endings-2026-10-25.ja.md)。
 - [x] c05配布版で原本Office6/HTML各10回と本人報告DOCX/PDF6件、計76件の表示・close後全資源0・新receiptを回収。正常終了も実exit0。DEBUG付き機能検証と通常性能・95点・公開を区別する。[証跡](evidence/macos-packaged-functional-2026-10-25.ja.md)。
-- [ ] 資源0でも増えるmacOS mainのメモリを調査し、既存回収のHTML単独close漏れの修正候補を配布版で再検証する。元予算を変更しない。
-- [ ] c05 Ready Readinessのnative helper初回ビルド30秒超過を修復し、新HEADで正式CIを回収する。ビルドと判定を分け、判定の30秒上限は維持する。
+- [ ] 資源0でも増えるmacOS mainのメモリを調査し、既存回収のHTML単独close漏れの修正候補を配布版で再検証する。`b0ba969b` の新universalで原本HTML/PPTX各1件の描画/close資源0/通常exit0は確認したが、性能合格ではない。字体照合前にフォント候補を全量読込するKatanA側の不要IOを特定し、metadata読取への限定修復と再測定を続ける。元予算を変更しない。
+- [/] 不要な候補フォント全量読込を `f13b92ca` へ通常署名commit。既存の字体選択・候補順・fallback・取消・TTC・破損診断を維持し、正式対象43件/AST30件/Clippy/fmt成功、独立P0/P1なし。修正版配布の元cold/steady予算は未検証。[根拠と対照](evidence/font-candidate-io-2026-10-25.ja.md)。
+- [x] c05 Ready Readinessのnative helper初回ビルド30秒超過を修復し、`b0ba969b` の[正式Readiness](https://github.com/HiroyukiFuruno/KatanA/actions/runs/40129549656/job/120978129639)成功を回収した。ビルドと判定を分け、判定の30秒上限は維持する。これを後続HEADのCI成功へ流用しない。
 
 ## 要件(Verbatim Requirements)
 

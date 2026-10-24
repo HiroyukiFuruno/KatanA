@@ -21,3 +21,13 @@ source `c05b7f03588c2e631ece377a9238cb6e6659b953` の既存 `just package-mac` �
 別の同成果物・同隔離設定の実行 `tmp/macos-isolated-resume.0F4yIi`、PID63479でもHTML単独10回の新しいreceipt/close0を確認し、physical footprint173360280→277598408bytes、RSS193232896→324812800bytesを観測した。続けてOfficeを一件開閉しても使用量は減らず、原因をHTMLだけと確定しない。この実行も通常exit0。記録先を閉包が取り違えた最初の失敗試行は除外し、run ID/PIDを固定した10件だけを採用する。
 
 既存の返却条件がHTML単独closeを対象にしないことはソースと実caller回帰のREDで確認した。HTML終了を既存回収へ接続する候補は別差分で検証中であり、配布版での改善は未証明。KDV/KRRの追加実装・閾値緩和・保護機能無効化は行わない。
+
+## b0ba969bの新しいuniversal配布版
+
+`b0ba969b7355f8d9a1af1cce60af01d721073d22` の通常package工程は実終了0。`tmp/macos-isolated-package.wjrLbB` にZIPと新展開app、配布契約・deep strict ad-hoc署名・本体/worker両architecture・source/両lock不変・展開前後cmpを保存した。ZIP SHA256は `fe2ccc0fc01071809ed97bb729e383a546780f33a30f1dfebb7574420c74af7e`、mainは `ee5ff01c9908949407a5a93e2644b772ccdd5ca46be1006de5afad3ec331a128`、workerは上記と同じ。
+
+本人受諾済みの同じ隔離設定で、この新展開appの実mainを起動した。run `tmp/macos-isolated-resume.o4v0RJ`、PID48537で原本HTMLとPPTXを各1回表示し、実frame/URI、新しいclose receipt、全host/KDV資源0を確認した。観測されたready時間はそれぞれ1189.65ms・3224.07ms。通常メニューでアプリを終了し、アプリとwrapperの実終了0、実行前後のHEAD不変を回収した。撮影画像はJPEGとして保存した。
+
+`validated-functional-results.json` はPID/run ID・入力SHA・実frame・新close sequence・資源0・画像signature・通常exit・HEAD一致を再照合している。2件だけの機能結果であり、旧c05の76件をこの新配布版へ付け替えていない。10cycleメモリ予算、独立比較、clean-machine、Intelでの実行、公開済み配布物の受入は別途必要。
+
+別のARM専用診断appでは原本18件の描画/close/正常exit0も回収したが、universal最終配布版や通常性能の成功には代用しない。候補フォントを字体照合前に全量読むKatanA側の不要IOを特定し、元の字形選択を維持して必要metadataだけ読む修復を続ける。これはリークの確定や性能合格ではない。

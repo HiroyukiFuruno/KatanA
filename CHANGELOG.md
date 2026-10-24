@@ -28,6 +28,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **HTTPS certificate validation**: Updated certificate verification and trusted roots to reject distrusted certificate chains.
 - **Document memory usage**: Removed an extra copy of document input data retained throughout a viewer session.
 - **Office tabs and memory**: Documents using the same installed font share its data across tabs instead of retaining an extra copy for every tab.
+- **Office font lookup**: Avoid loading complete font files for unused candidates while preserving font selection.
 - **Preview image stability**: Diagram and image textures remain available when image controls are hidden.
 - **Missing image recovery**: If an image folder is temporarily unavailable, the preview retries in the background and recovers after the folder and image become available, without reopening the workspace.
 - **Failed image previews**: Unavailable images show an error without leaving their preview section permanently loading, and retain document navigation positions.
