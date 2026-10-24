@@ -3,22 +3,32 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, Mutex};
 
-use super::{DocumentFailure, DocumentSurfaceSource};
+use super::super::source_revision::{IntakeOutcome, SourceRevision};
+use super::DocumentFailure;
 
-pub(super) type IntakeResult = Result<DocumentSurfaceSource, DocumentFailure>;
+pub(super) type IntakeResult = Result<IntakeOutcome, DocumentFailure>;
 
 #[derive(Debug)]
 pub(super) struct IntakeRequest {
     pub(super) path: PathBuf,
+    pub(super) known_revision: Option<SourceRevision>,
     cancelled: AtomicBool,
     sender: Mutex<Option<Sender<IntakeResult>>>,
 }
 
 impl IntakeRequest {
     pub(super) fn new(path: PathBuf) -> (Arc<Self>, Receiver<IntakeResult>) {
+        Self::with_revision(path, None)
+    }
+
+    pub(super) fn with_revision(
+        path: PathBuf,
+        known_revision: Option<SourceRevision>,
+    ) -> (Arc<Self>, Receiver<IntakeResult>) {
         let (sender, receiver) = std::sync::mpsc::channel();
         let request = Self {
             path,
+            known_revision,
             cancelled: AtomicBool::new(false),
             sender: Mutex::new(Some(sender)),
         };

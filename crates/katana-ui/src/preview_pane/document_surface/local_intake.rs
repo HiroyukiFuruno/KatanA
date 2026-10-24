@@ -4,19 +4,26 @@ use std::sync::mpsc::{Receiver, TryRecvError};
 
 use eframe::egui;
 
-use super::{DocumentFailure, DocumentSurfaceSource};
+use super::DocumentFailure;
+use super::source_revision::SourceRevision;
 use crate::preview_pane::PreviewPane;
 
 #[path = "local_intake_pool.rs"]
 mod pool;
 #[path = "local_intake_request.rs"]
 mod request;
+#[path = "local_intake_result.rs"]
+mod result;
 #[path = "local_intake_worker.rs"]
 mod worker;
 
 #[cfg(test)]
 #[path = "local_intake_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "local_intake_revision_tests.rs"]
+mod revision_tests;
 
 #[cfg(all(test, unix))]
 #[path = "local_intake_resource_tests.rs"]
@@ -32,14 +39,26 @@ const INTAKE_POLL_INTERVAL: std::time::Duration = std::time::Duration::from_mill
 pub(crate) struct LocalDocumentIntake {
     path: PathBuf,
     request: Arc<request::IntakeRequest>,
-    result: Receiver<Result<DocumentSurfaceSource, DocumentFailure>>,
+    result: Receiver<request::IntakeResult>,
     force: bool,
     refresh_requested: bool,
 }
 
 impl LocalDocumentIntake {
     fn start(path: PathBuf, force: bool) -> Result<Self, DocumentFailure> {
-        let (request, result) = request::IntakeRequest::new(path.clone());
+        Self::start_known(path, force, None)
+    }
+
+    fn start_known(
+        path: PathBuf,
+        force: bool,
+        known: Option<SourceRevision>,
+    ) -> Result<Self, DocumentFailure> {
+        let (request, result) = if let Some(known) = known.filter(|_| !force) {
+            request::IntakeRequest::with_revision(path.clone(), Some(known))
+        } else {
+            request::IntakeRequest::new(path.clone())
+        };
         pool::IntakePool::global()
             .enqueue(&request)
             .map_err(|cause| request.failure(cause))?;
@@ -70,7 +89,17 @@ impl PreviewPane {
             return;
         }
         self.document_intake = None;
-        let pending = match LocalDocumentIntake::start(path.to_path_buf(), force) {
+        let known = self
+            .document_surface
+            .as_ref()
+            .filter(|_| !force)
+            .map(SourceRevision::from_surface);
+        let started = if known.is_some() {
+            LocalDocumentIntake::start_known(path.to_path_buf(), force, known)
+        } else {
+            LocalDocumentIntake::start(path.to_path_buf(), force)
+        };
+        let pending = match started {
             Ok(pending) => pending,
             Err(error) => {
                 self.full_render_document_failure(error);
@@ -111,21 +140,6 @@ impl PreviewPane {
                     "document intake stopped before returning a result",
                 ));
             }
-        }
-    }
-
-    fn finish_document_intake(
-        &mut self,
-        pending: LocalDocumentIntake,
-        result: request::IntakeResult,
-    ) {
-        self.is_loading = false;
-        match result {
-            Ok(source) => self.full_render_document_source(source, pending.force),
-            Err(error) => self.full_render_document_failure(error),
-        }
-        if pending.refresh_requested {
-            self.full_render_document_path(&pending.path, false);
         }
     }
 

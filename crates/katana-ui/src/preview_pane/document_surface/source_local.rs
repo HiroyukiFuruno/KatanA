@@ -56,13 +56,18 @@ impl SourceLocalOps {
         DebugLog::write(
             "document_source_intake",
             format_args!(
-                "kind=local format={} bytes={} elapsed_ms={} canonical_ms={} read_ms={} validate_ms={} uri={}",
+                "kind=local format={} bytes={} elapsed_ms={} canonical_ms={} read_ms={} validate_ms={} pid={} timestamp_unix_us={} revision={} uri={}",
                 source.format.extension(),
                 source.bytes.len(),
                 started_at.elapsed().as_millis(),
                 canonical_ms,
                 read_ms.saturating_sub(canonical_ms),
                 validate_ms.saturating_sub(read_ms),
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map_or(0, |time| time.as_micros()),
+                source.revision,
                 source.uri
             ),
         );

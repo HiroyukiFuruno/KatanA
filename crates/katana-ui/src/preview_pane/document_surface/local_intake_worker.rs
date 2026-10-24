@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use super::DocumentSurfaceSource;
+use super::super::source_revision::SourceRevisionOps;
 use super::pool::{PoolPhase, SharedPool};
 use super::request::IntakeRequest;
 use super::request::IntakeResult;
@@ -86,9 +86,10 @@ impl IntakeWorkerOps {
                 return;
             }
         };
-        let result = DocumentSurfaceSource::local_with_cancellation(&request.path, || {
-            request.is_cancelled()
-        });
+        let result =
+            SourceRevisionOps::load(&request.path, request.known_revision.as_ref(), || {
+                request.is_cancelled()
+            });
         Self::deliver(shared, request, sender, result);
     }
 

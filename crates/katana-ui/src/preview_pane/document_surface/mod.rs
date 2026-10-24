@@ -23,6 +23,7 @@ mod render_support;
 mod slideshow;
 mod source;
 mod source_io;
+mod source_revision;
 mod spreadsheet_filter_controls;
 mod types;
 mod worker;

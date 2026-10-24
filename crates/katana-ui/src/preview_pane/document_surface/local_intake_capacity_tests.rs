@@ -127,11 +127,14 @@ fn release_fifo_reads(fifos: &[std::path::PathBuf]) {
 
 fn verify_recovered_read(regular: &std::path::Path) {
     let pending = LocalDocumentIntake::start(regular.to_path_buf(), false).unwrap();
-    let source = pending
+    let super::super::source_revision::IntakeOutcome::Loaded(source) = pending
         .result
         .recv_timeout(TIMEOUT)
         .unwrap()
-        .expect("recovered regular read");
+        .expect("recovered regular read")
+    else {
+        panic!("recovered request must load source")
+    };
     assert_eq!(
         source.descriptor().uri,
         url::Url::from_file_path(regular.canonicalize().unwrap())

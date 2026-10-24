@@ -10,12 +10,14 @@ const HEX_NIBBLE_BITS: u8 = 4;
 const HEX_NIBBLE_MASK: u8 = 0x0f;
 
 pub(super) fn revision(bytes: &[u8]) -> String {
-    const HEX: &[u8; 16] = b"0123456789abcdef";
+    revision_digest(&Sha256::digest(bytes))
+}
 
-    let digest = Sha256::digest(bytes);
+pub(super) fn revision_digest(digest: &[u8]) -> String {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
     let mut revision = String::with_capacity("sha256:".len() + digest.len() * 2);
     revision.push_str("sha256:");
-    for byte in digest {
+    for &byte in digest {
         revision.push(char::from(HEX[usize::from(byte >> HEX_NIBBLE_BITS)]));
         revision.push(char::from(HEX[usize::from(byte & HEX_NIBBLE_MASK)]));
     }
@@ -143,7 +145,7 @@ pub(super) fn enforce_remote_size(
     ))
 }
 
-fn enforce_size_limit(
+pub(super) fn enforce_size_limit(
     path: &Path,
     format: Option<BinaryDocumentFormat>,
     actual: usize,

@@ -105,7 +105,11 @@ fn cancelled_fifo_reads_child() {
     let regular = directory.path().join("unrelated.pdf");
     std::fs::write(&regular, b"%PDF-1.7").unwrap();
     let unrelated = LocalDocumentIntake::start(regular, false).unwrap();
-    let mut source = unrelated.result.recv_timeout(TIMEOUT).unwrap().unwrap();
+    let super::super::super::source_revision::IntakeOutcome::Loaded(mut source) =
+        unrelated.result.recv_timeout(TIMEOUT).unwrap().unwrap()
+    else {
+        panic!("initial request must load source")
+    };
     assert!(source.take_bytes().unwrap().starts_with(b"%PDF-"));
     assert!(!unrelated.request.is_cancelled());
 
