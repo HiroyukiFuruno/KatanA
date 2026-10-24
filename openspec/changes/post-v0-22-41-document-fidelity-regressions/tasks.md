@@ -4,6 +4,16 @@
 
 ### 2026-10-24 最新本人承認: 上流更新を待たない先行公開
 
+最新状態: 読取専用記録機構は通常署名commit `0d76e2a3`、Windows実watch診断は `d9bf0a8e` へ統合。receipt 8件・shell 92件・strict Clippy/fmt・正式AST30件が成功。外部driverは同一run資源の読取を実装、実Dockerで未承認Terms拒否/本体正常終了と従来UI操作の回帰を回収したが、新配布版の文書受入は未完。557のMac headlessはDraft戻しに伴うworkflow取消で成功未確認、Windowsの実失敗は保持して新CIで切分けを続ける。[記録と未完条件](evidence/packaged-recording-2026-10-24.ja.md)。
+
+> pptxの抜本改革はkrrなので先行公開で良いです。
+>
+> 検証用の仕組みを追加する
+
+- [x] 本人はPPTXの読込遅延未達を明記した先行公開を承認した。旧15秒超過と最新の原本操作成功は両方保持し、遅延解消・全性能合格とは記載しない。日英の公開変更履歴へ既知制限を追記し、正常終了・他形式・RSS・描画条件は無断免除しない。
+- [/] 隔離環境で配布版本体の操作・描画・終了を記録する検証機構の追加を本人が明示承認。外部native操作を使い、Termsの同意は代行しない。実Dockerの初回blank誤判定を修復し、規約未同意の検出・driver exit2・本体正常終了0・Terms=null・強制終了なしを回収した。従来のresize/scroll/popup/WM close検査も再実行0、Linux実process provenance4件0。これは旧配布候補を使った検証機構の回帰であり、現在の配布版の文書操作完了ではない。同一runの資源総数を記録する既定OFFの読み取り専用機構を実装中。
+- [/] 新557079e5の通常push・全review回収・未解決thread0・Ready後Readinessは成功。Windows本体テストは監視中のdirectory renameがOSのPermissionDeniedで拒否され、1284成功/1失敗/既存ignore2で終了101。元assert/期限を維持したWindows実handle構成別診断を追加中で、検査の除外・待ち時間延長や製品修復済みとは扱わない。macOS/Linuxの結果回収も継続する。
+
 - [/] キャッシュ済み画像で監視登録の再試行が止まる4経路を修復。実PNGからの新規4回帰は旧実装で再試行0対期待1の全4件RED、修復後は実ファイル変更・監視復旧を含む画像ローダー57件GREEN。正式AST30件・対象Clippy・既存fmt・変更文書KML成功、独立差分レビュー必須所見なし。通常署名commit b88a59a0へ統合済み。PPTX初回15秒期限は容量復旧後も未達101で本人へ扱いを確認し、閾値は変更しない。新HEAD原本/PDF受入・通常push・個別reply/resolve・新review/CIは継続中。[証跡](evidence/cached-image-watch-retry-2026-10-24.ja.md)。
 
 - 旧「KDV #69の公開修正版が必須」という停止条件は今回の明示承認に従い置き換える。KDV0.5.12/KRR0.4.23の公開registry依存を維持し、上流repoを編集しない。

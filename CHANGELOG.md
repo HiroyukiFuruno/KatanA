@@ -2,7 +2,7 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
-## [0.22.42] - 2026-10-24 05:52:32 (UTC)
+## [0.22.42] - 2026-10-24 08:45:11 (UTC)
 
 ### 🚀 Features
 
@@ -53,6 +53,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Canvas preview**: Text cards display their source text without full Markdown formatting. Linked file contents, external web pages and group background images are not loaded; unsupported content is identified in the preview.
 - **HTML compatibility**: Some HTML styles and interactions still differ from Chrome. Further rendering improvements are planned for a subsequent release.
 - **Document loading and restart caching**: Office/PDF loading can remain slow, and Office/HTML/PDF rendering is loaded again after restarting the application. Persistent render caching and additional loading improvements are planned for a subsequent release.
+- **PowerPoint loading time**: The initial display of a presentation can take longer than 15 seconds. This release includes the available preview and interaction improvements; the broader loading and rendering improvements remain planned for a subsequent release.
 - **Restoring document-heavy workspaces on macOS**: Startup failure with a macOS Reopen prompt has been reported after restoring a workspace containing many Office/PDF files. Startup resumed in the reported environment after per-workspace saved-state JSON files were removed and the heavy workspace was excluded. Neither action's individual contribution nor resolution in this version is verified. Cause investigation and a recovery path that does not require manually removing saved state are tracked for a subsequent release.
 - **Some PowerPoint files**: Certain presentations can still fail with a ZIP local-header error. This remains under investigation.
 
