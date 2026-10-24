@@ -11,7 +11,7 @@ class InventoryWiringTests(unittest.TestCase):
     def test_tool_installers_share_the_pinned_coverage_compatible_revision(self) -> None:
         for filename, expected_count in (("release-readiness.yml", 1),
                                          ("build-and-release.yml", 2),
-                                         ("test-and-build.yml", 3)):
+                                         ("test-and-build.yml", 4)):
             with self.subTest(workflow=filename):
                 source = (ROOT / ".github/workflows" / filename).read_text()
                 revisions = re.findall(r"uses: taiki-e/install-action@([^\s]+)", source)
