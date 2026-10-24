@@ -32,7 +32,16 @@ class WindowsCompiledCacheContractTests(unittest.TestCase):
         job = current_test_job()
         tests = step_block(job, "Run tests")
         self.assertNotIn("if:", tests)
-        self.assertEqual(tests.count("bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'"), 2)
+        self.assertEqual(
+            tests.count("bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'"),
+            1,
+        )
+        self.assertIn('BASH_EXECUTABLE="$(cygpath -w "$BASH")"', tests)
+        self.assertIn(
+            '-- "$BASH_EXECUTABLE" scripts/ci/with-office-test-worker.sh '
+            "'cargo test --workspace'",
+            tests,
+        )
         for option in ("--compiled-cache-hit", "--compiled-cache-key", "--compiled-cache-eligible"):
             self.assertIn(option, tests)
         self.assertIn("steps.windows_target_cache.outputs.cache-hit", tests)
@@ -40,7 +49,8 @@ class WindowsCompiledCacheContractTests(unittest.TestCase):
         gate = step_block(job, "Verify CI resource contract")
         self.assertIn("test_windows_compiled_cache_contract.py", gate)
         self.assertIn("test_windows_target_cache_identity.py", gate)
-        workflow = (Path(__file__).resolve().parents[2] / ".github/workflows/test-and-build.yml").read_text()
+        workflow = (Path(__file__).resolve().parents[2]
+                    / ".github/workflows/test-and-build.yml").read_text(encoding="utf-8")
         self.assertIn("!github.event.pull_request.draft", workflow)
 
 

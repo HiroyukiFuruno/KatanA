@@ -37,7 +37,13 @@ class WindowsCiObservationContractTest(unittest.TestCase):
         self.assertIn("python3 -B scripts/ci/observe-ci-command.py", step)
         self.assertIn('"${KATANA_TEST_INVENTORY_ROOT}/windows-timing.json"', step)
         original = "bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'"
-        self.assertEqual(step.count(original), 2)
+        self.assertEqual(step.count(original), 1)
+        self.assertIn('BASH_EXECUTABLE="$(cygpath -w "$BASH")"', step)
+        self.assertIn(
+            '-- "$BASH_EXECUTABLE" scripts/ci/with-office-test-worker.sh '
+            "'cargo test --workspace'",
+            step,
+        )
         self.assertIn("else", step)
         self.assertNotIn("continue-on-error", step)
         self.assertNotIn("--skip", step)
@@ -55,7 +61,7 @@ class WindowsCiObservationContractTest(unittest.TestCase):
         ):
             self.assertIn(filename, tests)
         workflow = (Path(__file__).resolve().parents[2]
-                    / ".github/workflows/test-and-build.yml").read_text()
+                    / ".github/workflows/test-and-build.yml").read_text(encoding="utf-8")
         self.assertIn("!github.event.pull_request.draft", workflow)
 
 

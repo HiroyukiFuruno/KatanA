@@ -5,6 +5,7 @@ import atexit
 import hashlib
 import os
 import shutil
+import stat
 from pathlib import Path
 import subprocess
 import threading
@@ -74,6 +75,35 @@ def _apply_runtime_deletions(deletions: list[tuple[str, Path]]) -> None:
             path.unlink()
 
 
+def _remove_readonly_fixture_file(func, path, exc_info, root: Path) -> None:
+    error = exc_info[1]
+    candidate = Path(path)
+    resolved = candidate.resolve(strict=False)
+    if not (resolved == root or root in resolved.parents):
+        raise error.with_traceback(exc_info[2])
+    if (
+        not isinstance(error, PermissionError)
+        or getattr(error, "winerror", None) != 5
+        or func not in (os.unlink, os.remove)
+        or candidate.is_symlink()
+        or not candidate.is_file()
+        or candidate.stat().st_mode & stat.S_IWRITE
+    ):
+        raise error.with_traceback(exc_info[2])
+    os.chmod(path, candidate.stat().st_mode | stat.S_IWRITE)
+    func(path)
+
+
+def _remove_owned_fixture_tree(root: Path) -> None:
+    resolved_root = root.resolve()
+    shutil.rmtree(
+        root,
+        onerror=lambda func, path, exc_info: _remove_readonly_fixture_file(
+            func, path, exc_info, resolved_root
+        ),
+    )
+
+
 class PreparedFixtureBuildCache:
     """Lease immutable fixture roots while allowing Cargo artifacts to stay warm."""
 
@@ -130,7 +160,7 @@ class PreparedFixtureBuildCache:
     def close(self) -> None:
         with self._lock:
             if self._root.exists():
-                shutil.rmtree(self._root, ignore_errors=False)
+                _remove_owned_fixture_tree(self._root)
             self._entries.clear()
 
 
@@ -199,6 +229,91 @@ class PreparedFixtureBuildCacheTests(unittest.TestCase):
                     pass
         finally:
             cache.close()
+
+    def test_close_removes_readonly_git_loose_objects(self) -> None:
+        with self.cache.lease("one", _prepare_git_fixture):
+            pass
+        root = self.cache._entries["one"][0]
+        loose_objects = [
+            path
+            for path in (root / ".git/objects").glob("*/*")
+            if path.is_file()
+        ]
+        self.assertTrue(loose_objects)
+        for path in loose_objects:
+            path.chmod(path.stat().st_mode & ~stat.S_IWUSR)
+
+        self.cache.close()
+
+        self.assertFalse(root.exists())
+
+    def test_readonly_cleanup_rejects_writable_files_and_directories(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="katana-readonly-cleanup-boundary-"))
+        try:
+            writable = root / "writable"
+            writable.write_bytes(b"fixture")
+            directory = root / "directory"
+            directory.mkdir()
+            error = PermissionError(13, "permission denied", str(writable))
+            error.winerror = 5
+            exc_info = (type(error), error, None)
+
+            with self.assertRaises(PermissionError):
+                _remove_readonly_fixture_file(os.unlink, writable, exc_info, root)
+            with self.assertRaises(PermissionError):
+                _remove_readonly_fixture_file(os.unlink, directory, exc_info, root)
+        finally:
+            shutil.rmtree(root)
+
+    def test_readonly_cleanup_callback_unlinks_owned_file_and_rejects_boundaries(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="katana-readonly-cleanup-callback-"))
+        outside = Path(tempfile.mkdtemp(prefix="katana-readonly-cleanup-outside-"))
+        resolved_root = root.resolve()
+        try:
+            owned = root / "owned"
+            owned.write_bytes(b"fixture")
+            owned.chmod(owned.stat().st_mode & ~stat.S_IWUSR)
+            access_denied = PermissionError(13, "permission denied", str(owned))
+            access_denied.winerror = 5
+            exc_info = (type(access_denied), access_denied, None)
+            _remove_readonly_fixture_file(os.unlink, owned, exc_info, resolved_root)
+            self.assertFalse(owned.exists())
+
+            external = outside / "external"
+            external.write_bytes(b"keep")
+            external.chmod(external.stat().st_mode & ~stat.S_IWUSR)
+            with self.assertRaises(PermissionError):
+                _remove_readonly_fixture_file(os.unlink, external, exc_info, resolved_root)
+            self.assertTrue(external.exists())
+
+            target = outside / "target"
+            target.write_bytes(b"keep")
+            target.chmod(target.stat().st_mode & ~stat.S_IWUSR)
+            link = root / "link"
+            link.symlink_to(target)
+            with self.assertRaises(PermissionError):
+                _remove_readonly_fixture_file(os.unlink, link, exc_info, resolved_root)
+            self.assertTrue(link.is_symlink())
+            self.assertTrue(target.exists())
+
+            owned.write_bytes(b"keep")
+            owned.chmod(owned.stat().st_mode & ~stat.S_IWUSR)
+            wrong_error = ValueError("different error")
+            with self.assertRaises(ValueError):
+                _remove_readonly_fixture_file(
+                    os.unlink, owned, (type(wrong_error), wrong_error, None), resolved_root
+                )
+            with self.assertRaises(PermissionError):
+                _remove_readonly_fixture_file(os.rmdir, owned, exc_info, resolved_root)
+            self.assertTrue(owned.exists())
+        finally:
+            if (root / "link").is_symlink():
+                (root / "link").unlink()
+            for path in (root / "owned", outside / "external", outside / "target"):
+                if path.exists():
+                    path.chmod(path.stat().st_mode | stat.S_IWRITE)
+            shutil.rmtree(root)
+            shutil.rmtree(outside)
 
     def test_nested_lease_is_rejected_even_with_reentrant_lock(self) -> None:
         with self.cache.lease("one", _prepare_git_fixture):

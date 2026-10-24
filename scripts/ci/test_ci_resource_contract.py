@@ -28,7 +28,9 @@ class CiResourceContractTest(unittest.TestCase):
         self.assertIn(f"run: {command}", cache_tests)
         self.assertNotIn("continue-on-error", cache_tests)
         self.assertNotIn("--manifest-path", cache_tests)
-        tests_just = (Path(__file__).resolve().parents[2] / "just/tests.just").read_text()
+        tests_just = (Path(__file__).resolve().parents[2] / "just/tests.just").read_text(
+            encoding="utf-8"
+        )
         self.assertRegex(tests_just, r"(?m)^test:.*\btest-custom-cursor-cache\b")
         self.assertIn("test-custom-cursor-cache:", tests_just)
         self.assertIn("-p katana-ui -p egui-winit --lib cursor_cache::tests", tests_just)
@@ -40,7 +42,9 @@ class CiResourceContractTest(unittest.TestCase):
         self.assertIn(f"run: {command}", cache_tests)
         self.assertNotIn("continue-on-error", cache_tests)
         self.assertNotIn("--manifest-path", cache_tests)
-        tests_just = (Path(__file__).resolve().parents[2] / "just/tests.just").read_text()
+        tests_just = (Path(__file__).resolve().parents[2] / "just/tests.just").read_text(
+            encoding="utf-8"
+        )
         self.assertRegex(tests_just, r"(?m)^test:.*\btest-commonmark-backend\b")
         self.assertIn("test-commonmark-backend:", tests_just)
         self.assertIn("-p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests", tests_just)
