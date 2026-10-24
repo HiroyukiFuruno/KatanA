@@ -1,5 +1,6 @@
 ### 2026-10-25 配布版の機能検証と残る修復
 
+- [/] Windowsの親directory rename修復に伴う同秒・同mtime画像更新の通知欠落を修復。親metadata監視を維持し、内容比較は登録済み画像だけへ限定。実画像を使う監視32件・strict Clippy/fmt成功。新HEADの通常push・個別review reply/resolve・Windows CIは未完。[証跡](evidence/windows-image-content-watch-2026-10-25.ja.md)。
 - [x] c05配布版で原本Office6/HTML各10回と本人報告DOCX/PDF6件、計76件の表示・close後全資源0・新receiptを回収。正常終了も実exit0。DEBUG付き機能検証と通常性能・95点・公開を区別する。[証跡](evidence/macos-packaged-functional-2026-10-25.ja.md)。
 - [ ] 資源0でも増えるmacOS mainのメモリを調査し、既存回収のHTML単独close漏れの修正候補を配布版で再検証する。元予算を変更しない。
 - [ ] c05 Ready Readinessのnative helper初回ビルド30秒超過を修復し、新HEADで正式CIを回収する。ビルドと判定を分け、判定の30秒上限は維持する。

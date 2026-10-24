@@ -9,6 +9,8 @@ use std::sync::{
 use std::time::Duration;
 
 mod backend;
+#[cfg(any(windows, test))]
+mod content_watch;
 mod directory_recovery;
 mod events;
 mod registration;
@@ -91,6 +93,12 @@ fn run(request_rx: mpsc::Receiver<WatchCommand>) {
     let (event_tx, event_rx) = mpsc::sync_channel(256);
     let event_overflow = Arc::new(AtomicBool::new(false));
     let callback_overflow = Arc::clone(&event_overflow);
+    #[cfg(windows)]
+    let mut content =
+        match content_watch::ContentWatch::new(event_tx.clone(), Arc::clone(&event_overflow)) {
+            Ok(content) => content,
+            Err(error) => return run_without_watcher(request_rx, error.to_string()),
+        };
     let watcher = Backend::create(move |event| {
         if event_tx.try_send(event).is_err() {
             callback_overflow.store(true, Ordering::Release);
@@ -106,7 +114,16 @@ fn run(request_rx: mpsc::Receiver<WatchCommand>) {
     let mut watched_dirs = HashSet::new();
     let mut targets = Targets::new();
     loop {
-        drain_requests(&request_rx, &mut watcher, &mut watched_dirs, &mut targets);
+        drain_requests(
+            &request_rx,
+            &mut watcher,
+            &mut watched_dirs,
+            &mut targets,
+            #[cfg(windows)]
+            &mut content,
+        );
+        #[cfg(windows)]
+        content.sync(&watched_dirs, &targets);
         if event_overflow.swap(false, Ordering::AcqRel) {
             notify_overflow(&targets);
         }
@@ -125,6 +142,8 @@ fn run(request_rx: mpsc::Receiver<WatchCommand>) {
             Err(mpsc::RecvTimeoutError::Disconnected) => return,
         }
         retain_live_targets(&mut watcher, &mut watched_dirs, &mut targets);
+        #[cfg(windows)]
+        content.sync(&watched_dirs, &targets);
     }
 }
 
@@ -146,12 +165,16 @@ fn drain_requests(
     watcher: &mut ImageWatcher,
     watched_dirs: &mut HashSet<PathBuf>,
     targets: &mut Targets,
+    #[cfg(windows)] content: &mut content_watch::ContentWatch,
 ) {
     while let Ok(command) = request_rx.try_recv() {
         let WatchCommand::Watch(request) = command else {
             clear_owner(command, watcher, watched_dirs, targets);
             continue;
         };
+        #[cfg(windows)]
+        Registration::register_with_content(request, watcher, watched_dirs, targets, content);
+        #[cfg(not(windows))]
         Registration::register(request, watcher, watched_dirs, targets);
     }
 }

@@ -32,6 +32,7 @@ impl Registration {
         }
     }
 
+    #[cfg(any(not(windows), test))]
     pub(super) fn register(
         request: WatchRequest,
         watcher: &mut ImageWatcher,
@@ -45,6 +46,41 @@ impl Registration {
             return;
         }
         let result = Self::install(&request, watcher, watched_dirs, targets);
+        Self::publish(request, result, watcher, watched_dirs, targets);
+    }
+
+    #[cfg(any(windows, test))]
+    pub(super) fn register_with_content(
+        request: WatchRequest,
+        watcher: &mut ImageWatcher,
+        watched_dirs: &mut HashSet<PathBuf>,
+        targets: &mut Targets,
+        content: &mut super::content_watch::ContentWatch,
+    ) {
+        let Some(owner) = request.owner.upgrade() else {
+            return;
+        };
+        if owner.generation.load(std::sync::atomic::Ordering::Acquire) != request.generation {
+            return;
+        }
+        let result = Self::install(&request, watcher, watched_dirs, targets).and_then(|()| {
+            /* WHY: 登録完了の通知より先に内容snapshotを確立し、登録直後の上書きも検出する。 */
+            content.register(&request, watched_dirs, targets)
+        });
+        Self::publish(request, result, watcher, watched_dirs, targets);
+        content.sync(watched_dirs, targets);
+    }
+
+    fn publish(
+        request: WatchRequest,
+        result: Result<(), String>,
+        watcher: &mut ImageWatcher,
+        watched_dirs: &mut HashSet<PathBuf>,
+        targets: &mut Targets,
+    ) {
+        let Some(owner) = request.owner.upgrade() else {
+            return;
+        };
         if result.is_err() {
             Self::remove_previous(&request, targets);
             super::events::unwatch_unused_dirs(watcher, watched_dirs, targets);
