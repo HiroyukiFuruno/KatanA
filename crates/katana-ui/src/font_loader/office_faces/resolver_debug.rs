@@ -5,20 +5,21 @@ use std::time::Instant;
 
 use skrifa::FontRef;
 
+use super::font_file::FontCandidate;
 use super::resolver_selection::{PendingMatch, RequestKey};
 use super::types::{FontFaceRequest, FontFaceResolutionDiagnostic};
 use crate::debug_log::DebugLog;
 
 pub(super) fn read_candidate(
-    path: &Path,
+    candidate: &mut FontCandidate,
     cancelled: &AtomicBool,
 ) -> Result<Vec<u8>, FontFaceResolutionDiagnostic> {
     DebugLog::write(
         "document_font_read",
-        format_args!("phase=started path={}", path.display()),
+        format_args!("phase=started path={}", candidate.path().display()),
     );
     let started = Instant::now();
-    let result = super::font_file::read_candidate(path, cancelled);
+    let result = candidate.read_payload(cancelled);
     let (phase, bytes) = match &result {
         Ok(payload) => ("ready", payload.len()),
         Err(_) => ("failed", 0),
@@ -27,7 +28,7 @@ pub(super) fn read_candidate(
         "document_font_read",
         format_args!(
             "phase={phase} path={} bytes={bytes} read_us={}",
-            path.display(),
+            candidate.path().display(),
             started.elapsed().as_micros()
         ),
     );

@@ -4,7 +4,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use skrifa::raw::FileRef;
 
-use super::resolver_debug::{read_candidate, selected_match};
+use super::resolver_debug::selected_match;
+use super::resolver_metadata::CandidateMetadata;
 use super::resolver_selection::{
     PendingMatch, RequestKey, SelectedFace, all_exact_matches, append_matches,
 };
@@ -57,24 +58,14 @@ fn inspect_candidate(
     incomplete: &mut bool,
     cancelled: &AtomicBool,
 ) {
-    let payload = match read_candidate(path, cancelled) {
-        Ok(bytes) => Some(bytes),
-        Err(diagnostic) => return_diagnostic(diagnostic, result, incomplete),
+    let Some(payload) =
+        CandidateMetadata::payload(path, requests, selected, result, incomplete, cancelled)
+    else {
+        return;
     };
-    let Some(payload) = payload else { return };
     inspect_payload(
         path, payload, requests, selected, result, incomplete, cancelled,
     );
-}
-
-fn return_diagnostic(
-    diagnostic: FontFaceResolutionDiagnostic,
-    result: &mut FontFaceResolution,
-    incomplete: &mut bool,
-) -> Option<Vec<u8>> {
-    *incomplete = true;
-    result.diagnostics.push(diagnostic);
-    None
 }
 
 fn inspect_payload(
@@ -189,3 +180,7 @@ fn stop_if_cancelled(cancelled: &AtomicBool, result: &mut FontFaceResolution) ->
     }
     true
 }
+
+#[cfg(test)]
+#[path = "resolver_payload_tests.rs"]
+mod tests;

@@ -51,6 +51,12 @@ pub(super) struct PendingMatch {
     distance: u16,
 }
 
+impl PendingMatch {
+    pub(super) fn improves(&self, selected: &BTreeMap<RequestKey, SelectedFace>) -> bool {
+        should_replace(selected.get(&self.key), self.distance)
+    }
+}
+
 pub(super) fn selected_match(
     face: &FontRef<'_>,
     index: usize,

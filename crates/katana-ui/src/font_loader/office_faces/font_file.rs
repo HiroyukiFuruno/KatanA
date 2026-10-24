@@ -1,16 +1,49 @@
 use std::fs::{self, File};
-use std::io::Read;
+use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use super::types::{FONT_READ_CHUNK_BYTES, FontFaceResolutionDiagnostic, MAX_FONT_PAYLOAD_BYTES};
 
-pub(super) fn read_candidate(
-    path: &Path,
-    cancelled: &AtomicBool,
-) -> Result<Vec<u8>, FontFaceResolutionDiagnostic> {
-    let (file, size) = open_candidate(path, cancelled)?;
-    read_payload(file, path, size, cancelled)
+pub(super) struct FontCandidate {
+    pub(super) file: File,
+    pub(super) size: u64,
+    path: PathBuf,
+}
+
+impl FontCandidate {
+    pub(super) fn open(
+        path: &Path,
+        cancelled: &AtomicBool,
+    ) -> Result<Self, FontFaceResolutionDiagnostic> {
+        let (file, size) = open_candidate(path, cancelled)?;
+        Ok(Self {
+            file,
+            size,
+            path: path.to_owned(),
+        })
+    }
+
+    pub(super) fn path(&self) -> &Path {
+        &self.path
+    }
+
+    pub(super) fn read_payload(
+        &mut self,
+        cancelled: &AtomicBool,
+    ) -> Result<Vec<u8>, FontFaceResolutionDiagnostic> {
+        check_cancelled(cancelled)?;
+        self.file
+            .seek(SeekFrom::Start(0))
+            .map_err(|error| unreadable(&self.path, error))?;
+        let size = self
+            .file
+            .metadata()
+            .map_err(|error| unreadable(&self.path, error))?
+            .len();
+        check_size(&self.path, size)?;
+        read_payload(&mut self.file, &self.path, size, cancelled)
+    }
 }
 
 fn open_candidate(
@@ -28,11 +61,13 @@ fn open_candidate(
     check_size(path, metadata.len())?;
     check_cancelled(cancelled)?;
     let file = File::open(path).map_err(|error| unreadable(path, error))?;
+    let metadata = file.metadata().map_err(|error| unreadable(path, error))?;
+    check_size(path, metadata.len())?;
     Ok((file, metadata.len()))
 }
 
 fn read_payload(
-    mut file: File,
+    file: &mut File,
     path: &Path,
     size: u64,
     cancelled: &AtomicBool,
@@ -42,7 +77,7 @@ fn read_payload(
     loop {
         check_cancelled(cancelled)?;
         if payload.len() as u64 == MAX_FONT_PAYLOAD_BYTES {
-            if has_extra_byte(&mut file, path)? {
+            if has_extra_byte(file, path)? {
                 return Err(FontFaceResolutionDiagnostic::FileTooLarge {
                     path: path.to_owned(),
                     bytes: MAX_FONT_PAYLOAD_BYTES + 1,

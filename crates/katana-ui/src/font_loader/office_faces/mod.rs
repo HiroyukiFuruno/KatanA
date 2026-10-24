@@ -1,8 +1,12 @@
 mod face_payload;
 mod font_file;
 mod font_metadata;
+mod metadata_collection;
+mod metadata_reader;
+mod metadata_tables;
 mod resolver;
 mod resolver_debug;
+mod resolver_metadata;
 mod resolver_scan;
 mod resolver_selection;
 mod types;
@@ -33,6 +37,9 @@ mod unicode_sfnt_fixture;
 
 #[cfg(test)]
 mod cancellation_tests;
+
+#[cfg(test)]
+mod metadata_regression_tests;
 
 #[cfg(test)]
 mod installed_font_tests;
