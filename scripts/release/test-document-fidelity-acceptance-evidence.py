@@ -277,6 +277,56 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(evidence), encoding="utf-8")
 
+    def bind_html_host_actions(self, root: Path, evidence: dict[str, object]) -> None:
+        html = evidence["html"]
+        comparison = html["comparison"]
+        artifact_path = root / comparison["measured_artifact"]
+        artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+        fixture_sha = html["fixture_sha256"]
+        artifact["host_actions"] = {
+            "scroll": {
+                "input_received": True,
+                "frame_before": 2,
+                "frame_after": 3,
+                "source_sha256": fixture_sha,
+            },
+            "reload": {
+                "input_received": True,
+                "session_before": 1,
+                "session_after": 2,
+                "frame_after": 1,
+                "frame_session": 2,
+                "source_sha256": fixture_sha,
+            },
+            "dirty_source": {
+                "before_sha256": fixture_sha,
+                "after_sha256": fixture_sha,
+                "modified_before": True,
+                "modified_after": True,
+            },
+        }
+        artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+        digest = MODULE.sha256_bytes(artifact_path.read_bytes())
+        comparison["measured_sha256"] = digest
+        html["packaged_run"]["render_output"]["metrics_sha256"] = digest
+        comparison["disposition"] = {"status": "matched"}
+
+    def approved_pptx_first_frame_miss(self, root: Path, evidence: dict[str, object]) -> dict[str, object]:
+        self.bind_html_host_actions(root, evidence)
+        pptx = next(record for record in evidence["office_fixtures"] if record["format"] == "pptx")
+        pptx["first_frame_ms"] = 15000.001
+        pptx["first_frame_disposition"] = {
+            "status": "known_krr_pptx_first_frame_miss",
+            "owner": "KRR",
+            "approval": "2026-10-24-pptx-krr-advance-publication",
+            "release_target": "v0.22.42",
+            "scope": "katana-host",
+            "limit_ms": 15000,
+            "measured_first_frame_ms": 15000.001,
+            "unmet": True,
+        }
+        return pptx
+
     def assert_rejected(self, mutate) -> None:
         with self.repository() as directory:
             root = Path(directory)
@@ -285,6 +335,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             self.write_evidence(root, evidence)
             with self.assertRaises(MODULE.AcceptanceEvidenceError):
                 MODULE.verify(root)
+
+    def assert_host_rejected(self, mutate) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            pptx = self.approved_pptx_first_frame_miss(root, evidence)
+            mutate(root, evidence, pptx)
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root, scope="katana-host")
 
     def test_valid_evidence_passes(self) -> None:
         with self.repository() as directory:
@@ -1014,6 +1074,73 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
         self.assert_rejected(
             lambda evidence: evidence["office_fixtures"][0].update(first_frame_ms=15000.001)
         )
+
+    def test_host_scope_allows_only_approved_pptx_first_frame_miss(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            self.approved_pptx_first_frame_miss(root, evidence)
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root)
+            MODULE.verify(root, scope="katana-host")
+
+    def test_host_scope_rejects_pptx_disposition_outside_exact_boundary(self) -> None:
+        def unknown(root, evidence, pptx):
+            pptx["first_frame_disposition"]["score"] = 95
+
+        def mismatched_measurement(root, evidence, pptx):
+            pptx["first_frame_disposition"]["measured_first_frame_ms"] = 15000.002
+
+        cases = (
+            lambda root, evidence, pptx: pptx.pop("first_frame_disposition"),
+            lambda root, evidence, pptx: pptx["first_frame_disposition"].pop("unmet"),
+            unknown,
+            lambda root, evidence, pptx: pptx["first_frame_disposition"].update(status="passed"),
+            lambda root, evidence, pptx: pptx["first_frame_disposition"].update(owner="other"),
+            lambda root, evidence, pptx: pptx["first_frame_disposition"].update(approval="other"),
+            lambda root, evidence, pptx: pptx["first_frame_disposition"].update(release_target="v0.22.43"),
+            lambda root, evidence, pptx: pptx["first_frame_disposition"].update(scope="strict"),
+            lambda root, evidence, pptx: pptx["first_frame_disposition"].update(limit_ms=15001),
+            lambda root, evidence, pptx: pptx["first_frame_disposition"].update(unmet=False),
+            mismatched_measurement,
+            lambda root, evidence, pptx: pptx.update(first_frame_ms=15000),
+            lambda root, evidence, pptx: pptx.update(first_frame_ms=True),
+            lambda root, evidence, pptx: pptx.update(first_frame_ms=math.nan),
+            lambda root, evidence, pptx: pptx.update(first_frame_ms=math.inf),
+        )
+        for mutate in cases:
+            with self.subTest(mutate=mutate):
+                self.assert_host_rejected(mutate)
+
+    def test_host_scope_rejects_office_and_acceptance_regressions(self) -> None:
+        def copy_disposition(format_name):
+            def mutate(root, evidence, pptx):
+                record = next(item for item in evidence["office_fixtures"] if item["format"] == format_name)
+                record["first_frame_ms"] = pptx["first_frame_ms"]
+                record["first_frame_disposition"] = dict(pptx["first_frame_disposition"])
+            return mutate
+
+        def cycle(root, evidence, pptx):
+            self._mutate_resource_cycle(
+                evidence,
+                root,
+                lambda artifact, run: artifact["cycles"][0]["office"].update(close_completed=False),
+            )
+
+        cases = (
+            copy_disposition("docx"),
+            copy_disposition("xlsx"),
+            lambda root, evidence, pptx: pptx["packaged_run"].update(normal_close=False),
+            lambda root, evidence, pptx: pptx["packaged_run"].update(
+                after_close_rss_bytes=pptx["packaged_run"]["cold_rss_bytes"] + 196608 * 1024 + 1
+            ),
+            cycle,
+            lambda root, evidence, pptx: pptx["fidelity"]["missing_elements"].update(count=1),
+        )
+        for mutate in cases:
+            with self.subTest(mutate=mutate):
+                self.assert_host_rejected(mutate)
 
     def test_assets_are_in_source_tree_hash(self) -> None:
         with self.repository() as directory:

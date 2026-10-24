@@ -18,7 +18,11 @@ import warnings
 from pathlib import Path
 from typing import Any
 
-from document_fidelity_divergence import DivergenceError, verify_disposition
+from document_fidelity_divergence import (
+    DivergenceError,
+    verify_disposition,
+    verify_pptx_first_frame_disposition,
+)
 
 
 TARGET = "v0.22.42"
@@ -765,7 +769,13 @@ def verify_resource_cycle(root: Path, run: dict[str, Any], target: str, input_sh
         fail(f"{name}.resource_cycle warm snapshot is not the first Office close snapshot")
 
 
-def verify_office(root: Path, value: object, packaged_targets: dict[str, Any]) -> None:
+def verify_office(
+    root: Path,
+    value: object,
+    packaged_targets: dict[str, Any],
+    *,
+    host_scope: bool = False,
+) -> None:
     if not isinstance(value, list) or len(value) < len(SUPPLIED_OFFICE_FIXTURES):
         fail("Office evidence must contain every supplied fixture result")
     run_ids: set[str] = set()
@@ -778,7 +788,14 @@ def verify_office(root: Path, value: object, packaged_targets: dict[str, Any]) -
         input_sha = require_sha256(record.get("input_sha256"), f"Office fixture {index}.input_sha256")
         first_frame = require_positive_finite_number(record.get("first_frame_ms"), f"Office fixture {index}.first_frame_ms")
         if first_frame > 15000:
-            fail(f"Office fixture {index} first frame must be within 15000 ms")
+            if format_name != "pptx" or not host_scope:
+                fail(f"Office fixture {index} first frame must be within 15000 ms")
+            try:
+                verify_pptx_first_frame_disposition(record.get("first_frame_disposition"), first_frame)
+            except DivergenceError as error:
+                fail(str(error))
+        elif "first_frame_disposition" in record:
+            fail(f"Office fixture {index} must not declare a first-frame miss at or below 15000 ms")
         require_positive_integer(record.get("item_count"), f"Office fixture {index}.item_count")
         if record.get("release_worker") is not True:
             fail(f"Office fixture {index} must use the release worker")
@@ -856,7 +873,12 @@ def verify(root: Path, evidence_path: Path | None = None, *, scope: str = "stric
             fail(f"published dependency evidence does not match Cargo.lock for {name}")
     verify_packaged(evidence.get("packaged_targets"))
     verify_html(root, evidence.get("html"), evidence["packaged_targets"], host_scope=scope == "katana-host")
-    verify_office(root, evidence.get("office_fixtures"), evidence["packaged_targets"])
+    verify_office(
+        root,
+        evidence.get("office_fixtures"),
+        evidence["packaged_targets"],
+        host_scope=scope == "katana-host",
+    )
 
 
 def main() -> int:
