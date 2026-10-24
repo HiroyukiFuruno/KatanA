@@ -2,7 +2,7 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
-## [0.22.42] - 2026-10-13 14:24:31 (UTC)
+## [0.22.42] - 2026-10-24 01:45:58 (UTC)
 
 ### 🚀 Features
 
