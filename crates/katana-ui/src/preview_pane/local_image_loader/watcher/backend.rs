@@ -1,9 +1,9 @@
-use notify::{Config, Event, Watcher};
+use notify::{Config, Event};
 
 #[cfg(windows)]
 use notify::PollWatcher;
 #[cfg(not(windows))]
-use notify::RecommendedWatcher;
+use notify::{RecommendedWatcher, Watcher};
 #[cfg(windows)]
 use std::time::Duration;
 
