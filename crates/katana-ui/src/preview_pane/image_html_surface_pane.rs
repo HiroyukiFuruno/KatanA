@@ -1,4 +1,4 @@
-use super::HtmlBrowserSurface;
+use super::{HtmlBrowserSurface, HtmlReceiptObservation};
 use crate::preview_pane::types::PreviewPane;
 use eframe::egui;
 
@@ -76,6 +76,15 @@ impl PreviewPane {
         self.html_browser
             .as_ref()
             .and_then(HtmlBrowserSurface::frame_scroll_metrics)
+    }
+
+    pub(crate) fn html_browser_receipt_observation(
+        &self,
+    ) -> Result<Option<HtmlReceiptObservation>, String> {
+        self.html_browser
+            .as_ref()
+            .map(HtmlBrowserSurface::receipt_observation)
+            .unwrap_or(Ok(None))
     }
 
     pub(crate) fn html_browser_display_rect(&self) -> Option<egui::Rect> {

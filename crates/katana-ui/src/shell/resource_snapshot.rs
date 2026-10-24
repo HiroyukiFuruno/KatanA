@@ -1,5 +1,5 @@
 use super::KatanaApp;
-use crate::preview_pane::DocumentWorkerLifecycle;
+use crate::preview_pane::{DocumentWorkerLifecycle, HtmlReceiptObservation};
 use katana_document_viewer::{DocumentResourceSnapshot, DocumentSession};
 use serde::Serialize;
 use std::time::Instant;
@@ -28,12 +28,42 @@ pub(crate) struct DocumentSurfaceIdentity {
     pub(crate) generation: u64,
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub(crate) struct HtmlSurfaceReceiptObservation {
+    pub(crate) source_uri: String,
+    pub(crate) katana_adapter_instance_id: u64,
+    pub(crate) katana_renderer_session_epoch: u64,
+    pub(crate) frame_generation: u64,
+    pub(crate) viewport_width: f32,
+    pub(crate) viewport_height: f32,
+    pub(crate) scroll_y: f32,
+    pub(crate) content_height: f32,
+    pub(crate) idle: bool,
+}
+
+impl From<HtmlReceiptObservation> for HtmlSurfaceReceiptObservation {
+    fn from(value: HtmlReceiptObservation) -> Self {
+        Self {
+            source_uri: value.source_uri,
+            katana_adapter_instance_id: value.katana_adapter_instance_id,
+            katana_renderer_session_epoch: value.katana_renderer_session_epoch,
+            frame_generation: value.frame_generation,
+            viewport_width: value.viewport_width,
+            viewport_height: value.viewport_height,
+            scroll_y: value.scroll_y,
+            content_height: value.content_height,
+            idle: value.idle,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize)]
 pub(crate) struct UiResourceSnapshot {
     pub(crate) host: HostResourceCounts,
     pub(crate) document_workers_live: usize,
     pub(crate) kdv: DocumentResourceSnapshot,
     pub(crate) document_surfaces: Vec<DocumentSurfaceIdentity>,
+    pub(crate) html_observations: Vec<HtmlSurfaceReceiptObservation>,
 }
 
 impl UiResourceSnapshot {
@@ -49,6 +79,7 @@ impl UiResourceSnapshot {
             document_workers_live: DocumentWorkerLifecycle::live_count(),
             kdv: DocumentSession::resource_snapshot(),
             document_surfaces: Vec::new(),
+            html_observations: Vec::new(),
         };
         for preview in &app.tab_previews {
             let (html_surfaces, html_frames, html_textures) =
@@ -72,6 +103,20 @@ impl UiResourceSnapshot {
             snapshot,
             started.elapsed().as_micros().try_into().unwrap_or(u64::MAX),
         )
+    }
+
+    pub(crate) fn capture_for_receipt(app: &KatanaApp) -> Result<(Self, u64), String> {
+        let started = Instant::now();
+        let (mut snapshot, _) = Self::capture(app);
+        for preview in &app.tab_previews {
+            if let Some(observation) = preview.pane.html_browser_receipt_observation()? {
+                snapshot.html_observations.push(observation.into());
+            }
+        }
+        Ok((
+            snapshot,
+            started.elapsed().as_micros().try_into().unwrap_or(u64::MAX),
+        ))
     }
 
     pub(crate) fn preview_counts_tuple(&self) -> (usize, usize, usize, usize, usize, usize) {
@@ -100,9 +145,17 @@ impl KatanaApp {
         if !should_capture {
             return;
         }
-        let (snapshot, elapsed_us) = UiResourceSnapshot::capture(self);
-        if let Some(receipt) = &mut self.resource_receipt {
-            receipt.record(snapshot, elapsed_us);
+        match UiResourceSnapshot::capture_for_receipt(self) {
+            Ok((snapshot, elapsed_us)) => {
+                if let Some(receipt) = &mut self.resource_receipt {
+                    receipt.record(snapshot, elapsed_us);
+                }
+            }
+            Err(error) => {
+                if let Some(receipt) = &mut self.resource_receipt {
+                    receipt.record_capture_error(error);
+                }
+            }
         }
     }
 }

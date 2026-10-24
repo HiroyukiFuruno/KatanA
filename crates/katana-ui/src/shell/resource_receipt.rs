@@ -150,6 +150,10 @@ impl ResourceReceiptState {
         true
     }
 
+    pub(crate) fn record_capture_error(&mut self, error: String) {
+        self.fail(format!("receipt snapshot capture failed: {error}"));
+    }
+
     fn publish(&self, sequence: u64, payload: &[u8]) -> Result<(), String> {
         let nonce = TEMP_SEQUENCE.fetch_add(1, Ordering::Relaxed);
         let temporary = self.directory.join(format!(

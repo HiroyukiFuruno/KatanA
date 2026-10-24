@@ -31,6 +31,7 @@ impl HtmlBrowserSurface {
             return;
         }
         self.pending_navigation_urls.clear();
+        self.pending_renderer_session = true;
         self.error = None;
         self.record_navigation(origin);
         self.await_frame();

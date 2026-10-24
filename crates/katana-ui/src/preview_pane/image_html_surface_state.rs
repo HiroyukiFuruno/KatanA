@@ -6,6 +6,19 @@ const RGBA_COMPONENT_COUNT: usize = 4;
 const ALPHA_COMPONENT_INDEX: usize = RGB_COMPONENT_COUNT;
 const OPAQUE_ALPHA: u8 = u8::MAX;
 
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct HtmlReceiptObservation {
+    pub(crate) source_uri: String,
+    pub(crate) katana_adapter_instance_id: u64,
+    pub(crate) katana_renderer_session_epoch: u64,
+    pub(crate) frame_generation: u64,
+    pub(crate) viewport_width: f32,
+    pub(crate) viewport_height: f32,
+    pub(crate) scroll_y: f32,
+    pub(crate) content_height: f32,
+    pub(crate) idle: bool,
+}
+
 impl HtmlBrowserSurface {
     pub(super) fn document_origin(&self) -> Option<&str> {
         self.document_origin.as_deref()
@@ -88,5 +101,52 @@ impl HtmlBrowserSurface {
         self.frame
             .as_ref()
             .map(|frame| (frame.scroll_y, frame.content_height))
+    }
+
+    pub(super) fn receipt_observation(&self) -> Result<Option<HtmlReceiptObservation>, String> {
+        let Some((katana_adapter_instance_id, katana_renderer_session_epoch)) =
+            self.receipt_identity()
+        else {
+            return Ok(None);
+        };
+        let (Some(frame), Some(source_uri)) = (self.frame.as_ref(), self.document_origin()) else {
+            return Ok(None);
+        };
+        Self::validate_receipt_geometry(frame)?;
+        let viewport_width = frame.viewport.logical_width();
+        let viewport_height = frame.viewport.logical_height();
+        Ok(Some(HtmlReceiptObservation {
+            source_uri: source_uri.to_owned(),
+            katana_adapter_instance_id,
+            katana_renderer_session_epoch,
+            frame_generation: frame.generation,
+            viewport_width,
+            viewport_height,
+            scroll_y: frame.scroll_y,
+            content_height: frame.content_height,
+            idle: self.is_idle(),
+        }))
+    }
+
+    fn receipt_identity(&self) -> Option<(u64, u64)> {
+        Some((
+            self.katana_adapter_instance_id?,
+            self.katana_renderer_session_epoch?,
+        ))
+    }
+
+    fn validate_receipt_geometry(frame: &super::frame::BrowserFrame) -> Result<(), String> {
+        if [
+            frame.viewport.logical_width(),
+            frame.viewport.logical_height(),
+            frame.scroll_y,
+            frame.content_height,
+        ]
+        .into_iter()
+        .all(f32::is_finite)
+        {
+            return Ok(());
+        }
+        Err("HTML receipt observation contains non-finite geometry".to_owned())
     }
 }

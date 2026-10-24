@@ -40,6 +40,7 @@ pub mod fullscreen;
 pub mod fullscreen_local;
 pub mod fullscreen_svg;
 mod image_html_surface;
+pub(crate) use image_html_surface::HtmlReceiptObservation;
 mod image_raster;
 mod local_image_loader;
 #[cfg(feature = "screenshot-test-hooks")]

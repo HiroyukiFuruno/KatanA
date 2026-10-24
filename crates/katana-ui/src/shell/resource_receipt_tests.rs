@@ -4,8 +4,8 @@ use crate::{
     shell::{
         KatanaApp,
         resource_snapshot::{
-            DocumentSurfaceIdentity, UiResourceSnapshot, completed_frame_capture_count_for_test,
-            reset_completed_frame_capture_count_for_test,
+            DocumentSurfaceIdentity, HtmlSurfaceReceiptObservation, UiResourceSnapshot,
+            completed_frame_capture_count_for_test, reset_completed_frame_capture_count_for_test,
         },
     },
 };
@@ -96,6 +96,67 @@ fn receipt_uses_real_file_and_preserves_identity() {
         "file:///fixture/example.xlsx"
     );
     assert_eq!(value["document_surfaces"][0]["generation"], 7);
+}
+
+#[test]
+fn receipt_preserves_html_adapter_identity_and_raw_geometry() {
+    let directory = tempfile::tempdir().unwrap();
+    let mut receipt = ResourceReceiptState::configuration(
+        true,
+        Some(directory.path().to_path_buf()),
+        Some(OsString::from("run-1")),
+    )
+    .unwrap()
+    .unwrap();
+    let mut observed = snapshot();
+    observed
+        .html_observations
+        .push(HtmlSurfaceReceiptObservation {
+            source_uri: "file:///fixture/example.html".to_owned(),
+            katana_adapter_instance_id: 9,
+            katana_renderer_session_epoch: 3,
+            frame_generation: 12,
+            viewport_width: 900.0,
+            viewport_height: 700.0,
+            scroll_y: 48.5,
+            content_height: 2_048.0,
+            idle: true,
+        });
+
+    receipt.record(observed, 12);
+
+    let value: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(directory.path().join("latest.json")).unwrap())
+            .unwrap();
+    let observation = &value["html_observations"][0];
+    assert_eq!(observation["source_uri"], "file:///fixture/example.html");
+    assert_eq!(observation["katana_adapter_instance_id"], 9);
+    assert_eq!(observation["katana_renderer_session_epoch"], 3);
+    assert_eq!(observation["frame_generation"], 12);
+    assert_eq!(observation["viewport_width"], 900.0);
+    assert_eq!(observation["viewport_height"], 700.0);
+    assert_eq!(observation["scroll_y"], 48.5);
+    assert_eq!(observation["content_height"], 2_048.0);
+    assert_eq!(observation["idle"], true);
+}
+
+#[test]
+fn capture_error_rejects_the_diagnostic_run_without_publishing_zeroes() {
+    let directory = tempfile::tempdir().unwrap();
+    let mut receipt = ResourceReceiptState::configuration(
+        true,
+        Some(directory.path().to_path_buf()),
+        Some(OsString::from("run-1")),
+    )
+    .unwrap()
+    .unwrap();
+
+    receipt.record_capture_error("non-finite HTML geometry".to_owned());
+
+    assert!(receipt.failed);
+    assert_eq!(receipt.sequence, 0);
+    assert!(receipt.last_snapshot.is_none());
+    assert!(!directory.path().join("latest.json").exists());
 }
 
 #[test]

@@ -1,7 +1,6 @@
 use eframe::egui::{self, Pos2};
 use katana_document_viewer::browser_session::{
-    BrowserSessionAdapter, BrowserSessionRequest, BrowserSessionUpdate, HtmlBrowserSource,
-    HtmlBrowserViewport,
+    BrowserSessionAdapter, BrowserSessionUpdate, HtmlBrowserSource, HtmlBrowserViewport,
 };
 use std::collections::VecDeque;
 
@@ -27,6 +26,8 @@ mod navigation;
 mod pane;
 #[path = "image_html_surface_polling.rs"]
 mod polling;
+#[path = "image_html_surface_session.rs"]
+mod session;
 #[path = "image_html_surface_state.rs"]
 mod state;
 #[path = "image_html_surface_view.rs"]
@@ -34,9 +35,17 @@ mod view;
 
 use frame::BrowserFrame;
 use geometry::{frame_display_size, frame_position, frame_scroll_delta};
+pub(crate) use state::HtmlReceiptObservation;
 
 pub(crate) struct HtmlBrowserSurface {
     adapter: Option<BrowserSessionAdapter>,
+    /* WHY: KDV は browser worker の session ID を公開しないため、実際に起動した
+     * adapter lifetime だけを KatanA 内で識別する。frame 観測回数ではない。 */
+    katana_adapter_instance_id: Option<u64>,
+    /* WHY: 同じ adapter の reload では KRR の frame generation が再利用され得る。
+     * queued navigation 後に実 frame を受理した時だけ進め、単なる frame 回数にしない。 */
+    pending_renderer_session: bool,
+    katana_renderer_session_epoch: Option<u64>,
     pending_source: Option<HtmlBrowserSource>,
     frame: Option<BrowserFrame>,
     document_origin: Option<String>,
@@ -59,6 +68,9 @@ impl HtmlBrowserSurface {
         let document_origin = Some(initial_origin.clone());
         Self {
             adapter: None,
+            katana_adapter_instance_id: None,
+            pending_renderer_session: false,
+            katana_renderer_session_epoch: None,
             pending_source: Some(source),
             frame: None,
             document_origin,
@@ -79,6 +91,9 @@ impl HtmlBrowserSurface {
     pub(crate) fn failed(error: String) -> Self {
         Self {
             adapter: None,
+            katana_adapter_instance_id: None,
+            pending_renderer_session: false,
+            katana_renderer_session_epoch: None,
             pending_source: None,
             frame: None,
             document_origin: None,
@@ -127,6 +142,9 @@ impl HtmlBrowserSurface {
                 if !self.accepts_frame_viewport(frame.viewport) {
                     return;
                 }
+                if !self.confirm_renderer_session() {
+                    return;
+                }
                 let origin = frame.origin.as_str().to_owned();
                 self.record_navigation(origin.clone());
                 self.document_origin = Some(origin);
@@ -162,6 +180,7 @@ impl HtmlBrowserSurface {
         self.primary_pointer_pressed = false;
         self.focused = false;
         self.pointer_over = false;
+        self.pending_renderer_session = false;
         self.error = Some(error);
         self.frame_update_deadline = None;
     }
@@ -173,24 +192,6 @@ impl HtmlBrowserSurface {
     fn accepts_frame_viewport(&self, frame_viewport: HtmlBrowserViewport) -> bool {
         self.viewport
             .is_none_or(|requested_viewport| requested_viewport == frame_viewport)
-    }
-
-    fn take_start_request(
-        &mut self,
-        viewport: HtmlBrowserViewport,
-    ) -> Option<BrowserSessionRequest> {
-        let source = self.pending_source.take()?;
-        self.viewport = Some(viewport);
-        Some(BrowserSessionRequest::new(source, viewport))
-    }
-
-    fn start_pending_session(&mut self, viewport: HtmlBrowserViewport) -> bool {
-        let Some(request) = self.take_start_request(viewport) else {
-            return false;
-        };
-        self.adapter = Some(BrowserSessionAdapter::start(request));
-        self.await_frame();
-        true
     }
 }
 
@@ -427,6 +428,93 @@ mod tests {
         );
         assert!(surface.take_start_request(requested).is_none());
         assert!(surface.accepts_frame_viewport(requested));
+    }
+
+    #[test]
+    fn receipt_observation_uses_actual_adapter_lifetime_and_accepted_reload_frame()
+    -> Result<(), String> {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
+        let source = HtmlBrowserSource::new(
+            "<html><body><p>first</p></body></html>",
+            "https://example.test/receipt.html",
+        )
+        .map_err(|error| error.to_string())?;
+        let viewport =
+            HtmlBrowserViewport::new(320, 240, 1.0).map_err(|error| error.to_string())?;
+        let mut surface = HtmlBrowserSurface::start(source);
+        assert!(surface.receipt_observation()?.is_none());
+        assert!(surface.start_pending_session(viewport));
+        let context = egui::Context::default();
+        surface.wait_for_frame_for_test(&context, std::time::Duration::from_secs(10))?;
+        let first = surface
+            .receipt_observation()?
+            .ok_or_else(|| "accepted first frame has no receipt observation".to_owned())?;
+
+        let reloaded = HtmlBrowserSource::new(
+            "<html><body><p>second</p></body></html>",
+            "https://example.test/receipt.html",
+        )
+        .map_err(|error| error.to_string())?;
+        surface.navigate(reloaded);
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+        loop {
+            let remaining = deadline.saturating_duration_since(std::time::Instant::now());
+            let update = surface
+                .adapter
+                .as_ref()
+                .ok_or_else(|| "reload removed the browser adapter".to_owned())?
+                .wait_for_update(remaining)
+                .ok_or_else(|| "timed out waiting for reload frame".to_owned())?;
+            surface.apply_update(&context, update);
+            let current = surface
+                .receipt_observation()?
+                .ok_or_else(|| "accepted reload frame has no receipt observation".to_owned())?;
+            if current.katana_renderer_session_epoch > first.katana_renderer_session_epoch {
+                assert_eq!(
+                    current.katana_adapter_instance_id,
+                    first.katana_adapter_instance_id
+                );
+                assert_eq!(
+                    current.katana_renderer_session_epoch,
+                    first.katana_renderer_session_epoch + 1
+                );
+                assert_eq!(current.source_uri, first.source_uri);
+                assert!(current.viewport_width.is_finite());
+                assert!(current.viewport_height.is_finite());
+                assert!(current.scroll_y.is_finite());
+                assert!(current.content_height.is_finite());
+                return Ok(());
+            }
+        }
+    }
+
+    #[test]
+    fn receipt_observation_rejects_non_finite_geometry() -> Result<(), String> {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
+        let source = HtmlBrowserSource::new(
+            "<html><body><p>fixture</p></body></html>",
+            "https://example.test/non-finite.html",
+        )
+        .map_err(|error| error.to_string())?;
+        let viewport = HtmlBrowserViewport::new(1, 1, 1.0).map_err(|error| error.to_string())?;
+        let mut surface = HtmlBrowserSurface::start(source);
+        assert!(surface.start_pending_session(viewport));
+        surface.wait_for_frame_for_test(
+            &egui::Context::default(),
+            std::time::Duration::from_secs(10),
+        )?;
+        surface.frame = Some(BrowserFrame::new(
+            1,
+            viewport,
+            f32::NAN,
+            1.0,
+            vec![0, 0, 0, 255],
+        ));
+
+        let error = surface.receipt_observation().unwrap_err();
+
+        assert!(error.contains("non-finite geometry"));
+        Ok(())
     }
 
     #[test]
