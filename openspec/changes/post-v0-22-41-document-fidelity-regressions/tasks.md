@@ -80,6 +80,9 @@
 
 ## Definition of Ready
 
+- [x] 2026-10-24: clean93abd651の原本Office6件・PPTX3操作・HTML・PDF4テーマを元期限で回収、session56353実終了0。過去の期限超過を保持し、配布版本体の受入や性能安定化へ読み替えない。[最新結果と残件](evidence/cached-image-watch-retry-2026-10-24.ja.md)を参照。
+- [ ] 2026-10-24追加監査: canonical配布版manifestと本体の文書操作を記録する実運用経路が未接続。既存checkerは実終了1で欠落を拒否する。単なる再検査・コピーの試作は不採用。隔離した配布本体の操作記録方式を確認し、各OSの実証跡を取得して既存公開条件を満たす。本人の利用規約承認は代行しない。
+
 - 最新本人指示・現worktree・残DoDを確認して既存作業を継続する。OpenSpec CLIのartifact doneは実装/公開完了を意味しない。
 
 ## Branch Rule
