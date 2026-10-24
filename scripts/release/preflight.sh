@@ -33,6 +33,8 @@ python3 scripts/release/test-release-flow-contract.py
 python3 scripts/release/test-windows-registry-cache-contract.py
 python3 scripts/release/test-commit-issue-reference.py
 python3 scripts/release/test-issue-reference-live.py
+# WHY: 初回ビルドを実行時間の上限に含めず、既存の判定処理だけを30秒で検査する。
+cargo build --locked --offline --quiet -p katana-linter --bin dependency-contract
 python3 -m unittest discover -s scripts/release -p 'test_*.py'
 success "Release flow ownership contract is enforced."
 

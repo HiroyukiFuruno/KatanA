@@ -57,6 +57,13 @@ def verify_document_phase_order(workflow: str) -> None:
 
 
 class WorkflowContractTests(unittest.TestCase):
+    def test_native_dependency_contract_is_built_once_before_release_unit_tests(self) -> None:
+        preflight = (ROOT / "scripts/release/preflight.sh").read_text(encoding="utf-8")
+        build = "cargo build --locked --offline --quiet -p katana-linter --bin dependency-contract"
+        unit_tests = "python3 -m unittest discover -s scripts/release -p 'test_*.py'"
+        self.assertEqual(preflight.count(build), 1)
+        self.assertLess(preflight.index(build), preflight.index(unit_tests))
+
     def test_supply_chain_covers_host_and_tool_locked_graphs_at_all_entrypoints(self) -> None:
         entry = "bash scripts/ci/check-supply-chain.sh"
         checker = ROOT / "scripts/ci/check-supply-chain.sh"
