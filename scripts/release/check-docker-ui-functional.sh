@@ -8,14 +8,14 @@ PREPARED_CONFIG=
 if [[ ${1:-} == --document ]]; then
     DOCUMENT_MODE=true
     DOCUMENT_SOURCE=${2:?--document requires a source file}
-    DOCUMENT_FORMAT=${3:?--document requires xlsx or pptx}
+    DOCUMENT_FORMAT=${3:?--document requires docx, xlsx, pptx, or pdf}
     shift 3
     if [[ ${1:-} == --prepared-config ]]; then
         PREPARED_CONFIG=${2:?--prepared-config requires an isolated directory}
         shift 2
     fi
 fi
-ARCHIVE=${1:?Usage: check-docker-ui-functional.sh [--document source xlsx|pptx [--prepared-config dir]] archive observer-image app-image}
+ARCHIVE=${1:?Usage: check-docker-ui-functional.sh [--document source docx|xlsx|pptx|pdf [--prepared-config dir]] archive observer-image app-image}
 OBSERVER_IMAGE=${2:?observer image is required}
 APP_IMAGE=${3:?application runtime image is required}
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
@@ -47,7 +47,7 @@ RECEIPT_DIR=/evidence/resource-receipt
 if [[ "$DOCUMENT_MODE" == true ]]; then
     DOCUMENT_SOURCE=$(cd "$(dirname "$DOCUMENT_SOURCE")" && printf '%s/%s' "$PWD" "$(basename "$DOCUMENT_SOURCE")")
     [[ -f "$DOCUMENT_SOURCE" ]] || { echo "FAIL: document source missing" >&2; exit 1; }
-    case "$DOCUMENT_FORMAT" in xlsx|pptx) ;; *) echo "FAIL: document format must be xlsx or pptx" >&2; exit 1;; esac
+    case "$DOCUMENT_FORMAT" in docx|xlsx|pptx|pdf) ;; *) echo "FAIL: document format must be docx, xlsx, pptx, or pdf" >&2; exit 1;; esac
     DOCUMENT_NAME=$(basename "$DOCUMENT_SOURCE")
     DOCUMENT_PATH="/fixture/$DOCUMENT_NAME"
     OBSERVER_DOCUMENT_MOUNTS+=(--mount "type=bind,src=$DOCUMENT_SOURCE,dst=$DOCUMENT_PATH,readonly")
