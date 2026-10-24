@@ -68,11 +68,21 @@ fn original_readme_header() -> &'static str {
         env!("CARGO_MANIFEST_DIR"),
         "/../../assets/fixtures/sample.md"
     ));
+    readme_header_section(source)
+}
+
+fn readme_header_section(source: &str) -> &str {
     let (_, section) = source
-        .split_once("### 1.6 Full README Header Reproduction\n")
+        .split_once("### 1.6 Full README Header Reproduction")
         .expect("original sample must contain its README header section");
+    /* WHY: Windows checkoutのCRLFも受け入れ、元のHTML本文は変換せず切り出す。 */
+    let section = section
+        .strip_prefix("\r\n")
+        .or_else(|| section.strip_prefix('\n'))
+        .expect("original README header heading must end at a line boundary");
     section
-        .split_once("\n---\n")
+        .split_once("\r\n---\r\n")
+        .or_else(|| section.split_once("\n---\n"))
         .expect("original README header section must have its boundary")
         .0
 }
@@ -100,7 +110,27 @@ fn rendered_header_text(markdown: &str) -> String {
 #[test]
 fn original_sample_readme_header_renders_text_without_quoted_svg_leak() {
     // WHY: 元入力の不正namespaceを補正せず、空描画による誤成功と本文への漏出を分ける。
-    let markdown = original_readme_header();
+    assert_original_header_renders(original_readme_header());
+}
+
+#[test]
+fn original_readme_header_preserves_content_and_renders_with_lf_and_crlf() {
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../assets/fixtures/sample.md"
+    ));
+    let lf_source = source.replace("\r\n", "\n");
+    let crlf_source = lf_source.replace('\n', "\r\n");
+    let lf_header = readme_header_section(&lf_source);
+    let crlf_header = readme_header_section(&crlf_source);
+    assert_eq!(lf_header, crlf_header.replace("\r\n", "\n"));
+    assert!(crlf_header.contains("\r\n"));
+    for header in [lf_header, crlf_header] {
+        assert_original_header_renders(header);
+    }
+}
+
+fn assert_original_header_renders(markdown: &str) {
     assert!(markdown.contains("xmlns=%22<http://www.w3.org/2000/svg%22>"));
     let text = rendered_header_text(markdown);
     assert!(
