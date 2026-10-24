@@ -1,5 +1,16 @@
 ## 要件(Verbatim Requirements)
 
+> じゃあその方針で進めてください。KatanA側で直せる部分は修正して、残る脆弱性は実際の影響を確認したうえで期限付きの例外にして、KDV/KRRを待たずにリリースまで進めてね。報告だけで止まらないでください。
+
+### 2026-10-24 最新本人承認: 上流更新を待たない先行公開
+
+- 旧「KDV #69の公開修正版が必須」という停止条件は今回の明示承認に従い置き換える。KDV0.5.12/KRR0.4.23の公開registry依存を維持し、上流repoを編集しない。
+- 例外はRUSTSEC-2026-0367/0368/0369の既存Office依存経路だけ。根拠・解除条件・期限を記録し、期限切れと新たな依存経路を正式検査で拒否する。他の脆弱性・ライセンス・品質条件は維持する。
+- [x] #354 KatanA更新ZIPの特権permissionとsymlink経路を修正。実ZIP/実filesystemで旧3件RED・修復後通常更新を含む10件GREEN、正式AST成功。SUIDはZIP9側で既に除去されており、今回新規権限昇格を解消したとは扱わない。[根拠](evidence/zip-risk-acceptance-2026-10-24.ja.md)。
+- [x] #354 公開v0.22.41と候補の差・Office読込APIを記録し、例外の期限/経路/source制限16件と標準入口の実3graphcargo-deny全項目、入口契約10件の成功を回収。11月7日UTC以降拒否、全経路安全や公開完了とは別。同証跡を参照。
+- [x] 本人の`just update`更新を保持し、KDV固定libcとparking_lot0.13の競合・既存commonmark patch無効化を解消。両lock更新・全体typecheck actual0、通常署名commit83b8bbbaへ統合。[非互換版の不採用理由と検証](evidence/dependency-update-2026-10-24.ja.md)。
+- [ ] 関心事別通常commit→通常push hook→PR346 fresh全review/修復/各thread reply/resolve→Ready→必須CI→merge→Actions全OS公開→全5asset/checksum受入→Issue/OpenSpec/安全cleanupまで続行する。旧HEADの検査を新graphの合格に流用しない。
+
 > なら上流待ちじゃないものは手を動かして対応して。実装済みのIssueは検証して整理、未対応は着手して、報告だけで止まらず、上流のKDV,KRRの取り込みが完了次第、リリースできるように進めて下さい。
 >
 > KDV,　KRRの不備取り込みは時期とする、現状でも改善しているポイントがあること、KatanA側で対応するものが完了していればリリースする価値はあるためだ。

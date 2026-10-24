@@ -63,15 +63,14 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertTrue(checker.is_file(), "Host and tool locks need one shared supply-chain gate")
         source = checker.read_text(encoding="utf-8")
         self.assertIn("set -euo pipefail", source)
-        self.assertIn("cargo deny --locked check --hide-inclusion-graph", source)
-        self.assertIn(
-            "cargo deny --locked --manifest-path scripts/screenshot/Cargo.toml check --hide-inclusion-graph",
-            source,
-        )
-        self.assertIn(
-            "cargo deny --locked --manifest-path scripts/paint-metrics/Cargo.toml check --hide-inclusion-graph",
-            source,
-        )
+        self.assertIn("python3 -B -m unittest discover -s scripts/ci -p test_zip_advisory_overlay.py", source)
+        self.assertIn("python3 scripts/ci/zip_advisory_overlay.py --deny-file deny.toml", source)
+        for manifest in ("Cargo.toml", "scripts/screenshot/Cargo.toml", "scripts/paint-metrics/Cargo.toml"):
+            self.assertIn(manifest, source)
+        overlay = (ROOT / "scripts/ci/zip_advisory_overlay.py").read_text(encoding="utf-8")
+        self.assertIn('"cargo", "metadata", "--locked", "--all-features"', overlay)
+        self.assertIn('"check", "--hide-inclusion-graph"', overlay)
+        self.assertIn('"--locked", "--manifest-path", str(manifest)', overlay)
         for path in (
             "just/quality.just", "scripts/release/preflight.sh",
             ".github/workflows/test-and-build.yml",

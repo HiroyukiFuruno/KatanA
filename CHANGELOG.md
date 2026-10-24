@@ -24,6 +24,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🐛 Bug Fixes
 
+- **Update archive handling**: Reject link entries and linked extraction destinations, and explicitly limit restored file permissions while retaining normal executable permissions.
 - **HTTPS certificate validation**: Updated certificate verification and trusted roots to reject distrusted certificate chains.
 - **Document memory usage**: Removed an extra copy of document input data retained throughout a viewer session.
 - **Office tabs and memory**: Documents using the same installed font share its data across tabs instead of retaining an extra copy for every tab.
@@ -47,6 +48,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### Known limitations
 
+- **Office archive security**: Office processing still includes components covered by ZIP extraction security advisories. The checked document-reading paths do not use the affected extraction operations, but this release does not claim that all ZIP vulnerabilities are resolved. A limited exception is accepted until November 7, 2026 at 00:00 UTC; fixes and reassessment are tracked in [the security follow-up](https://github.com/HiroyukiFuruno/KatanA/issues/354).
 - **Canvas preview**: Text cards display their source text without full Markdown formatting. Linked file contents, external web pages and group background images are not loaded; unsupported content is identified in the preview.
 - **HTML compatibility**: Some HTML styles and interactions still differ from Chrome. Further rendering improvements are planned for a subsequent release.
 - **Document loading and restart caching**: Office/PDF loading can remain slow, and Office/HTML/PDF rendering is loaded again after restarting the application. Persistent render caching and additional loading improvements are planned for a subsequent release.
