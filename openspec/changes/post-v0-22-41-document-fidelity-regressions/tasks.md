@@ -1,3 +1,7 @@
+### 2026-10-25 heartbeat回帰の診断引数を既存の形式へ統一
+
+- [/] f14de30dの新CIでは、通常テスト等は成功したがMac coverageが新回帰のassert診断引数2行未実行で失敗。同file先行回帰のlet stdout/stderr形式へ揃え、商用処理・assert・coverage規約や閾値を変えずに検証する。PR365はDraftへ戻し、通常commit/push・新HEAD review・Ready全CI・公開へ継続する。[根拠](evidence/windows-packaged-heartbeat-2026-10-25.ja.md)。
+
 ### 2026-10-25 Windows配布起動のheartbeat記録を修復
 
 - [/] 公開run40192198622のWindows startupは実frame8→8でexit1。実UI完了を100ms間引きで隠す観測上の欠陥を修復し、実ファイルの連続フレーム回帰・通常検証・新HEAD review/CI・native配布検査へ続ける。元200ms×10と全品質条件は維持し、実失敗の原因確定と新native成功は別途確認する。[Issue364](https://github.com/HiroyukiFuruno/KatanA/issues/364)、[根拠](evidence/windows-packaged-heartbeat-2026-10-25.ja.md)。

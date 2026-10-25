@@ -111,11 +111,11 @@ mod tests {
             .env(CHILD_SENTINEL, "1")
             .output()
             .unwrap();
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
         assert!(
             output.status.success(),
-            "child completed-frame heartbeat test failed: stdout={} stderr={}",
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr)
+            "child completed-frame heartbeat test failed: stdout={stdout} stderr={stderr}"
         );
     }
 }
