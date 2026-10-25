@@ -1,3 +1,7 @@
+### 2026-10-25 Linuxの読込回帰テスト間の競合を修復
+
+- [/] 2e9b3df7の通常pushはLinux UI1359件成功/1件失敗/既存ignore2で最終exit1。revisionテストが実worker結果を受け取る前に合成結果で終了・cancelし、他テストとの共有pool競合で次の投入が既存保護に拒否された。製品のworker上限を変更せず、テストのプロセス隔離と実結果・active解放の待機へ修復する。単純再実行やtimeout延長で成功扱いしない。[根拠](evidence/ci-linux-intake-revision-race-2026-10-25.ja.md)。
+
 ### 2026-10-25 Windows CIの権限テストを修復
 
 - [/] 9838e374のReady CIは全3OS lintと供給網が成功したが、Windowsのtarget lease契約でPOSIX権限の拒否期待2件が失敗した。製品実装は既にWindowsでPOSIX mode検査を行わない設計。Draftへ戻し、symlink・非通常ファイル・対象間の独立性を維持してテストのOS前提を修復する。新HEADの通常commit/push・レビュー・全必須CIを回収する。[根拠](evidence/ci-windows-lease-permissions-2026-10-25.ja.md)。
