@@ -1,3 +1,7 @@
+### 2026-10-25 Windowsの画像監視エラーを修復
+
+- [/] 6494f8d3のReady CIはLinux全体・全3OS lint・CodeQL・供給網・Readiness成功。一方Windows UI1341成功/1失敗/既存ignore2で画像directory rename回帰が失敗した。パス情報がない欠損エラーを、実登録先のmetadataで確認できる消失だけ局所復旧へ渡す。error.kindの実値は未確定のまま、Io(NotFound)以外を隠さない。Coordinatorとnative回帰を同じ経路へ接続し、自動検証・通常レビュー/CI・公開まで継続する。[KatanA #358](https://github.com/HiroyukiFuruno/KatanA/issues/358)、[根拠](evidence/ci-windows-image-watcher-recovery-2026-10-25.ja.md)。
+
 ### 2026-10-25 Linuxの読込回帰テスト間の競合を修復
 
 - [/] 2e9b3df7の通常pushはLinux UI1359件成功/1件失敗/既存ignore2で最終exit1。revisionテストが実worker結果を受け取る前に合成結果で終了・cancelし、他テストとの共有pool競合で次の投入が既存保護に拒否された。製品のworker上限を変更せず、テストのプロセス隔離と実結果・active解放の待機へ修復する。単純再実行やtimeout延長で成功扱いしない。[根拠](evidence/ci-linux-intake-revision-race-2026-10-25.ja.md)。

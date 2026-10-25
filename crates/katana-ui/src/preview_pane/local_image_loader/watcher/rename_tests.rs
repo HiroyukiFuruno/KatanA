@@ -115,13 +115,19 @@ impl RenameFixture {
         let deadline = Instant::now() + EVENT_TIMEOUT;
         let mut observed = Vec::new();
         loop {
-            let event = match self
+            let result = match self
                 .events
                 .recv_timeout(deadline.saturating_duration_since(Instant::now()))
             {
-                Ok(Ok(event)) => event,
-                Ok(Err(error)) => panic!("native watcher error: {error}; observed={observed:?}"),
+                Ok(result) => result,
                 Err(error) => panic!("native rename event {error}; observed={observed:?}"),
+            };
+            let event = match DirectoryRecovery::normalize_loss(result, &self.watched_dirs) {
+                Ok(event) => event,
+                Err(error) => panic!(
+                    "native watcher error: {error}; kind={:?}; paths={:?}; observed={observed:?}",
+                    error.kind, error.paths
+                ),
             };
             if is_directory_loss(&event) && event.paths.iter().any(|path| path == &self.old) {
                 return event;

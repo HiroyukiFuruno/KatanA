@@ -19,10 +19,7 @@ use backend::{Backend, ImageWatcher};
 
 use registration::{Registration, Targets};
 
-use events::{
-    notify_error, notify_event, notify_overflow, retain_live_targets, send_event,
-    unwatch_unused_dirs,
-};
+use events::{notify_overflow, retain_live_targets, send_event, unwatch_unused_dirs};
 
 const WATCH_REQUEST_CAPACITY: usize = 64;
 
@@ -128,16 +125,12 @@ fn run(request_rx: mpsc::Receiver<WatchCommand>) {
             notify_overflow(&targets);
         }
         match event_rx.recv_timeout(Duration::from_millis(25)) {
-            Ok(Ok(event)) => {
-                directory_recovery::DirectoryRecovery::recover(
-                    &event,
-                    &mut watcher,
-                    &mut watched_dirs,
-                    &targets,
-                );
-                notify_event(event, &mut targets);
-            }
-            Ok(Err(error)) => notify_error(&mut targets, error.to_string()),
+            Ok(event) => directory_recovery::DirectoryRecovery::process_event(
+                event,
+                &mut watcher,
+                &mut watched_dirs,
+                &mut targets,
+            ),
             Err(mpsc::RecvTimeoutError::Timeout) => {}
             Err(mpsc::RecvTimeoutError::Disconnected) => return,
         }
