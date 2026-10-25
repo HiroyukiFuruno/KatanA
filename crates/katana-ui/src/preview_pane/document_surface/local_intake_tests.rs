@@ -54,7 +54,12 @@ fn blocked_file_read_does_not_block_ui_and_cancelled_result_cannot_replace_html(
     let mut pane = PreviewPane::default();
     pane.full_render_document_path(&path, false);
     pane.poll_document_intake(&context);
-    assert!(pane.document_intake.is_some());
+    assert!(
+        pane.document_intake.is_some(),
+        "FIFO intake was not pending: document_failure={:?}, idle={:?}",
+        pane.document_failure,
+        pane.document_is_idle_for_test()
+    );
     let mut frame = context.run_ui(eframe::egui::RawInput::default(), |ui| {
         pane.show_document_surface(ui);
     });
