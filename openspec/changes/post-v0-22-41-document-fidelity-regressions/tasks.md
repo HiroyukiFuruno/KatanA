@@ -1,3 +1,10 @@
+### 2026-10-25 host受入のphase整合と新d668実測
+
+- [/] 承認済みmacOS隔離host受入を、strict全体評価・全5生成asset・公開後最終Mac受入から分離。旧strict/独立95未完と元予算を維持し、producer/実OS子process/heartbeat/各loaded sourceとsource/lock/registryを結合するコードを適用。Python130件と独立highの現31file確認は成功、Rust公式検査は容量不足101後、再実行74721が15件/42suiteで終了0、AST30/Clippy全4crate/fmtも終了0。コードは通常署名e138d5aaへ統合済み。公開後host専用の完全一致release/*経路も独立flow15/Draft5で成功。正式raw/manifest・current review/CI/公開の完了ではない。[実装範囲と検証](evidence/host-admission-phase-alignment-2026-10-25.ja.md)。
+- [/] 新d668 ARM診断候補で大型XLSX+HTML、loomPPTX+HTMLを各10反復、計40描画・close後資源0・両main正常終了0。全量読込は42→10へ減ったが、元memoryは大型XLSX steady RSS97680/physical79058.41KiB、PPTX cold244960/227936.98KiBで未達。中間universal生成はnative/ARMの実compile後、最終観測修正に向けた重複を避け所有SIGINT130。ARM診断を全構成package成功へ読み替えない。
+- [/] 同d668の別heap/vmmap診断でXLSXのfirst→tenthはliveheap+127488bytes、Large(empty)resident約+38.3MiB。生存データ・解放済み再利用待ち・graphicsを区別し、元normal2件のFAILは保持。残原因の調査と独立検証を継続し、2原本限定の未達を今回許容するかは本人へasync確認済み。未回答を承認へ読み替えず、元予算を独断で変更しない。
+- [ ] 最終clean sourceの正式全構成packageと実host操作・元予算の判定、通常push/current review/Ready CI、全OS公開、全5asset/checksumと公開後host受入、Issue/OpenSpec/archive/cleanupを完了する。
+
 ### 2026-10-25 配布版の機能検証と残る修復
 
 - [x] `079b392c` の新universal配布候補でOffice7種類と原本HTMLを各10回、7つの独立実行で計140件の実描画・close後全資源/worker 0・7回の通常終了0を回収。元メモリ予算は5種類が成功し、大型XLSXのsteadyと40MB PPTXのcoldは未達。PPTX遅延の承認をメモリ免除に使わず、全OS/95点/clean-machine/公開を完了扱いしない。[元基準の結果](evidence/macos-seven-pair-baseline-2026-10-25.ja.md)。
