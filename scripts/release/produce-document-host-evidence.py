@@ -66,6 +66,9 @@ def opened_identity(record: dict, kind: str, expected_input: Path, expected_sha:
     adapter = integer(item.get("katana_adapter_instance_id"), "actual HTML adapter", minimum=1) if kind == "html" else None
     require(integer(record["host"]["frames"], "actual opened host frames", minimum=1) > 0, "opened receipt has no rendered host frame")
     if kind == "html":
+        require(integer(item.get("katana_frame_renderer_session_epoch"), "actual opened frame renderer epoch", minimum=1)
+                == integer(generation, "actual HTML renderer epoch", minimum=1),
+                "opened HTML frame renderer epoch differs from actual session")
         state = item.get("loaded_source")
         fnv = input_fnv(expected_input)
         require(isinstance(state, dict) and state.get("preview_input_fnv1a64") == state.get("last_imported_disk_fnv1a64") == fnv,
@@ -130,6 +133,10 @@ def operation(run: PrivateRun, filename: str, pid: int, start: str, inputs: dict
             if packet["name"] in {"scroll", "reload"}:
                 require(item["katana_renderer_session_epoch"] == observation["session"]
                         and item["frame_generation"] == observation["frame_generation"], "operation observations differ from actual frame")
+            if packet["name"] == "reload":
+                # frame_sessionは上流IDではなく、受理した実frameに保持したKatanA epoch。
+                require(integer(item.get("katana_frame_renderer_session_epoch"), "actual frame renderer epoch", minimum=1)
+                        == observation["frame_session"], "reload frame session differs from actual accepted frame")
             if packet["name"] == "scroll":
                 require(item["scroll_y"] == observation["scroll_y"], "scroll coordinates differ from actual receipt")
     elif packet["kind"] == "office":

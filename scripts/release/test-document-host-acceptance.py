@@ -6,6 +6,7 @@ from __future__ import annotations
 import copy
 from datetime import datetime, timedelta, timezone
 import hashlib
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +14,7 @@ from pathlib import Path
 from document_host_io import HostEvidenceError, decode, digest, reference
 from document_host_transcript import HOST, KDV, verify
 from document_host_acceptance import assessments, same_source_content
+from document_host_publication import module
 
 
 def test_sha(label: str) -> str:
@@ -330,6 +332,112 @@ class HostTranscriptBoundaryTests(unittest.TestCase):
             changed["chrome_html"][field] = replacement
             with self.assertRaises(HostEvidenceError):
                 assessments(Path("/not-read-for-unmeasured-assessment"), changed)
+
+
+
+class HostProducerReloadBoundaryTests(unittest.TestCase):
+    def opened_html_fixture(self, root):
+        producer = module("_unit_opened_html_producer", "produce-document-host-evidence.py")
+        original = root / "synthetic-unit-only.html"
+        original.write_bytes(b"<html><body>SYNTHETIC-UNIT-TEST-ONLY</body></html>")
+        fnv = producer.input_fnv(original)
+        observed_source = dict(source_state(), preview_input_fnv1a64=fnv, last_imported_disk_fnv1a64=fnv)
+        record = {"host": dict(dict.fromkeys(HOST, 0), frames=1), "document_surfaces": [],
+                  "html_observations": [{"source_uri": original.as_uri(), "katana_adapter_instance_id": 7,
+                                         "katana_renderer_session_epoch": 4, "katana_frame_renderer_session_epoch": 4,
+                                         "frame_generation": 3, "viewport_width": 320, "viewport_height": 240,
+                                         "content_height": 480, "scroll_y": 0, "idle": True,
+                                         "loaded_source": observed_source}]}
+        return producer, original, record
+
+    def test_each_opened_html_case_requires_its_actual_frame_session(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            producer, original, record = self.opened_html_fixture(Path(temporary))
+            _, generation, adapter, rendered = producer.opened_identity(record, "html", original, digest(original.read_bytes()))
+            self.assertEqual(generation, 4)
+            self.assertEqual(adapter, 7)
+            self.assertEqual(rendered["frame_generation"], 3)
+
+    def test_opened_html_rejects_missing_zero_or_old_frame_marker_even_with_correct_source(self):
+        for marker in (None, 0, 3):
+            with self.subTest(raw_marker=marker), tempfile.TemporaryDirectory() as temporary:
+                producer, original, record = self.opened_html_fixture(Path(temporary))
+                observed = record["html_observations"][0]
+                if marker is None:
+                    observed.pop("katana_frame_renderer_session_epoch")
+                else:
+                    observed["katana_frame_renderer_session_epoch"] = marker
+                self.assertTrue(observed["idle"])
+                self.assertEqual(observed["loaded_source"]["preview_input_fnv1a64"], producer.input_fnv(original))
+                with self.assertRaises(HostEvidenceError):
+                    producer.opened_identity(record, "html", original, digest(original.read_bytes()))
+
+    def producer_fixture(self, root):
+        transcript = HostTranscriptBoundaryTests().operation_fixture("reload")
+        case = transcript["cases"][0]
+        uri = "file:///synthetic-unit-only-reload.html"
+        case["uri_sha256"] = digest(uri.encode())
+        packet = copy.deepcopy(transcript["operations"][0])
+        packet.pop("raw_sha256")
+        packet.update(schema="katana-host-operation-observation-v1", uri_sha256=case["uri_sha256"],
+                      before_receipt="before.json", after_receipt="after.json",
+                      observation_artifacts=[{"path": "unit-observation.txt", "sha256": digest(b"SYNTHETIC-UNIT-TEST-ONLY")}])
+        directory = root / transcript["run_id"]
+        directory.mkdir()
+        (directory / "unit-observation.txt").write_bytes(b"SYNTHETIC-UNIT-TEST-ONLY")
+        for side in ("before", "after"):
+            observed = packet[side]
+            receipt = {"schema": "katana-completed-frame-resource-receipt-v1", "pid": packet["pid"],
+                       "run_id": packet["run_id"], "seq": packet["seq_"+side],
+                       "host": dict.fromkeys(HOST, 0), "kdv": dict.fromkeys(KDV, 0),
+                       "html_observations": [{"source_uri": uri, "katana_adapter_instance_id": packet["adapter_instance_id"],
+                                              "katana_renderer_session_epoch": observed["session"],
+                                              "katana_frame_renderer_session_epoch": observed["frame_session"],
+                                              "frame_generation": observed["frame_generation"],
+                                              "loaded_source": observed["loaded_source"]}]}
+            (directory / (side+".json")).write_text(json.dumps(receipt))
+        (directory / "operation.json").write_text(json.dumps(packet))
+        return directory, transcript, packet
+
+    def produce(self, directory, transcript, packet):
+        producer = module("_unit_reload_producer", "produce-document-host-evidence.py")
+        return producer.operation(producer.PrivateRun(directory), "operation.json", packet["pid"], packet["start_identity"],
+                                  {"office": transcript["input_sha256"], "html": transcript["html_sha256"]},
+                                  transcript["cases"], source_state()["last_imported_disk_fnv1a64"])
+
+    def test_reload_accepts_only_actual_before_and_after_frame_markers(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory, transcript, packet = self.producer_fixture(Path(temporary))
+            observed = self.produce(directory, transcript, packet)
+            self.assertEqual(observed["before"]["frame_session"], 1)
+            self.assertEqual(observed["after"]["frame_session"], 2)
+
+    def test_reload_rejects_missing_zero_or_mismatched_marker_in_each_raw_receipt(self):
+        for side in ("before", "after"):
+            for marker in (None, 0, 999):
+                with self.subTest(side=side, raw_marker=marker), tempfile.TemporaryDirectory() as temporary:
+                    directory, transcript, packet = self.producer_fixture(Path(temporary))
+                    path = directory / (side+".json")
+                    receipt = json.loads(path.read_text())
+                    observed = receipt["html_observations"][0]
+                    if marker is None:
+                        observed.pop("katana_frame_renderer_session_epoch")
+                    else:
+                        observed["katana_frame_renderer_session_epoch"] = marker
+                    path.write_text(json.dumps(receipt))
+                    with self.assertRaises(HostEvidenceError):
+                        self.produce(directory, transcript, packet)
+
+    def test_self_consistent_packet_cannot_relabel_a_retained_old_raw_frame(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory, transcript, packet = self.producer_fixture(Path(temporary))
+            path = directory / "after.json"
+            receipt = json.loads(path.read_text())
+            receipt["html_observations"][0]["katana_frame_renderer_session_epoch"] = packet["before"]["frame_session"]
+            path.write_text(json.dumps(receipt))
+            self.assertEqual(packet["after"]["frame_session"], packet["after"]["session"])
+            with self.assertRaises(HostEvidenceError):
+                self.produce(directory, transcript, packet)
 
 
 if __name__ == "__main__":

@@ -134,6 +134,7 @@ def operation(value: object, transcript: dict, used: set[tuple[str, int | None, 
                 and after["session"] == before["session"] and after["loaded_source"] == before["loaded_source"],
                 "scroll did not reach a newer frame while preserving source")
     elif name == "reload" and record["kind"] == "html":
+        # session/frame_sessionはKatanAのrenderer epochと実frame受理時epochを表し、上流IDではない。
         for item in (before, after):
             fields(item, {"session", "frame_session", "frame_generation", "saved_input_sha256", "loaded_source"}, name)
             for key in ("session", "frame_session", "frame_generation"):

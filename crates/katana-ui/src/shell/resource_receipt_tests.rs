@@ -115,6 +115,7 @@ fn receipt_preserves_html_adapter_identity_and_raw_geometry() {
             source_uri: "file:///fixture/example.html".to_owned(),
             katana_adapter_instance_id: 9,
             katana_renderer_session_epoch: 3,
+            katana_frame_renderer_session_epoch: 2,
             frame_generation: 12,
             viewport_width: 900.0,
             viewport_height: 700.0,
@@ -133,6 +134,7 @@ fn receipt_preserves_html_adapter_identity_and_raw_geometry() {
     assert_eq!(observation["source_uri"], "file:///fixture/example.html");
     assert_eq!(observation["katana_adapter_instance_id"], 9);
     assert_eq!(observation["katana_renderer_session_epoch"], 3);
+    assert_eq!(observation["katana_frame_renderer_session_epoch"], 2);
     assert_eq!(observation["frame_generation"], 12);
     assert_eq!(observation["viewport_width"], 900.0);
     assert_eq!(observation["viewport_height"], 700.0);

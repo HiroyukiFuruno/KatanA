@@ -148,12 +148,13 @@ impl HtmlBrowserSurface {
                 let origin = frame.origin.as_str().to_owned();
                 self.record_navigation(origin.clone());
                 self.document_origin = Some(origin);
-                self.frame = Some(BrowserFrame::new(
+                self.frame = Some(BrowserFrame::for_renderer_session(
                     frame.generation,
                     frame.viewport,
                     frame.scroll_y,
                     frame.content_height,
                     frame.pixels,
+                    self.katana_renderer_session_epoch,
                 ));
                 self.update_texture(ctx);
                 self.error = None;
@@ -431,6 +432,43 @@ mod tests {
     }
 
     #[test]
+    fn receipt_frame_epoch_stays_bound_to_the_accepted_frame() -> Result<(), String> {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
+        let source = HtmlBrowserSource::new(
+            "<html><body><p>accepted frame</p></body></html>",
+            "https://example.test/receipt-frame-epoch.html",
+        )
+        .map_err(|error| error.to_string())?;
+        let viewport =
+            HtmlBrowserViewport::new(320, 240, 1.0).map_err(|error| error.to_string())?;
+        let mut surface = HtmlBrowserSurface::start(source);
+        assert!(surface.start_pending_session(viewport));
+        surface.wait_for_frame_for_test(
+            &egui::Context::default(),
+            std::time::Duration::from_secs(10),
+        )?;
+        let accepted = surface
+            .receipt_observation()?
+            .ok_or_else(|| "accepted frame observation missing".to_owned())?;
+        let frame_epoch = accepted.katana_frame_renderer_session_epoch;
+        let next_epoch = accepted
+            .katana_renderer_session_epoch
+            .checked_add(1)
+            .ok_or_else(|| "fixture renderer epoch overflow".to_owned())?;
+        surface.katana_renderer_session_epoch = Some(next_epoch);
+
+        let observed = surface
+            .receipt_observation()?
+            .ok_or_else(|| "retained frame observation missing".to_owned())?;
+
+        assert_eq!(surface.frame_renderer_session_epoch(), Some(frame_epoch));
+        assert_eq!(observed.katana_frame_renderer_session_epoch, frame_epoch);
+        assert_eq!(observed.katana_renderer_session_epoch, next_epoch);
+        assert_ne!(observed.katana_frame_renderer_session_epoch, next_epoch);
+        Ok(())
+    }
+
+    #[test]
     fn receipt_observation_uses_actual_adapter_lifetime_and_accepted_reload_frame()
     -> Result<(), String> {
         let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
@@ -449,6 +487,11 @@ mod tests {
         let first = surface
             .receipt_observation()?
             .ok_or_else(|| "accepted first frame has no receipt observation".to_owned())?;
+
+        assert_eq!(
+            first.katana_frame_renderer_session_epoch,
+            first.katana_renderer_session_epoch
+        );
 
         let reloaded = HtmlBrowserSource::new(
             "<html><body><p>second</p></body></html>",
@@ -477,6 +520,10 @@ mod tests {
                 assert_eq!(
                     current.katana_renderer_session_epoch,
                     first.katana_renderer_session_epoch + 1
+                );
+                assert_eq!(
+                    current.katana_frame_renderer_session_epoch,
+                    current.katana_renderer_session_epoch
                 );
                 assert_eq!(current.source_uri, first.source_uri);
                 assert!(current.viewport_width.is_finite());
