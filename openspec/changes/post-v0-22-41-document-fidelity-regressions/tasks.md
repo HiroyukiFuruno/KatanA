@@ -1,3 +1,8 @@
+### 2026-10-25 Ready CIの厳格lint失敗を修復
+
+- [/] ef672a8dは通常push実0、current bot重大なし・99thread未解決0を確認後Ready。CI Rust1.99.1は`metadata_collection`の`chunks_exact_to_as_chunks`を検出してmacOS/Linux lint101（local1.97.1では未検出）。Draftへ戻し、固定4byteのtyped array分割へ最小修復。元の読込・範囲・エラー・全quality条件を維持し、正式`metadata_`回帰21件実0。通常commit/push・新HEAD review/Ready必須CIは未完。[根拠](evidence/ci-font-collection-lint-2026-10-25.ja.md)。
+- [/] 最新レビューの画像queue飽和P2は未修正としてKatanA #357へ後続追跡。条件付き再描画不足の経路を主査/独立監査で確認し、先行公開優先・P2無条件追加実装ループを作らない方針に沿い、採否根拠を個別返信後resolve。本人確認を開始/Close条件へ置かず、実bounded queueの再現・復帰を自動検証するDoDをIssueに記録。実不具合の修復済みとは扱わない。
+
 ### 2026-10-25 最新本人決定: 自動検証で公開を優先
 
 - [/] #355 Markdown分割背景をExplorerの既存window色へ統一し、左右・上下共通入口で描画。対象1件・AST30・影響lint・fmt成功、通常commit b6485f51実0。#356 PDF/PPTX左右ページングは既存viewer commandを利用し、focus/修飾キー/形式/ページ境界の対象2件・AST30・影響lint・fmt成功、通常commit f51f371e実0。最終5file独立レビューP0/P1なし、SHA主査一致。通常統合済み、current CI・公開は未完。

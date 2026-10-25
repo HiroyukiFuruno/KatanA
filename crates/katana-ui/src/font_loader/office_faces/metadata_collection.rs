@@ -63,7 +63,9 @@ impl CollectionDirectory {
             .ok_or_else(|| reader.invalid())?;
         let bytes = reader.read_at(offset, length)?;
         Ok(bytes
-            .chunks_exact(U32_BYTES)
+            .as_chunks::<U32_BYTES>()
+            .0
+            .iter()
             .map(|value| u64::from(Self::u32_at(value, 0)))
             .collect())
     }
