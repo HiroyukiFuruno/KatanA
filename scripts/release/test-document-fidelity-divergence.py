@@ -104,32 +104,57 @@ class DivergenceTests(unittest.TestCase):
         comparison["measured_sha256"] = digest
         html["packaged_run"]["render_output"]["metrics_sha256"] = digest
 
-    def test_full_host_scope_keeps_strict_fidelity_failure(self):
+    def test_legacy_host_evidence_cannot_admit_new_scope_and_strict_fidelity_still_fails(self):
         fixture = FIXTURES.AcceptanceEvidenceTests()
         with fixture.repository() as directory:
             root = Path(directory)
             evidence = fixture.valid_evidence(root)
             self.bind_host_measurement(root, evidence)
             fixture.write_evidence(root, evidence)
-            ACCEPTANCE.verify(root, scope="katana-host")
-            with self.assertRaises(ACCEPTANCE.AcceptanceEvidenceError):
-                ACCEPTANCE.verify(root)
+            with self.assertRaisesRegex(ACCEPTANCE.AcceptanceEvidenceError, "regular evidence file required"):
+                ACCEPTANCE.verify(root, scope="katana-host")
+            ACCEPTANCE.verify_html(
+                root, evidence["html"], evidence["packaged_targets"], host_scope=True
+            )
+            with self.assertRaisesRegex(ACCEPTANCE.AcceptanceEvidenceError, "exceeds the contract tolerance"):
+                ACCEPTANCE.verify_html(root, evidence["html"], evidence["packaged_targets"])
 
-    def test_full_host_scope_rejects_missing_packaged_and_normal_close(self):
+    def test_legacy_guards_still_reject_missing_packaged_and_invalid_html_close(self):
         fixture = FIXTURES.AcceptanceEvidenceTests()
-        for mutate in (lambda e: e["packaged_targets"].pop("linux-x86_64"),
-                       lambda e: e["html"].update(normal_close=False),
-                       lambda e: e["html"].update(runner_mode="in_process"),
-                       lambda e: e["html"].update(close_ms=5001),
-                       lambda e: e.update(source_tree_sha256="0" * 64)):
+        for mutate, verify, message, host_measurement in (
+            (lambda e: e["packaged_targets"].pop("linux-x86_64"),
+             lambda root, e: ACCEPTANCE.verify_packaged(e["packaged_targets"]),
+             "packaged evidence must cover every declared target", False),
+            (lambda e: e["html"].update(normal_close=False),
+             lambda root, e: ACCEPTANCE.verify_html(
+                 root, e["html"], e["packaged_targets"], host_scope=True
+             ),
+             "passed run with normal close", True),
+            (lambda e: e["html"].update(runner_mode="in_process"),
+             lambda root, e: ACCEPTANCE.verify_html(
+                 root, e["html"], e["packaged_targets"], host_scope=True
+             ),
+             "packaged_main, not in_process", True),
+            (lambda e: e["html"].update(close_ms=5001),
+             lambda root, e: ACCEPTANCE.verify_html(
+                 root, e["html"], e["packaged_targets"], host_scope=True
+             ),
+             "normal close must be within 5000 ms", True),
+            (lambda e: e.update(source_tree_sha256="0" * 64),
+             lambda root, e: ACCEPTANCE.verify(root),
+             "acceptance evidence source tree hash is stale", False),
+        ):
             with fixture.repository() as directory:
                 root = Path(directory)
                 evidence = fixture.valid_evidence(root)
-                self.bind_host_measurement(root, evidence)
+                if host_measurement:
+                    self.bind_host_measurement(root, evidence)
+                fixture.write_evidence(root, evidence)
+                verify(root, evidence)
                 mutate(evidence)
                 fixture.write_evidence(root, evidence)
-                with self.assertRaises(ACCEPTANCE.AcceptanceEvidenceError):
-                    ACCEPTANCE.verify(root, scope="katana-host")
+                with self.assertRaisesRegex(ACCEPTANCE.AcceptanceEvidenceError, message):
+                    verify(root, evidence)
 
     def test_host_actions_cannot_be_deferred_or_faked_by_a_static_frame(self):
         ACCEPTANCE.verify_html_host_actions(self.host_actions(), ACCEPTANCE.ORIGINAL_HTML_SHA256)
