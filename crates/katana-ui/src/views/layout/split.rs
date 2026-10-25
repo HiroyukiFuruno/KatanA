@@ -61,50 +61,6 @@ pub(crate) use super::split_horizontal::HorizontalSplit;
 
 pub(crate) use super::split_vertical::VerticalSplit;
 
-#[cfg(test)]
-mod tests {
-    use super::{is_markdown_path, paint_split_background};
-    use eframe::egui;
-
-    #[test]
-    fn split_background_uses_explorer_window_role_only_for_markdown() {
-        assert!(is_markdown_path(std::path::Path::new("notes.MD")));
-        assert!(is_markdown_path(std::path::Path::new("notes.markdown")));
-        assert!(!is_markdown_path(std::path::Path::new("notes.html")));
-
-        let ctx = egui::Context::default();
-        let colors = katana_platform::theme::ThemePreset::KatanaLight.colors();
-        let visuals = crate::theme_bridge::ThemeBridgeOps::visuals_from_theme(&colors);
-        let expected_window = visuals.window_fill;
-        let expected_panel = visuals.panel_fill;
-        assert_ne!(expected_window, expected_panel);
-        let mut style = (*ctx.global_style()).clone();
-        style.visuals = visuals;
-        ctx.set_global_style(style);
-        let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
-            paint_split_background(ui, true);
-        });
-        assert!(output.shapes.iter().any(|shape| matches!(
-            &shape.shape,
-            egui::Shape::Rect(rect) if rect.fill == expected_window
-        )));
-        assert!(!output.shapes.iter().any(|shape| matches!(
-            &shape.shape,
-            egui::Shape::Rect(rect) if rect.fill == expected_panel
-        )));
-        output.textures_delta.clear();
-
-        let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
-            paint_split_background(ui, false);
-        });
-        assert!(!output.shapes.iter().any(|shape| matches!(
-            &shape.shape,
-            egui::Shape::Rect(rect) if rect.fill == expected_window
-        )));
-        output.textures_delta.clear();
-    }
-}
-
 pub(crate) struct PreviewOnly<'a> {
     pub ui: &'a mut egui::Ui,
     pub app: &'a mut KatanaApp,
@@ -156,5 +112,49 @@ impl<'a> PreviewOnly<'a> {
                 );
             });
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{is_markdown_path, paint_split_background};
+    use eframe::egui;
+
+    #[test]
+    fn split_background_uses_explorer_window_role_only_for_markdown() {
+        assert!(is_markdown_path(std::path::Path::new("notes.MD")));
+        assert!(is_markdown_path(std::path::Path::new("notes.markdown")));
+        assert!(!is_markdown_path(std::path::Path::new("notes.html")));
+
+        let ctx = egui::Context::default();
+        let colors = katana_platform::theme::ThemePreset::KatanaLight.colors();
+        let visuals = crate::theme_bridge::ThemeBridgeOps::visuals_from_theme(&colors);
+        let expected_window = visuals.window_fill;
+        let expected_panel = visuals.panel_fill;
+        assert_ne!(expected_window, expected_panel);
+        let mut style = (*ctx.global_style()).clone();
+        style.visuals = visuals;
+        ctx.set_global_style(style);
+        let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
+            paint_split_background(ui, true);
+        });
+        assert!(output.shapes.iter().any(|shape| matches!(
+            &shape.shape,
+            egui::Shape::Rect(rect) if rect.fill == expected_window
+        )));
+        assert!(!output.shapes.iter().any(|shape| matches!(
+            &shape.shape,
+            egui::Shape::Rect(rect) if rect.fill == expected_panel
+        )));
+        output.textures_delta.clear();
+
+        let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
+            paint_split_background(ui, false);
+        });
+        assert!(!output.shapes.iter().any(|shape| matches!(
+            &shape.shape,
+            egui::Shape::Rect(rect) if rect.fill == expected_window
+        )));
+        output.textures_delta.clear();
     }
 }
