@@ -318,7 +318,14 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libxkbcommon-x11-0 libssl-dev gcc pkg-config libdbus-1-dev xvfb
+          sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libxkbcommon-x11-0 libssl-dev gcc pkg-config libdbus-1-dev mesa-vulkan-drivers vulkan-tools xvfb
+      - name: Verify software Vulkan adapter
+        run: |
+          lvp_icd=$(find /usr/share/vulkan/icd.d -maxdepth 1 -type f -name '*lvp*.json' -print -quit)
+          test -n "$lvp_icd"
+          test -f "$lvp_icd"
+          LIBGL_ALWAYS_SOFTWARE=1 VK_DRIVER_FILES="$lvp_icd" WGPU_BACKEND=vulkan \
+            xvfb-run -a vulkaninfo --summary
       - name: Build release (Linux)
         run: cargo build --workspace --release
       - name: Package Linux Artifact
@@ -337,6 +344,10 @@ jobs:
           path: tmp/identity-linux.json
       - name: Smoke launch packaged Linux app
         run: |
+          lvp_icd=$(find /usr/share/vulkan/icd.d -maxdepth 1 -type f -name '*lvp*.json' -print -quit)
+          test -n "$lvp_icd"
+          test -f "$lvp_icd"
+          export LIBGL_ALWAYS_SOFTWARE=1 VK_DRIVER_FILES="$lvp_icd" WGPU_BACKEND=vulkan
           TEMP_DIR=$(mktemp -d -t katana-linux-smoke.XXXXXX)
           tar -xzf target/release/KatanA-linux-x86_64.tar.gz -C "$TEMP_DIR"
           cd "$TEMP_DIR"

@@ -37,6 +37,21 @@ assert_build_linux_contains() {
     fi
 }
 
+assert_build_linux_step_contains() {
+    local step="$1"
+    local expected="$2"
+    if ! awk -v step="$step" '
+        /^  build_linux:$/ { in_build_linux=1; next }
+        in_build_linux && /^  [[:alnum:]_]+:$/ { exit }
+        in_build_linux && $0 == "      - name: " step { in_step=1; next }
+        in_build_linux && in_step && /^      - name:/ { exit }
+        in_build_linux && in_step { print }
+    ' "$WORKFLOW" | grep -Fq -- "$expected"; then
+        echo "FAIL: missing build_linux step contract in ${WORKFLOW}: step=${step}; expected=${expected}" >&2
+        exit 1
+    fi
+}
+
 bash -n "$SMOKE_SCRIPT"
 bash -n "$HEARTBEAT_HELPER"
 bash -n "$IDENTITY_HELPER"
@@ -76,6 +91,14 @@ assert_contains "$WORKFLOW" "needs: [preflight, build_macos, smoke_macos, build_
 assert_contains "$WORKFLOW" "needs.build_macos.result == 'success' && needs.smoke_macos.result == 'success' && needs.build_linux.result == 'success' && needs.build_windows.result == 'success'"
 assert_contains "$WORKFLOW" '"$GITHUB_WORKSPACE/scripts/release/smoke-launch-packaged-app.sh" linux-x86_64'
 assert_build_linux_contains 'libxkbcommon-x11-0'
+assert_build_linux_step_contains 'Install dependencies' 'mesa-vulkan-drivers'
+assert_build_linux_step_contains 'Install dependencies' 'vulkan-tools'
+assert_build_linux_step_contains 'Verify software Vulkan adapter' 'lvp_icd=$(find /usr/share/vulkan/icd.d'
+assert_build_linux_step_contains 'Verify software Vulkan adapter' "name '*lvp*.json'"
+assert_build_linux_step_contains 'Verify software Vulkan adapter' 'LIBGL_ALWAYS_SOFTWARE=1 VK_DRIVER_FILES="$lvp_icd" WGPU_BACKEND=vulkan'
+assert_build_linux_step_contains 'Verify software Vulkan adapter' 'xvfb-run -a vulkaninfo --summary'
+assert_build_linux_step_contains 'Smoke launch packaged Linux app' 'lvp_icd=$(find /usr/share/vulkan/icd.d'
+assert_build_linux_step_contains 'Smoke launch packaged Linux app' 'export LIBGL_ALWAYS_SOFTWARE=1 VK_DRIVER_FILES="$lvp_icd" WGPU_BACKEND=vulkan'
 assert_contains "$WORKFLOW" 'cd "$APP_DIR"'
 assert_contains "$WORKFLOW" 'cd "$TEMP_DIR"'
 assert_contains "$WORKFLOW" 'Start-Process -FilePath $expectedExecutable -WorkingDirectory $directory'

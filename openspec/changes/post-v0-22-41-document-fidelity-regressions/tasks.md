@@ -1,3 +1,7 @@
+### 2026-10-26 Linux配布起動の描画backend前提を修復
+
+- [/] X11依存修復後の全OS公開run40212332637は、Linux配布起動で `FailedToCreateSurfaceForAnyBackend({})` / exit1。実依存の実装から初期化済HAL backendが0件と確認し、通常Linux CIにあるMesa/Vulkanの準備・ICD選択が公開jobにはないことを切り分けた。個別driver初期化の失敗理由は未観測と保持する。公開jobだけの環境と既存の局所契約検査を補正し、旧workflowの不足検査RED→修正後startup契約/全OS契約4件/bash/diff各exit0。製品fallback・timeout・heartbeat・メモリ等の元条件は不変、通常review/CIと実配布起動・全OS公開は継続する。[根拠](evidence/linux-packaged-x11-runtime-2026-10-25.ja.md)。Mac/Windowsは同runの実結果を引き続き回収する。
+
 ### 2026-10-25 heartbeat回帰の診断引数を既存の形式へ統一
 
 - [/] f14de30dの新CIでは、通常テスト等は成功したがMac coverageが新回帰のassert診断引数2行未実行で失敗。同file先行回帰のlet stdout/stderr形式へ揃え、商用処理・assert・coverage規約や閾値を変えずに検証する。PR365はDraftへ戻し、通常commit/push・新HEAD review・Ready全CI・公開へ継続する。[根拠](evidence/windows-packaged-heartbeat-2026-10-25.ja.md)。
