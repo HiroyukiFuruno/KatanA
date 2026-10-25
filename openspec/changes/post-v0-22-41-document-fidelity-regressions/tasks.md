@@ -1,3 +1,7 @@
+### 2026-10-25 実frameと受入記録のP1修復
+
+- [/] HTML初回表示とreloadのframe識別が実receiptへ結合されていないP1を修復。frame受理時のKatanA epochを保持し、producerで実値を照合する。修復前5件/10失敗、修復後host34件・公式関連7件・AST30件・Clippy/fmt成功。旧hostscope fixtureも正常baselineと固有エラーを使う10件で修復。strict55件/公開gate32件も成功、通常署名commit `ec60264b` / `d484630` へ分離統合済み。通常pushと最終配布受入は未完了。[根拠](evidence/html-accepted-frame-binding-2026-10-25.ja.md)。
+
 ### 2026-10-25 通常pushの検査修復と配布生成
 
 - [/] 通常pushの601件中9失敗を回収し、実Cargo workspace/helper closureと実Upload pathのnegativeを修復。対象19件成功、独立レビュー必須指摘なし。元公開条件・assert・timeoutは不変、再pushは未完。
