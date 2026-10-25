@@ -1,3 +1,8 @@
+### 2026-10-26 Windows実配布の再不合格と観測不足
+
+- [/] record-every-frame修復後のsource5cb / Windows job121228922985も、既存観測でframe7→7・exit1。mainのtracing stdoutを起動stepが保存していない不足を補い、製品・元の測定条件を変えずに失敗後の同PID/heartbeat/既存traceを保存する。元workflowの不足RED1、startup契約/全OS契約4件/bash/diff各0、公式Linux/amd64 PowerShell7.4.2で抽出本文のParser.ParseFileは構文有効・exit0。Windows native成功とは区別し、通常review/CI・次の実原因判定へ続ける。[根拠](evidence/windows-packaged-heartbeat-2026-10-25.ja.md)。
+- [ ] Windows nativeの実原因を新ログで判別し、必要な修復・新HEAD通常review/必須CI・実配布起動・全OS公開まで確認する。恒久UI停止、一時停止、観測・起動環境の問題を推測だけで決めない。診断が動くことをnative成功やIssue364解決とは扱わず、元200ms×10・各閾値・保護を維持する。
+
 ### 2026-10-26 Linux配布起動の描画backend前提を修復
 
 - [/] X11依存修復後の全OS公開run40212332637は、Linux配布起動で `FailedToCreateSurfaceForAnyBackend({})` / exit1。実依存の実装から初期化済HAL backendが0件と確認し、通常Linux CIにあるMesa/Vulkanの準備・ICD選択が公開jobにはないことを切り分けた。個別driver初期化の失敗理由は未観測と保持する。公開jobだけの環境と既存の局所契約検査を補正し、旧workflowの不足検査RED→修正後startup契約/全OS契約4件/bash/diff各exit0。製品fallback・timeout・heartbeat・メモリ等の元条件は不変、通常review/CIと実配布起動・全OS公開は継続する。[根拠](evidence/linux-packaged-x11-runtime-2026-10-25.ja.md)。Mac/Windowsは同runの実結果を引き続き回収する。

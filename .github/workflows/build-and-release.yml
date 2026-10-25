@@ -410,6 +410,7 @@ jobs:
           path: tmp/identity-windows.json
 
       - name: Smoke launch packaged Windows app
+        id: windows_startup_smoke
         shell: pwsh
         run: |
           $archive = Join-Path $PWD "KatanA-windows-x86_64.zip"
@@ -417,14 +418,19 @@ jobs:
           Expand-Archive -Path $archive -DestinationPath $directory -Force
           $heartbeat = New-TemporaryFile
           $log = New-TemporaryFile
+          $stdoutLog = New-TemporaryFile
+          $diagnostics = Join-Path $env:RUNNER_TEMP ("katana-windows-startup-" + [guid]::NewGuid().ToString("N"))
+          New-Item -ItemType Directory -Path $diagnostics -ErrorAction Stop | Out-Null
+          "diagnostics_directory=$diagnostics" >> $env:GITHUB_OUTPUT
           $config = Join-Path $directory "empty-workspace-config"
           New-Item -ItemType Directory -Path $config -Force | Out-Null
           $env:KATANA_CONFIG_DIR = $config
           $env:KATANA_STARTUP_HEARTBEAT = $heartbeat.FullName
           $env:DEBUG = "true"
+          $env:RUST_LOG = "warn,katana_ui=info,katana_core=info,KatanA=info,eframe::native::run=trace,eframe::native::wgpu_integration=trace,egui_wgpu=debug,winit::platform_impl::windows::event_loop=trace"
           $expectedExecutable = (Resolve-Path -LiteralPath (Join-Path $directory "KatanA.exe") -ErrorAction Stop).ProviderPath
           $expectedSha256 = (Get-FileHash -LiteralPath $expectedExecutable -Algorithm SHA256 -ErrorAction Stop).Hash
-          $process = Start-Process -FilePath $expectedExecutable -WorkingDirectory $directory -PassThru -RedirectStandardError $log.FullName
+          $process = Start-Process -FilePath $expectedExecutable -WorkingDirectory $directory -PassThru -RedirectStandardOutput $stdoutLog.FullName -RedirectStandardError $log.FullName
           try {
             function Assert-PackagedProcessIdentity {
               $actualProcess = Get-Process -Id $process.Id -ErrorAction Stop
@@ -492,9 +498,50 @@ jobs:
             Write-Host "packaged_identity_verified=true; executable=$expectedExecutable; sha256=$expectedSha256; pid=$($process.Id); last_frame=$lastFrame"
             Write-Host "Packaged app made continued UI progress; peak_rss_bytes=$peakRss; font_bytes=$fontBytes; office_workers=0"
           }
+          catch {
+            $startupFailure = $_
+            try {
+              $heartbeatItem = Get-Item -LiteralPath $heartbeat.FullName -ErrorAction Continue
+              if ($null -ne $heartbeatItem) {
+                Write-Host "Windows startup heartbeat metadata:"
+                $heartbeatItem | Select-Object FullName, Length, LastWriteTimeUtc | ConvertTo-Json | Tee-Object -FilePath (Join-Path $diagnostics "heartbeat-metadata.json") | Write-Host
+                Write-Host "Windows startup raw heartbeat:"
+                Get-Content -LiteralPath $heartbeat.FullName -Raw -ErrorAction Continue | Write-Host
+                Copy-Item -LiteralPath $heartbeat.FullName -Destination (Join-Path $diagnostics "heartbeat.txt") -ErrorAction Continue
+              }
+              Write-Host "Windows startup expected identity: executable=$expectedExecutable; sha256=$expectedSha256"
+              $process.Refresh()
+              Write-Host "Windows startup process: pid=$($process.Id); has_exited=$($process.HasExited)"
+              if ($process.HasExited) { Write-Host "Windows startup exit_code=$($process.ExitCode)" }
+              $diagnosticProcess = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
+              if ($null -ne $diagnosticProcess) {
+                $diagnosticProcess | Select-Object Id, Path, StartTime, CPU, WorkingSet64, MainWindowHandle, MainWindowTitle, Responding | ConvertTo-Json | Tee-Object -FilePath (Join-Path $diagnostics "process.json") | Write-Host
+              }
+              Write-Host "Windows startup PowerShell version=$($PSVersionTable.PSVersion)"
+            }
+            catch {
+              Write-Warning "Could not collect all Windows startup diagnostics: $($_.Exception.Message)"
+            }
+            Write-Host "Windows startup stdout:"
+            Get-Content -LiteralPath $stdoutLog.FullName -Raw -ErrorAction Continue | Write-Host
+            Write-Host "Windows startup stderr:"
+            Get-Content -LiteralPath $log.FullName -Raw -ErrorAction Continue | Write-Host
+            Copy-Item -LiteralPath $stdoutLog.FullName -Destination (Join-Path $diagnostics "stdout.log") -ErrorAction Continue
+            Copy-Item -LiteralPath $log.FullName -Destination (Join-Path $diagnostics "stderr.log") -ErrorAction Continue
+            Write-Host "Windows startup diagnostics retained: $diagnostics"
+            throw $startupFailure
+          }
           finally {
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
           }
+
+      - name: Upload Windows startup diagnostics
+        if: failure() && steps.windows_startup_smoke.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: windows-startup-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.windows_startup_smoke.outputs.diagnostics_directory }}
+          retention-days: 5
 
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
