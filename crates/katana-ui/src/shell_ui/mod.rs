@@ -102,19 +102,26 @@ pub(crate) const SPLIT_PANEL_MAX_RATIO: f32 = 0.7;
 pub(crate) const PREVIEW_CONTENT_PADDING: i8 = 12;
 
 impl eframe::App for KatanaApp {
-    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
+        let mut startup_diagnostics =
+            crate::startup_heartbeat::StartupHeartbeat::begin_frame(&ctx, frame);
         if crate::startup_heartbeat::StartupHeartbeat::is_enabled() {
             ctx.request_repaint_after(std::time::Duration::from_millis(100));
         }
         crate::widgets::InteractionFacade::begin_frame(&ctx);
         let theme_colors = self.poll_and_prepare(&ctx);
+        crate::startup_heartbeat::StartupHeartbeat::mark_prepared(&mut startup_diagnostics);
 
         if !self.show_main_panels(ui, &theme_colors) {
+            crate::startup_heartbeat::StartupHeartbeat::mark_panels(&mut startup_diagnostics);
             self.record_completed_frame_resources();
-            crate::startup_heartbeat::StartupHeartbeat::record_completed_frame();
+            crate::startup_heartbeat::StartupHeartbeat::record_completed_frame_with_diagnostics(
+                startup_diagnostics,
+            );
             return;
         }
+        crate::startup_heartbeat::StartupHeartbeat::mark_panels(&mut startup_diagnostics);
 
         if self.is_foreground_surface_active(&ctx) {
             egui::Area::new("foreground_surface_blocker".into())
@@ -135,7 +142,9 @@ impl eframe::App for KatanaApp {
 
         self.show_splash(&ctx);
         self.record_completed_frame_resources();
-        crate::startup_heartbeat::StartupHeartbeat::record_completed_frame();
+        crate::startup_heartbeat::StartupHeartbeat::record_completed_frame_with_diagnostics(
+            startup_diagnostics,
+        );
     }
 
     fn on_exit(&mut self) {

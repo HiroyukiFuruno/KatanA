@@ -1,3 +1,7 @@
+### 2026-10-26 Windowsの単発不一致と実処理区間の切り分け
+
+- [/] sourcecc3の全OS公開run40226774883はLinux配布版・macOS両arch起動成功、Windowsは元200ms観測の5→5で不合格。catchでframe7へ進んでおり恒久停止とは断定しない。既存heartbeatとDEBUG=trueが両方有効な診断時だけ実App::ui区間・前フレームCPU時間・viewportとheartbeat記録処理時間を計測し、KatanA内処理と描画基盤の責任を判別する。counter bytes・記録位置・100ms予約・200ms×10回・元品質条件は不変。限定計測を実装し実child回帰6件・AST30件・fmt/impacted lint/diffは成功したが、通常commit/push・新current review/全CI・実native検査と原因判定は未完として継続する。[根拠](evidence/windows-packaged-heartbeat-2026-10-25.ja.md)。
+
 ### 2026-10-26 Windows実配布の再不合格と観測不足
 
 - [/] record-every-frame修復後のsource5cb / Windows job121228922985も、既存観測でframe7→7・exit1。mainのtracing stdoutを起動stepが保存していない不足を補い、製品・元の測定条件を変えずに失敗後の同PID/heartbeat/既存traceを保存する。元workflowの不足RED1、startup契約/全OS契約4件/bash/diff各0、公式Linux/amd64 PowerShell7.4.2で抽出本文のParser.ParseFileは構文有効・exit0。Windows native成功とは区別し、通常review/CI・次の実原因判定へ続ける。[根拠](evidence/windows-packaged-heartbeat-2026-10-25.ja.md)。

@@ -55,6 +55,47 @@ mod tests {
         })
     }
 
+    fn trace_field_u64(line: &str, field: &str) -> Option<u64> {
+        let value = line.split_once(&format!("{field}="))?.1.split_whitespace().next()?;
+        let value = value.strip_prefix("Some(").unwrap_or(value);
+        let value = value.strip_suffix(')').unwrap_or(value);
+        value.parse().ok()
+    }
+
+    fn assert_startup_diagnostic_trace(trace: &str) {
+        let begin_frames: Vec<_> = trace
+            .lines()
+            .filter(|line| line.contains("event=\"startup_heartbeat_frame_begin\""))
+            .map(|line| (
+                trace_field_u64(line, "heartbeat_frame").unwrap(),
+                trace_field_u64(line, "cumulative_pass_nr").unwrap(),
+            ))
+            .collect();
+        let end_lines: Vec<_> = trace
+            .lines()
+            .filter(|line| line.contains("event=\"startup_heartbeat_frame_end\""))
+            .collect();
+        let end_frames: Vec<_> = end_lines
+            .iter()
+            .map(|line| (
+                trace_field_u64(line, "heartbeat_frame").unwrap(),
+                trace_field_u64(line, "cumulative_pass_nr").unwrap(),
+            ))
+            .collect();
+
+        assert!(!begin_frames.is_empty());
+        assert_eq!(begin_frames, end_frames);
+        for line in end_lines {
+            let prepared = trace_field_u64(line, "prepared_elapsed_us").unwrap();
+            let panels = trace_field_u64(line, "panels_elapsed_us").unwrap();
+            let ui = trace_field_u64(line, "ui_elapsed_us").unwrap();
+            let frame = trace_field_u64(line, "frame_elapsed_us").unwrap();
+            let record = trace_field_u64(line, "heartbeat_record_us").unwrap();
+            assert!(prepared <= panels && panels <= ui && ui <= frame);
+            assert!(record <= frame);
+        }
+    }
+
     fn flatten_shapes<'a>(
         shapes: impl IntoIterator<Item = &'a egui::epaint::ClippedShape>,
     ) -> Vec<&'a egui::epaint::Shape> {
@@ -136,6 +177,13 @@ mod tests {
                 std::env::var_os("KATANA_STARTUP_HEARTBEAT")
                     .expect("child heartbeat path must be provided"),
             );
+            let trace_path = heartbeat_path.with_extension("trace.log");
+            let trace_file = std::fs::File::create(&trace_path).unwrap();
+            tracing_subscriber::fmt()
+                .with_ansi(false)
+                .with_writer(trace_file)
+                .try_init()
+                .expect("child tracing subscriber must initialize");
             let ctx = test_context();
             let app_state = AppState::new(
                 Default::default(),
@@ -171,6 +219,16 @@ mod tests {
                 "Terms modal heartbeat did not advance within the frame bound"
             );
             assert!(app.state.config.settings.settings().terms_accepted_version.is_none());
+            let trace = std::fs::read_to_string(trace_path).unwrap();
+            assert!(trace.contains("event=\"startup_heartbeat_frame_begin\""));
+            assert!(trace.contains("event=\"startup_heartbeat_frame_end\""));
+            assert!(trace.contains("heartbeat_record_us="));
+            assert!(trace.contains("heartbeat_record_called=true"));
+            assert!(trace.contains("prepared_elapsed_us="));
+            assert!(trace.contains("panels_elapsed_us="));
+            assert!(trace.contains("viewport_minimized="));
+            assert!(trace.contains("repaint_causes="));
+            assert_startup_diagnostic_trace(&trace);
             return;
         }
 
@@ -183,14 +241,129 @@ mod tests {
                 "--test-threads=1",
             ])
             .env("KATANA_STARTUP_HEARTBEAT", heartbeat.path())
+            .env("DEBUG", "true")
             .env(CHILD_SENTINEL, "1")
             .output()
             .unwrap();
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
         assert!(
             output.status.success(),
-            "child UI heartbeat test failed: stdout={} stderr={}",
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr)
+            "child UI heartbeat test failed: stdout={stdout} stderr={stderr}"
+        );
+    }
+
+    #[test]
+    fn startup_heartbeat_diagnostics_are_disabled_without_heartbeat_env_in_child_process() {
+        const CHILD_SENTINEL: &str = "KATANA_UI_STARTUP_HEARTBEAT_OFF_CHILD_V1";
+        if std::env::var_os(CHILD_SENTINEL).as_deref() == Some(std::ffi::OsStr::new("1")) {
+            let trace_path = PathBuf::from(
+                std::env::var_os("KATANA_STARTUP_HEARTBEAT_OFF_TRACE")
+                    .expect("disabled heartbeat trace path must be provided"),
+            );
+            let trace_file = std::fs::File::create(&trace_path).unwrap();
+            tracing_subscriber::fmt()
+                .with_ansi(false)
+                .with_writer(trace_file)
+                .try_init()
+                .expect("child tracing subscriber must initialize");
+
+            let ctx = test_context();
+            let frame = eframe::Frame::_new_kittest();
+            let mut diagnostics =
+                crate::startup_heartbeat::StartupHeartbeat::begin_frame(&ctx, &frame);
+            assert!(diagnostics.is_none());
+            crate::startup_heartbeat::StartupHeartbeat::mark_prepared(&mut diagnostics);
+            crate::startup_heartbeat::StartupHeartbeat::mark_panels(&mut diagnostics);
+            crate::startup_heartbeat::StartupHeartbeat::record_completed_frame_with_diagnostics(
+                diagnostics,
+            );
+
+            let trace = std::fs::read_to_string(trace_path).unwrap();
+            assert!(!trace.contains("startup_heartbeat_frame_begin"));
+            assert!(!trace.contains("startup_heartbeat_frame_end"));
+            return;
+        }
+
+        let trace = tempfile::NamedTempFile::new().unwrap();
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "shell_ui::tests::startup_heartbeat_diagnostics_are_disabled_without_heartbeat_env_in_child_process",
+                "--nocapture",
+                "--test-threads=1",
+            ])
+            .env_remove("KATANA_STARTUP_HEARTBEAT")
+            .env("DEBUG", "true")
+            .env("KATANA_STARTUP_HEARTBEAT_OFF_TRACE", trace.path())
+            .env(CHILD_SENTINEL, "1")
+            .output()
+            .unwrap();
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            output.status.success(),
+            "disabled heartbeat child test failed: stdout={stdout} stderr={stderr}"
+        );
+    }
+
+    #[test]
+    fn startup_heartbeat_writes_without_diagnostics_when_debug_is_disabled_in_child_process() {
+        const CHILD_SENTINEL: &str = "KATANA_UI_STARTUP_HEARTBEAT_NO_DEBUG_CHILD_V1";
+        if std::env::var_os(CHILD_SENTINEL).as_deref() == Some(std::ffi::OsStr::new("1")) {
+            let heartbeat_path = PathBuf::from(
+                std::env::var_os("KATANA_STARTUP_HEARTBEAT")
+                    .expect("heartbeat path must be provided"),
+            );
+            let trace_path = PathBuf::from(
+                std::env::var_os("KATANA_STARTUP_HEARTBEAT_OFF_TRACE")
+                    .expect("disabled heartbeat trace path must be provided"),
+            );
+            let trace_file = std::fs::File::create(&trace_path).unwrap();
+            tracing_subscriber::fmt()
+                .with_ansi(false)
+                .with_writer(trace_file)
+                .try_init()
+                .expect("child tracing subscriber must initialize");
+
+            let ctx = test_context();
+            let frame = eframe::Frame::_new_kittest();
+            let mut diagnostics =
+                crate::startup_heartbeat::StartupHeartbeat::begin_frame(&ctx, &frame);
+            assert!(diagnostics.is_none());
+            crate::startup_heartbeat::StartupHeartbeat::mark_prepared(&mut diagnostics);
+            crate::startup_heartbeat::StartupHeartbeat::mark_panels(&mut diagnostics);
+            crate::startup_heartbeat::StartupHeartbeat::record_completed_frame_with_diagnostics(
+                diagnostics,
+            );
+            assert_eq!(std::fs::read_to_string(heartbeat_path).unwrap(), "first-frame\nframe=1\n");
+
+            let trace = std::fs::read_to_string(trace_path).unwrap();
+            assert!(!trace.contains("startup_heartbeat_frame_begin"));
+            assert!(!trace.contains("startup_heartbeat_frame_end"));
+            return;
+        }
+
+        let heartbeat = tempfile::NamedTempFile::new().unwrap();
+        let trace = tempfile::NamedTempFile::new().unwrap();
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "shell_ui::tests::startup_heartbeat_writes_without_diagnostics_when_debug_is_disabled_in_child_process",
+                "--nocapture",
+                "--test-threads=1",
+            ])
+            .env("KATANA_STARTUP_HEARTBEAT", heartbeat.path())
+            .env_remove("DEBUG")
+            .env("KATANA_STARTUP_HEARTBEAT_OFF_TRACE", trace.path())
+            .env(CHILD_SENTINEL, "1")
+            .output()
+            .unwrap();
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            output.status.success(),
+            "heartbeat without DEBUG child test failed: stdout={stdout} stderr={stderr}"
         );
     }
 
