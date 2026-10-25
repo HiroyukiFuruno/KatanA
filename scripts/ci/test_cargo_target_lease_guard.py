@@ -169,10 +169,11 @@ class CargoTargetLeaseProcessTests(unittest.TestCase):
             with self.assertRaisesRegex(lease.LeaseUnavailable, "outside the Cargo target"):
                 lease.lease_path(self.target, inside_runtime)
 
-        unsafe_runtime = self.root / "unsafe-runtime"
-        unsafe_runtime.mkdir(mode=0o755)
-        with self.assertRaisesRegex(lease.LeaseUnavailable, "mode 0700"):
-            lease.lease_path(self.target, unsafe_runtime)
+        if os.name != "nt":
+            unsafe_runtime = self.root / "unsafe-runtime"
+            unsafe_runtime.mkdir(mode=0o755)
+            with self.assertRaisesRegex(lease.LeaseUnavailable, "mode 0700"):
+                lease.lease_path(self.target, unsafe_runtime)
 
     def test_runtime_environment_differences_share_identity(self):
         with lease.target_lease(self.target, exclusive=False):
@@ -195,18 +196,19 @@ class CargoTargetLeaseProcessTests(unittest.TestCase):
             self.assertEqual(0, result.returncode, result.stdout + result.stderr)
             self.assertIn("same lease", result.stdout)
 
-    def test_original_runtime_components_reject_world_writable_and_symlink_paths(self):
+    def test_original_runtime_components_reject_posix_world_writable_and_symlink_paths(self):
         home = self.root / "runtime-home"
         home.mkdir(mode=0o700)
         cache = home / ".cache"
         cache.mkdir(mode=0o700)
         (cache / "katana").mkdir(mode=0o700)
         (cache / "katana/target-leases").mkdir(mode=0o700)
-        cache.chmod(0o777)
-        with self.assertRaisesRegex(lease.LeaseUnavailable, "writable by others"):
-            _validate_directory_chain(cache / "katana/target-leases", home)
+        if os.name != "nt":
+            cache.chmod(0o777)
+            with self.assertRaisesRegex(lease.LeaseUnavailable, "writable by others"):
+                _validate_directory_chain(cache / "katana/target-leases", home)
 
-        cache.chmod(0o700)
+            cache.chmod(0o700)
         (cache / "katana/target-leases").rmdir()
         (cache / "katana").rmdir()
         private = home / "private-runtime"

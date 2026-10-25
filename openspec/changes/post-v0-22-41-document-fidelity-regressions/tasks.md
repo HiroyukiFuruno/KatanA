@@ -1,3 +1,7 @@
+### 2026-10-25 Windows CIの権限テストを修復
+
+- [/] 9838e374のReady CIは全3OS lintと供給網が成功したが、Windowsのtarget lease契約でPOSIX権限の拒否期待2件が失敗した。製品実装は既にWindowsでPOSIX mode検査を行わない設計。Draftへ戻し、symlink・非通常ファイル・対象間の独立性を維持してテストのOS前提を修復する。新HEADの通常commit/push・レビュー・全必須CIを回収する。[根拠](evidence/ci-windows-lease-permissions-2026-10-25.ja.md)。
+
 ### 2026-10-25 Ready CIの厳格lint失敗を修復
 
 - [/] ef672a8dは通常push実0、current bot重大なし・99thread未解決0を確認後Ready。CI Rust1.99.1は`metadata_collection`の`chunks_exact_to_as_chunks`を検出してmacOS/Linux lint101（local1.97.1では未検出）。Draftへ戻し、固定4byteのtyped array分割へ最小修復。元の読込・範囲・エラー・全quality条件を維持し、正式`metadata_`回帰21件実0。通常commit/push・新HEAD review/Ready必須CIは未完。[根拠](evidence/ci-font-collection-lint-2026-10-25.ja.md)。
