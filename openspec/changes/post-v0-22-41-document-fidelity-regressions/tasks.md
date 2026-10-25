@@ -1,3 +1,8 @@
+### 2026-10-25 通常pushの検査修復と配布生成
+
+- [/] 通常pushの601件中9失敗を回収し、実Cargo workspace/helper closureと実Upload pathのnegativeを修復。対象19件成功、独立レビュー必須指摘なし。元公開条件・assert・timeoutは不変、再pushは未完。
+- [/] macOS bundleを明示ARMの既存release profileで生成しnative重複buildを削減。構文・architecture契約8件・独立レビュー成功。実全構成package・署名・文書操作は未検証。
+
 ### 2026-10-25 host受入のphase整合と新d668実測
 
 - [/] 承認済みmacOS隔離host受入を、strict全体評価・全5生成asset・公開後最終Mac受入から分離。旧strict/独立95未完と元予算を維持し、producer/実OS子process/heartbeat/各loaded sourceとsource/lock/registryを結合するコードを適用。Python130件と独立highの現31file確認は成功、Rust公式検査は容量不足101後、再実行74721が15件/42suiteで終了0、AST30/Clippy全4crate/fmtも終了0。コードは通常署名e138d5aaへ統合済み。公開後host専用の完全一致release/*経路も独立flow15/Draft5で成功。正式raw/manifest・current review/CI/公開の完了ではない。[実装範囲と検証](evidence/host-admission-phase-alignment-2026-10-25.ja.md)。
