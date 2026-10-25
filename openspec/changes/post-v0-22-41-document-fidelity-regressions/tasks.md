@@ -1,3 +1,7 @@
+### 2026-10-25 Linux FIFO取消fixtureの無期限待機を修復
+
+- [/] 83cf2bdbのReady CIは3OS lint・供給網・CodeQL・ReadinessとMac/WindowsのRun testsが成功。一方LinuxはFIFO取消capacityテストが終端せず、Chrome実行中ログと取消後の実ログで09:09の60秒超通知から09:48取消まで残ることを確認。sender取得をreader接続と誤認し、取消でreaderがopenしない場合に後処理のFile::createが永久待機するfixture経路を修復する。製品worker/queue・元5秒予算・ignore・capacity/回復assertを維持し、通常検証・独立レビュー・新HEAD CI・公開へ続ける。[Issue359](https://github.com/HiroyukiFuruno/KatanA/issues/359)、[根拠](evidence/ci-linux-fifo-rendezvous-2026-10-25.ja.md)。旧runの結論cancelledを自然終了failureや合格へ書き換えない。
+
 ### 2026-10-25 起動後処理の重複identity確認を削減
 
 - [/] 31fc8817の通常pushはpreflightのstartup cleanup猶予検査で最終exit1。単独診断では再現しなかったが、外側とTERM直前で同じPIDのlsof/path/SHA確認が重複する実経路を確認した。内側のTERM直前と猶予後KILL直前の確認を維持し、直前の重複だけを除く。2秒の待機と既存3秒/6秒テスト上限は変更せず、実確認回数の回帰・通常レビュー/検証を行う。lsof遅延が元失敗の原因と確定したとは扱わない。[根拠](evidence/startup-cleanup-identity-2026-10-25.ja.md)。
