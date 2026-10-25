@@ -6,6 +6,7 @@ mod font_lookup_types;
 mod font_lookup_worker;
 mod font_requests;
 mod local_intake;
+mod page_navigation;
 mod painter;
 mod painter_grid;
 mod painter_grid_border_style;

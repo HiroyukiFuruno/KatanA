@@ -98,6 +98,7 @@ impl DocumentSurface {
         /* WHY: Place diagnostics before allocating the grid so it cannot overlap the bottom tab input region. */
         show_diagnostics(ui, &frame);
         ui.add_space(4.0);
+        super::page_navigation::show(self, ui, &frame);
         let sheet_tab_height = sheet_tab_rail_height(frame.format);
         if sheet_tab_height > 0.0 {
             let rail_frame =
