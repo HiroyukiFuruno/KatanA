@@ -126,6 +126,17 @@ pub fn code_block<'t>(
     );
 
     if show_code_copy_button && !text.is_empty() {
+        ui.ctx().data_mut(|data| {
+            if data
+                .get_temp::<bool>(egui::Id::new("katana_preview_overlay_inspection_active"))
+                .unwrap_or(false)
+            {
+                let count = data.get_temp_mut_or_default::<u32>(egui::Id::new(
+                    "katana_preview_code_copy_control_renders",
+                ));
+                *count += 1;
+            }
+        });
         // Copy icon
         let spacing = &ui.style().spacing;
         let icon_size = egui::vec2(20.0, 20.0);
@@ -197,6 +208,22 @@ pub fn code_block<'t>(
             };
             ui.copy_text(copy_text);
         }
+    }
+    if output.cursor_range.is_some_and(|range| {
+        let selected = range.as_sorted_char_range();
+        selected.start != selected.end
+    }) {
+        ui.ctx().data_mut(|data| {
+            if data
+                .get_temp::<bool>(egui::Id::new("katana_preview_overlay_inspection_active"))
+                .unwrap_or(false)
+            {
+                let count = data.get_temp_mut_or_default::<u32>(egui::Id::new(
+                    "katana_preview_code_selection_renders",
+                ));
+                *count += 1;
+            }
+        });
     }
     (output.response.response, output.galley)
 }

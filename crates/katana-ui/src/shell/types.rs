@@ -4,6 +4,7 @@ use eframe::egui;
 use katana_platform::FilesystemService;
 use katana_platform::theme::ThemeColors;
 
+use super::resource_receipt::ResourceReceiptState;
 pub(crate) struct TabPreviewCache {
     pub path: std::path::PathBuf,
     pub pane: PreviewPane,
@@ -40,6 +41,7 @@ pub struct KatanaApp {
     pub(crate) fs: FilesystemService,
     pub(crate) pending_action: AppAction,
     pub(crate) tab_previews: Vec<TabPreviewCache>,
+    pub(crate) closed_document_preview_memory_pending: bool,
     pub(crate) explorer_rx: Option<std::sync::mpsc::Receiver<ExplorerLoadMessage>>,
     pub(crate) update_rx: Option<
         std::sync::mpsc::Receiver<
@@ -81,4 +83,5 @@ pub struct KatanaApp {
     pub(crate) pending_dialog_action: Option<AppAction>,
     pub(crate) pending_html_preview_refresh: Option<PendingHtmlPreviewRefresh>,
     pub(crate) html_preview_observer: Option<crate::html_preview_observer::HtmlPreviewObserver>,
+    pub(crate) resource_receipt: Option<ResourceReceiptState>,
 }

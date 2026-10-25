@@ -36,9 +36,8 @@ fn test_integration_command_palette_ui() {
     use katana_ui::app_state::{AppAction, AppState};
     use katana_ui::shell::KatanaApp;
 
-    let settings_path =
-        std::env::temp_dir().join(format!("katana_test_cp_ui_{}.json", std::process::id()));
-    let _ = std::fs::remove_file(&settings_path);
+    let settings_dir = tempfile::tempdir().expect("palette settings directory");
+    let settings_path = settings_dir.path().join("settings.json");
 
     let sp_clone = settings_path.clone();
     let mut harness = Harness::builder().build_eframe(move |_cc| {
@@ -46,12 +45,17 @@ fn test_integration_command_palette_ui() {
             AiProviderRegistry::new(),
             PluginRegistry::new(),
             katana_platform::SettingsService::new(Box::new(
-                katana_platform::JsonFileRepository::new(sp_clone),
+                katana_platform::JsonFileRepository::new(sp_clone.clone()),
             )),
             std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
         );
         state.config.settings.settings_mut().terms_accepted_version =
             Some(katana_ui::about_info::APP_VERSION.to_string());
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::JsonWorkspaceRepository::new(
+                sp_clone.with_file_name("workspace.json"),
+            ),
+        ));
 
         let mut app = KatanaApp::new(state);
         app.skip_splash();
@@ -105,8 +109,8 @@ fn test_integration_command_palette_keyboard_navigation() {
     use katana_ui::app_state::{AppAction, AppState};
     use katana_ui::shell::KatanaApp;
 
-    let settings_path =
-        std::env::temp_dir().join(format!("katana_test_cp_kbd_{}.json", std::process::id()));
+    let settings_dir = tempfile::tempdir().expect("palette settings directory");
+    let settings_path = settings_dir.path().join("settings.json");
 
     let sp_clone = settings_path.clone();
     let mut harness = Harness::builder().build_eframe(move |_cc| {
@@ -114,12 +118,17 @@ fn test_integration_command_palette_keyboard_navigation() {
             AiProviderRegistry::new(),
             PluginRegistry::new(),
             katana_platform::SettingsService::new(Box::new(
-                katana_platform::JsonFileRepository::new(sp_clone),
+                katana_platform::JsonFileRepository::new(sp_clone.clone()),
             )),
             std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
         );
         state.config.settings.settings_mut().terms_accepted_version =
             Some(katana_ui::about_info::APP_VERSION.to_string());
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::JsonWorkspaceRepository::new(
+                sp_clone.with_file_name("workspace.json"),
+            ),
+        ));
 
         let mut app = KatanaApp::new(state);
         app.skip_splash();

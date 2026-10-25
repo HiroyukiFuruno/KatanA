@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "Espace de travail temporaire"
   },
   "preview": {
+    "canvas": {
+      "fit": "Afficher tout le canevas",
+      "empty": "Canevas vide",
+      "unsupported_node": "Nœud non pris en charge",
+      "unsupported_fields": "Attributs non pris en charge",
+      "unsupported_link": "Les liens externes ne sont pas pris en charge",
+      "unsupported_background": "Les images de fond ne sont pas prises en charge",
+      "load_error": "Impossible de charger le canevas",
+      "loading": "Chargement du canevas…"
+    },
     "preview_title": "Aperçu",
     "refresh_diagrams": "Actualiser les diagrammes",
     "rendering": "Rendu de {kind}…",
@@ -124,6 +134,18 @@
     "highlight_hover": "Surbrillance au Survol",
     "show_diagram_controls": "Contrôles du Diagramme",
     "toggle_slideshow": "Basculer le Diaporama",
+    "spreadsheet_filter": {
+      "open": "Ouvrir le filtre",
+      "title": "Filtrer les valeurs",
+      "loading": "Chargement des valeurs…",
+      "apply": "Appliquer",
+      "clear": "Effacer",
+      "select_all": "Tout sélectionner",
+      "blank": "Vide",
+      "non_blank": "Non vide",
+      "no_values": "Aucune valeur disponible",
+      "truncated": "Seules les premières valeurs sont affichées ; appliquer est désactivé"
+    },
     "document_controller": {
       "previous": "Page, feuille ou diapositive précédente",
       "next": "Page, feuille ou diapositive suivante",

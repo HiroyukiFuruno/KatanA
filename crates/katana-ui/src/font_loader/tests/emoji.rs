@@ -1,36 +1,19 @@
-/* WHY: Verification of Apple Color Emoji rasterization and layout. */
+/* WHY: Verification that the built-in emoji fallback survives excluding giant system fonts. */
 
 use super::*;
-#[cfg(target_os = "macos")]
-use egui::{FontData, FontId};
-#[cfg(target_os = "macos")]
-use std::fs;
-#[cfg(target_os = "macos")]
-use std::sync::Arc;
+use egui::FontId;
 
 #[test]
-#[cfg(target_os = "macos")]
-fn test_apple_color_emoji_family_renders_directly() {
-    let data = fs::read("/System/Library/Fonts/Apple Color Emoji.ttc").expect("apple emoji font");
-    let mut fonts = FontDefinitions::empty();
-    fonts.font_data.insert(
-        APPLE_COLOR_EMOJI_FONT_NAME.to_string(),
-        Arc::new(FontData::from_owned(data)),
-    );
-    fonts.families.insert(
-        FontFamily::Name(APPLE_COLOR_EMOJI_FONT_NAME.into()),
-        vec![APPLE_COLOR_EMOJI_FONT_NAME.to_string()],
-    );
-
+fn test_builtin_emoji_fallback_renders_without_system_payload() {
     let ctx = egui::Context::default();
-    ctx.set_fonts(fonts);
+    ctx.set_fonts(FontDefinitions::default());
 
     let mut glyph = None;
     crate::test_ui::TestUiOps::run(&ctx, Default::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let galley = ui.painter().layout_no_wrap(
                 "🌍".to_owned(),
-                FontId::new(24.0, FontFamily::Name(APPLE_COLOR_EMOJI_FONT_NAME.into())),
+                FontId::new(24.0, FontFamily::Proportional),
                 egui::Color32::WHITE,
             );
             glyph = galley
@@ -44,6 +27,6 @@ fn test_apple_color_emoji_family_renders_directly() {
     let glyph = glyph.expect("emoji glyph should be laid out");
     assert!(
         !glyph.uv_rect.is_nothing(),
-        "Apple Color Emoji should rasterize a visible glyph when used directly"
+        "the built-in emoji fallback should rasterize a visible glyph"
     );
 }

@@ -1,0 +1,19 @@
+# Linuxの読込回帰テスト間の競合
+
+## 実失敗
+
+2e9b3df7の通常pushは最終exit1。Linux UIテストは1359件成功、1件失敗、既存ignore2だった。元ログはtmp/oct25-2e9b3df7-normal-push.log。
+
+失敗したunchanged_result_preserves_matching_generation_and_queued_recheckは、local_intake_revision_tests.rsの46行で、文書読込の開始が既存の上限保護に拒否された。原因文字列はdocument intake capacity is occupied by cancelled reads (worker limit 2)。
+
+## 原因と修復範囲
+
+revisionテストは本物の非同期読込を共有poolへ投入した後、実結果を受け取らず合成したUnchanged結果を終了処理へ渡していた。この終了でpendingがdropされ、まだ動作中のrequestがcancelされる。他の並列テストが残るworkerを使っていると、次の投入が意図どおりの容量保護に拒否される。独立監査でも同じ経路を確認した。監査原本はtmp/oct25-intake-revision-race-audit.md。
+
+製品のworker数・容量保護は変更しない。3つのrevisionテストを既存のchild-processパターンで隔離し、本物の結果と該当active読込の解放を確認してから終了処理へ渡す。既存の5秒上限、queue上限、対象条件、ignore数を維持する。単純な再実行を根因修復の代用にしない。
+
+修復後の対象3件は各1件、local_intake関連は16件成功・実exit0を担当の実行結果で回収した。成功時の生ログは別ファイルへ保存されていない。コマンドと結果の記録はtmp/oct25-intake-revision-race-fix.mdにあり、生ログの代用とはしない。形式検査・差分検査も実0。
+
+独立レビューは最終ファイルSHA-256が2a8308a241804f4470c3b3817fb2676aca3afd3b52e1a3f534981b132505999cと一致し、新P0/P1なし。元のassert、実結果とrevisionの一致、自分のactive読込の有界解放待ち、forced/queued最終結果の回収を確認した。レビューはtmp/oct25-intake-revision-race-independent-review.mdに保存した。
+
+主査は同じLinux compose入口、RUST_TEST_THREADS=2、既存のRUSTFLAGS、実Office workerの絶対パスを使ってUI全体を実行した。1360件成功・失敗0・既存ignore2、実exit0を回収した。tmp/oct25-intake-revision-linux-ui.logへ実ログを保存した。通常commit/pushと新HEADのReady CIはまだ未完了。

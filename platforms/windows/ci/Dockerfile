@@ -28,4 +28,4 @@ RUN rustup target add x86_64-pc-windows-msvc
 RUN cargo install cargo-sweep
 
 WORKDIR /app
-CMD cargo sweep --time 7 && cargo xwin check --workspace --target x86_64-pc-windows-msvc --tests
+CMD cargo sweep --time 7 --dry-run && cargo xwin check --workspace --target x86_64-pc-windows-msvc --tests

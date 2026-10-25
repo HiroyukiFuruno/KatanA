@@ -1,9 +1,12 @@
-use super::file_entry::FileEntryNode;
-use super::tree_entry::TreeEntryNode;
 use super::types::ExplorerLogicOps;
 use crate::app_state::AppAction;
 use crate::shell_ui::TreeRenderContext;
 use eframe::egui;
+use std::sync::atomic::{AtomicU64, Ordering};
+
+const SLOW_EXPLORER_FRAME_MICROS: u128 = 8_000;
+const EXPLORER_TRACE_SAMPLE_INTERVAL: u64 = 120;
+static EXPLORER_FRAME_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 pub(crate) struct ExplorerContent<'a> {
     pub workspace: &'a mut crate::app_state::WorkspaceState,
@@ -49,78 +52,68 @@ impl<'a> ExplorerContent<'a> {
     }
 
     fn show_active_workspace(self, ui: &mut egui::Ui) {
+        let frame_started = std::time::Instant::now();
         let (workspace, search, active_path, action) =
             (self.workspace, self.search, self.active_path, self.action);
-        let ws = workspace.data.as_ref().unwrap();
-        let entries = ws.tree.clone();
-        let ws_root = ws.root.clone();
-
         ExplorerLogicOps::update_tree_expansion(workspace);
-        ExplorerLogicOps::update_search_filter_cache(search, &ws_root, &entries);
-
-        let filter_set = search.filter_cache.as_ref().map(|(_, v)| v);
-
-        egui::ScrollArea::vertical()
-            .id_salt("workspace_tree_scroll")
-            .show(ui, |ui| {
-                ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
-                let is_flat_view = workspace.is_flat_view(&ws_root);
-                let mut ctx = TreeRenderContext {
-                    action,
-                    depth: 0,
-                    active_path,
-                    filter_set,
-                    expanded_directories: &mut workspace.expanded_directories,
-                    disable_context_menu: false,
-                    is_flat_view,
-                    ws_root: Some(&ws_root),
-                    tab_groups: Some(self.tab_groups),
-                    show_vertical_line: self.show_vertical_line,
-                };
-
-                if is_flat_view {
-                    Self::show_flat_view(ui, &entries, &mut ctx);
-                } else {
-                    for entry in &entries {
-                        TreeEntryNode::new(entry, &mut ctx).show(ui);
-                    }
-                }
-                crate::views::panels::explorer::root_drop_area::ExplorerRootDropArea::show(
-                    ui, &mut ctx, &ws_root,
-                );
-            });
-    }
-
-    fn show_flat_view(
-        ui: &mut egui::Ui,
-        entries: &[katana_core::workspace::TreeEntry],
-        ctx: &mut TreeRenderContext,
-    ) {
-        let mut flat_entries = Vec::new();
-        Self::collect_files(entries, &mut flat_entries);
-        for entry in flat_entries {
-            if let katana_core::workspace::TreeEntry::File { path } = entry {
-                if let Some(fs) = ctx.filter_set
-                    && !fs.contains(path)
-                {
-                    continue;
-                }
-                FileEntryNode::new(entry, path, ctx).show(ui);
-            }
-        }
-    }
-
-    fn collect_files<'b>(
-        entries: &'b [katana_core::workspace::TreeEntry],
-        out: &mut Vec<&'b katana_core::workspace::TreeEntry>,
-    ) {
-        for e in entries {
-            match e {
-                katana_core::workspace::TreeEntry::File { .. } => out.push(e),
-                katana_core::workspace::TreeEntry::Directory { children, .. } => {
-                    Self::collect_files(children, out)
-                }
-            }
+        let ws = workspace.data.as_ref().expect("workspace must be active");
+        let workspace_revision = workspace.revision();
+        ExplorerLogicOps::update_search_filter_cache(
+            search,
+            &ws.root,
+            &ws.tree,
+            workspace_revision,
+        );
+        let is_flat_view = workspace.is_flat_view(&ws.root);
+        let filter = search
+            .filter_cache
+            .as_ref()
+            .map(|(params, paths)| (params, paths));
+        let projection_started = std::time::Instant::now();
+        let rebuilt = workspace.explorer_projection.refresh(
+            ws,
+            workspace_revision,
+            &workspace.expanded_directories,
+            filter,
+            is_flat_view,
+        );
+        let projection_elapsed = projection_started.elapsed();
+        let filter_set = filter.map(|(_, paths)| paths);
+        let mut ctx = TreeRenderContext {
+            action,
+            depth: 0,
+            active_path,
+            filter_set,
+            expanded_directories: &mut workspace.expanded_directories,
+            disable_context_menu: false,
+            is_flat_view,
+            ws_root: Some(&ws.root),
+            tab_groups: Some(self.tab_groups),
+            show_vertical_line: self.show_vertical_line,
+        };
+        let visible_rows = Self::show_virtualized_tree(
+            ui,
+            &ws.tree,
+            workspace.explorer_projection.rows(),
+            &mut ctx,
+            &ws.root,
+        );
+        let frame_elapsed = frame_started.elapsed();
+        let sequence = EXPLORER_FRAME_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        if should_trace_explorer_frame(rebuilt, frame_elapsed.as_micros(), sequence) {
+            crate::debug_log::DebugLog::write(
+                "explorer_frame",
+                format_args!(
+                    "workspace_revision={} total_rows={} visible_rows={} projection_rebuilt={} projection_bytes={} projection_us={} frame_us={}",
+                    workspace_revision,
+                    workspace.explorer_projection.rows().len(),
+                    visible_rows,
+                    rebuilt,
+                    workspace.explorer_projection.estimated_heap_bytes(),
+                    projection_elapsed.as_micros(),
+                    frame_elapsed.as_micros(),
+                ),
+            );
         }
     }
 
@@ -137,5 +130,28 @@ impl<'a> ExplorerContent<'a> {
     #[allow(dead_code)]
     pub(crate) fn new_workspace_root_directory_action(ws_root: &std::path::Path) -> AppAction {
         AppAction::RequestNewDirectory(ws_root.to_path_buf())
+    }
+}
+
+const fn should_trace_explorer_frame(rebuilt: bool, elapsed_micros: u128, sequence: u64) -> bool {
+    rebuilt
+        || elapsed_micros >= SLOW_EXPLORER_FRAME_MICROS
+        || sequence.is_multiple_of(EXPLORER_TRACE_SAMPLE_INTERVAL)
+}
+
+#[cfg(test)]
+mod trace_tests {
+    use super::{EXPLORER_TRACE_SAMPLE_INTERVAL, should_trace_explorer_frame};
+
+    #[test]
+    fn explorer_trace_keeps_rebuilds_slow_frames_and_periodic_samples() {
+        assert!(should_trace_explorer_frame(true, 1, 1));
+        assert!(should_trace_explorer_frame(false, 8_000, 1));
+        assert!(should_trace_explorer_frame(
+            false,
+            1,
+            EXPLORER_TRACE_SAMPLE_INTERVAL
+        ));
+        assert!(!should_trace_explorer_frame(false, 1, 1));
     }
 }

@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "一時ワークスペース"
   },
   "preview": {
+    "canvas": {
+      "fit": "全体を表示",
+      "empty": "空のキャンバス",
+      "unsupported_node": "未対応のノード",
+      "unsupported_fields": "未対応の属性",
+      "unsupported_link": "外部リンクは未対応です",
+      "unsupported_background": "背景画像は未対応です",
+      "load_error": "キャンバスを読み込めません",
+      "loading": "キャンバスを読み込み中…"
+    },
     "preview_title": "プレビュー",
     "refresh_diagrams": "ダイアグラムを更新",
     "rendering": "{kind} レンダリング中…",
@@ -112,6 +122,18 @@
     "highlight_hover": "ホバーハイライト",
     "show_diagram_controls": "ダイアグラム操作",
     "toggle_slideshow": "スライドショーを開始",
+    "spreadsheet_filter": {
+      "open": "フィルターを開く",
+      "title": "値をフィルター",
+      "loading": "値を読み込み中…",
+      "apply": "適用",
+      "clear": "クリア",
+      "select_all": "すべて選択",
+      "blank": "空白",
+      "non_blank": "空白以外",
+      "no_values": "利用できる値がありません",
+      "truncated": "先頭の値のみ表示しています。適用は無効です"
+    },
     "document_controller": {
       "previous": "前のページ、シート、またはスライド",
       "next": "次のページ、シート、またはスライド",

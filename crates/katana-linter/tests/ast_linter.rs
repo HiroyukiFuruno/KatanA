@@ -12,6 +12,8 @@ use katana_linter::rules::{
 use katana_linter::utils::{LinterFileOps, LinterParserOps, ViolationReporterOps};
 use std::sync::{LazyLock, Mutex};
 
+mod japanese_source;
+
 static KAL_CURRENT_DIR_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
 
 struct CurrentDirGuard {
@@ -216,13 +218,19 @@ fn ast_linter_no_japanese_in_crates() {
                     }
 
                     if let Ok(content) = std::fs::read_to_string(path) {
-                        for (line_idx, line) in content.lines().enumerate() {
-                            /* WHY: Detect Japanese specifically combining Hiragana and Katakana.
-                                We intentionally exclude pure Han ideographs (\p{Han}) because Katana includes Chinese locales (zh-TW, zh-CN)
-                                which must not trigger the Japanese check. */
-                            if line.chars().any(|c| matches!(c, '\u{3040}'..='\u{309F}' | '\u{30A0}'..='\u{30FF}')) {
-                                let _ = tx.send(format!("{}:{}: Please remove Japanese text or use Unicode escapes for test strings.", path.display(), line_idx + 1));
-                                break;
+                        if path.extension().is_some_and(|extension| extension == "rs") {
+                            for violation in japanese_source::scan(path, &content) {
+                                let _ = tx.send(violation);
+                            }
+                        } else {
+                            for (line_idx, line) in content.lines().enumerate() {
+                                /* WHY: Detect Japanese specifically combining Hiragana and Katakana.
+                                    We intentionally exclude pure Han ideographs (\p{Han}) because Katana includes Chinese locales (zh-TW, zh-CN)
+                                    which must not trigger the Japanese check. */
+                                if line.chars().any(japanese_source::is_japanese) {
+                                    let _ = tx.send(format!("{}:{}: Please remove Japanese text or use Unicode escapes for test strings.", path.display(), line_idx + 1));
+                                    break;
+                                }
                             }
                         }
                     }
@@ -247,7 +255,7 @@ fn ast_linter_no_japanese_in_crates() {
     if !violations.is_empty() {
         ViolationReporterOps::panic(
             "no-japanese-in-workspace",
-            "Fix: No Japanese text (Hiragana/Katakana) is allowed in any files except ja.json. Please translate comments to English or use Unicode escapes for test data.",
+            "Fix: Japanese text is permitted in Rust comments and documentation, but not in identifiers or code literals. Use Unicode escapes for test data. Other files retain the existing ja.json/resources exceptions.",
             &violations,
         );
     }

@@ -31,6 +31,10 @@ impl FileOpenOps {
             katana_core::workspace::TreeEntry::document_extensions(),
         );
         Self::append_extensions(&mut extensions, Self::DRAWIO_EXTENSIONS);
+        Self::append_extensions(
+            &mut extensions,
+            katana_core::workspace::TreeEntry::canvas_extensions(),
+        );
         extensions
     }
 

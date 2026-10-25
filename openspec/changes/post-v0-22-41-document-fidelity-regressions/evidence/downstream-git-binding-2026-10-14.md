@@ -1,0 +1,21 @@
+# Actual Git tree binding slice
+
+## Current-review full-OID correction
+
+Public99d1381f review5509838434 / comment4263915438 / threadPRRT_kwDORm09y86sDq9_ found a P2 relevant to the explicit full-commit contract: in SHA-256 Git repositories, the schema's40-character SHA-1 length can instead resolve as an abbreviation of a64-character commit. This was adopted as a compatibility/identity correction, not an unrelated new feature.
+
+Actual `git init --object-format=sha256` regression on the unchanged helper accepted full64 and proved ordinary cat-file resolved the40-prefix as commit, but the expected rejection failed (root native command exit1,1 assertionRED, `tmp/issue335-sha256-prefix-red-2026-10-14.log`). `_source_commit` now compares the complete `rev-parse --verify` OID to the declaration before the actual commit-type check. Existing no-fetch/no-replace/literal isolation remains. Final single discovery46 passed/2.855s/root3745 actual0, syntax/diff pass; helper72 lines/maxfn23, new test55 lines/maxfn16. Raw GREEN `tmp/issue335-sha256-prefix-green-2026-10-14.log`.
+
+Normal concern commit/push and individual reply/resolve/fresh retrieval remain separate steps; this local result does not mean the public review thread is resolved yet.
+
+Issue335 now has a separate local-object validator after the existing strict Issue evidence schema. It verifies declared full commit identities are actual commit objects; literal manifest/lockfile paths resolve exactly inside those commit trees; Cargo.toml/Cargo.lock classifications are correct; regular file mode, blob OID, and actual blob object existence/type match. It never executes the Issue's declared verification commands or treats author JSON as trusted success.
+
+All inherited GIT_* variables are removed for each Git invocation. Trusted `--no-replace-objects`, `--literal-pathspecs`, and `--no-lazy-fetch` prevent local replacement, pathspec expansion, or implicit partial-clone acquisition. Git2.56.0 supported the flags in actual verification; an unsupported Git option fails closed rather than silently enabling fetch. This is not a claim that every older Git installation was tested.
+
+Initial real Git tests and existing pure tests passed41; a readonly HIGH review then found a missing-blob P1. The initial helper only checked tree metadata. A real `git mktree --missing` / `git commit-tree` fixture proved actual erroneous acceptance: root18018 exit1,9 tests/1 assertion failure (`GitBindingError not raised`). This was a helper implementation defect, not an import/setup failure or a fabricated old-product RED.
+
+Adding actual `cat-file -t == blob` checks repaired the same case (43 tests/exit0,76286). Additional real filtered partial-clone with offline file-origin and unencodable-path boundaries brought the discovery to45 tests (existing34 plus real Git11), root14834 exit0/2.835s. Real replace refs were shown to alter ordinary Git resolution, while the validator still bound the original source. Real gitlink/symlink rejection, missing/noncommit identities, absent paths, stale blobs, literal metacharacters, historical commits and hostile inherited hook environment with unchanged caller metadata were verified. No mock Git or fake registry/CI was used.
+
+Local raw logs: `tmp/issue335-git-binding-first-2026-10-14.log` (41 initial), `tmp/issue335-git-binding-missing-blob-red-2026-10-14.log` (actual RED), `tmp/issue335-git-binding-missing-blob-green-2026-10-14.log` (43 GREEN), `tmp/issue335-git-binding-final-2026-10-14.log` (45). HIGH re-review found no remaining P0/P1. A nonblocking low-surrogate exception boundary was subsequently normalized to typed UTF-8 rejection; final discovery root30846 exited0/45 passed/2.384s. Syntax/diff checks passed, both files remain below200 lines and maximum function length23 lines.
+
+The helper is not yet the production push dispatcher or whole Issue335 completion. Remaining work includes live Issue/range admission, existing repository-hook-first delegation, actual manifest/lock semantic graph and registry/Release identity, trustworthy verification logs/artifacts, and publication-gated safe cleanup. Existing full quality gates remain owned by their original entry points; no author PASS file replaces required CI, and no packaged/public-release result is claimed here.

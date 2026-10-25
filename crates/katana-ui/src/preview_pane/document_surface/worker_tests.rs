@@ -1,3 +1,4 @@
+use super::painter_grid_borders::{PreparedCellBorders, PreparedGridBorders};
 use super::source::DocumentSurfaceSource;
 use super::worker::{DocumentWorkerCommand, DocumentWorkerEvent};
 use katana_document_viewer::{
@@ -5,6 +6,9 @@ use katana_document_viewer::{
     DocumentViewerCommand, DocumentViewerEvent, DocumentViewerState, PdfRenderedPage,
     ViewerCapabilities, ViewerDocumentFormat, ViewerImageSurface,
 };
+
+#[path = "worker_filter_tests.rs"]
+mod filter_tests;
 
 fn representative_pdf_source() -> DocumentSurfaceSource {
     DocumentSurfaceSource::remote(
@@ -45,7 +49,7 @@ fn test_frame() -> DocumentFrame {
     }
 }
 
-fn idle_surface() -> (
+pub(super) fn idle_surface() -> (
     super::types::DocumentSurface,
     std::sync::mpsc::Receiver<DocumentWorkerCommand>,
     std::sync::mpsc::Sender<DocumentWorkerEvent>,
@@ -58,12 +62,16 @@ fn idle_surface() -> (
         command_tx: Some(command_tx),
         event_rx,
         frame: Some(test_frame()),
+        border_cache: Default::default(),
+        fonts: Default::default(),
         failure: None,
         painter: Default::default(),
         loading: false,
         command_in_flight: false,
         pending_commands: Default::default(),
         viewport: None,
+        started_at: std::time::Instant::now(),
+        filter_ui: super::spreadsheet_filter_controls::SpreadsheetFilterUiState::default(),
     };
     (surface, command_rx, event_tx)
 }
@@ -89,7 +97,11 @@ fn document_surface_preserves_commands_until_each_frame_arrives() {
         DocumentWorkerEvent::Frame {
             generation: surface.generation,
             frame: Box::new(test_frame()),
+            border_cache: Default::default(),
+            font_requests: Vec::new(),
             session_event: DocumentSessionEvent::None,
+            spreadsheet_metadata: None,
+            filter_event: None,
         },
     );
     surface.poll(&ctx);
@@ -100,6 +112,75 @@ fn document_surface_preserves_commands_until_each_frame_arrives() {
     );
     assert!(surface.failure.is_none());
     assert!(surface.pending_commands.is_empty());
+}
+
+#[test]
+fn stale_frame_rejects_frame_and_border_cache_together() {
+    let ctx = eframe::egui::Context::default();
+    let (mut surface, _command_rx, _event_tx) = idle_surface();
+    let sentinel = PreparedGridBorders {
+        cells: vec![PreparedCellBorders {
+            coordinate: katana_document_viewer::DocumentGridCoordinate { row: 9, column: 9 },
+            left: None,
+            right: None,
+            top: None,
+            bottom: None,
+        }],
+    };
+    surface.border_cache = sentinel.clone();
+    surface.apply_event(
+        &ctx,
+        DocumentWorkerEvent::Frame {
+            generation: surface.generation + 1,
+            frame: Box::new(test_frame()),
+            border_cache: PreparedGridBorders::default(),
+            font_requests: Vec::new(),
+            session_event: DocumentSessionEvent::None,
+            spreadsheet_metadata: None,
+            filter_event: None,
+        },
+    );
+    assert_eq!(surface.border_cache, sentinel);
+    assert_eq!(
+        surface
+            .frame
+            .as_ref()
+            .expect("current frame")
+            .surface
+            .page()
+            .unwrap()
+            .fingerprint,
+        "test-page"
+    );
+}
+
+#[test]
+fn current_frame_accepts_frame_and_border_cache_together() {
+    let ctx = eframe::egui::Context::default();
+    let (mut surface, _command_rx, _event_tx) = idle_surface();
+    let accepted = PreparedGridBorders {
+        cells: vec![PreparedCellBorders {
+            coordinate: katana_document_viewer::DocumentGridCoordinate { row: 3, column: 4 },
+            left: None,
+            right: None,
+            top: None,
+            bottom: None,
+        }],
+    };
+    surface.apply_event(
+        &ctx,
+        DocumentWorkerEvent::Frame {
+            generation: surface.generation,
+            frame: Box::new(test_frame()),
+            border_cache: accepted.clone(),
+            font_requests: Vec::new(),
+            session_event: DocumentSessionEvent::None,
+            spreadsheet_metadata: None,
+            filter_event: None,
+        },
+    );
+    assert_eq!(surface.border_cache, accepted);
+    assert!(surface.frame.is_some());
 }
 
 #[test]
@@ -136,6 +217,7 @@ fn document_worker_applies_queued_commands_in_order() {
                 generation: event_generation,
                 frame,
                 session_event,
+                ..
             } => {
                 assert_eq!(event_generation, generation);
                 assert_eq!(frame.format, ViewerDocumentFormat::Pdf);
@@ -169,7 +251,7 @@ fn document_surface_preserves_a_command_when_the_worker_channel_is_full() {
     surface.command_in_flight = false;
 
     let preserved = DocumentWorkerCommand::Viewer(DocumentViewerCommand::Previous);
-    surface.send(preserved);
+    surface.send(preserved.clone());
 
     assert_eq!(surface.pending_commands.take_next(), Some(preserved));
     assert!(!surface.command_in_flight);

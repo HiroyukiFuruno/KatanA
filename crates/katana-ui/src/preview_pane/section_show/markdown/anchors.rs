@@ -8,6 +8,7 @@ pub struct MarkdownAnchorOps;
 impl MarkdownAnchorOps {
     #[allow(clippy::too_many_arguments)]
     pub fn process_anchors(
+        _ctx: &egui::Context,
         md: &str,
         global_line_offset: usize,
         heading_anchors: &mut Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
@@ -43,6 +44,15 @@ impl MarkdownAnchorOps {
             }
         }
         if let Some(hovered) = hovered_lines {
+            if !local_hovered_spans.is_empty() {
+                #[cfg(feature = "screenshot-test-hooks")]
+                crate::preview_pane::overlay_inspection::PreviewOverlayInspectionOps::increment(
+                    _ctx,
+                    |inspection| {
+                        inspection.hovered_markdown_spans += local_hovered_spans.len() as u32
+                    },
+                );
+            }
             for local_span in local_hovered_spans {
                 hovered.push(SectionRenderUtilsOps::span_to_range(
                     md,

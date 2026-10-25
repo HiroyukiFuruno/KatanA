@@ -10,3 +10,4 @@ pub use settings::SlideshowSettingsOps;
 
 /* WHY: Commented out missing test module references to unblock compilation/linting. */
 /* mod slideshow_tests; */
+mod document;

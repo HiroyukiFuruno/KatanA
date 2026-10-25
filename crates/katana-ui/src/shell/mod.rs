@@ -2,10 +2,16 @@
 
 use katana_platform::FilesystemService;
 
+#[doc(hidden)]
+pub use katana_document_viewer::DocumentResourceSnapshot as DocumentResourceSnapshotForTest;
+
 use crate::{
     app_state::{AppAction, AppState},
     preview_pane::PreviewPane,
 };
+mod resource_observation;
+mod resource_receipt;
+mod resource_snapshot;
 mod startup_workspace;
 mod test_hooks;
 mod transient_workspace;
@@ -38,11 +44,13 @@ pub(crate) const ACTIVE_FILE_HIGHLIGHT_ROUNDING: f32 = 3.0;
 impl KatanaApp {
     pub fn new(state: AppState) -> Self {
         tracing::debug!("KatanaApp::new: Start");
+        let resource_receipt = resource_receipt::ResourceReceiptState::from_environment();
         let mut app = Self {
             state,
             fs: FilesystemService::new(),
             pending_action: AppAction::None,
             tab_previews: Vec::new(),
+            closed_document_preview_memory_pending: false,
             explorer_rx: None,
             update_rx: None,
             changelog_rx: None,
@@ -74,6 +82,7 @@ impl KatanaApp {
             pending_dialog_action: None,
             pending_html_preview_refresh: None,
             html_preview_observer: None,
+            resource_receipt,
         };
         let current_version = env!("CARGO_PKG_VERSION");
         let mut show_changelog = false;
@@ -101,8 +110,6 @@ impl KatanaApp {
         }
 
         app.clear_transient_workspace_restore_state();
-        katana_core::update::UpdateCleanupOps::perform_background_cleanup();
-        tracing::debug!("KatanaApp::new: Background cleanup done");
         tracing::debug!("KatanaApp::new: End");
 
         startup_workspace::WorkspaceStartupOps::restore_workspace(&mut app);

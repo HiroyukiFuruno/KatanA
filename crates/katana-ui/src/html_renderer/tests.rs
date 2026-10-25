@@ -1,6 +1,27 @@
 use super::*;
 
 #[test]
+fn layout_trace_defers_details_until_tracing_is_active() {
+    use std::cell::Cell;
+
+    for active in [false, true] {
+        let mut harness = egui_kittest::Harness::builder().build_ui(move |ui| {
+            ui.ctx().data_mut(|data| {
+                data.insert_temp(egui::Id::new("katana.html_layout_trace.active"), active);
+            });
+            let called = Cell::new(false);
+            let renderer = HtmlRenderer::new(ui, std::path::Path::new("."));
+            renderer.trace_layout_lazy("test_lazy_details", || {
+                called.set(true);
+                "chars=7".to_owned()
+            });
+            assert_eq!(called.get(), active);
+        });
+        harness.step();
+    }
+}
+
+#[test]
 fn ensure_svg_extension_inserts_suffix_before_query_string() {
     let url =
         "https://img.shields.io/badge/Sponsor-❤️-ea4aaa?style=for-the-badge&logo=github-sponsors";

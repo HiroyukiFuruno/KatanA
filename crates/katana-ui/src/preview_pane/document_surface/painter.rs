@@ -21,9 +21,10 @@ pub(super) fn paint_document_frame(
     ui: &mut egui::Ui,
     frame: &DocumentSurfaceFrame,
     surface_id: u64,
-) -> Vec<DocumentSurfaceCommand> {
+    borders: &super::painter_grid_borders::PreparedGridBorders,
+) -> Result<Vec<DocumentSurfaceCommand>, super::painter_grid_borders_paint::BorderPaintError> {
     match frame.kind() {
-        DocumentSurfaceKind::Page => super::painter_page::paint(painter, ui, frame, surface_id),
-        DocumentSurfaceKind::Grid => super::painter_grid::paint(ui, frame),
+        DocumentSurfaceKind::Page => Ok(super::painter_page::paint(painter, ui, frame, surface_id)),
+        DocumentSurfaceKind::Grid => super::painter_grid::paint(ui, frame, borders),
     }
 }

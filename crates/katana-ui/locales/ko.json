@@ -104,6 +104,16 @@
     "temporary_workspace_tooltip": "임시 작업 공간"
   },
   "preview": {
+    "canvas": {
+      "fit": "캔버스 전체 보기",
+      "empty": "빈 캔버스",
+      "unsupported_node": "지원하지 않는 노드",
+      "unsupported_fields": "지원하지 않는 속성",
+      "unsupported_link": "외부 링크는 지원하지 않습니다",
+      "unsupported_background": "배경 이미지는 지원하지 않습니다",
+      "load_error": "캔버스를 불러올 수 없습니다",
+      "loading": "캔버스 불러오는 중…"
+    },
     "preview_title": "미리보기",
     "refresh_diagrams": "다이어그램 새로고침",
     "rendering": "{kind} 렌더링 중…",
@@ -124,6 +134,18 @@
     "highlight_hover": "마우스 오버 하이라이트",
     "show_diagram_controls": "다이어그램 컨트롤",
     "toggle_slideshow": "슬라이드쇼 전환",
+    "spreadsheet_filter": {
+      "open": "필터 열기",
+      "title": "값 필터링",
+      "loading": "값을 불러오는 중…",
+      "apply": "적용",
+      "clear": "지우기",
+      "select_all": "모두 선택",
+      "blank": "빈 셀",
+      "non_blank": "비어 있지 않음",
+      "no_values": "사용 가능한 값이 없습니다",
+      "truncated": "처음 일부 값만 표시되므로 적용할 수 없습니다"
+    },
     "document_controller": {
       "previous": "이전 페이지, 시트 또는 슬라이드",
       "next": "다음 페이지, 시트 또는 슬라이드",

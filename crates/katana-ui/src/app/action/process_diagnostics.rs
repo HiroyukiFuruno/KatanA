@@ -59,10 +59,8 @@ impl KatanaApp {
             return Some((doc.path.clone(), doc.buffer.clone()));
         }
 
-        self.fs
-            .load_document(doc.path.clone())
-            .ok()
-            .map(|loaded| (loaded.path, loaded.buffer))
+        /* WHY: 未ロード文書をUIスレッドで同期読込すると診断更新が画面操作をブロックするため。 */
+        None
     }
 
     fn is_lintable_markdown_path(path: &std::path::Path) -> bool {

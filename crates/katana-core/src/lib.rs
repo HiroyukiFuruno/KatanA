@@ -19,6 +19,7 @@
 )]
 
 pub mod ai;
+pub mod canvas;
 pub mod document;
 pub mod document_source;
 pub mod editor;

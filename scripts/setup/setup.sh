@@ -28,6 +28,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
 CANONICAL_SKILLS_DIR="${REPO_ROOT}/.agents/skills"
+KATANA_RELEASE_REPO="${KATANA_RELEASE_REPO:-HiroyukiFuruno/KatanA}"
 
 cd "${REPO_ROOT}"
 
@@ -275,6 +276,8 @@ else
   success "git installed ($(git --version))"
 fi
 
+bash "${REPO_ROOT}/scripts/release/check-git-capability.sh"
+
 # =============================================================================
 # 2b. just
 # =============================================================================
@@ -392,6 +395,19 @@ else
 fi
 
 # =============================================================================
+# 8c. cargo-sweep
+# =============================================================================
+header "cargo-sweep"
+
+if cargo sweep --version &>/dev/null; then
+  success "cargo-sweep is already installed ($(cargo sweep --version))"
+else
+  info "Installing cargo-sweep..."
+  cargo install cargo-sweep --locked
+  success "cargo-sweep installed"
+fi
+
+# =============================================================================
 # 8d. git-cliff
 # =============================================================================
 header "git-cliff"
@@ -446,7 +462,9 @@ fi
 # Install hooks into the repo (idempotent)
 if [[ -f "lefthook.yml" ]]; then
   info "Registering lefthook hooks in this repository..."
-  lefthook install
+  # Lefthook再生成に失敗しても検証済みdispatcherをownerとして復元する。
+  python3 -B "${REPO_ROOT}/scripts/release/setup_hooks.py" \
+    --repository "${KATANA_RELEASE_REPO}"
   success "lefthook hooks installed (pre-commit + pre-push)"
 else
   warn "lefthook.yml not found in current directory — skipping hook registration."
@@ -533,6 +551,7 @@ echo "  clippy       $(cargo clippy --version)"
 echo "  rustfmt      $(rustfmt --version)"
 echo "  llvm-cov     $(cargo llvm-cov --version)"
 echo "  cargo-watch  $(cargo watch --version)"
+echo "  cargo-sweep  $(cargo sweep --version)"
 echo "  tokei        $(tokei --version)"
 echo "  lefthook     $(lefthook version)"
 echo "  openspec     $(openspec --version)"

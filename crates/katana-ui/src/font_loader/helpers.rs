@@ -11,7 +11,23 @@ impl SystemFontLoader {
         tweak: Option<egui::FontTweak>,
         suffix: &str,
     ) -> Option<String> {
+        Self::load_first_valid_up_to(fonts, candidates, tweak, suffix, u64::MAX)
+    }
+
+    pub(super) fn load_first_valid_up_to(
+        fonts: &mut FontDefinitions,
+        candidates: &[&str],
+        tweak: Option<egui::FontTweak>,
+        suffix: &str,
+        max_bytes: u64,
+    ) -> Option<String> {
         for &path in candidates {
+            let Ok(metadata) = fs::metadata(path) else {
+                continue;
+            };
+            if metadata.len() > max_bytes {
+                continue;
+            }
             let Ok(data) = fs::read(path) else { continue };
             let name = std::path::Path::new(path)
                 .file_stem()

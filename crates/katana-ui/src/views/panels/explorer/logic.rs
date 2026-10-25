@@ -24,6 +24,7 @@ impl ExplorerLogicOps {
         search: &mut SearchState,
         ws_root: &Path,
         entries: &[TreeEntry],
+        workspace_revision: u64,
     ) {
         if search.filter_enabled && !search.filter.query.is_empty() {
             let is_negated = search.filter.query.starts_with('!');
@@ -55,7 +56,10 @@ impl ExplorerLogicOps {
                 .build()
             {
                 Ok(regex) => {
-                    if search.filter_cache.as_ref().map(|(q, _)| q) != Some(&search.filter) {
+                    let cache_matches = search.filter_cache.as_ref().map(|(q, _)| q)
+                        == Some(&search.filter)
+                        && search.filter_cache_workspace_revision == Some(workspace_revision);
+                    if !cache_matches {
                         let mut visible = HashSet::new();
                         crate::views::panels::tree::TreeLogicOps::gather_visible_paths(
                             entries,
@@ -65,14 +69,17 @@ impl ExplorerLogicOps {
                             &mut visible,
                         );
                         search.filter_cache = Some((search.filter.clone(), visible));
+                        search.filter_cache_workspace_revision = Some(workspace_revision);
                     }
                 }
                 Err(_) => {
                     search.filter_cache = None;
+                    search.filter_cache_workspace_revision = None;
                 }
             }
         } else {
             search.filter_cache = None;
+            search.filter_cache_workspace_revision = None;
         }
     }
 }
@@ -98,7 +105,7 @@ mod tests {
         search.filter_enabled = true;
         search.filter.query = "README".to_string();
 
-        ExplorerLogicOps::update_search_filter_cache(&mut search, &root, &entries);
+        ExplorerLogicOps::update_search_filter_cache(&mut search, &root, &entries, 1);
 
         let Some((_, visible)) = search.filter_cache else {
             panic!("filter cache should be populated");

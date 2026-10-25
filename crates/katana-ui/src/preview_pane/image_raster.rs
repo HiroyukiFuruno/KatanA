@@ -13,6 +13,16 @@ pub(super) const MAX_ZOOM: f32 = 10.0;
 const MIN_CONTAINER_HEIGHT: f32 = 145.0;
 const MAX_TEXTURE_SIDE: usize = 2048;
 
+pub(super) enum RasterizedInteraction<'a> {
+    Hidden {
+        state: Option<&'a mut ViewerState>,
+    },
+    Visible {
+        state: Option<&'a mut ViewerState>,
+        fullscreen_request: Option<&'a mut Option<usize>>,
+    },
+}
+
 pub(super) fn color_image_for_texture(
     img: &RasterizedSvg,
     background: egui::Color32,
@@ -58,23 +68,34 @@ pub(super) fn color_image_for_texture(
 }
 
 impl ImageLogicOps {
-    pub(crate) fn show_rasterized(
+    pub(super) fn show_rasterized(
         ui: &mut egui::Ui,
         img: &RasterizedSvg,
         alt_text: &str,
         idx: usize,
-        mut state: Option<&mut ViewerState>,
-        fullscreen_request: Option<&mut Option<usize>>,
+        interaction: RasterizedInteraction<'_>,
         draw_background: impl FnOnce(&mut egui::Ui, egui::Rect, bool),
     ) -> egui::Rect {
+        let (mut state, fullscreen_request, show_controls) = match interaction {
+            RasterizedInteraction::Hidden { state } => (state, None, false),
+            RasterizedInteraction::Visible {
+                state,
+                fullscreen_request,
+            } => (state, fullscreen_request, true),
+        };
         let max_w = ui.available_width();
         let display_width = img.display_width.max(1.0);
         let display_height = img.display_height.max(1.0);
         let base_scale = (max_w / display_width).min(1.0);
         let base_size = Vec2::new(display_width * base_scale, display_height * base_scale);
         let container_h = base_size.y.max(MIN_CONTAINER_HEIGHT);
+        let interaction_sense = if show_controls {
+            egui::Sense::click_and_drag()
+        } else {
+            egui::Sense::hover()
+        };
         let (container_rect, response) =
-            ui.allocate_exact_size(Vec2::new(max_w, container_h), egui::Sense::click_and_drag());
+            ui.allocate_exact_size(Vec2::new(max_w, container_h), interaction_sense);
         super::image_background::ImageBackgroundOps::paint(ui, container_rect);
         let preview_background = super::image_background::ImageBackgroundOps::preview_background(
             ui.ctx(),
@@ -85,7 +106,8 @@ impl ImageLogicOps {
             state.prepare_texture(ViewerTextureIdentity::rasterized(img), preview_background);
         }
 
-        if let Some(state) = state.as_mut()
+        if show_controls
+            && let Some(state) = state.as_mut()
             && response.hovered()
         {
             let zoom_delta = ui.input(|i| i.zoom_delta());
@@ -97,8 +119,9 @@ impl ImageLogicOps {
             }
         }
 
-        let zoom = state.as_ref().map_or(1.0, |s| s.zoom);
-        let pan = state.as_ref().map_or(egui::Vec2::ZERO, |s| s.pan);
+        let transform = state.as_ref().filter(|_| show_controls);
+        let zoom = transform.map_or(1.0, |s| s.zoom);
+        let pan = transform.map_or(egui::Vec2::ZERO, |s| s.pan);
         let zoomed_size = base_size * zoom;
 
         let texture_handle = if let Some(state) = state.as_mut() {
@@ -142,7 +165,14 @@ impl ImageLogicOps {
 
         draw_background(ui, container_rect, response.hovered());
 
-        if let Some(state) = state {
+        if show_controls && let Some(state) = state {
+            #[cfg(feature = "screenshot-test-hooks")]
+            crate::preview_pane::overlay_inspection::PreviewOverlayInspectionOps::increment(
+                ui.ctx(),
+                |inspection| {
+                    inspection.diagram_control_renders += 1;
+                },
+            );
             if crate::diagram_controller::DiagramControllerOps::draw_fullscreen_button(
                 ui,
                 container_rect,

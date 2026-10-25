@@ -1,6 +1,8 @@
 use super::*;
 use crate::state::document::TabGroup;
 
+mod url_request_generation_tests;
+
 #[test]
 fn test_v2() {
     let state = WorkspaceTabSessionV2 {

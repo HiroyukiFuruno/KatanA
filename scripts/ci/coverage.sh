@@ -63,7 +63,15 @@ success() { echo "${GREEN}[OK]${RESET}    $*"; }
 error()   { echo "${RED}[ERROR]${RESET} $*" >&2; }
 header()  { echo "${BOLD}${CYAN}==> $*${RESET}"; }
 llvm_cov() {
-    RUSTFLAGS="${RUSTFLAGS:-} --cfg coverage" cargo llvm-cov --no-cfg-coverage "$@"
+    local phase="$1"
+    shift
+    if [[ -n "${KATANA_TEST_INVENTORY_DIRECTORY:-}" ]]; then
+        RUSTFLAGS="${RUSTFLAGS:-} --cfg coverage" python3 scripts/release/record-test-invocation.py \
+            --output "$KATANA_TEST_INVENTORY_DIRECTORY/$phase.json" --kind coverage \
+            -- cargo llvm-cov --no-cfg-coverage "$@"
+    else
+        RUSTFLAGS="${RUSTFLAGS:-} --cfg coverage" cargo llvm-cov --no-cfg-coverage "$@"
+    fi
 }
 
 # ── Execution ─────────────────────────────────────────────────────────────────
@@ -86,22 +94,25 @@ if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ]]; then
 else
     OFFICE_WORKER_NAME=kdv-office-worker
 fi
-export KATANA_KDV_OFFICE_WORKER="${COVERAGE_TARGET_DIR:A}/debug/${OFFICE_WORKER_NAME}"
+OFFICE_WORKER_SOURCE="${COVERAGE_TARGET_DIR:A}/debug/${OFFICE_WORKER_NAME}"
+KATANA_KDV_OFFICE_WORKER=$(python3 scripts/release/worker_snapshot.py \
+    "$OFFICE_WORKER_SOURCE" --directory "$COVERAGE_TARGET_DIR/tmp")
+export KATANA_KDV_OFFICE_WORKER
 
 info "Running workspace lib/bin tests with llvm-cov (-j $JOBS)..."
-llvm_cov --no-report --jobs "$JOBS" --workspace --lib --bins -q \
+llvm_cov workspace-lib-bin --no-report --jobs "$JOBS" --workspace --lib --bins -q \
     -- --test-threads="$JOBS"
 
 info "Running workspace integration tests (parallel-safe) with llvm-cov (-j $JOBS)..."
-llvm_cov --no-report --jobs "$JOBS" --workspace --test '*' --exclude katana-ui -q \
+llvm_cov workspace-integration --no-report --jobs "$JOBS" --workspace --test '*' --exclude katana-ui -q \
     -- --test-threads="$JOBS" --skip fixture
 
 info "Running katana-ui parallel integration tests with llvm-cov (-j $JOBS)..."
-llvm_cov --no-report --jobs "$JOBS" -p katana-ui --test ui_integration_parallel -q \
+llvm_cov ui-parallel --no-report --jobs "$JOBS" -p katana-ui --test ui_integration_parallel -q \
     -- --test-threads="$JOBS"
 
 info "Running katana-ui serial integration tests with llvm-cov (1 thread)..."
-llvm_cov --no-report --jobs 1 -p katana-ui --test ui_integration_serial -q \
+llvm_cov ui-serial --no-report --jobs 1 -p katana-ui --test ui_integration_serial -q \
     -- --test-threads=1
 
 info "Analyzing coverage report for truly unreachable lines..."

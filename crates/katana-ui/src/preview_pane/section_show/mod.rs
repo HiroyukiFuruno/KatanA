@@ -17,6 +17,7 @@ pub(super) fn show_section(
     _scroll_to_heading_index: Option<usize>,
     mut heading_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     mut block_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
+    loader: &crate::preview_pane::local_image_loader::LocalImageLoader,
     heading_offset: usize,
     global_task_list_idx: &mut usize,
     active_editor_line: Option<usize>,
@@ -54,18 +55,17 @@ pub(super) fn show_section(
                 svg_data,
                 alt,
                 id,
-                None,
-                None,
+                super::image_raster::RasterizedInteraction::Hidden { state: None },
                 |_, _, _| {},
             );
             vec![]
         }
-        RenderedSection::LocalImage { path, alt, .. } => {
+        RenderedSection::LocalImage { path, .. } => {
             crate::preview_pane::ImageLogicOps::show_local_image(
                 ui,
                 path,
-                alt,
                 id,
+                loader,
                 None,
                 None,
                 |_, _, _| {},

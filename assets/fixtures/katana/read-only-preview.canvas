@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {"id":"group","type":"group","x":-40,"y":-40,"width":760,"height":420,"label":"Read-only Canvas","color":"5"},
+    {"id":"note","type":"text","x":0,"y":0,"width":280,"height":160,"text":"# JSON Canvas\nRead-only preview with **Markdown** text.","color":"#4A90D9"},
+    {"id":"file","type":"file","x":360,"y":0,"width":280,"height":160,"file":"notes/example.md","subpath":"#Example"},
+    {"id":"link","type":"link","x":0,"y":220,"width":280,"height":100,"url":"https://jsoncanvas.org/spec/1.0/"},
+    {"id":"unsupported","type":"future-card","x":360,"y":220,"width":280,"height":100,"futureContent":"Unsupported node type"},
+    {"id":"extra","type":"text","x":780,"y":0,"width":240,"height":140,"text":"Extra fields are diagnosed.","customDecoration":"unsupported"}
+  ],
+  "edges": [
+    {"id":"note-file","fromNode":"note","fromSide":"right","fromEnd":"none","toNode":"file","toSide":"left","toEnd":"arrow","color":"2","label":"references"},
+    {"id":"note-link","fromNode":"note","toNode":"link","label":"specification"}
+  ]
+}

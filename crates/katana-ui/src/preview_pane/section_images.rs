@@ -18,46 +18,40 @@ impl SectionImageOps {
         hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         is_slideshow: bool,
     ) {
-        let allow_controls = preview_diagram_controls_enabled(ui)
-            && (!is_slideshow
-                || ui.ctx().data(|d| {
-                    d.get_temp(egui::Id::new("katana_slideshow_diagram_controls"))
-                        .unwrap_or(false)
-                }));
+        let allow_controls = Self::interaction_controls_enabled(ui, is_slideshow);
         let allow_hover = !is_slideshow
             || ui.ctx().data(|d| {
                 d.get_temp(egui::Id::new("katana_slideshow_hover_highlight"))
                     .unwrap_or(false)
             });
 
-        /* WHY: In slideshow mode diagrams are read-only; controls and hover highlight are hidden by default */
-        let state = if !allow_controls {
-            None
-        } else {
-            viewer_states.map(|vs| {
-                if vs.len() <= i {
-                    vs.resize_with(i + 1, crate::preview_pane::ViewerState::default);
-                }
-                &mut vs[i]
-            })
-        };
+        /* WHY: Controls can be hidden without dropping the texture handle needed by the paint command. */
+        let state = viewer_states.map(|vs| {
+            if vs.len() <= i {
+                vs.resize_with(i + 1, crate::preview_pane::ViewerState::default);
+            }
+            &mut vs[i]
+        });
 
         let is_active = !is_slideshow
             && active_editor_line.is_some_and(|line| {
                 line >= global_line_offset && line < global_line_offset + lines_in_section
             });
 
+        let interaction = if allow_controls {
+            super::image_raster::RasterizedInteraction::Visible {
+                state,
+                fullscreen_request,
+            }
+        } else {
+            super::image_raster::RasterizedInteraction::Hidden { state }
+        };
         let rect = crate::preview_pane::ImageLogicOps::show_rasterized(
             ui,
             svg_data,
             alt,
             i,
-            state,
-            if !allow_controls {
-                None
-            } else {
-                fullscreen_request
-            },
+            interaction,
             |ui, rect, is_hovered| {
                 if allow_hover && (is_hovered || is_active) {
                     let tc = ui.ctx().data(|d| {
@@ -73,6 +67,10 @@ impl SectionImageOps {
                         highlight_rect.min.x = ui.max_rect().min.x;
                         highlight_rect.max.x = ui.max_rect().max.x;
                         ui.painter().rect_filled(highlight_rect, 0.0, color);
+                        #[cfg(feature = "screenshot-test-hooks")]
+                        crate::preview_pane::overlay_inspection::PreviewOverlayInspectionOps::increment(ui.ctx(), |inspection| {
+                            inspection.image_hover_background_renders += 1;
+                        });
                     }
                 }
             },
@@ -93,9 +91,20 @@ impl SectionImageOps {
     }
 }
 
-pub(super) fn preview_diagram_controls_enabled(ui: &egui::Ui) -> bool {
-    ui.ctx().data(|data| {
-        data.get_temp(egui::Id::new("katana_preview_diagram_controls"))
-            .unwrap_or(true)
-    })
+impl SectionImageOps {
+    fn diagram_controls_enabled(ui: &egui::Ui) -> bool {
+        ui.ctx().data(|data| {
+            data.get_temp(egui::Id::new("katana_preview_diagram_controls"))
+                .unwrap_or(true)
+        })
+    }
+
+    pub(crate) fn interaction_controls_enabled(ui: &egui::Ui, is_slideshow: bool) -> bool {
+        Self::diagram_controls_enabled(ui)
+            && (!is_slideshow
+                || ui.ctx().data(|d| {
+                    d.get_temp(egui::Id::new("katana_slideshow_diagram_controls"))
+                        .unwrap_or(false)
+                }))
+    }
 }

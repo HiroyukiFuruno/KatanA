@@ -3,6 +3,7 @@ name: Release Readiness
 on:
   pull_request:
     branches: [master]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -10,6 +11,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 env:
   CARGO_INCREMENTAL: 0
@@ -19,18 +21,26 @@ env:
 jobs:
   release-check:
     name: Release Readiness
+    # WHY: 公開準備検査はReady for review後だけ実行し、Draftを副作用なく保留する。
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
       - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
           toolchain: stable
-      - name: Install cargo-deny
-        uses: taiki-e/install-action@5b4d68e2e660441203ab128a23676f1e4faf1532 # v2.86.3
+          components: llvm-tools-preview
+      - name: Install release validation tools
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
         with:
-          tool: cargo-deny@0.20.2
+          tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1
           fallback: none
+      - name: Install native hook contract tools
+        run: brew install lefthook just
       - name: Run PR readiness check
+        # WHY: check-pr-ready が preflight を内包するため、同じ公開検査を二重実行しない。
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -42,8 +52,44 @@ jobs:
             version="$(cat Cargo.toml | awk -F'\"' '/^version = / {print $2}')"
           fi
 
-          if [[ "${GITHUB_HEAD_REF}" == docs/v*-public-release-evidence ]]; then
+          if [[ "${GITHUB_HEAD_REF}" == release/v0.22.42-public-release-evidence ]]; then
+            ./scripts/release/check-pr-ready.sh "$version" --post-release-automated
+          elif [[ "${GITHUB_HEAD_REF}" == docs/v*-public-release-evidence ]]; then
             ./scripts/release/check-pr-ready.sh "$version" --post-release-evidence
+          elif [[ "$version" == "0.22.42" ]]; then
+            ./scripts/release/check-pr-ready.sh "$version" --automated-release
           else
             ./scripts/release/check-pr-ready.sh "$version" --pr-bootstrap
           fi
+      - name: Install published artifact validation tools
+        if: github.head_ref == 'release/v0.22.42-public-release-evidence'
+        run: brew install sevenzip
+      - name: Verify actual published release artifacts
+        if: github.head_ref == 'release/v0.22.42-public-release-evidence'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag_commit="$(gh api repos/HiroyukiFuruno/KatanA/commits/v0.22.42 --jq .sha)"
+          [[ "$tag_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "Invalid published tag commit" >&2; exit 1; }
+          selection="$(gh run list --repo HiroyukiFuruno/KatanA --workflow build-and-release.yml --commit "$tag_commit" --status success --limit 1 --json databaseId,attempt,headSha,status,conclusion --jq '.[0] | select(.status == "completed" and .conclusion == "success") | [.databaseId, .attempt, .headSha] | @tsv')"
+          read -r build_run build_attempt build_sha <<< "$selection"
+          [[ "$build_run" =~ ^[1-9][0-9]*$ && "$build_attempt" =~ ^[1-9][0-9]*$ && "$build_sha" == "$tag_commit" ]] || { echo "Published tag has no verified successful build run" >&2; exit 1; }
+          work="$(mktemp -d "${RUNNER_TEMP}/katana-post-release.XXXXXX")"
+          gh run download "$build_run" --repo HiroyukiFuruno/KatanA --dir "$work/manifests" --name artifacts-identity-macos --name artifacts-identity-linux --name artifacts-identity-windows
+          for platform in macos linux windows; do
+            mv "$work/manifests/artifacts-identity-$platform/identity-$platform.json" "$work/manifests/artifacts-identity-$platform/identity.json"
+          done
+          python3 - "$work/manifests" "$build_run" "$build_attempt" "$tag_commit" <<'PY'
+          import json
+          from pathlib import Path
+          import sys
+          root, build_run, build_attempt, tag_commit = sys.argv[1:]
+          for platform in ("macos", "linux", "windows"):
+              record = json.loads((Path(root) / f"artifacts-identity-{platform}/identity.json").read_text())
+              if (record.get("github_run_id"), record.get("github_run_attempt"), record.get("provenance", {}).get("source_commit")) != (build_run, build_attempt, tag_commit):
+                  raise SystemExit("Published manifest differs from its actual tag/run/attempt")
+          PY
+          echo "Published artifact build: tag=v0.22.42 commit=$tag_commit run=$build_run attempt=$build_attempt"
+          tmp/release-evidence-python/bin/python scripts/release/check-published-artifact-identity.py --root . --assets "$work/assets" --version v0.22.42 --scope automated-release --phase postpublication --build-manifests "$work/manifests"

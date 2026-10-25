@@ -36,12 +36,13 @@ for ATTEMPT in $(seq 1 "$MAX_ATTEMPTS"); do
         --commit "$COMMIT_SHA" \
         --event push \
         --limit 20 \
-        --json status,conclusion,url,headSha \
-        --jq "map(select(.headSha == \"${COMMIT_SHA}\")) | first // empty | [.status, (.conclusion // \"\"), .url] | @tsv")
+        --json status,conclusion,url,headSha,databaseId \
+        --jq "map(select(.headSha == \"${COMMIT_SHA}\")) | first // empty | [.status, (.conclusion // \"\"), .url, .databaseId] | @tsv")
 
     if [ -n "$RUN_RECORD" ]; then
-        IFS=$'\t' read -r STATUS CONCLUSION URL <<<"$RUN_RECORD"
+        IFS=$'\t' read -r STATUS CONCLUSION URL RUN_ID <<<"$RUN_RECORD"
         if [ "$STATUS" = "completed" ] && [ "$CONCLUSION" = "success" ]; then
+            python3 scripts/release/verify-ci-run.py --sha "$COMMIT_SHA" --run-id "$RUN_ID"
             success "CI passed for ${COMMIT_SHA}: ${URL}"
             exit 0
         fi

@@ -1,7 +1,11 @@
 use egui::{Context, FontFamily};
+use std::sync::Arc;
 
 mod helpers;
+mod named_families;
 mod normalize;
+pub(crate) mod office_faces;
+pub(crate) mod office_font_leases;
 mod types;
 
 pub use types::{NormalizeFonts, SystemFontLoader};
@@ -10,6 +14,8 @@ use normalize::{
     LINUX_Y_OFFSET, MARKDOWN_PROPORTIONAL_Y_OFFSET_FACTOR, MONO_PRIMARY_Y_OFFSET_FACTOR,
     PROPORTIONAL_Y_OFFSET_FACTOR,
 };
+
+const MAX_UI_EMOJI_FONT_BYTES: u64 = 32 * 1024 * 1024;
 
 impl SystemFontLoader {
     pub fn setup_fonts(
@@ -25,11 +31,25 @@ impl SystemFontLoader {
             custom_font_path,
             custom_font_name,
         );
+        let font_count = normalized.fonts.font_data.len();
+        let owned_bytes = normalized
+            .fonts
+            .font_data
+            .values()
+            .map(|font| font.font.len())
+            .sum::<usize>();
+        crate::debug_log::DebugLog::write(
+            "ui_fonts_loaded",
+            format_args!("font_count={font_count} owned_bytes={owned_bytes}"),
+        );
         let is_loaded = normalized
             .fonts
             .families
             .contains_key(&egui::FontFamily::Name("MarkdownProportional".into()));
-        ctx.set_fonts(normalized.into_inner());
+        office_font_leases::DocumentFontLeaseManager::install_base(
+            ctx,
+            Arc::new(normalized.into_inner()),
+        );
         let id = egui::Id::new("katana_fonts_loaded");
         ctx.data_mut(|d| d.insert_temp(id, is_loaded));
 
@@ -109,7 +129,15 @@ impl SystemFontLoader {
             );
         }
 
-        let emoji_name = Self::load_first_valid(&mut fonts, emoji_candidates, None, "");
+        /* WHY: Apple Color Emoji is about 183 MiB and egui duplicates the payload while parsing.
+         * FontDefinitions::default already supplies a compact emoji fallback for the UI. */
+        let emoji_name = Self::load_first_valid_up_to(
+            &mut fonts,
+            emoji_candidates,
+            None,
+            "",
+            MAX_UI_EMOJI_FONT_BYTES,
+        );
         if let Some(name) = &emoji_name {
             Self::append_fallback(&mut fonts, FontFamily::Proportional, name);
             Self::append_fallback(&mut fonts, FontFamily::Monospace, name);
@@ -124,7 +152,9 @@ impl SystemFontLoader {
             Self::inject_custom_font(&mut fonts, path, name);
         }
 
-        NormalizeFonts::new(fonts).normalize(proportional_candidates)
+        let mut normalized = NormalizeFonts::new(fonts).normalize(proportional_candidates);
+        named_families::NamedFontFamiliesOps::register(&mut normalized.fonts);
+        normalized
     }
 }
 

@@ -4,6 +4,7 @@ use super::types::*;
 
 impl PreviewPane {
     pub fn update_markdown_sections(&mut self, source: &str, md_file_path: &std::path::Path) {
+        self.clear_canvas_surface();
         self.md_file_path = md_file_path.to_path_buf();
         let (outline_items, document_anchors) =
             katana_core::markdown::outline::MarkdownOutlineOps::extract_outline(source);
@@ -13,14 +14,7 @@ impl PreviewPane {
             &document_anchors,
         );
         self.document_anchors = document_anchors;
-        let (resolved, extracted_paths) =
-            ImagePreviewOps::resolve_image_paths(source, md_file_path);
-
-        for path in extracted_paths {
-            if !self.image_cache.contains(&path) && !self.image_preload_queue.contains(&path) {
-                self.image_preload_queue.push(path);
-            }
-        }
+        let (resolved, _) = ImagePreviewOps::resolve_image_paths(source, md_file_path);
 
         let raw = PreviewSectionOps::split_into_sections(&resolved);
         let mut new_sections = Vec::with_capacity(raw.len());

@@ -25,7 +25,7 @@ impl SectionLogicOps {
     }
 
     #[allow(unused_mut, clippy::too_many_arguments)]
-    pub fn show_section(
+    pub(crate) fn show_section(
         ui: &mut egui::Ui,
         cache: &mut CommonMarkCache,
         section: &RenderedSection,
@@ -34,6 +34,7 @@ impl SectionLogicOps {
         scroll_to_heading_index: Option<usize>,
         heading_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         block_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
+        loader: &crate::preview_pane::local_image_loader::LocalImageLoader,
         heading_offset: usize,
         global_task_list_idx: &mut usize,
         active_editor_line: Option<usize>,
@@ -53,6 +54,7 @@ impl SectionLogicOps {
             scroll_to_heading_index,
             heading_anchors,
             block_anchors,
+            loader,
             heading_offset,
             global_task_list_idx,
             active_editor_line,
@@ -66,7 +68,7 @@ impl SectionLogicOps {
     }
 
     #[allow(unused_mut, clippy::too_many_arguments)]
-    pub fn render_sections(
+    pub(crate) fn render_sections(
         ui: &mut egui::Ui,
         cache: &mut CommonMarkCache,
         sections: &[RenderedSection],
@@ -75,6 +77,7 @@ impl SectionLogicOps {
         mut heading_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         mut block_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         mut viewer_states: Option<&mut Vec<ViewerState>>,
+        loader: &crate::preview_pane::local_image_loader::LocalImageLoader,
         mut section_lifecycle: Option<&mut Vec<SectionLifecycle>>,
         mut fullscreen_request: Option<&mut Option<usize>>,
         active_editor_line: Option<usize>,
@@ -129,12 +132,12 @@ impl SectionLogicOps {
                             is_slideshow,
                         );
                     }
-                    RenderedSection::LocalImage { path, alt, .. } => {
+                    RenderedSection::LocalImage { path, .. } => {
                         crate::preview_pane::types::SectionImageOps::handle_local_image_section(
                             ui,
                             path,
-                            alt,
                             i,
+                            loader,
                             lines_in_section,
                             global_line_offset,
                             active_editor_line,
@@ -156,6 +159,7 @@ impl SectionLogicOps {
                             scroll_to_heading_index,
                             heading_anchors.as_deref_mut(),
                             block_anchors.as_deref_mut(),
+                            loader,
                             offset,
                             &mut global_task_list_idx,
                             active_editor_line,

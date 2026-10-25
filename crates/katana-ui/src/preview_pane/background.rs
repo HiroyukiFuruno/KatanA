@@ -41,13 +41,10 @@ impl PreviewPane {
     }
 
     pub(crate) fn poll_renders(&mut self, ctx: &egui::Context) {
+        self.poll_canvas_request(ctx);
         self.poll_html_browser(ctx);
-
-        while let Some(path) = self.image_preload_queue.pop() {
-            if self.image_cache.insert(path.clone()) {
-                let uri = format!("file://{}", path.display());
-                let _ = ctx.try_load_image(&uri, egui::load::SizeHint::Scale(1.0.into()));
-            }
+        if self.local_image_loader.poll(ctx.cumulative_frame_nr()) {
+            ctx.request_repaint();
         }
 
         let mut disconnected = false;
@@ -87,7 +84,7 @@ impl PreviewPane {
                 self.finalize_disconnected_renders();
             }
         } else {
-            self.is_loading = false;
+            self.is_loading = self.document_intake.is_some() || self.canvas_request.is_some();
         }
     }
 

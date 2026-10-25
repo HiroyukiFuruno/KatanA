@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::font_loader::office_font_leases::DocumentFontLease;
 use eframe::egui;
 use katana_document_viewer::{
     DocumentGridCell, DocumentGridHorizontalAlignment, DocumentGridVerticalAlignment,
@@ -10,16 +11,16 @@ use super::painter_grid_style::parse_color;
 
 const HORIZONTAL_PADDING: f32 = 5.0;
 const VERTICAL_PADDING: f32 = 3.0;
-const DEFAULT_FONT_SIZE: f32 = 13.0;
 const CENTER_RATIO: f32 = 0.5;
 const BOLD_OFFSET: f32 = 0.55;
 
-pub(super) fn paint(
+pub(super) fn paint_with_fonts(
     painter: &egui::Painter,
     rect: egui::Rect,
     cell: &DocumentGridCell,
     ui: &egui::Ui,
     indicator_width: f32,
+    fonts: Option<&DocumentFontLease>,
 ) {
     if cell.text.is_empty() || !show_cell_value(cell) {
         return;
@@ -28,9 +29,9 @@ pub(super) fn paint(
         return;
     };
     let color = text_color(cell, ui);
-    let galley = layout_text(ui, cell, text_rect.width(), color);
+    let (galley, faux_bold) = layout_text_with_fonts(ui, cell, text_rect.width(), color, fonts);
     let position = text_position(text_rect, galley.size(), cell);
-    paint_galley(painter, position, galley, color, cell.appearance.bold);
+    paint_galley(painter, position, galley, color, faux_bold);
 }
 
 fn text_rect(rect: egui::Rect, indicator_width: f32) -> Option<egui::Rect> {
@@ -54,12 +55,14 @@ fn text_color(cell: &DocumentGridCell, ui: &egui::Ui) -> egui::Color32 {
         .unwrap_or_else(|| ui.visuals().text_color())
 }
 
-fn layout_text(
+fn layout_text_with_fonts(
     ui: &egui::Ui,
     cell: &DocumentGridCell,
     max_width: f32,
     color: egui::Color32,
-) -> Arc<egui::Galley> {
+    fonts: Option<&DocumentFontLease>,
+) -> (Arc<egui::Galley>, bool) {
+    let style = text_style::style_for_cell(ui, fonts, cell);
     let mut job = egui::text::LayoutJob::default();
     job.wrap.max_width = if cell.appearance.wrap_text {
         max_width
@@ -71,46 +74,12 @@ fn layout_text(
         cell.appearance.horizontal_alignment,
         DocumentGridHorizontalAlignment::Justify | DocumentGridHorizontalAlignment::Distributed
     );
-    job.append(&cell.text, 0.0, text_format(cell, color));
-    ui.fonts_mut(|fonts| fonts.layout_job(job))
-}
-
-fn text_format(cell: &DocumentGridCell, color: egui::Color32) -> egui::TextFormat {
-    let decoration = egui::Stroke::new(1.0, color);
-    egui::TextFormat {
-        font_id: font_id(cell.appearance.font_size_px, &cell.appearance.font_family),
-        color,
-        italics: cell.appearance.italic,
-        underline: if cell.appearance.underline {
-            decoration
-        } else {
-            Default::default()
-        },
-        strikethrough: if cell.appearance.strike {
-            decoration
-        } else {
-            Default::default()
-        },
-        ..Default::default()
-    }
-}
-
-fn font_id(size: u16, family: &str) -> egui::FontId {
-    let size = if size == 0 {
-        DEFAULT_FONT_SIZE
-    } else {
-        f32::from(size)
-    };
-    let normalized = family.to_ascii_lowercase();
-    let monospace = ["mono", "courier", "consolas"]
-        .iter()
-        .any(|name| normalized.contains(name));
-    let family = if monospace {
-        egui::FontFamily::Monospace
-    } else {
-        egui::FontFamily::Proportional
-    };
-    egui::FontId::new(size, family)
+    job.append(
+        &cell.text,
+        0.0,
+        text_style::text_format(ui, cell, color, &style),
+    );
+    (ui.fonts_mut(|fonts| fonts.layout_job(job)), style.faux_bold)
 }
 
 fn horizontal_alignment(alignment: DocumentGridHorizontalAlignment) -> egui::Align {
@@ -151,3 +120,18 @@ fn paint_galley(
 #[cfg(test)]
 #[path = "painter_grid_text_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "painter_grid_font_lease_tests.rs"]
+mod font_lease_tests;
+
+#[cfg(test)]
+#[path = "painter_grid_font_italic_tests.rs"]
+mod font_italic_tests;
+
+#[cfg(test)]
+#[path = "painter_grid_font_test_support.rs"]
+mod font_test_support;
+
+#[path = "painter_grid_text_style.rs"]
+mod text_style;

@@ -23,7 +23,7 @@ fn test_search_bar_id_stability() {
 
     harness.run();
 
-    let node = harness.get_by_role(accesskit::Role::TextInput);
+    let node = harness.get_by_role(egui::accesskit::Role::TextInput);
     node.click();
     harness.run();
 

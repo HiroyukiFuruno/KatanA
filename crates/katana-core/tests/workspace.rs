@@ -2,6 +2,38 @@ use katana_core::workspace::*;
 use std::path::PathBuf;
 
 #[test]
+fn standard_workspace_extensions_include_read_only_canvas() {
+    assert!(TreeEntry::standard_visible_extensions().contains(&"canvas"));
+}
+
+#[test]
+fn canvas_classification_preserves_other_formats_and_directory_identity() {
+    for name in ["graph.canvas", "graph.CANVAS"] {
+        let entry = TreeEntry::File {
+            path: PathBuf::from(name),
+        };
+        assert!(entry.is_canvas());
+        assert!(!entry.is_document());
+        assert!(!entry.is_image());
+        assert!(!entry.is_markdown());
+    }
+    for name in [
+        "graph.canvas.md",
+        "graphcanvas",
+        "graph.json",
+        "graph.canvasx",
+    ] {
+        assert!(!TreeEntry::path_is_canvas(std::path::Path::new(name)));
+    }
+    let directory = TreeEntry::Directory {
+        path: PathBuf::from("graph.canvas"),
+        children: vec![],
+    };
+    assert!(!directory.is_canvas());
+    assert_eq!(TreeEntry::canvas_extensions(), &["canvas"]);
+}
+
+#[test]
 fn workspace_name_is_root_basename() {
     let ws = Workspace::new("/home/user/myproject", vec![]);
     assert_eq!(ws.name(), Some("myproject"));

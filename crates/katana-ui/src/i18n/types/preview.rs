@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PreviewMessages {
+    pub canvas: CanvasMessages,
     pub preview_title: String,
     pub refresh_diagrams: String,
     pub rendering: String,
@@ -10,12 +11,39 @@ pub struct PreviewMessages {
     pub highlight_hover: String,
     pub show_diagram_controls: String,
     pub toggle_slideshow: String,
+    pub spreadsheet_filter: SpreadsheetFilterMessages,
     pub document_controller: DocumentControllerMessages,
     #[serde(default = "default_missing_image_text")]
     pub missing_image: String,
     #[serde(default = "default_remote_image_text")]
     pub remote_image: String,
     pub diagram_controller: DiagramControllerMessages,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CanvasMessages {
+    pub fit: String,
+    pub empty: String,
+    pub unsupported_node: String,
+    pub unsupported_fields: String,
+    pub unsupported_link: String,
+    pub unsupported_background: String,
+    pub load_error: String,
+    pub loading: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SpreadsheetFilterMessages {
+    pub open: String,
+    pub title: String,
+    pub loading: String,
+    pub apply: String,
+    pub clear: String,
+    pub select_all: String,
+    pub blank: String,
+    pub non_blank: String,
+    pub no_values: String,
+    pub truncated: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

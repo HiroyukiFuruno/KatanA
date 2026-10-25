@@ -1,9 +1,14 @@
 mod document;
+mod poll;
+mod request;
+
+#[cfg(test)]
+mod request_poll_tests;
 
 use super::file_open::FileOpenOps;
-use crate::app::url_source::{UrlResponseCollector, ValidatedHttpUrl, ValidatedLocalHtmlUrl};
+use crate::app::url_source::{ValidatedHttpUrl, ValidatedLocalHtmlUrl};
 use crate::shell::KatanaApp;
-use crate::state::{HtmlSource, HtmlSourceError, PendingUrlRequest};
+use crate::state::{HtmlSource, HtmlSourceError};
 
 const URL_DOCUMENT_PREFIX: &str = "Katana://URL";
 const URL_SOURCE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
@@ -87,91 +92,16 @@ impl KatanaApp {
         FileOpenOps::open_in_current_workspace(self, path);
         self.state.layout.status_message = None;
     }
-
-    pub(super) fn fetch_html_url(
-        &mut self,
-        ctx: &egui::Context,
-        url: ValidatedHttpUrl,
-        target_document: Option<std::path::PathBuf>,
-    ) {
-        let (sender, receiver) = std::sync::mpsc::channel();
-        self.state
-            .url_tab
-            .pending_url_requests
-            .push_back(PendingUrlRequest {
-                response_rx: receiver,
-                target_document,
-                source_url: url.as_str().to_owned(),
-                deadline: std::time::Instant::now() + URL_SOURCE_TIMEOUT,
-            });
-        self.state.url_tab.input = url.as_str().to_string();
-        self.state.url_tab.is_loading = true;
-        self.state.url_tab.last_error = None;
-
-        let collector = std::cell::RefCell::new(UrlResponseCollector::new(url.clone()));
-        let repaint = ctx.clone();
-        ehttp::streaming::fetch(
-            ehttp::Request::get(url.as_str()).with_timeout(Some(URL_SOURCE_TIMEOUT)),
-            move |part| {
-                let Some(result) = collector.borrow_mut().accept(part) else {
-                    return std::ops::ControlFlow::Continue(());
-                };
-                let _ = sender.send(result);
-                repaint.request_repaint_after(std::time::Duration::ZERO);
-                std::ops::ControlFlow::Break(())
-            },
-        );
-    }
-
-    pub(crate) fn poll_url_source(&mut self, ctx: &egui::Context) {
-        while let Some(request) = self.state.url_tab.pending_url_requests.pop_front() {
-            match request.response_rx.try_recv() {
-                Ok(Ok(source)) => {
-                    self.apply_fetched_url_source(source, request.target_document);
-                    self.state.layout.status_message = None;
-                    self.state.url_tab.is_loading =
-                        !self.state.url_tab.pending_url_requests.is_empty();
-                }
-                Ok(Err(error)) => {
-                    self.fail_html_source(error);
-                    self.state.url_tab.is_loading =
-                        !self.state.url_tab.pending_url_requests.is_empty();
-                }
-                Err(std::sync::mpsc::TryRecvError::Empty) => {
-                    if std::time::Instant::now() >= request.deadline {
-                        self.fail_html_source(HtmlSourceError::Timeout {
-                            url: request.source_url,
-                            seconds: URL_SOURCE_TIMEOUT.as_secs(),
-                        });
-                        self.state.url_tab.is_loading =
-                            !self.state.url_tab.pending_url_requests.is_empty();
-                        continue;
-                    }
-                    let repaint_after = request
-                        .deadline
-                        .saturating_duration_since(std::time::Instant::now())
-                        .min(std::time::Duration::from_millis(100));
-                    self.state.url_tab.pending_url_requests.push_front(request);
-                    ctx.request_repaint_after(repaint_after);
-                    break;
-                }
-                Err(std::sync::mpsc::TryRecvError::Disconnected) => {
-                    self.fail_html_source(HtmlSourceError::Network(
-                        "URL request channel disconnected".to_string(),
-                    ));
-                    self.state.url_tab.is_loading =
-                        !self.state.url_tab.pending_url_requests.is_empty();
-                }
-            }
-        }
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::URL_SOURCE_TIMEOUT;
     use super::document::{failed_document_identity, remote_document_path};
+    use crate::app::action::ActionOps;
+    use crate::app::document_contract::DocumentOps;
     use crate::app::url_source::ValidatedHttpUrl;
+    use crate::app_state::AppAction;
     use crate::shell::KatanaApp;
     use std::{
         io::{Read, Write},
@@ -340,6 +270,8 @@ mod tests {
                 response_rx: receiver,
                 target_document: None,
                 source_url: "https://example.test/stale.html".to_string(),
+                order: None,
+                selection_owner: None,
                 deadline: std::time::Instant::now() + URL_SOURCE_TIMEOUT,
             });
         app.state.url_tab.is_loading = true;
@@ -398,6 +330,8 @@ mod tests {
                 response_rx: receiver,
                 target_document: None,
                 source_url: "https://example.test/disconnected.pdf".to_string(),
+                order: None,
+                selection_owner: None,
                 deadline: std::time::Instant::now() + URL_SOURCE_TIMEOUT,
             });
         app.poll_url_source(&ctx);
@@ -420,6 +354,8 @@ mod tests {
                 response_rx: receiver,
                 target_document: None,
                 source_url: source_url.to_string(),
+                order: None,
+                selection_owner: None,
                 deadline: std::time::Instant::now(),
             });
         app.state.url_tab.input = source_url.to_string();
@@ -442,6 +378,202 @@ mod tests {
         assert!(details.contains("Format: pdf"));
         assert!(details.contains(source_url));
         assert!(details.contains("timed out after 30 seconds"));
+    }
+
+    #[test]
+    fn closing_target_document_cancels_its_pending_url_request() -> TestResult {
+        use crate::app::action::ActionOps;
+        use katana_core::document::Document;
+
+        let ctx = egui::Context::default();
+        let mut app = app();
+        let target = std::path::PathBuf::from("target.md");
+        app.state
+            .document
+            .open_documents
+            .push(Document::new(target.clone(), "original"));
+        app.state.document.active_doc_idx = Some(0);
+        let (_sender, receiver) = std::sync::mpsc::channel();
+        app.state
+            .url_tab
+            .pending_url_requests
+            .push_back(crate::state::PendingUrlRequest {
+                response_rx: receiver,
+                target_document: Some(target),
+                source_url: "https://example.test/target.html".to_string(),
+                order: None,
+                selection_owner: None,
+                deadline: Instant::now() + URL_SOURCE_TIMEOUT,
+            });
+        app.state.url_tab.is_loading = true;
+
+        app.process_action(&ctx, AppAction::ForceCloseDocument(0));
+
+        assert!(app.state.document.open_documents.is_empty());
+        assert!(app.state.url_tab.pending_url_requests.is_empty());
+        assert!(!app.state.url_tab.is_loading);
+        Ok(())
+    }
+
+    #[test]
+    fn closing_target_preserves_user_entered_pending_url_request() -> TestResult {
+        use crate::app::action::ActionOps;
+        use katana_core::document::Document;
+
+        let ctx = egui::Context::default();
+        let mut app = app();
+        let target = std::path::PathBuf::from("target.md");
+        app.state
+            .document
+            .open_documents
+            .push(Document::new(target.clone(), "original"));
+        app.state.document.open_documents[0].is_dirty = true;
+        app.state.document.active_doc_idx = Some(0);
+        for target_document in [Some(target), None] {
+            let (_sender, receiver) = std::sync::mpsc::channel();
+            app.state
+                .url_tab
+                .pending_url_requests
+                .push_back(crate::state::PendingUrlRequest {
+                    response_rx: receiver,
+                    target_document,
+                    source_url: "https://example.test/pending.html".to_string(),
+                    order: None,
+                    selection_owner: None,
+                    deadline: Instant::now() + URL_SOURCE_TIMEOUT,
+                });
+        }
+        app.state.url_tab.is_loading = true;
+
+        app.process_action(&ctx, AppAction::CloseDocument(0));
+        assert!(app.state.layout.pending_close_confirm.is_some());
+        assert_eq!(app.state.url_tab.pending_url_requests.len(), 2);
+        app.state.document.open_documents[0].is_dirty = false;
+        app.state.document.open_documents[0].is_pinned = true;
+        app.cleanup_closed_tab_previews();
+        assert_eq!(app.state.url_tab.pending_url_requests.len(), 2);
+        app.state.document.open_documents[0].is_pinned = false;
+        app.process_action(&ctx, AppAction::ForceCloseDocument(0));
+
+        assert_eq!(app.state.url_tab.pending_url_requests.len(), 1);
+        assert!(
+            app.state.url_tab.pending_url_requests[0]
+                .target_document
+                .is_none()
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn completed_request_cannot_reopen_closed_target_or_replace_new_generation() {
+        use crate::app::action::ActionOps;
+        use katana_core::document::Document;
+
+        let ctx = egui::Context::default();
+        let mut app = app();
+        let target = std::path::PathBuf::from("target.html");
+        app.state
+            .document
+            .open_documents
+            .push(Document::new(target.clone(), "old generation"));
+        app.state.document.active_doc_idx = Some(0);
+        let (sender, receiver) = std::sync::mpsc::channel();
+        app.state
+            .url_tab
+            .pending_url_requests
+            .push_back(crate::state::PendingUrlRequest {
+                response_rx: receiver,
+                target_document: Some(target.clone()),
+                source_url: "https://example.test/old.html".to_string(),
+                order: None,
+                selection_owner: None,
+                deadline: Instant::now() + URL_SOURCE_TIMEOUT,
+            });
+        app.state.url_tab.is_loading = true;
+        app.process_action(&ctx, AppAction::ForceCloseDocument(0));
+        app.state
+            .document
+            .open_documents
+            .push(Document::new(target.clone(), "new generation"));
+        app.state.document.active_doc_idx = Some(0);
+        let _ = sender.send(Ok(crate::state::FetchedUrlSource::Html(
+            crate::state::HtmlSource {
+                raw_html: "<html><body>old generation</body></html>".to_string(),
+                source_url: "https://example.test/old.html".to_string(),
+                origin: "https://example.test/old.html".to_string(),
+            },
+        )));
+        let (error_sender, error_receiver) = std::sync::mpsc::channel();
+        let _ = error_sender.send(Err(crate::state::HtmlSourceError::Timeout {
+            url: "https://example.test/closed-error.pdf".to_string(),
+            seconds: URL_SOURCE_TIMEOUT.as_secs(),
+        }));
+        app.state
+            .url_tab
+            .pending_url_requests
+            .push_back(crate::state::PendingUrlRequest {
+                response_rx: error_receiver,
+                target_document: Some(std::path::PathBuf::from("closed-error.html")),
+                source_url: "https://example.test/closed-error.pdf".to_string(),
+                order: None,
+                selection_owner: None,
+                deadline: Instant::now() + URL_SOURCE_TIMEOUT,
+            });
+        let (_timeout_sender, timeout_receiver) = std::sync::mpsc::channel();
+        app.state
+            .url_tab
+            .pending_url_requests
+            .push_back(crate::state::PendingUrlRequest {
+                response_rx: timeout_receiver,
+                target_document: Some(std::path::PathBuf::from("closed-timeout.html")),
+                source_url: "https://example.test/closed-timeout.pdf".to_string(),
+                order: None,
+                selection_owner: None,
+                deadline: Instant::now(),
+            });
+
+        app.poll_url_source(&ctx);
+
+        assert_eq!(app.state.document.open_documents.len(), 1);
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "new generation"
+        );
+        assert!(app.state.url_tab.last_error.is_none());
+        assert!(app.state.layout.status_message.is_none());
+    }
+
+    #[test]
+    fn completed_request_for_closed_target_is_discarded() {
+        let ctx = egui::Context::default();
+        let mut app = app();
+        let target = std::path::PathBuf::from("closed.html");
+        let (sender, receiver) = std::sync::mpsc::channel();
+        app.state
+            .url_tab
+            .pending_url_requests
+            .push_back(crate::state::PendingUrlRequest {
+                response_rx: receiver,
+                target_document: Some(target),
+                source_url: "https://example.test/closed.html".to_string(),
+                order: None,
+                selection_owner: None,
+                deadline: Instant::now() + URL_SOURCE_TIMEOUT,
+            });
+        app.state.url_tab.is_loading = true;
+        let _ = sender.send(Ok(crate::state::FetchedUrlSource::Html(
+            crate::state::HtmlSource {
+                raw_html: "<html><body>stale</body></html>".to_string(),
+                source_url: "https://example.test/closed.html".to_string(),
+                origin: "https://example.test/closed.html".to_string(),
+            },
+        )));
+
+        app.poll_url_source(&ctx);
+
+        assert!(app.state.document.open_documents.is_empty());
+        assert!(app.state.url_tab.tabs.is_empty());
+        assert!(!app.state.url_tab.is_loading);
     }
 
     #[test]
@@ -810,6 +942,154 @@ mod tests {
         assert!(app.html_browser_frame_generation_for_test().is_some());
         app.html_browser_frame_viewport_for_test()
             .ok_or_else(|| "HTML browser update did not contain a frame".into())
+    }
+
+    fn active_preview_session_generation(app: &KatanaApp) -> TestResult<u64> {
+        let active_path = app
+            .state
+            .active_path()
+            .ok_or("active document is missing")?;
+        app.tab_previews
+            .iter()
+            .find(|preview| preview.path == active_path)
+            .map(|preview| preview.pane.session_generation)
+            .ok_or_else(|| "active preview is missing".into())
+    }
+
+    fn wait_for_preview_reload(
+        app: &mut KatanaApp,
+        ctx: &egui::Context,
+        previous_session_generation: u64,
+        expected_rgb: [u8; 3],
+    ) -> TestResult<u64> {
+        let deadline = Instant::now() + BROWSER_UPDATE_TIMEOUT;
+        loop {
+            for preview in app.tab_previews.iter_mut() {
+                preview.pane.poll_html_browser(ctx);
+            }
+            let session_generation = active_preview_session_generation(app)?;
+            if session_generation != previous_session_generation
+                && app
+                    .html_browser_frame_matching_rgb_pixels_for_test(expected_rgb)
+                    .is_some_and(|pixels| pixels > 0)
+            {
+                return Ok(session_generation);
+            }
+            if Instant::now() >= deadline {
+                return Err(format!(
+                    "timed out waiting for preview reload from session {previous_session_generation}"
+                )
+                .into());
+            }
+            thread::sleep(Duration::from_millis(5));
+        }
+    }
+
+    #[test]
+    fn local_html_manual_reload_reads_changed_file_and_updates_frame() -> TestResult {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("reload.html");
+        std::fs::write(
+            &path,
+            "<html><body style=\"background:#ff0000\"><p>Before</p></body></html>",
+        )?;
+        let url = url::Url::from_file_path(&path).map_err(|_| "file URL")?;
+        let ctx = egui::Context::default();
+        let mut app = app();
+        app.state.workspace.data = Some(katana_core::workspace::Workspace::new(
+            directory.path(),
+            Vec::new(),
+        ));
+        app.handle_open_url(&ctx, url.to_string());
+        wait_for_browser_frame(&mut app, &ctx)?;
+        let previous_session_generation = active_preview_session_generation(&app)?;
+        assert!(
+            app.html_browser_frame_matching_rgb_pixels_for_test([255, 0, 0])
+                .is_some_and(|pixels| pixels > 0)
+        );
+
+        std::fs::write(
+            &path,
+            "<html><body style=\"background:#00ff00\"><p>After</p></body></html>",
+        )?;
+        app.process_action(&ctx, AppAction::RefreshDocument { is_manual: true });
+        let generation =
+            wait_for_preview_reload(&mut app, &ctx, previous_session_generation, [0, 255, 0])?;
+
+        assert_ne!(generation, previous_session_generation);
+        assert!(
+            app.html_browser_frame_matching_rgb_pixels_for_test([0, 255, 0])
+                .is_some_and(|pixels| pixels > 0)
+        );
+        assert_eq!(
+            app.state.document.open_documents[0].buffer,
+            "<html><body style=\"background:#00ff00\"><p>After</p></body></html>"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn local_html_manual_reload_forces_new_generation_for_unchanged_content() -> TestResult {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("same.html");
+        let content = "<html><body style=\"background:#ff0000\"><p>Same</p></body></html>";
+        std::fs::write(&path, content)?;
+        let url = url::Url::from_file_path(&path).map_err(|_| "file URL")?;
+        let ctx = egui::Context::default();
+        let mut app = app();
+        app.state.workspace.data = Some(katana_core::workspace::Workspace::new(
+            directory.path(),
+            Vec::new(),
+        ));
+        app.handle_open_url(&ctx, url.to_string());
+        wait_for_browser_frame(&mut app, &ctx)?;
+        let previous_session_generation = active_preview_session_generation(&app)?;
+
+        app.process_action(&ctx, AppAction::RefreshDocument { is_manual: true });
+        let generation =
+            wait_for_preview_reload(&mut app, &ctx, previous_session_generation, [255, 0, 0])?;
+
+        assert_ne!(generation, previous_session_generation);
+        assert_eq!(app.state.document.open_documents[0].buffer, content);
+        Ok(())
+    }
+
+    #[test]
+    fn local_html_manual_reload_preserves_dirty_buffer_when_disk_changes() -> TestResult {
+        let _runtime_guard = crate::preview_pane::html_browser_runtime_test_guard();
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("dirty.html");
+        let initial = "<html><body style=\"background:#ff0000\"><p>Initial</p></body></html>";
+        let unsaved = "<html><body style=\"background:#0000ff\"><p>Unsaved</p></body></html>";
+        let disk = "<html><body style=\"background:#00ff00\"><p>Disk</p></body></html>";
+        std::fs::write(&path, initial)?;
+        let url = url::Url::from_file_path(&path).map_err(|_| "file URL")?;
+        let ctx = egui::Context::default();
+        let mut app = app();
+        app.state.workspace.data = Some(katana_core::workspace::Workspace::new(
+            directory.path(),
+            Vec::new(),
+        ));
+        app.handle_open_url(&ctx, url.to_string());
+        wait_for_browser_frame(&mut app, &ctx)?;
+        app.handle_update_buffer(unsaved.to_string());
+        let previous_session_generation = active_preview_session_generation(&app)?;
+        std::fs::write(&path, disk)?;
+
+        app.process_action(&ctx, AppAction::RefreshDocument { is_manual: true });
+        let generation =
+            wait_for_preview_reload(&mut app, &ctx, previous_session_generation, [0, 0, 255])?;
+
+        assert_ne!(generation, previous_session_generation);
+        assert!(app.state.document.open_documents[0].is_dirty);
+        assert_eq!(app.state.document.open_documents[0].buffer, unsaved);
+        assert!(
+            app.html_browser_frame_matching_rgb_pixels_for_test([0, 0, 255])
+                .is_some_and(|pixels| pixels > 0)
+        );
+        Ok(())
     }
 
     fn start_pending_browser_sessions(app: &mut KatanaApp) -> TestResult {

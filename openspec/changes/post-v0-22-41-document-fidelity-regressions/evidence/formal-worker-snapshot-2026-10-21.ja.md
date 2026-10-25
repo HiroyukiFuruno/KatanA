@@ -1,0 +1,25 @@
+# 正式coverageのdocument worker固定
+
+## 実製品検査で確認した原因
+
+fa9の全検査はexit0だったが、UI parallel前のworker SHAは`28c7d42bf85655fa2b57c4e48d5dea4f95532916356f234608ca22fcff964a1a`、UI serial前は`821408d8fa18afde510a0987800a1ffb63bb03a5640fd7d50abf90f30626c3bf`だった。
+
+`tmp/oct21-coverage-fa9-canonical.log`の913行はworkerのtest binaryをdebug/depsへ出力し、2813行はUI parallelのcompileがdebug/kdv-office-worker本体をprofile.test=false/fresh=falseで生成、3719行は同じ本体をfresh=trueで使用している。coverage.shは最初の非計測worker buildで得たこの本体pathをdocument sessionにも渡していたため、parallelのcompileで参照先bytesが変わる。phase前identityは、各testの実worker子processを個別に識別する証明ではない。
+
+先行tiny fixtureの安定結果を製品へ一般化しない。これは検査用workerの参照境界の問題であり、製品の漏出や既存testのfalse PASSを推定するものではない。
+
+## 最小修復
+
+- 既存shadowのsnapshot処理を共有helperへ移し、sourceの非symlink・実行属性、exclusive destination、copy前後SHA、0555を維持する。
+- 正式coverageは最初のcleanと通常worker buildの後、既存target/tmp直下の新規run-owned directoryへcopyし、完成した絶対pathだけをKATANA_KDV_OFFICE_WORKERへ渡す。親と全祖先のsymlink・非directoryを作成前に拒否する。
+- helperの失敗とexportを別文にし、失敗時にtest phaseへ到達しない。source basenameを使い、不要な任意name指定を受け付けない。
+- Cargo本体binaryを直接検査するCARGO_BIN_EXE経路は変更しない。4工程、selector、report、strict gate、false reuseも維持する。
+- 既存clean guardの既知root tmp内なのでallowlistや独自削除を追加しない。現在のscriptではsnapshot作成後のcleanはなく、最終既存target cleanで回収できる。将来の任意Cargo pruneやWindows ACLの不変性まで保証しない。
+
+## 検証と残範囲
+
+実装前はhelper未存在でRED。レビューでexportによる失敗隠蔽、不要name指定、親symlink検査不足を修復した。実filesystemとhelper subprocess、source差替え後のcopy保持、既存destination・alias・親symlink拒否、coverage実スニペットの失敗停止を含む関連22件は0.429秒・actual exit 0。rawは`tmp/oct21-worker-snapshot-integrity-final2.log`。旧export形式の実反証はexit0/marker生成、新しい実スニペットはFileNotFoundError/非0/markerなしで識別した。zsh不在hostでは正式zsh entrypoint専用の新検査だけが対象外であり、既存検査をskipへ変えない。zsh構文検査もexit0。
+
+共有helperのconsumerとCI契約を含む統合検査は62件・2.250秒・actual exit 0。rawは`tmp/oct21-nextest-shadow-integration-final.log`。初回は既存runner fixtureがmacOSの/var aliasを使用して親symlink拒否へ抵触したため、fixtureのrootを物理pathへ正規化し再検証した。実装側の検査は緩和していない。
+
+正式製品coverageの再実行・全OS・公開は別工程であり、旧fa9の成功をこの修復後の成功へ流用しない。

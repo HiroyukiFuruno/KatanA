@@ -3,11 +3,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use katana_platform::cache::PlatformCachePathResolver;
 use sha2::{Digest, Sha256};
 
 use super::types::{CacheMetadata, CachedFile};
 
-pub(crate) const CACHE_NAMESPACE_DIR: &str = "KatanA";
 pub(crate) const HTTP_IMAGE_CACHE_DIR: &str = "http-image-cache";
 pub(crate) const CACHE_BODY_EXTENSION: &str = "bin";
 pub(crate) const CACHE_META_EXTENSION: &str = "json";
@@ -16,10 +16,7 @@ pub(crate) struct HttpCacheDiskOps;
 
 impl HttpCacheDiskOps {
     pub(crate) fn default_http_cache_dir() -> PathBuf {
-        dirs::cache_dir()
-            .unwrap_or_else(|| PathBuf::from("."))
-            .join(CACHE_NAMESPACE_DIR)
-            .join(HTTP_IMAGE_CACHE_DIR)
+        PlatformCachePathResolver::cache_root().join(HTTP_IMAGE_CACHE_DIR)
     }
 
     pub(crate) fn cache_key(uri: &str) -> String {

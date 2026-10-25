@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 
+mod canvas;
 mod types;
 pub use types::*;
 
@@ -8,7 +9,7 @@ const HTML_EXTENSIONS: &[&str] = &["html", "htm"];
 const DOCUMENT_EXTENSIONS: &[&str] = &["pdf", "docx", "xlsx", "pptx"];
 const STANDARD_VISIBLE_EXTENSIONS: &[&str] = &[
     "png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "drawio", "html", "htm", "pdf", "docx",
-    "xlsx", "pptx",
+    "xlsx", "pptx", "canvas",
 ];
 
 impl TreeEntry {

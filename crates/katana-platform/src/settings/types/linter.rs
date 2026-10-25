@@ -89,13 +89,15 @@ mod tests {
     #[test]
     fn linter_missing_preset_state_defaults_to_katana() {
         let settings: LinterSettings =
-            serde_json::from_value(serde_json::json!({ "enabled": true }))
-                .expect("linter settings must deserialize");
+            match serde_json::from_value(serde_json::json!({ "enabled": true })) {
+                Ok(settings) => settings,
+                Err(error) => panic!("linter settings must deserialize: {error}"),
+            };
 
-        let current = settings
-            .preset_state
-            .current
-            .expect("current preset must exist");
+        let current = match settings.preset_state.current {
+            Some(current) => current,
+            None => panic!("current preset must exist"),
+        };
         assert_eq!(current.id, "katana");
         assert_eq!(current.label, "KatanA");
         assert!(!settings.preset_state.modified);
@@ -104,15 +106,17 @@ mod tests {
     #[test]
     fn linter_normalize_restores_empty_preset_state_to_katana() {
         let mut settings: LinterSettings =
-            serde_json::from_value(serde_json::json!({ "preset_state": {} }))
-                .expect("linter settings must deserialize");
+            match serde_json::from_value(serde_json::json!({ "preset_state": {} })) {
+                Ok(settings) => settings,
+                Err(error) => panic!("linter settings must deserialize: {error}"),
+            };
 
         settings.normalize();
 
-        let current = settings
-            .preset_state
-            .current
-            .expect("current preset must exist");
+        let current = match settings.preset_state.current {
+            Some(current) => current,
+            None => panic!("current preset must exist"),
+        };
         assert_eq!(current.id, "katana");
         assert_eq!(current.label, "KatanA");
     }

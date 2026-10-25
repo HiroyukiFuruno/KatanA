@@ -15,6 +15,7 @@ REQUIRED_FILES = (
     "crates/katana-ui/src/preview_pane/document_surface/painter_grid_conditional.rs",
     "crates/katana-ui/src/preview_pane/document_surface/painter_grid_style.rs",
     "crates/katana-ui/src/preview_pane/document_surface/painter_grid_text.rs",
+    "crates/katana-ui/src/preview_pane/document_surface/painter_grid_text_style.rs",
     "crates/katana-ui/src/preview_pane/document_surface/painter_page.rs",
     "crates/katana-ui/src/preview_pane/document_surface/source_io.rs",
 )

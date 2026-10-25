@@ -7,6 +7,8 @@ use std::sync::MutexGuard;
 mod app_state;
 #[path = "integration/search/command_palette.rs"]
 mod command_palette;
+#[path = "integration/editor/navigation.rs"]
+mod editor_navigation;
 #[path = "integration/editor/ui.rs"]
 mod editor_ui;
 #[path = "integration/settings/font_bridge.rs"]
