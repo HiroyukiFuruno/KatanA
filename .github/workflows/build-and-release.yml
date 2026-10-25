@@ -460,7 +460,7 @@ jobs:
               Start-Sleep -Milliseconds 200
               $currentFrame = Get-HeartbeatFrame $heartbeat.FullName
               if ($null -eq $currentFrame -or $currentFrame -le $lastFrame) {
-                throw "UI heartbeat stalled after first frame: last_frame=$lastFrame; current_frame=$currentFrame"
+                throw "UI heartbeat stalled after first frame: last_frame=$lastFrame; current_frame=$currentFrame. Log: $(Get-Content $log.FullName -Raw)"
               }
               $lastFrame = $currentFrame
               $rss = (Get-Process -Id $process.Id).WorkingSet64

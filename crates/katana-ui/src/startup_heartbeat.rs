@@ -1,15 +1,6 @@
-use std::{
-    sync::{
-        OnceLock,
-        atomic::{AtomicU64, Ordering},
-    },
-    time::Instant,
-};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 static HEARTBEAT_FRAME: AtomicU64 = AtomicU64::new(0);
-static HEARTBEAT_EPOCH: OnceLock<Instant> = OnceLock::new();
-static LAST_HEARTBEAT_MILLIS: AtomicU64 = AtomicU64::new(0);
-const HEARTBEAT_INTERVAL_MILLIS: u64 = 100;
 
 pub(crate) struct StartupHeartbeat;
 
@@ -22,19 +13,6 @@ impl StartupHeartbeat {
         let Ok(path) = std::env::var("KATANA_STARTUP_HEARTBEAT") else {
             return;
         };
-        let elapsed_millis = HEARTBEAT_EPOCH
-            .get_or_init(Instant::now)
-            .elapsed()
-            .as_millis() as u64;
-        let previous_millis = LAST_HEARTBEAT_MILLIS.load(Ordering::Relaxed);
-        if !Self::should_write(
-            HEARTBEAT_FRAME.load(Ordering::Relaxed),
-            previous_millis,
-            elapsed_millis,
-        ) {
-            return;
-        }
-        LAST_HEARTBEAT_MILLIS.store(elapsed_millis, Ordering::Relaxed);
         let frame = HEARTBEAT_FRAME.fetch_add(1, Ordering::Relaxed) + 1;
         if let Err(error) = std::fs::write(&path, Self::contents(frame)) {
             tracing::error!(path, %error, "failed to write startup heartbeat");
@@ -43,11 +21,6 @@ impl StartupHeartbeat {
 
     fn contents(frame: u64) -> String {
         format!("first-frame\nframe={frame}\n")
-    }
-
-    fn should_write(previous_frame: u64, previous_millis: u64, elapsed_millis: u64) -> bool {
-        previous_frame == 0
-            || elapsed_millis.saturating_sub(previous_millis) >= HEARTBEAT_INTERVAL_MILLIS
     }
 }
 
@@ -107,9 +80,42 @@ mod tests {
     }
 
     #[test]
-    fn heartbeat_writes_first_frame_then_throttles_to_the_interval() {
-        assert!(StartupHeartbeat::should_write(0, 0, 0));
-        assert!(!StartupHeartbeat::should_write(1, 100, 199));
-        assert!(StartupHeartbeat::should_write(1, 100, 200));
+    fn heartbeat_records_every_completed_frame_in_child_process() {
+        const CHILD_SENTINEL: &str = "KATANA_STARTUP_HEARTBEAT_COMPLETED_FRAMES_CHILD_V1";
+        if std::env::var_os(CHILD_SENTINEL).as_deref() == Some(std::ffi::OsStr::new("1")) {
+            let heartbeat_path = std::env::var_os("KATANA_STARTUP_HEARTBEAT")
+                .expect("child heartbeat path must be provided");
+
+            StartupHeartbeat::record_completed_frame();
+            assert_eq!(
+                std::fs::read_to_string(&heartbeat_path).unwrap(),
+                "first-frame\nframe=1\n"
+            );
+            StartupHeartbeat::record_completed_frame();
+            assert_eq!(
+                std::fs::read_to_string(&heartbeat_path).unwrap(),
+                "first-frame\nframe=2\n"
+            );
+            return;
+        }
+
+        let heartbeat = tempfile::NamedTempFile::new().unwrap();
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "startup_heartbeat::tests::heartbeat_records_every_completed_frame_in_child_process",
+                "--nocapture",
+                "--test-threads=1",
+            ])
+            .env("KATANA_STARTUP_HEARTBEAT", heartbeat.path())
+            .env(CHILD_SENTINEL, "1")
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "child completed-frame heartbeat test failed: stdout={} stderr={}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
     }
 }

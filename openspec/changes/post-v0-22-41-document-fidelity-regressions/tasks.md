@@ -1,3 +1,7 @@
+### 2026-10-25 Windows配布起動のheartbeat記録を修復
+
+- [/] 公開run40192198622のWindows startupは実frame8→8でexit1。実UI完了を100ms間引きで隠す観測上の欠陥を修復し、実ファイルの連続フレーム回帰・通常検証・新HEAD review/CI・native配布検査へ続ける。元200ms×10と全品質条件は維持し、実失敗の原因確定と新native成功は別途確認する。[Issue364](https://github.com/HiroyukiFuruno/KatanA/issues/364)、[根拠](evidence/windows-packaged-heartbeat-2026-10-25.ja.md)。
+
 ### 2026-10-25 Linux配布版のX11依存不足を修復
 
 - [/] PR346と元必須CIは完了したが、公開run40192198622のLinux配布起動がlibxkbcommon-x11不足で失敗した。公開workflowの実行時依存と既存契約検査を修復し、通常commit/push・新HEAD review・必須CI・配布起動・全OS公開を継続する。元起動基準は不変、上流待ちや本人確認を停止条件にしない。[Issue363](https://github.com/HiroyukiFuruno/KatanA/issues/363)、[根拠](evidence/linux-packaged-x11-runtime-2026-10-25.ja.md)。
