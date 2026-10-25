@@ -1,3 +1,7 @@
+### 2026-10-26 Readiness終了処理回帰の時間超過を観測する
+
+- [/] source151のReadiness40241669703は実プロセス回帰launcher_ignoringがstart5/end12/delta7となり、元6秒条件で不合格。保存traceの時刻と内容を失敗ログから回収できない不足を修復し、Bash組込みSECONDSの各command時刻と計測終了後のtrace出力を追加する。製品・cleanup helper・元2秒/6秒・4ケース・identity1/1/2/2・無関係PID生存・実child/launcher消失・caller状態復元を維持する。ローカル既存回帰の旧新成功や時刻行追加はクラウド時間超過の原因解消と扱わず、通常統合・新current review/必須CI・実配布検査を継続する。[根拠](evidence/readiness-cleanup-timing-2026-10-26.ja.md)。
+
 ### 2026-10-26 Windowsの単発不一致と実処理区間の切り分け
 
 - [/] sourcecc3の全OS公開run40226774883はLinux配布版・macOS両arch起動成功、Windowsは元200ms観測の5→5で不合格。catchでframe7へ進んでおり恒久停止とは断定しない。既存heartbeatとDEBUG=trueが両方有効な診断時だけ実App::ui区間・前フレームCPU時間・viewportとheartbeat記録処理時間を計測し、KatanA内処理と描画基盤の責任を判別する。counter bytes・記録位置・100ms予約・200ms×10回・元品質条件は不変。限定計測を実装し実child回帰6件・AST30件・fmt/impacted lint/diffは成功したが、通常commit/push・新current review/全CI・実native検査と原因判定は未完として継続する。[根拠](evidence/windows-packaged-heartbeat-2026-10-25.ja.md)。

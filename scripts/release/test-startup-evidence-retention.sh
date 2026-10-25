@@ -96,7 +96,8 @@ run_cleanup_with_identity_trace() {
     local saved_ps4="$PS4" was_xtrace=0
     [[ $- == *x* ]] && was_xtrace=1
     {
-        PS4='+STARTUP_CLEANUP_TRACE: '
+        PS4='+STARTUP_CLEANUP_TIME=${SECONDS}
++STARTUP_CLEANUP_TRACE: '
         set -x
         startup_process_cleanup >/dev/null
         if (( was_xtrace == 0 )); then
@@ -173,8 +174,19 @@ run_cleanup_case() {
         exit 1
     fi
     if (( cleanup_delta > 6 )); then
+        if ! cat "$trace_path" >&2; then
+            printf 'WARN: startup cleanup trace could not be read: %s\n' "$trace_path" >&2
+        fi
         printf 'FAIL: startup cleanup exceeded its bounded termination grace: mode=%s start=%s end=%s actual_delta=%s tracepath=%s\n' \
             "$main_mode" "$cleanup_started" "$cleanup_finished" "$cleanup_delta" "$trace_path" >&2
+        exit 1
+    fi
+    if ! grep -Eq '^\+STARTUP_CLEANUP_TIME=[0-9]+$' "$trace_path"; then
+        if ! cat "$trace_path" >&2; then
+            printf 'WARN: startup cleanup trace could not be read: %s\n' "$trace_path" >&2
+        fi
+        printf 'FAIL: startup cleanup trace has no Bash SECONDS marker: mode=%s tracepath=%s\n' \
+            "$main_mode" "$trace_path" >&2
         exit 1
     fi
     if [[ "$main_mode" == direct_ignoring || "$main_mode" == launcher_ignoring ]]; then
