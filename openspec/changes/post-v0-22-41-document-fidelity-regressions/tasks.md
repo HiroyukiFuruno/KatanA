@@ -1,3 +1,7 @@
+### 2026-10-25 Linux配布版のX11依存不足を修復
+
+- [/] PR346と元必須CIは完了したが、公開run40192198622のLinux配布起動がlibxkbcommon-x11不足で失敗した。公開workflowの実行時依存と既存契約検査を修復し、通常commit/push・新HEAD review・必須CI・配布起動・全OS公開を継続する。元起動基準は不変、上流待ちや本人確認を停止条件にしない。[Issue363](https://github.com/HiroyukiFuruno/KatanA/issues/363)、[根拠](evidence/linux-packaged-x11-runtime-2026-10-25.ja.md)。
+
 ### 2026-10-25 Linux FIFO取消fixtureの無期限待機を修復
 
 - [/] 83cf2bdbのReady CIは3OS lint・供給網・CodeQL・ReadinessとMac/WindowsのRun testsが成功。一方LinuxはFIFO取消capacityテストが終端せず、Chrome実行中ログと取消後の実ログで09:09の60秒超通知から09:48取消まで残ることを確認。sender取得をreader接続と誤認し、取消でreaderがopenしない場合に後処理のFile::createが永久待機するfixture経路を修復する。製品worker/queue・元5秒予算・ignore・capacity/回復assertを維持し、通常検証・独立レビュー・新HEAD CI・公開へ続ける。[Issue359](https://github.com/HiroyukiFuruno/KatanA/issues/359)、[根拠](evidence/ci-linux-fifo-rendezvous-2026-10-25.ja.md)。旧runの結論cancelledを自然終了failureや合格へ書き換えない。
