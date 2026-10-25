@@ -27,6 +27,9 @@ class InstallerTests(unittest.TestCase):
         for path in HERE.glob("*.py"):
             if not path.name.startswith("test"):
                 shutil.copy2(path, source / path.name)
+        ci = self.root / "scripts/ci"
+        ci.mkdir(parents=True)
+        shutil.copy2(HERE.parent / "ci/cargo_target_lease.py", ci / "cargo_target_lease.py")
 
     def tearDown(self) -> None:
         self.temp.cleanup()

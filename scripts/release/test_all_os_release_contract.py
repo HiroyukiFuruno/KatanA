@@ -33,11 +33,22 @@ def require_publication_contract(workflow: str) -> None:
                "&& needs.build_linux.result == 'success' && needs.build_windows.result == 'success'")
     if needs not in publish or success not in publish:
         raise ValueError("publication must require every build and macOS smoke")
-    for asset in ("KatanA-Desktop-*.dmg", "KatanA-macOS.zip",
-                  "KatanA-linux-x86_64.tar.gz", "KatanA-windows-x86_64.zip",
-                  "KatanA-windows-x86_64.msi"):
-        if asset not in workflow:
-            raise ValueError(f"publication asset missing: {asset}")
+    uploads = (
+        ("build_macos", "macOS", ("target/release/KatanA-Desktop-*.dmg", "target/release/KatanA-macOS.zip")),
+        ("build_linux", "Linux", ("target/release/KatanA-linux-x86_64.tar.gz",)),
+        ("build_windows", "Windows", ("KatanA-windows-x86_64.zip", "KatanA-windows-x86_64.msi")),
+    )
+    for job, platform, assets in uploads:
+        upload = re.search(
+            rf"(?ms)^      - name: Upload {platform} Artifacts\n(.*?)(?=^      - |\Z)",
+            job_section(workflow, job),
+        )
+        if upload is None or "uses: actions/upload-artifact@" not in upload.group(1):
+            raise ValueError(f"publication artifact upload missing: {platform}")
+        for asset in assets:
+            # build用identity内の同名assetでは、実upload欠落を満たせない。
+            if not re.search(rf"(?m)^(?:          path: |            ){re.escape(asset)}$", upload.group(1)):
+                raise ValueError(f"publication asset missing from upload: {asset}")
     if "check-published-artifact-identity.py" not in publish:
         raise ValueError("publication identity check is missing")
 
@@ -69,13 +80,22 @@ class AllOsReleaseContractTests(unittest.TestCase):
     def test_publication_rejects_partial_or_unverified_release(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         require_publication_contract(workflow)
-        mutations = (
-            workflow.replace("needs.build_linux.result == 'success'", "true", 1),
-            workflow.replace("check-published-artifact-identity.py", "missing-identity.py", 1),
-            workflow.replace("KatanA-windows-x86_64.msi", "missing.msi", 1),
-        )
-        for altered in mutations:
-            with self.assertRaises(ValueError):
+        mutations = {
+            "linux_success": workflow.replace("needs.build_linux.result == 'success'", "true", 1),
+            "identity_check": workflow.replace("check-published-artifact-identity.py", "missing-identity.py", 1),
+        }
+        for asset in ("target/release/KatanA-Desktop-*.dmg", "target/release/KatanA-macOS.zip",
+                      "target/release/KatanA-linux-x86_64.tar.gz", "KatanA-windows-x86_64.zip",
+                      "KatanA-windows-x86_64.msi"):
+            upload_path = re.search(rf"(?m)^(?:          path: |            ){re.escape(asset)}$", workflow)
+            self.assertIsNotNone(upload_path, asset)
+            mutations[asset] = (
+                workflow[:upload_path.start()]
+                + upload_path.group().replace(asset, "missing.asset")
+                + workflow[upload_path.end():]
+            )
+        for label, altered in mutations.items():
+            with self.subTest(mutation=label), self.assertRaises(ValueError):
                 require_publication_contract(altered)
 
 

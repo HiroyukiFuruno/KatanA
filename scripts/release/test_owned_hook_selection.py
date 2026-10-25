@@ -24,7 +24,22 @@ class OwnedHookSelectionTests(unittest.TestCase):
         source.mkdir(parents=True)
         for name in ("owner_verification.py", "run-owned-push-check.py"):
             shutil.copy2(HERE / name, source / name)
+        ci = self.root / "scripts/ci"
+        ci.mkdir(parents=True)
+        shutil.copy2(REPOSITORY_ROOT / "scripts/ci/cargo_target_lease.py", ci / "cargo_target_lease.py")
         shutil.copy2(REPOSITORY_ROOT / "lefthook.yml", self.root / "lefthook.yml")
+        (self.root / "Cargo.toml").write_text(
+            '[workspace]\nmembers = ["crates/fixture"]\nresolver = "2"\n'
+        )
+        crate = self.root / "crates/fixture"
+        crate.mkdir(parents=True)
+        (crate / "Cargo.toml").write_text(
+            '[package]\nname = "fixture"\nversion = "0.1.0"\nedition = "2021"\n'
+        )
+        (crate / "src").mkdir()
+        (crate / "src/lib.rs").write_text("pub fn fixture() {}\n")
+        subprocess.run(["cargo", "generate-lockfile", "--manifest-path", str(self.root / "Cargo.toml")],
+                       check=True, env=self.environment, capture_output=True)
         (self.root / "Justfile").write_text("check:\n    @printf 'fixed owner command executed\\n'\n")
         subprocess.run(["git", "add", "."], cwd=self.root, check=True, env=self.environment)
         subprocess.run(["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],

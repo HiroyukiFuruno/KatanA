@@ -44,6 +44,9 @@ class PrePushInstallerInterruptTests(unittest.TestCase):
         for source in HERE.glob("*.py"):
             if not source.name.startswith("test"):
                 shutil.copy2(source, runtime / source.name)
+        ci = self.root / "scripts/ci"
+        ci.mkdir(parents=True)
+        shutil.copy2(HERE.parent / "ci/cargo_target_lease.py", ci / "cargo_target_lease.py")
 
     @staticmethod
     def clean_environment() -> dict[str, str]:
