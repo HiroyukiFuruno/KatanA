@@ -1,3 +1,22 @@
+### 2026-10-25 最新本人決定: 自動検証で公開を優先
+
+- [/] #355 Markdown分割背景をExplorerの既存window色へ統一し、左右・上下共通入口で描画。対象1件・AST30・影響lint・fmt成功、通常commit b6485f51実0。#356 PDF/PPTX左右ページングは既存viewer commandを利用し、focus/修飾キー/形式/ページ境界の対象2件・AST30・影響lint・fmt成功、通常commit f51f371e実0。最終5file独立レビューP0/P1なし、SHA主査一致。通常統合済み、current CI・公開は未完。
+- [/] 既存自動test/build/lint/coverage/供給網/3OS CI/配布物・起動検査を品質条件として公開する。判定経路は署名G 8cf6b7c8へ通常commit実0、対象70件/接続修復37件実0・独立P0/P1なし。公開前は現run、公開後は実tag/run/attemptと全3manifest・全5assetを照合する。旧manual host manifest/Office95未測定を公開停止条件へ戻さず、元の自動基準やレビューを緩めない。[最新の本人承認](evidence/release-goal-2026-10-24.ja.md)。
+- [x] Open Issue 355/349/356/345/312/351/339/352/354/343/338の本文を更新し、全11件を再取得して反映確認。IssueのClose条件から本人の実機確認・本人最終受入を外す。実装・自動検証・公開でCloseし、公開後に本人が確認した未解決不具合は別途起票する。未測定・旧memory未達・上流制限を成功へ書き換えない。
+- [x] 最新本人指示に従い、新Office95比較ハーネスの開発と手動多タブ/実機受入は今回の公開条件から後続へ分離し、完成済みのignored参照/prototype/診断証跡を保全する。今回の色/自動回帰・current review/CI・全5asset公開/後処理を継続する。
+
+### 2026-10-25 追加の本人報告: 分割背景・paging・複数Officeタブ
+
+- [ ] Markdownの編集欄・プレビューを分割した領域の背景をExplorerと同じ既存テーマ色へそろえる。本人は分割コンテナのbackground-colorを原因候補として指摘。親Frameを先に診断し、他形式・コード/表の意図した装飾色を変えない。
+- [ ] PDF/PPTX表示時の←→で前後ページ/slideへ移動できるようにする。viewer focusと既存command/境界を尊重し、editor・検索・Explorerのキー操作を奪わない。
+- [ ] v0.22.41の複数Officeタブ切替で重くfreezeする本人報告を、v42の実多タブscenarioで再検証する。原本再読込とフォントIO修復済みだけで対応済みと言わず、同時に開いた複数Office/HTML/画像間の切替とUIheartbeat/操作・描画・close/正常終了を記録する。
+
+### 2026-10-25 以前の判断と責務の照合（公開条件は冒頭の最新本人決定を優先）
+
+- [ ] Office独立比較95点と元メモリ基準を維持し、KatanA側で改善できる未達を修復する。外部原因を証跡確認できた未達だけは既知制限で先行公開を優先し、未確定を外部扱いしない。[本人の追加判断](evidence/release-goal-2026-10-24.ja.md)。
+- [ ] 完了済みKDV #58をOffice比較の外部待ちとする旧扱いを訂正する。独立参照・下流producer・実比較・採用はKatanA #338/#339の責務。保存済みLibreOffice26.8.0.3の6原本参照を実hash照合したが、未評価・first pageだけの制限があり、95点達成として採用しない。
+- [/] d0b128aaの通常pushはLinux UI 1356成功/1失敗/既存ignore2で終了1。FIFO pending期待失敗の診断assertを追加し、同条件の単独1/1・group16件×3・UI全1357件/既存ignore2×3は成功。原因は未再現であり修復済みとはしない。診断のみ署名G 9f467d24へ通常commit実0。元timeout/worker上限/threads2/ignoreを維持して通常pushで再確認する。
+
 ### 2026-10-25 実frameと受入記録のP1修復
 
 - [/] HTML初回表示とreloadのframe識別が実receiptへ結合されていないP1を修復。frame受理時のKatanA epochを保持し、producerで実値を照合する。修復前5件/10失敗、修復後host34件・公式関連7件・AST30件・Clippy/fmt成功。旧hostscope fixtureも正常baselineと固有エラーを使う10件で修復。strict55件/公開gate32件も成功、通常署名commit `ec60264b` / `d484630` へ分離統合済み。通常pushと最終配布受入は未完了。[根拠](evidence/html-accepted-frame-binding-2026-10-25.ja.md)。

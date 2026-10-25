@@ -8,6 +8,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 - **Read-only Canvas preview**: Open `.canvas` files to view text and file cards, groups and connections, with pan, zoom and fit controls.
 - **PowerPoint slideshow**: Present supported PowerPoint files full-screen, with next/previous and first/last slide keyboard navigation.
+- **PDF and PowerPoint page navigation**: Click a document preview and use the left/right arrow keys to move between pages or slides.
 
 ### ✨ Improvements
 
@@ -24,6 +25,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🐛 Bug Fixes
 
+- **Markdown split-view background**: The editor and preview share the explorer background color in horizontal and vertical split views.
 - **Update archive handling**: Reject link entries and linked extraction destinations, and explicitly limit restored file permissions while retaining normal executable permissions.
 - **HTTPS certificate validation**: Updated certificate verification and trusted roots to reject distrusted certificate chains.
 - **Document memory usage**: Removed an extra copy of document input data retained throughout a viewer session.
