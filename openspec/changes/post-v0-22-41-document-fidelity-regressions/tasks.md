@@ -1,3 +1,15 @@
+### 2026-10-25 heartbeat回帰の診断引数を既存の形式へ統一
+
+- [/] f14de30dの新CIでは、通常テスト等は成功したがMac coverageが新回帰のassert診断引数2行未実行で失敗。同file先行回帰のlet stdout/stderr形式へ揃え、商用処理・assert・coverage規約や閾値を変えずに検証する。PR365はDraftへ戻し、通常commit/push・新HEAD review・Ready全CI・公開へ継続する。[根拠](evidence/windows-packaged-heartbeat-2026-10-25.ja.md)。
+
+### 2026-10-25 Windows配布起動のheartbeat記録を修復
+
+- [/] 公開run40192198622のWindows startupは実frame8→8でexit1。実UI完了を100ms間引きで隠す観測上の欠陥を修復し、実ファイルの連続フレーム回帰・通常検証・新HEAD review/CI・native配布検査へ続ける。元200ms×10と全品質条件は維持し、実失敗の原因確定と新native成功は別途確認する。[Issue364](https://github.com/HiroyukiFuruno/KatanA/issues/364)、[根拠](evidence/windows-packaged-heartbeat-2026-10-25.ja.md)。
+
+### 2026-10-25 Linux配布版のX11依存不足を修復
+
+- [/] PR346と元必須CIは完了したが、公開run40192198622のLinux配布起動がlibxkbcommon-x11不足で失敗した。公開workflowの実行時依存と既存契約検査を修復し、通常commit/push・新HEAD review・必須CI・配布起動・全OS公開を継続する。元起動基準は不変、上流待ちや本人確認を停止条件にしない。[Issue363](https://github.com/HiroyukiFuruno/KatanA/issues/363)、[根拠](evidence/linux-packaged-x11-runtime-2026-10-25.ja.md)。
+
 ### 2026-10-25 Linux FIFO取消fixtureの無期限待機を修復
 
 - [/] 83cf2bdbのReady CIは3OS lint・供給網・CodeQL・ReadinessとMac/WindowsのRun testsが成功。一方LinuxはFIFO取消capacityテストが終端せず、Chrome実行中ログと取消後の実ログで09:09の60秒超通知から09:48取消まで残ることを確認。sender取得をreader接続と誤認し、取消でreaderがopenしない場合に後処理のFile::createが永久待機するfixture経路を修復する。製品worker/queue・元5秒予算・ignore・capacity/回復assertを維持し、通常検証・独立レビュー・新HEAD CI・公開へ続ける。[Issue359](https://github.com/HiroyukiFuruno/KatanA/issues/359)、[根拠](evidence/ci-linux-fifo-rendezvous-2026-10-25.ja.md)。旧runの結論cancelledを自然終了failureや合格へ書き換えない。

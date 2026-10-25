@@ -318,7 +318,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev xvfb
+          sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libxkbcommon-x11-0 libssl-dev gcc pkg-config libdbus-1-dev xvfb
       - name: Build release (Linux)
         run: cargo build --workspace --release
       - name: Package Linux Artifact
@@ -460,7 +460,7 @@ jobs:
               Start-Sleep -Milliseconds 200
               $currentFrame = Get-HeartbeatFrame $heartbeat.FullName
               if ($null -eq $currentFrame -or $currentFrame -le $lastFrame) {
-                throw "UI heartbeat stalled after first frame: last_frame=$lastFrame; current_frame=$currentFrame"
+                throw "UI heartbeat stalled after first frame: last_frame=$lastFrame; current_frame=$currentFrame. Log: $(Get-Content $log.FullName -Raw)"
               }
               $lastFrame = $currentFrame
               $rss = (Get-Process -Id $process.Id).WorkingSet64

@@ -25,6 +25,18 @@ assert_not_contains() {
     fi
 }
 
+assert_build_linux_contains() {
+    local expected="$1"
+    if ! awk '
+        /^  build_linux:$/ { in_build_linux=1; next }
+        in_build_linux && /^  [[:alnum:]_]+:$/ { exit }
+        in_build_linux { print }
+    ' "$WORKFLOW" | grep -Fq -- "$expected"; then
+        echo "FAIL: missing build_linux startup contract in ${WORKFLOW}: ${expected}" >&2
+        exit 1
+    fi
+}
+
 bash -n "$SMOKE_SCRIPT"
 bash -n "$HEARTBEAT_HELPER"
 bash -n "$IDENTITY_HELPER"
@@ -63,6 +75,7 @@ assert_contains "$WORKFLOW" "mode: macos-x86_64"
 assert_contains "$WORKFLOW" "needs: [preflight, build_macos, smoke_macos, build_linux, build_windows]"
 assert_contains "$WORKFLOW" "needs.build_macos.result == 'success' && needs.smoke_macos.result == 'success' && needs.build_linux.result == 'success' && needs.build_windows.result == 'success'"
 assert_contains "$WORKFLOW" '"$GITHUB_WORKSPACE/scripts/release/smoke-launch-packaged-app.sh" linux-x86_64'
+assert_build_linux_contains 'libxkbcommon-x11-0'
 assert_contains "$WORKFLOW" 'cd "$APP_DIR"'
 assert_contains "$WORKFLOW" 'cd "$TEMP_DIR"'
 assert_contains "$WORKFLOW" 'Start-Process -FilePath $expectedExecutable -WorkingDirectory $directory'
