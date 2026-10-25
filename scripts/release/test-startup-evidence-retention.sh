@@ -91,6 +91,21 @@ wait_for_exit() {
     return 1
 }
 
+run_cleanup_with_identity_trace() {
+    local trace_path="$1"
+    local saved_ps4="$PS4" was_xtrace=0
+    [[ $- == *x* ]] && was_xtrace=1
+    {
+        PS4='+STARTUP_CLEANUP_TRACE: '
+        set -x
+        startup_process_cleanup >/dev/null
+        if (( was_xtrace == 0 )); then
+            set +x
+        fi
+        PS4="$saved_ps4"
+    } 2>"$trace_path"
+}
+
 verify_wait_grace_uses_elapsed_time() {
     local pid wait_started
     bash -c 'trap "" TERM; exec sleep 30' &
@@ -117,7 +132,10 @@ verify_wait_grace_uses_elapsed_time() {
 
 run_cleanup_case() {
     local main_mode="$1"
-    local launched_pid owned_pid cleanup_started
+    local launched_pid owned_pid cleanup_started cleanup_finished cleanup_delta
+    local trace_path expected_identity_calls actual_identity_calls caller_ps4="$PS4"
+    local caller_xtrace_enabled=0 restored_xtrace_enabled=0
+    [[ $- == *x* ]] && caller_xtrace_enabled=1
     EVIDENCE_DIR=$(mktemp -d -t katana-cleanup-evidence.XXXXXX)
     HEARTBEAT=$(mktemp -t katana-cleanup-heartbeat.XXXXXX)
     LOG_PATH=$(mktemp -t katana-cleanup-log.XXXXXX)
@@ -144,11 +162,38 @@ run_cleanup_case() {
         MAIN_PID=""
     fi
     cleanup_started=$SECONDS
-    startup_process_cleanup >/dev/null
-    (( SECONDS - cleanup_started <= 6 )) || {
-        echo 'FAIL: startup cleanup exceeded its bounded termination grace' >&2
+    trace_path="$EVIDENCE_DIR/cleanup-identity-${main_mode}.trace"
+    run_cleanup_with_identity_trace "$trace_path"
+    cleanup_finished=$SECONDS
+    cleanup_delta=$((cleanup_finished - cleanup_started))
+    [[ $- == *x* ]] && restored_xtrace_enabled=1
+    if [[ "$PS4" != "$caller_ps4" ]] || (( restored_xtrace_enabled != caller_xtrace_enabled )); then
+        printf 'FAIL: cleanup tracing did not restore caller state: mode=%s start=%s end=%s actual_delta=%s tracepath=%s\n' \
+            "$main_mode" "$cleanup_started" "$cleanup_finished" "$cleanup_delta" "$trace_path" >&2
         exit 1
-    }
+    fi
+    if (( cleanup_delta > 6 )); then
+        printf 'FAIL: startup cleanup exceeded its bounded termination grace: mode=%s start=%s end=%s actual_delta=%s tracepath=%s\n' \
+            "$main_mode" "$cleanup_started" "$cleanup_finished" "$cleanup_delta" "$trace_path" >&2
+        exit 1
+    fi
+    if [[ "$main_mode" == direct_ignoring || "$main_mode" == launcher_ignoring ]]; then
+        expected_identity_calls=2
+    else
+        expected_identity_calls=1
+    fi
+    actual_identity_calls=$(grep -Ec \
+        "^\\+STARTUP_CLEANUP_TRACE: packaged_verify_process_identity ${owned_pid} " \
+        "$trace_path" || true)
+    if (( actual_identity_calls != expected_identity_calls )); then
+        printf 'FAIL: startup cleanup identity protocol mismatch: mode=%s start=%s end=%s actual_delta=%s identity_calls=%s expected_calls=%s tracepath=%s\n' \
+            "$main_mode" "$cleanup_started" "$cleanup_finished" "$cleanup_delta" \
+            "$actual_identity_calls" "$expected_identity_calls" "$trace_path" >&2
+        exit 1
+    fi
+    printf 'PASS: startup cleanup identity protocol: mode=%s start=%s end=%s actual_delta=%s identity_calls=%s tracepath=%s\n' \
+        "$main_mode" "$cleanup_started" "$cleanup_finished" "$cleanup_delta" \
+        "$actual_identity_calls" "$trace_path"
     [[ -z "$APP_PID" && -z "$MAIN_PID" ]] || {
         echo 'FAIL: shared cleanup helper did not clear owned PIDs' >&2
         exit 1

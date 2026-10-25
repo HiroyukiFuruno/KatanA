@@ -1,3 +1,7 @@
+### 2026-10-25 起動後処理の重複identity確認を削減
+
+- [/] 31fc8817の通常pushはpreflightのstartup cleanup猶予検査で最終exit1。単独診断では再現しなかったが、外側とTERM直前で同じPIDのlsof/path/SHA確認が重複する実経路を確認した。内側のTERM直前と猶予後KILL直前の確認を維持し、直前の重複だけを除く。2秒の待機と既存3秒/6秒テスト上限は変更せず、実確認回数の回帰・通常レビュー/検証を行う。lsof遅延が元失敗の原因と確定したとは扱わない。[根拠](evidence/startup-cleanup-identity-2026-10-25.ja.md)。
+
 ### 2026-10-25 Windowsの画像監視エラーを修復
 
 - [/] 6494f8d3のReady CIはLinux全体・全3OS lint・CodeQL・供給網・Readiness成功。一方Windows UI1341成功/1失敗/既存ignore2で画像directory rename回帰が失敗した。パス情報がない欠損エラーを、実登録先のmetadataで確認できる消失だけ局所復旧へ渡す。error.kindの実値は未確定のまま、Io(NotFound)以外を隠さない。Coordinatorとnative回帰を同じ経路へ接続し、自動検証・通常レビュー/CI・公開まで継続する。[KatanA #358](https://github.com/HiroyukiFuruno/KatanA/issues/358)、[根拠](evidence/ci-windows-image-watcher-recovery-2026-10-25.ja.md)。

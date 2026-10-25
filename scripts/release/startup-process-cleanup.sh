@@ -54,8 +54,7 @@ terminate_verified_main() {
     if [[ -z "$candidate" && -n "${APP_PID:-}" ]] && launcher_is_owned_child "$APP_PID"; then
         candidate=$(packaged_find_matching_pid "$APP_PID" "$EXPECTED_EXECUTABLE" || true)
     fi
-    if [[ -n "$candidate" ]] && kill -0 "$candidate" 2>/dev/null \
-        && packaged_verify_process_identity "$candidate" "$EXPECTED_EXECUTABLE" "$EXPECTED_SHA256"; then
+    if [[ -n "$candidate" ]] && kill -0 "$candidate" 2>/dev/null; then
         startup_terminate_process "$candidate" startup_main_identity
     fi
     MAIN_PID=""
