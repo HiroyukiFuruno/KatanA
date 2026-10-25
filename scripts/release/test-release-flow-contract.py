@@ -2,8 +2,11 @@
 """Verify that local and release gates have one owner each."""
 
 from pathlib import Path
+import json
 import os
+import re
 import subprocess
+import sys
 import tempfile
 import textwrap
 import unittest
@@ -72,18 +75,98 @@ def verify_release_guidance(workflow: str, skill: str) -> None:
 def verify_document_phase_order(workflow: str) -> None:
     preflight = workflow.split("  build_macos:", 1)[0]
     publish = workflow.split("  publish:", 1)[1]
-    if "--document-source" not in preflight or " packaged-host " in preflight:
-        raise ValueError("build preflight must verify source, not unbuilt packaged evidence")
-    host_gate = publish.find('check-document-fidelity-release-gate.py "${{ needs.preflight.outputs.version_bare }}" packaged-host')
+    if "--automated-release" not in preflight or " packaged-host " in preflight:
+        raise ValueError("build preflight must use approved automatic quality without manual host evidence")
+    automatic_gate = publish.find('check-document-fidelity-release-gate.py "${{ needs.preflight.outputs.version_bare }}" automated-release')
+    asset_gate = publish.find("check-published-artifact-identity.py")
     public_commands = [publish.find(command) for command in
                        ("gh release edit", "gh release upload", "gh release create")]
-    if host_gate < 0 or any(position < 0 or host_gate > position for position in public_commands):
-        raise ValueError("packaged host acceptance must succeed before any public release")
+    if automatic_gate < 0 or asset_gate < automatic_gate or any(position < 0 or asset_gate > position for position in public_commands):
+        raise ValueError("automatic task and all-asset identity checks must succeed before public release")
+    if "--scope automated-release --phase prepublish --build-manifests ." not in publish:
+        raise ValueError("publication must verify all generated current-source payload identities")
+    if " packaged-host " in publish or "--scope katana-host" in publish:
+        raise ValueError("manual document QA cannot be an implicit publication prerequisite")
     if "needs: [preflight, build_macos, smoke_macos, build_linux, build_windows]" not in publish:
-        raise ValueError("host acceptance must follow every build and native macOS smoke")
+        raise ValueError("publication must follow every build and native macOS smoke")
+
+
+def verify_post_publication_artifact_route(workflow: str) -> None:
+    step = re.search(
+        r"(?ms)^      - name: Verify actual published release artifacts\n(.*?)(?=^      - |\Z)",
+        workflow,
+    )
+    if step is None:
+        raise ValueError("post-release readiness must execute actual published asset checks")
+    body = step.group(1)
+    required = (
+        "if: github.head_ref == 'release/v0.22.42-public-release-evidence'",
+        "repos/HiroyukiFuruno/KatanA/commits/v0.22.42",
+        'gh run list --repo HiroyukiFuruno/KatanA --workflow build-and-release.yml --commit "$tag_commit" --status success',
+        'gh run download "$build_run"',
+        "--name artifacts-identity-macos --name artifacts-identity-linux --name artifacts-identity-windows",
+        'record.get("github_run_id"), record.get("github_run_attempt"), record.get("provenance", {}).get("source_commit")',
+        "(build_run, build_attempt, tag_commit)",
+        "--scope automated-release --phase postpublication",
+        '--assets "$work/assets"',
+        '--build-manifests "$work/manifests"',
+    )
+    if any(marker not in body for marker in required):
+        raise ValueError("post-release artifacts must bind the actual tag, build run, and all five payloads")
+    if "  actions: read\n" not in workflow:
+        raise ValueError("cross-run artifact downloads need read-only Actions permission")
+    if "check-document-host" in body or "--scope katana-host" in body:
+        raise ValueError("published artifact checks must not require manual document QA")
 
 
 class WorkflowContractTests(unittest.TestCase):
+    def test_post_release_manifest_checks_execute_actual_tag_run_attempt_binding(self) -> None:
+        workflow = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")
+        match = re.search(r"<<'PY'\n(.*?)\n          PY", workflow, re.S)
+        self.assertIsNotNone(match)
+        program = textwrap.dedent(match.group(1))
+        for platform in ("macos", "linux", "windows"):
+            for field in (None, "run", "attempt", "source"):
+                with self.subTest(platform=platform, changed=field), tempfile.TemporaryDirectory() as temporary:
+                    root = Path(temporary)
+                    for name in ("macos", "linux", "windows"):
+                        record = {"github_run_id": "321", "github_run_attempt": "2",
+                                  "provenance": {"source_commit": "a" * 40}}
+                        if name == platform:
+                            if field == "run":
+                                record["github_run_id"] = "320"
+                            elif field == "attempt":
+                                record["github_run_attempt"] = "1"
+                            elif field == "source":
+                                record["provenance"]["source_commit"] = "b" * 40
+                        path = root / f"artifacts-identity-{name}/identity.json"
+                        path.parent.mkdir()
+                        path.write_text(json.dumps(record), encoding="utf-8")
+                    result = subprocess.run([sys.executable, "-B", "-c", program, str(root), "321", "2", "a" * 40],
+                                            capture_output=True, text=True, timeout=10)
+                    if field is None:
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                    else:
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn("actual tag/run/attempt", result.stderr)
+
+    def test_post_release_route_checks_real_assets_from_the_actual_tag_build(self) -> None:
+        workflow = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")
+        verify_post_publication_artifact_route(workflow)
+        for before, after in (
+            ("--phase postpublication", "--phase prepublish"),
+            ('--assets "$work/assets"', '--assets "$work"'),
+            ('--commit "$tag_commit"', "--branch master"),
+            ('gh run download "$build_run"', "gh run download"),
+            ("--name artifacts-identity-windows", ""),
+            ("(build_run, build_attempt, tag_commit)", "(build_run, build_attempt, 'unverified')"),
+            ("      - name: Verify actual published release artifacts\n        if: github.head_ref == 'release/v0.22.42-public-release-evidence'",
+             "      - name: Verify actual published release artifacts\n        if: false"),
+            ("  actions: read\n", ""),
+        ):
+            with self.subTest(marker=before), self.assertRaises(ValueError):
+                verify_post_publication_artifact_route(workflow.replace(before, after, 1))
+
     def test_native_dependency_contract_is_built_once_before_release_unit_tests(self) -> None:
         preflight = (ROOT / "scripts/release/preflight.sh").read_text(encoding="utf-8")
         build = "cargo build --locked --offline --quiet -p katana-linter --bin dependency-contract"
@@ -130,7 +213,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertNotIn("curl", coverage)
         self.assertIn("rustup component add llvm-tools-preview", coverage)
 
-    def test_post_release_host_route_retains_existing_published_release_guard(self) -> None:
+    def test_post_release_automatic_route_retains_existing_published_release_guard(self) -> None:
         check_pr_ready = (ROOT / "scripts/release/check-pr-ready.sh").read_text(
             encoding="utf-8"
         )
@@ -143,16 +226,16 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIn(
             'if [[ "$TASK_GATE_MODE" == "post-release-evidence" || '
-            '"$TASK_GATE_MODE" == "post-release-host" ]]; then',
+            '"$TASK_GATE_MODE" == "post-release-host" || "$TASK_GATE_MODE" == "post-release-automated" ]]; then',
             check_pr_ready,
         )
         self.assertIn('gh release view "v${TARGET_VERSION}"', check_pr_ready)
         self.assertIn('"v${TARGET_VERSION} draft=false prerelease=false"', check_pr_ready)
         self.assertIn('KATANA_OPENSPEC_TASK_GATE="$TASK_GATE_MODE" ./scripts/release/preflight.sh', check_pr_ready)
         self.assertEqual(run_readiness_routing(readiness, "release/v0.22.42-public-release-evidence"),
-                         ["0.22.42", "--post-release-host"])
+                         ["0.22.42", "--post-release-automated"])
 
-    def test_only_exact_fixed_release_evidence_branch_uses_post_host(self) -> None:
+    def test_only_exact_fixed_release_evidence_branch_uses_post_automated(self) -> None:
         readiness = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")
         for branch, version in (
             ("release/v0.22.42", "0.22.42"),
@@ -167,7 +250,8 @@ class WorkflowContractTests(unittest.TestCase):
             ("master", "0.22.42"),
         ):
             with self.subTest(branch=branch):
-                self.assertEqual(run_readiness_routing(readiness, branch), [version, "--pr-bootstrap"])
+                expected = "--automated-release" if version == "0.22.42" else "--pr-bootstrap"
+                self.assertEqual(run_readiness_routing(readiness, branch), [version, expected])
 
     def test_legacy_docs_evidence_route_is_unchanged(self) -> None:
         readiness = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")
@@ -180,12 +264,13 @@ class WorkflowContractTests(unittest.TestCase):
         checkout = readiness.split("uses: actions/checkout@", 1)[1].split("      - uses:", 1)[0]
         self.assertIn("with:\n          fetch-depth: 0\n", checkout)
 
-    def test_real_workflow_requires_packaged_host_before_publication(self) -> None:
+    def test_real_workflow_requires_automatic_quality_and_all_assets_before_publication(self) -> None:
         workflow = (ROOT / ".github/workflows/build-and-release.yml").read_text(encoding="utf-8")
         verify_document_phase_order(workflow)
         for altered in (
-            workflow.replace("--document-source", "--release-artifact-pending"),
-            workflow.replace(" packaged-host --root .", " source --root ."),
+            workflow.replace("--automated-release", "--release-artifact-pending"),
+            workflow.replace(" automated-release --root .", " source --root ."),
+            workflow.replace("--scope automated-release", "--scope katana-host"),
             workflow.replace("needs: [preflight, build_macos, smoke_macos, build_linux, build_windows]", "needs: preflight"),
             workflow.replace("      - name: Verify downloaded publication executable identities", "      - name: Early unsafe publication\n        run: gh release upload v0.22.42 bad.zip\n      - name: Verify downloaded publication executable identities"),
         ):

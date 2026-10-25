@@ -104,6 +104,16 @@ class PublicationIdentityTests(unittest.TestCase):
         self.assertIn("check_dmg(dmgs[0]", (root / "scripts/release/check-published-artifact-identity.py").read_text())
         self.assertIn("check_msi(assets /", (root / "scripts/release/check-published-artifact-identity.py").read_text())
 
+    def test_automatic_scope_requires_all_generated_manifests_and_no_manual_alias(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaisesRegex(ValueError, "all three build-job identity manifests"):
+                MODULE.verify(root, root, None, scope="automated-release")
+            with self.assertRaisesRegex(ValueError, "does not consume manual QA"):
+                MODULE.verify(root, root, root / "manual.json", scope="automated-release", build_manifests=root)
+            with self.assertRaisesRegex(ValueError, "unknown automated publication phase"):
+                MODULE.verify(root, root, None, scope="automated-release", build_manifests=root, phase="unknown")
+
     def test_unexpected_version_never_reports_success(self):
         script = Path(__file__).with_name("check-published-artifact-identity.py")
         result = subprocess.run([sys.executable, str(script), "--root", ".", "--assets", ".", "--version", "v0.22.43"], capture_output=True, text=True)

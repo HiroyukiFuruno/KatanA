@@ -135,6 +135,26 @@ def check_msi(path, target):
 
 
 def verify(root, assets, evidence_path, *, scope="strict", build_manifests=None, phase="prepublish"):
+    if scope == "automated-release":
+        from document_host_io import require
+        from document_host_publication import module, verify_generated
+        require(phase in {"prepublish", "postpublication"}, "unknown automated publication phase")
+        require(evidence_path is None, "automated publication does not consume manual QA evidence")
+        require(build_manifests is not None, "automated publication requires all three build-job identity manifests")
+        gate = module("_automated_release_gate", "check-document-fidelity-release-gate.py")
+        gate.verify_automated_approval(root)
+        if phase == "postpublication":
+            # 公開後docsのHEAD/runはbuildと異なるため、実tagから全5assetを新規downloadして照合する。
+            recorder = module("_automated_release_download", "record-published-artifact-download.py")
+            release, manifests = recorder.record(root, assets, build_manifests)
+            require(all(item["provenance"]["source_commit"] == release["source_commit"] for item in manifests.values()),
+                    "published build source differs from actual Release tag")
+        else:
+            builder = module("_automated_publication_source", "record-generated-artifact-identity.py")
+            source = builder.source_identity(root)
+            verify_generated(root, assets, build_manifests, source,
+                             run_id=os.environ.get("GITHUB_RUN_ID"), run_attempt=os.environ.get("GITHUB_RUN_ATTEMPT"))
+        return
     if scope == "katana-host":
         from document_host_acceptance import verify as verify_host
         from document_host_io import require
@@ -166,7 +186,7 @@ def main():
     parser.add_argument("--assets", type=Path, required=True)
     parser.add_argument("--evidence", type=Path)
     parser.add_argument("--version", required=True)
-    parser.add_argument("--scope", choices=("strict", "katana-host"), default="strict")
+    parser.add_argument("--scope", choices=("strict", "katana-host", "automated-release"), default="strict")
     parser.add_argument("--phase", choices=("prepublish", "postpublication"), default="prepublish")
     parser.add_argument("--build-manifests", type=Path)
     args = parser.parse_args()
@@ -180,12 +200,15 @@ def main():
         gate_spec = importlib.util.spec_from_file_location("release_gate", Path(__file__).with_name("check-document-fidelity-release-gate.py"))
         gate = importlib.util.module_from_spec(gate_spec)
         gate_spec.loader.exec_module(gate)
-        evidence = args.evidence or gate.tasks_evidence_path(root, host_scope=args.scope == "katana-host", phase=args.phase)
-        verify(root, args.assets.resolve(), evidence.resolve(), scope=args.scope,
+        evidence = args.evidence or (None if args.scope == "automated-release" else gate.tasks_evidence_path(root, host_scope=args.scope == "katana-host", phase=args.phase))
+        verify(root, args.assets.resolve(), evidence.resolve() if evidence is not None else None, scope=args.scope,
                build_manifests=args.build_manifests.resolve() if args.build_manifests else None, phase=args.phase)
     except (ValueError, RuntimeError, OSError, subprocess.SubprocessError, tarfile.TarError, zipfile.BadZipFile) as error:
         print(f"ERROR: publication executable identity: {error}", file=sys.stderr)
         return 1
+    if args.scope == "automated-release":
+        print("OK: all five publication payloads match current-source build manifests; manual document QA remains not verified")
+        return 0
     print("OK: all five publication payloads match " + ("their independently built source/lock/target/payload manifests; final host QA remains pending" if args.scope == "katana-host" and args.phase == "prepublish" else "the accepted main and sidecar bytes"))
     return 0
 

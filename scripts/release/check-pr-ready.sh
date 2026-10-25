@@ -18,10 +18,13 @@ header() { printf "\n${BOLD}${CYAN}==> %s${RESET}\n" "$*"; }
 
 # Expected version and task gate from arguments
 EXPECTED_VERSION=""
-TASK_GATE_MODE="strict"
+TASK_GATE_MODE=""
 for argument in "$@"; do
     case "$argument" in
         --pr-bootstrap) TASK_GATE_MODE="pr-bootstrap" ;;
+        --automated-release) TASK_GATE_MODE="automated-release" ;;
+        --post-release-automated) TASK_GATE_MODE="post-release-automated" ;;
+        --strict-document-evidence) TASK_GATE_MODE="strict" ;;
         --release-artifact-pending) TASK_GATE_MODE="release-artifact-pending" ;;
         --post-release-evidence) TASK_GATE_MODE="post-release-evidence" ;;
         --post-release-host) TASK_GATE_MODE="post-release-host" ;;
@@ -133,8 +136,17 @@ fi
 rm -f "$LOCK_CHECK_OUTPUT"
 success "Cargo.lock is synced."
 
+# 自動検証で公開する承認済み版だけを既定とし、手動証跡は明示指定に残す。
+if [[ -z "$TASK_GATE_MODE" ]]; then
+    if [[ "$TARGET_VERSION" == "0.22.42" ]]; then
+        TASK_GATE_MODE="automated-release"
+    else
+        TASK_GATE_MODE="strict"
+    fi
+fi
+
 # 5. Version increment or published-release guard
-if [[ "$TASK_GATE_MODE" == "post-release-evidence" || "$TASK_GATE_MODE" == "post-release-host" ]]; then
+if [[ "$TASK_GATE_MODE" == "post-release-evidence" || "$TASK_GATE_MODE" == "post-release-host" || "$TASK_GATE_MODE" == "post-release-automated" ]]; then
     RELEASE_STATE=$(gh release view "v${TARGET_VERSION}" \
         --repo "${KATANA_RELEASE_REPO:-HiroyukiFuruno/KatanA}" \
         --json tagName,isDraft,isPrerelease \

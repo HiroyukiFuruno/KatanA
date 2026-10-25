@@ -105,6 +105,38 @@ class DocumentFidelityReleaseGateTests(unittest.TestCase):
                     if error is not None:
                         raise error
 
+    def write_automatic_approval(self, root: Path) -> Path:
+        path = MODULE.task_file(root).parent / "evidence" / "release-goal-2026-10-24.ja.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        original = SCRIPT.parents[2] / "openspec/changes" / MODULE.CHANGE_NAME / "evidence/release-goal-2026-10-24.ja.md"
+        path.write_bytes(original.read_bytes())
+        return path
+
+    def test_automatic_modes_do_not_consume_manual_document_manifests(self) -> None:
+        for mode in ("automated-release", "post-release-automated"):
+            with self.subTest(mode=mode), self.repository(self.required_tasks_with_pending(*MODULE.SOURCE_ALLOWED)) as directory:
+                root = Path(directory)
+                self.write_automatic_approval(root)
+                self.assertFalse(MODULE.tasks_evidence_path(root).exists())
+                self.assertFalse(MODULE.tasks_evidence_path(root, host_scope=True).exists())
+                self.assertEqual(MODULE.verify("0.22.42", mode, root), 0)
+
+    def test_automatic_release_rejects_missing_or_changed_approval(self) -> None:
+        with self.repository(self.completed_required_tasks()) as directory:
+            root = Path(directory)
+            with self.assertRaisesRegex(MODULE.GateError, "approval is missing"):
+                MODULE.verify_automated_approval(root)
+            path = self.write_automatic_approval(root)
+            path.write_bytes(path.read_bytes()+b"changed")
+            with self.assertRaisesRegex(MODULE.GateError, "approval text changed"):
+                MODULE.verify_automated_approval(root)
+
+    def test_automatic_release_does_not_allow_unknown_new_tasks(self) -> None:
+        with self.repository(self.completed_required_tasks()+"- [ ] 7.99 unknown requirement\n") as directory:
+            root = Path(directory)
+            self.write_automatic_approval(root)
+            self.assertNotEqual(MODULE.verify("0.22.42", "automated-release", root), 0)
+
     def completed_required_tasks(self) -> str:
         task_ids = MODULE.CRITICAL_REQUIRED | set(
             MODULE.SOURCE_HOST_IMPLEMENTATION_MARKERS.values()

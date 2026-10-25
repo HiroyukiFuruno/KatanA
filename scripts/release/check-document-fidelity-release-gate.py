@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import re
 import subprocess
 import sys
@@ -20,7 +21,10 @@ MODES = {
     "release-artifact-pending",
     "post-release-evidence",
     "post-release-host",
+    "automated-release",
+    "post-release-automated",
 }
+AUTOMATED_APPROVAL_SHA256 = "869c552c1b10ef6c54c786c92e63cdb01de648b8e88afd15dbed7968cb6aad74"
 BOOTSTRAP_ALLOWED = {
     "1.2",
     "1.6",
@@ -129,8 +133,18 @@ def completed_task_ids(tasks: Path) -> set[str]:
     }
 
 
+def verify_automated_approval(repository_root: Path) -> None:
+    path = task_file(repository_root).parent / "evidence" / "release-goal-2026-10-24.ja.md"
+    try:
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError as error:
+        raise GateError("automated release approval is missing or unreadable") from error
+    if actual != AUTOMATED_APPROVAL_SHA256:
+        raise GateError("automated release approval text changed")
+
+
 def verify_host_implementation_markers(tasks: Path, mode: str) -> None:
-    if mode not in {"source", "packaged-host", "post-release-host"}:
+    if mode not in {"source", "packaged-host", "post-release-host", "automated-release", "post-release-automated"}:
         return
     declared = declared_task_ids(tasks)
     completed = completed_task_ids(tasks)
@@ -161,6 +175,8 @@ def run_task_checker(tasks: Path, mode: str) -> int:
         "source": SOURCE_ALLOWED,
         "packaged-host": PACKAGED_HOST_ALLOWED,
         "post-release-host": POST_RELEASE_HOST_ALLOWED,
+        "automated-release": SOURCE_ALLOWED,
+        "post-release-automated": SOURCE_ALLOWED,
     }.get(mode)
     if allowed is not None:
         for task_id in sorted(allowed):
@@ -219,9 +235,13 @@ def verify(version: str, mode: str, repository_root: Path) -> int:
             "critical release task IDs are missing from the bound change: "
             + ", ".join(missing)
         )
+    if mode in {"automated-release", "post-release-automated"}:
+        verify_automated_approval(repository_root)
     verify_host_implementation_markers(tasks, mode)
     task_result = run_task_checker(tasks, mode)
-    if task_result != 0 or mode in {"pr-bootstrap", "source"}:
+    if task_result != 0 or mode in {"pr-bootstrap", "source", "automated-release", "post-release-automated"}:
+        if task_result == 0 and mode in {"automated-release", "post-release-automated"}:
+            print("OK: automated release task contract; manual document QA is not verified and is not a publication prerequisite")
         return task_result
     if mode in {"packaged-host", "post-release-host"}:
         return run_acceptance_evidence_checker(repository_root, host_scope=True,
