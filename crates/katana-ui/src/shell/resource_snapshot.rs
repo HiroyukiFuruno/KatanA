@@ -1,4 +1,5 @@
 use super::KatanaApp;
+use super::resource_observation::{DocumentReceiptObservation, HtmlLoadedSourceObservation};
 use crate::preview_pane::{DocumentWorkerLifecycle, HtmlReceiptObservation};
 use katana_document_viewer::{DocumentResourceSnapshot, DocumentSession};
 use serde::Serialize;
@@ -39,6 +40,7 @@ pub(crate) struct HtmlSurfaceReceiptObservation {
     pub(crate) scroll_y: f32,
     pub(crate) content_height: f32,
     pub(crate) idle: bool,
+    pub(super) loaded_source: Option<HtmlLoadedSourceObservation>,
 }
 
 impl From<HtmlReceiptObservation> for HtmlSurfaceReceiptObservation {
@@ -53,6 +55,7 @@ impl From<HtmlReceiptObservation> for HtmlSurfaceReceiptObservation {
             scroll_y: value.scroll_y,
             content_height: value.content_height,
             idle: value.idle,
+            loaded_source: None,
         }
     }
 }
@@ -63,6 +66,7 @@ pub(crate) struct UiResourceSnapshot {
     pub(crate) document_workers_live: usize,
     pub(crate) kdv: DocumentResourceSnapshot,
     pub(crate) document_surfaces: Vec<DocumentSurfaceIdentity>,
+    pub(super) document_observations: Vec<DocumentReceiptObservation>,
     pub(crate) html_observations: Vec<HtmlSurfaceReceiptObservation>,
 }
 
@@ -79,6 +83,7 @@ impl UiResourceSnapshot {
             document_workers_live: DocumentWorkerLifecycle::live_count(),
             kdv: DocumentSession::resource_snapshot(),
             document_surfaces: Vec::new(),
+            document_observations: Vec::new(),
             html_observations: Vec::new(),
         };
         for preview in &app.tab_previews {
@@ -109,8 +114,20 @@ impl UiResourceSnapshot {
         let started = Instant::now();
         let (mut snapshot, _) = Self::capture(app);
         for preview in &app.tab_previews {
+            if let Some(document) = DocumentReceiptObservation::capture(&preview.pane) {
+                snapshot.document_observations.push(document);
+            }
             if let Some(observation) = preview.pane.html_browser_receipt_observation()? {
-                snapshot.html_observations.push(observation.into());
+                let document = app
+                    .state
+                    .document
+                    .open_documents
+                    .iter()
+                    .find(|document| document.path == preview.path && document.is_loaded);
+                let mut observation: HtmlSurfaceReceiptObservation = observation.into();
+                observation.loaded_source =
+                    HtmlLoadedSourceObservation::capture(document, preview.hash);
+                snapshot.html_observations.push(observation);
             }
         }
         Ok((

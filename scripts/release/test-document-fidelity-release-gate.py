@@ -467,7 +467,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
         tasks = self.required_tasks_with_pending(*MODULE.POST_RELEASE_HOST_ALLOWED)
         with self.repository(tasks, with_evidence=True, with_host_actions=True) as directory:
-            result, output = self.run_gate(Path(directory), mode="post-release-host")
+            with mock.patch.object(MODULE, "run_acceptance_evidence_checker", return_value=0) as acceptance_checker:
+                result, output = self.run_gate(Path(directory), mode="post-release-host")
+                acceptance_checker.assert_called_once_with(Path(directory), host_scope=True, phase="postpublication")
         self.assertEqual(result, 0, output)
 
     def test_post_release_host_requires_implementation_markers_for_mixed_tasks(self) -> None:
@@ -518,7 +520,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
         self.assertNotEqual(result, 0)
         self.assertIn("3.9", output)
 
-    def test_packaged_host_always_runs_strict_acceptance_evidence(self) -> None:
+    def test_packaged_host_always_runs_host_schema_acceptance_evidence(self) -> None:
         with self.repository(self.completed_required_tasks()) as directory:
             root = Path(directory)
             with mock.patch.object(
@@ -526,7 +528,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             ) as acceptance_checker:
                 result, output = self.run_gate(root, mode="packaged-host")
         self.assertEqual(result, 0, output)
-        acceptance_checker.assert_called_once_with(root, host_scope=True)
+        acceptance_checker.assert_called_once_with(root, host_scope=True, phase="prepublish")
 
     def test_packaged_host_allows_only_fixed_future_tasks_before_evidence(self) -> None:
         self.assertSetEqual(
@@ -543,7 +545,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             ) as acceptance_checker:
                 result, output = self.run_gate(root, mode="packaged-host")
         self.assertEqual(result, 0, output)
-        acceptance_checker.assert_called_once_with(root, host_scope=True)
+        acceptance_checker.assert_called_once_with(root, host_scope=True, phase="prepublish")
 
     def test_packaged_host_rejects_source_phase_pending_evidence(self) -> None:
         tasks = self.required_tasks_with_pending("1.6")
@@ -581,7 +583,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
             run["resource_cycle_sha256"] = EVIDENCE.sha256_bytes(artifact_path.read_bytes())
             evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
-            result, output = self.run_gate(root, mode="packaged-host")
+            result, output = self.run_gate(root, mode="strict")
         self.assertNotEqual(result, 0)
         self.assertIn("physical footprint", output)
 
@@ -610,7 +612,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
                 result = MODULE.run_acceptance_evidence_checker(root, host_scope=True)
                 self.assertEqual(result, 0)
                 packaged_command = run.call_args.args[0]
-                self.assertEqual(packaged_command[-2:], ["--scope", "katana-host"])
+                self.assertEqual(packaged_command[-4:], ["--scope", "katana-host", "--phase", "prepublish"])
+                self.assertIn("document-host-acceptance-v0.22.42.json", " ".join(packaged_command))
 
                 result = MODULE.run_acceptance_evidence_checker(root)
                 self.assertEqual(result, 0)
@@ -624,10 +627,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             with mock.patch.object(
                 MODULE.subprocess, "run", return_value=completed
             ) as run:
-                result = MODULE.run_acceptance_evidence_checker(root, host_scope=True)
+                result = MODULE.run_acceptance_evidence_checker(root, host_scope=True, phase="postpublication")
         self.assertEqual(result, 0)
         command = run.call_args.args[0]
-        self.assertEqual(command[-2:], ["--scope", "katana-host"])
+        self.assertEqual(command[-4:], ["--scope", "katana-host", "--phase", "postpublication"])
+        self.assertIn("document-host-published-acceptance-v0.22.42.json", " ".join(command))
 
     def test_owner_source_task_cannot_be_removed(self) -> None:
         tasks = self.completed_required_tasks().replace("- [x] 2.6 complete\n", "")
@@ -669,8 +673,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             "strict",
             "release-artifact-pending",
             "post-release-evidence",
-            "packaged-host",
-            "post-release-host",
         ):
             with self.repository(
                 self.completed_required_tasks(),
@@ -679,6 +681,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             ) as directory:
                 result, output = self.run_gate(Path(directory), mode=mode)
             self.assertEqual(result, 0, (mode, output))
+
+    def test_completed_host_tasks_do_not_turn_legacy_json_into_host_acceptance(self) -> None:
+        for mode in ("packaged-host", "post-release-host"):
+            with self.subTest(mode=mode), self.repository(self.completed_required_tasks(), with_evidence=True, with_host_actions=True) as directory:
+                result, output = self.run_gate(Path(directory), mode=mode)
+                self.assertNotEqual(result, 0, output)
+                self.assertIn("acceptance evidence", output)
 
     def test_completed_tasks_without_evidence_fail_closed(self) -> None:
         for mode in ("strict", "packaged-host", "post-release-host"):

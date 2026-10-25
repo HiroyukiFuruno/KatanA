@@ -9,6 +9,7 @@ use crate::{
     app_state::{AppAction, AppState},
     preview_pane::PreviewPane,
 };
+mod resource_observation;
 mod resource_receipt;
 mod resource_snapshot;
 mod startup_workspace;

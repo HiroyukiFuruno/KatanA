@@ -835,9 +835,19 @@ def verify_office(
         fail("Office evidence must include DOCX, XLSX, and PPTX fixtures")
 
 
-def verify(root: Path, evidence_path: Path | None = None, *, scope: str = "strict") -> None:
+def verify(root: Path, evidence_path: Path | None = None, *, scope: str = "strict", phase: str = "prepublish") -> None:
     if scope not in {"strict", "katana-host"}:
         fail("unknown acceptance scope")
+    if scope == "katana-host":
+        from document_host_acceptance import verify as verify_host
+        from document_host_io import HostEvidenceError
+        try:
+            verify_host(root, evidence_path, phase=phase)
+        except HostEvidenceError as error:
+            fail(str(error))
+        return
+    if phase != "prepublish":
+        fail("strict legacy acceptance does not use host publication phases")
     evidence_path = evidence_path or root / EVIDENCE_RELATIVE
     if not evidence_path.is_file():
         fail(f"acceptance evidence is required: {evidence_path}")
@@ -886,9 +896,10 @@ def main() -> int:
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--evidence", type=Path)
     parser.add_argument("--scope", choices=("strict", "katana-host"), default="strict")
+    parser.add_argument("--phase", choices=("prepublish", "postpublication"), default="prepublish")
     args = parser.parse_args()
     try:
-        verify(args.root.resolve(), args.evidence.resolve() if args.evidence else None, scope=args.scope)
+        verify(args.root.resolve(), args.evidence.resolve() if args.evidence else None, scope=args.scope, phase=args.phase)
     except (AcceptanceEvidenceError, OSError) as error:
         print(f"ERROR: document acceptance evidence: {error}", file=sys.stderr)
         return 1

@@ -2,6 +2,10 @@
 """Verify that local and release gates have one owner each."""
 
 from pathlib import Path
+import os
+import subprocess
+import tempfile
+import textwrap
 import unittest
 
 ROOT = Path(__file__).parents[2]
@@ -22,6 +26,29 @@ def run_blocks(workflow: str) -> list[str]:
                 body.append(following)
             blocks.append("\n".join(body))
     return blocks
+
+
+def run_readiness_routing(workflow: str, branch: str) -> list[str]:
+    commands = [block for block in run_blocks(workflow) if "./scripts/release/check-pr-ready.sh" in block]
+    if len(commands) != 1:
+        raise ValueError("readiness must have exactly one executable routing block")
+    script = textwrap.dedent("\n".join(commands[0].splitlines()[1:]))
+    with tempfile.TemporaryDirectory(prefix="katana-readiness-routing-") as temporary:
+        root = Path(temporary)
+        checker = root / "scripts/release/check-pr-ready.sh"
+        checker.parent.mkdir(parents=True)
+        checker.write_text('#!/usr/bin/env bash\nprintf \'%s\\0\' "$@" > "$ROUTING_CAPTURE"\n', encoding="utf-8")
+        checker.chmod(0o755)
+        (root / "Cargo.toml").write_text('version = "0.22.42"\n', encoding="utf-8")
+        capture = root / "recorded-arguments"
+        environment = {"PATH": os.environ["PATH"], "GITHUB_HEAD_REF": branch, "ROUTING_CAPTURE": str(capture)}
+        result = subprocess.run(["bash", "-euo", "pipefail", "-c", script], cwd=root, env=environment,
+                                check=False, capture_output=True, text=True, timeout=10)
+        if result.returncode != 0:
+            raise AssertionError(f"actual readiness routing failed: {result.stderr}")
+        if not capture.is_file():
+            raise AssertionError("actual readiness routing did not call its checker")
+        return [value.decode() for value in capture.read_bytes().split(b"\0") if value]
 
 
 def verify_workflow(workflow: str) -> None:
@@ -103,7 +130,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertNotIn("curl", coverage)
         self.assertIn("rustup component add llvm-tools-preview", coverage)
 
-    def test_post_release_host_mode_is_opt_in(self) -> None:
+    def test_post_release_host_route_retains_existing_published_release_guard(self) -> None:
         check_pr_ready = (ROOT / "scripts/release/check-pr-ready.sh").read_text(
             encoding="utf-8"
         )
@@ -119,8 +146,39 @@ class WorkflowContractTests(unittest.TestCase):
             '"$TASK_GATE_MODE" == "post-release-host" ]]; then',
             check_pr_ready,
         )
-        self.assertIn("--post-release-evidence", readiness)
-        self.assertNotIn("--post-release-host", readiness)
+        self.assertIn('gh release view "v${TARGET_VERSION}"', check_pr_ready)
+        self.assertIn('"v${TARGET_VERSION} draft=false prerelease=false"', check_pr_ready)
+        self.assertIn('KATANA_OPENSPEC_TASK_GATE="$TASK_GATE_MODE" ./scripts/release/preflight.sh', check_pr_ready)
+        self.assertEqual(run_readiness_routing(readiness, "release/v0.22.42-public-release-evidence"),
+                         ["0.22.42", "--post-release-host"])
+
+    def test_only_exact_fixed_release_evidence_branch_uses_post_host(self) -> None:
+        readiness = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")
+        for branch, version in (
+            ("release/v0.22.42", "0.22.42"),
+            ("release/v0.22.43-public-release-evidence", "0.22.43"),
+            ("release/v0.22.420-public-release-evidence", "0.22.420"),
+            ("release/v0.22.42-public-release-evidence-extra", "0.22.42"),
+            ("release/v0.22.42-public-release-evidence/task", "0.22.42"),
+            ("release/v0.22.42-PUBLIC-release-evidence", "0.22.42"),
+            ("release/v0.22.42-public-release-evidenc", "0.22.42"),
+            ("feature/v0.22.42-public-release-evidence", "0.22.42"),
+            ("docs/v0.22.42-public-release-evidence-extra", "0.22.42"),
+            ("master", "0.22.42"),
+        ):
+            with self.subTest(branch=branch):
+                self.assertEqual(run_readiness_routing(readiness, branch), [version, "--pr-bootstrap"])
+
+    def test_legacy_docs_evidence_route_is_unchanged(self) -> None:
+        readiness = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")
+        for branch in ("docs/v0.22.42-public-release-evidence", "docs/v0.22.41-public-release-evidence"):
+            with self.subTest(branch=branch):
+                self.assertEqual(run_readiness_routing(readiness, branch), ["0.22.42", "--post-release-evidence"])
+
+    def test_readiness_checkout_keeps_recorded_build_commit_available(self) -> None:
+        readiness = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")
+        checkout = readiness.split("uses: actions/checkout@", 1)[1].split("      - uses:", 1)[0]
+        self.assertIn("with:\n          fetch-depth: 0\n", checkout)
 
     def test_real_workflow_requires_packaged_host_before_publication(self) -> None:
         workflow = (ROOT / ".github/workflows/build-and-release.yml").read_text(encoding="utf-8")

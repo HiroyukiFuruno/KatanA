@@ -126,6 +126,12 @@ impl PreviewPane {
         })
     }
 
+    pub(crate) fn document_source_revision_for_receipt(&self) -> Option<&str> {
+        self.document_surface
+            .as_ref()
+            .map(|surface| surface.source.revision.as_str())
+    }
+
     pub(crate) fn document_failure_for_test(&self) -> Option<String> {
         self.document_failure
             .as_ref()

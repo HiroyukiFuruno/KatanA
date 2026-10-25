@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import os
 import shutil
 import stat
 import subprocess
@@ -133,7 +134,18 @@ def check_msi(path, target):
                 compare(digest(stream), target, field, f"MSI/{member}")
 
 
-def verify(root, assets, evidence_path):
+def verify(root, assets, evidence_path, *, scope="strict", build_manifests=None, phase="prepublish"):
+    if scope == "katana-host":
+        from document_host_acceptance import verify as verify_host
+        from document_host_io import require
+        from document_host_publication import verify_generated
+        require(build_manifests is not None, "host publication requires all three build-job identity manifests")
+        evidence = verify_host(root, evidence_path, phase=phase)
+        verify_generated(root, assets, build_manifests, evidence["provenance"],
+                         run_id=os.environ.get("GITHUB_RUN_ID"), run_attempt=os.environ.get("GITHUB_RUN_ATTEMPT"))
+        return
+    if scope != "strict":
+        raise ArtifactIdentityError("unknown publication scope")
     spec = importlib.util.spec_from_file_location("acceptance", Path(__file__).with_name("check-document-fidelity-acceptance-evidence.py"))
     acceptance = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(acceptance)
@@ -154,6 +166,9 @@ def main():
     parser.add_argument("--assets", type=Path, required=True)
     parser.add_argument("--evidence", type=Path)
     parser.add_argument("--version", required=True)
+    parser.add_argument("--scope", choices=("strict", "katana-host"), default="strict")
+    parser.add_argument("--phase", choices=("prepublish", "postpublication"), default="prepublish")
+    parser.add_argument("--build-manifests", type=Path)
     args = parser.parse_args()
     try:
         if args.version.removeprefix("v") != "0.22.42":
@@ -165,12 +180,13 @@ def main():
         gate_spec = importlib.util.spec_from_file_location("release_gate", Path(__file__).with_name("check-document-fidelity-release-gate.py"))
         gate = importlib.util.module_from_spec(gate_spec)
         gate_spec.loader.exec_module(gate)
-        evidence = args.evidence or gate.tasks_evidence_path(root)
-        verify(root, args.assets.resolve(), evidence.resolve())
+        evidence = args.evidence or gate.tasks_evidence_path(root, host_scope=args.scope == "katana-host", phase=args.phase)
+        verify(root, args.assets.resolve(), evidence.resolve(), scope=args.scope,
+               build_manifests=args.build_manifests.resolve() if args.build_manifests else None, phase=args.phase)
     except (ValueError, RuntimeError, OSError, subprocess.SubprocessError, tarfile.TarError, zipfile.BadZipFile) as error:
         print(f"ERROR: publication executable identity: {error}", file=sys.stderr)
         return 1
-    print("OK: all five publication payloads match the accepted main and sidecar bytes")
+    print("OK: all five publication payloads match " + ("their independently built source/lock/target/payload manifests; final host QA remains pending" if args.scope == "katana-host" and args.phase == "prepublish" else "the accepted main and sidecar bytes"))
     return 0
 
 

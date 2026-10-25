@@ -25,6 +25,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
       - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
           toolchain: stable
@@ -49,7 +51,9 @@ jobs:
             version="$(cat Cargo.toml | awk -F'\"' '/^version = / {print $2}')"
           fi
 
-          if [[ "${GITHUB_HEAD_REF}" == docs/v*-public-release-evidence ]]; then
+          if [[ "${GITHUB_HEAD_REF}" == release/v0.22.42-public-release-evidence ]]; then
+            ./scripts/release/check-pr-ready.sh "$version" --post-release-host
+          elif [[ "${GITHUB_HEAD_REF}" == docs/v*-public-release-evidence ]]; then
             ./scripts/release/check-pr-ready.sh "$version" --post-release-evidence
           else
             ./scripts/release/check-pr-ready.sh "$version" --pr-bootstrap

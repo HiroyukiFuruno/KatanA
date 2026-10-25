@@ -173,7 +173,7 @@ def run_task_checker(tasks: Path, mode: str) -> int:
     return result.returncode
 
 
-def run_acceptance_evidence_checker(repository_root: Path, *, host_scope: bool = False) -> int:
+def run_acceptance_evidence_checker(repository_root: Path, *, host_scope: bool = False, phase: str = "prepublish") -> int:
     checker = Path(__file__).with_name("check-document-fidelity-acceptance-evidence.py")
     command = [
         sys.executable,
@@ -181,10 +181,10 @@ def run_acceptance_evidence_checker(repository_root: Path, *, host_scope: bool =
         "--root",
         str(repository_root),
         "--evidence",
-        str(tasks_evidence_path(repository_root)),
+        str(tasks_evidence_path(repository_root, host_scope=host_scope, phase=phase)),
     ]
     if host_scope:
-        command.extend(("--scope", "katana-host"))
+        command.extend(("--scope", "katana-host", "--phase", phase))
     result = subprocess.run(
         command,
         capture_output=True,
@@ -198,9 +198,12 @@ def run_acceptance_evidence_checker(repository_root: Path, *, host_scope: bool =
     return result.returncode
 
 
-def tasks_evidence_path(repository_root: Path) -> Path:
+def tasks_evidence_path(repository_root: Path, *, host_scope: bool = False, phase: str = "prepublish") -> Path:
     tasks = task_file(repository_root)
-    return tasks.parent / "evidence" / "document-acceptance-v0.22.42.json"
+    filename = "document-host-acceptance-v0.22.42.json" if host_scope else "document-acceptance-v0.22.42.json"
+    if host_scope and phase == "postpublication":
+        filename = "document-host-published-acceptance-v0.22.42.json"
+    return tasks.parent / "evidence" / filename
 
 
 def verify(version: str, mode: str, repository_root: Path) -> int:
@@ -221,7 +224,8 @@ def verify(version: str, mode: str, repository_root: Path) -> int:
     if task_result != 0 or mode in {"pr-bootstrap", "source"}:
         return task_result
     if mode in {"packaged-host", "post-release-host"}:
-        return run_acceptance_evidence_checker(repository_root, host_scope=True)
+        return run_acceptance_evidence_checker(repository_root, host_scope=True,
+                                               phase="postpublication" if mode == "post-release-host" else "prepublish")
     evidence_result = run_acceptance_evidence_checker(repository_root)
     return evidence_result
 

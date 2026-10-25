@@ -121,6 +121,7 @@ fn receipt_preserves_html_adapter_identity_and_raw_geometry() {
             scroll_y: 48.5,
             content_height: 2_048.0,
             idle: true,
+            loaded_source: None,
         });
 
     receipt.record(observed, 12);

@@ -344,7 +344,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             mutate(root, evidence, pptx)
             self.write_evidence(root, evidence)
             with self.assertRaises(MODULE.AcceptanceEvidenceError):
-                MODULE.verify(root, scope="katana-host")
+                MODULE.verify_office(root, evidence["office_fixtures"], evidence["packaged_targets"], host_scope=True)
 
     def test_valid_evidence_passes(self) -> None:
         with self.repository() as directory:
@@ -1075,7 +1075,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             lambda evidence: evidence["office_fixtures"][0].update(first_frame_ms=15000.001)
         )
 
-    def test_host_scope_allows_only_approved_pptx_first_frame_miss(self) -> None:
+    def test_shared_office_validator_allows_only_approved_pptx_first_frame_miss(self) -> None:
         with self.repository() as directory:
             root = Path(directory)
             evidence = self.valid_evidence(root)
@@ -1083,7 +1083,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
             self.write_evidence(root, evidence)
             with self.assertRaises(MODULE.AcceptanceEvidenceError):
                 MODULE.verify(root)
-            MODULE.verify(root, scope="katana-host")
+            MODULE.verify_office(root, evidence["office_fixtures"], evidence["packaged_targets"], host_scope=True)
+
+    def test_host_entrypoint_does_not_accept_the_legacy_strict_schema(self) -> None:
+        with self.repository() as directory:
+            root = Path(directory)
+            evidence = self.valid_evidence(root)
+            self.write_evidence(root, evidence)
+            with self.assertRaises(MODULE.AcceptanceEvidenceError):
+                MODULE.verify(root, scope="katana-host")
 
     def test_host_scope_rejects_pptx_disposition_outside_exact_boundary(self) -> None:
         def unknown(root, evidence, pptx):
