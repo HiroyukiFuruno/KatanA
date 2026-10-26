@@ -4,6 +4,10 @@ use std::thread::JoinHandle;
 
 use super::request::IntakeRequest;
 
+#[cfg(test)]
+#[path = "local_intake_pool_tests.rs"]
+mod tests;
+
 pub(super) const WORKER_LIMIT: usize = 2;
 pub(super) const QUEUE_LIMIT: usize = 64;
 

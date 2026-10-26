@@ -1,3 +1,19 @@
+### 2026-10-26 macOS coverageのFIFO容量fixture競合を修復する
+
+- [/] source328のCI40256001313はMac coverageの実テストで失敗。FIFO writer接続後も正当に早期取消・枠返却できる順序を旧fixtureが誤って必須容量エラーに固定していた。製品処理・元5秒・容量/終端/回復assertを維持し、private pool単体の決定的容量検査と実FIFO取消の厳密な期限内終端・原本照合を分離する。通常ローカル成功を実CIのRED否定や再実行免除にせず、修復/対象回帰/独立レビュー/通常統合/新CI/公開を継続する。[根拠](evidence/macos-fifo-capacity-race-2026-10-26.ja.md)。
+
+### 2026-10-26 公開後の証跡更新と通常hookのphaseを整合する
+
+- [/] 固定postpub枝のCIはpost-release-automatedだが、通常pre-push/pre-prはpr-bootstrapのまま公開前version guardへ進み、公開後latest==target時に拒否する不足を一次sourceと実引数unitで確認。公開後のcontroller変更は公開物とのsource来歴差になるため、公開前に最小pure selectorとcallerの選択順序を整える。固定枝/target.42/空またはbootstrapだけを既存post modeへ振り分け、普通の版増分・公開済stable確認・全5asset検証と各quality条件を維持する。mock IT/新testport/hook迂回を追加せず、実入力unit/real Gitの拒否回帰・通常統合/新review/CI/公開後実検査まで継続する。[根拠](evidence/postpublication-bootstrap-routing-2026-10-26.ja.md)。
+
+### 2026-10-26 Readiness終了処理回帰の時間超過を観測する
+
+- [/] source151のReadiness40241669703は実プロセス回帰launcher_ignoringがstart5/end12/delta7となり、元6秒条件で不合格。保存traceの時刻と内容を失敗ログから回収できない不足を修復し、Bash組込みSECONDSの各command時刻と計測終了後のtrace出力を追加する。製品・cleanup helper・元2秒/6秒・4ケース・identity1/1/2/2・無関係PID生存・実child/launcher消失・caller状態復元を維持する。ローカル既存回帰の旧新成功や時刻行追加はクラウド時間超過の原因解消と扱わず、通常統合・新current review/必須CI・実配布検査を継続する。[根拠](evidence/readiness-cleanup-timing-2026-10-26.ja.md)。
+
+### 2026-10-26 Windowsの単発不一致と実処理区間の切り分け
+
+- [/] sourcecc3の全OS公開run40226774883はLinux配布版・macOS両arch起動成功、Windowsは元200ms観測の5→5で不合格。catchでframe7へ進んでおり恒久停止とは断定しない。既存heartbeatとDEBUG=trueが両方有効な診断時だけ実App::ui区間・前フレームCPU時間・viewportとheartbeat記録処理時間を計測し、KatanA内処理と描画基盤の責任を判別する。counter bytes・記録位置・100ms予約・200ms×10回・元品質条件は不変。限定計測を実装し実child回帰6件・AST30件・fmt/impacted lint/diffは成功したが、通常commit/push・新current review/全CI・実native検査と原因判定は未完として継続する。[根拠](evidence/windows-packaged-heartbeat-2026-10-25.ja.md)。
+
 ### 2026-10-26 Windows実配布の再不合格と観測不足
 
 - [/] record-every-frame修復後のsource5cb / Windows job121228922985も、既存観測でframe7→7・exit1。mainのtracing stdoutを起動stepが保存していない不足を補い、製品・元の測定条件を変えずに失敗後の同PID/heartbeat/既存traceを保存する。元workflowの不足RED1、startup契約/全OS契約4件/bash/diff各0、公式Linux/amd64 PowerShell7.4.2で抽出本文のParser.ParseFileは構文有効・exit0。Windows native成功とは区別し、通常review/CI・次の実原因判定へ続ける。[根拠](evidence/windows-packaged-heartbeat-2026-10-25.ja.md)。

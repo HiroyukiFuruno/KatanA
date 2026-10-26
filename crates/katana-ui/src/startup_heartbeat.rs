@@ -1,12 +1,115 @@
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::Instant;
 
 static HEARTBEAT_FRAME: AtomicU64 = AtomicU64::new(0);
 
 pub(crate) struct StartupHeartbeat;
 
+pub(crate) struct StartupFrameDiagnostics {
+    started_at: Instant,
+    cumulative_pass_nr: u64,
+    prepared_at: Option<Instant>,
+    panels_at: Option<Instant>,
+}
+
 impl StartupHeartbeat {
     pub(crate) fn is_enabled() -> bool {
         std::env::var_os("KATANA_STARTUP_HEARTBEAT").is_some()
+    }
+
+    pub(crate) fn begin_frame(
+        ctx: &eframe::egui::Context,
+        frame: &eframe::Frame,
+    ) -> Option<StartupFrameDiagnostics> {
+        if !Self::is_enabled() || !crate::debug_log::DebugLog::is_enabled() {
+            return None;
+        }
+
+        let viewport = ctx.viewport_rect();
+        let content = ctx.content_rect();
+        let (viewport_minimized, viewport_occluded, viewport_focused) = ctx.input(|input| {
+            let viewport = input.viewport();
+            (viewport.minimized, viewport.occluded, input.focused)
+        });
+        let started_at = Instant::now();
+        let cumulative_pass_nr = ctx.cumulative_pass_nr();
+        tracing::info!(
+            event = "startup_heartbeat_frame_begin",
+            cumulative_pass_nr,
+            previous_cpu_usage = ?frame.info().cpu_usage,
+            viewport_id = ?ctx.viewport_id(),
+            viewport_width_points = viewport.width(),
+            viewport_height_points = viewport.height(),
+            content_width_points = content.width(),
+            content_height_points = content.height(),
+            pixels_per_point = ctx.pixels_per_point(),
+            viewport_minimized = ?viewport_minimized,
+            viewport_occluded = ?viewport_occluded,
+            viewport_focused = ?viewport_focused,
+            heartbeat_frame = HEARTBEAT_FRAME.load(Ordering::Relaxed) + 1,
+            repaint_causes = ?ctx.repaint_causes(),
+            "startup heartbeat frame begin"
+        );
+
+        Some(StartupFrameDiagnostics {
+            started_at,
+            cumulative_pass_nr,
+            prepared_at: None,
+            panels_at: None,
+        })
+    }
+
+    pub(crate) fn mark_prepared(diagnostics: &mut Option<StartupFrameDiagnostics>) {
+        if let Some(diagnostics) = diagnostics {
+            diagnostics.prepared_at = Some(Instant::now());
+        }
+    }
+
+    pub(crate) fn mark_panels(diagnostics: &mut Option<StartupFrameDiagnostics>) {
+        if let Some(diagnostics) = diagnostics {
+            diagnostics.panels_at = Some(Instant::now());
+        }
+    }
+
+    pub(crate) fn record_completed_frame_with_diagnostics(
+        diagnostics: Option<StartupFrameDiagnostics>,
+    ) {
+        let Some(diagnostics) = diagnostics else {
+            Self::record_completed_frame();
+            return;
+        };
+
+        let heartbeat_started_at = Instant::now();
+        Self::record_completed_frame();
+        let heartbeat_finished_at = Instant::now();
+        let ui_elapsed_us = heartbeat_started_at
+            .duration_since(diagnostics.started_at)
+            .as_micros() as u64;
+        let prepared_elapsed_us = diagnostics
+            .prepared_at
+            .map(|at| at.duration_since(diagnostics.started_at).as_micros() as u64);
+        let panels_elapsed_us = diagnostics
+            .panels_at
+            .map(|at| at.duration_since(diagnostics.started_at).as_micros() as u64);
+        let heartbeat_record_us = heartbeat_finished_at
+            .duration_since(heartbeat_started_at)
+            .as_micros() as u64;
+        let frame_elapsed_us = heartbeat_finished_at
+            .duration_since(diagnostics.started_at)
+            .as_micros() as u64;
+        let heartbeat_frame = HEARTBEAT_FRAME.load(Ordering::Relaxed);
+        tracing::info!(
+            event = "startup_heartbeat_frame_end",
+            cumulative_pass_nr = diagnostics.cumulative_pass_nr,
+            ui_elapsed_us,
+            frame_elapsed_us,
+            prepared_elapsed_us,
+            panels_elapsed_us,
+            heartbeat_record_called = true,
+            heartbeat_record_us,
+            heartbeat_frame,
+            "startup heartbeat frame end"
+        );
     }
 
     pub(crate) fn record_completed_frame() {

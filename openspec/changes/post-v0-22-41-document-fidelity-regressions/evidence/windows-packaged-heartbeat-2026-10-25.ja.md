@@ -51,3 +51,27 @@ mainのtracing subscriberは標準出力へ書く一方、Windows起動stepは�
 抽出したPowerShell本文は公式image `mcr.microsoft.com/powershell@sha256:73c08403182e3cd1a62176b6723645b2d2037cda8deefc0e2c2c01cb814abe43` のLinux/amd64 PowerShell7.4.2で `Parser.ParseFile` が構文有効・exit0。これはLinux上の構文検証で、実Windows起動の代用ではない。抽出本文SHA256は `b971aa04faba93ea546dca65984dcba2bed7e7d25023401db09115563ccbe70a`、結果は `tmp/oct26-windows-startup-diagnostics-result.md` と各実ログへ保存した。
 
 対象source SHA256はworkflow `8cf51a91eed6768a793add3875a5d55c92af09c7700f1fbfaff8b63f6249f875`、startup契約 `6894089f9136903ec2b623d95d6e592b314a69bd4c415908e4fc7bacd4058994`。新current review/CI、実原因の確定・必要な修復・新native成功・公開は未完であり、この診断追加だけでIssue364を解決済みにしない。
+
+## stdout採取後の実不合格と判定後の進行
+
+`47aaf0a4`の[CI40219989777](https://github.com/HiroyukiFuruno/KatanA/actions/runs/40219989777)全8件・[Readiness40219989759](https://github.com/HiroyukiFuruno/KatanA/actions/runs/40219989759)成功と、current review未解決0を確認して[PR366](https://github.com/HiroyukiFuruno/KatanA/pull/366)を通常mergeした。署名済みmerge `cc3ce216e1e61609f4a3d1545539f712f765b8e9`は元headと完全Git treeが一致し、同sourceのmaster-push CI40226737424も全3OS成功した。
+
+そのsourceの[全OS公開run40226774883 / Windows job121272480973](https://github.com/HiroyukiFuruno/KatanA/actions/runs/40226774883/job/121272480973)は配布起動で再びexit1となった。実際の失敗値は`last_frame=5; current_frame=5`であり、例外がログへ出た`20:22:27.523Z`は診断・finallyの後の報告時刻である。200ms観測とpredicate評価の正確な時刻は元ログにない。
+
+catchの最初の出力は`20:22:26.776Z`。そこで採取したheartbeatのmtimeは`20:22:26.771Z`、`20:22:27.044Z`のrawは`frame=7`だった。プロセスは`HasExited=false`、window handleとtitleが存在し、`Responding=true`だった。したがって、今回アプリが失敗サンプル後も進行したことは確認できる。最終bundleのframe7を失敗値と取り違えず、この不合格を恒久的なアプリ停止と断定しない。一方、既存の200msごとの進行条件に不合格だった事実は保持する。
+
+採取stdoutではDx12のCPUソフトウェア描画`Microsoft Basic Render Driver`が選択されていた。再描画callbackは継続しているが、eframeのイベントログは同期paintの前にも出るため、その間隔をKatanAの`App::ui`実行時間やGPU完了時間とは呼べない。UI処理・native描画・resize等の時間内訳は未観測であり、解像度・backend変更や待機延長を根拠なしに修復としない。次の計測は既存heartbeatと`DEBUG=true`が両方有効な診断時だけの実UI区間・前フレームCPU時間・viewport状態・heartbeat記録処理時間を対象とし、元counter・出力bytes・100ms再描画予約・200ms×10回・各品質条件を維持する。
+
+実診断artifactは[12611739828](https://github.com/HiroyukiFuruno/KatanA/actions/runs/40226774883/artifacts/12611739828)、PowerShellは7.6.7。rawは`tmp/oct26-cc3-windows-failure.log`、展開先は`tmp/oct26-cc3-windows-startup-diagnostics/`、独立タイムラインは`tmp/oct26-cc3-windows-timeline.md`（SHA256 `d5437c3718fd5bdc27e25f9b53cc2712e6ecfc261869663791658e45ee556ca4`）、原因判定の境界は`tmp/oct26-cc3-windows-native-diagnosis.md`へ記録した。
+
+同runのLinux配布版とmacOS両archのnative検査は成功したが、Publishとcleanupはskipped。root watchは実exit1を回収し、`tmp/oct26-cc3-terminal-publication-state.json`でtag/Release404を確認した。未公開のままであり、診断採取・通常CI成功・他OS成功をWindows合格や公開完了の代わりにしない。
+
+## 実UI区間の限定計測と対象検証
+
+既存heartbeatと`DEBUG=true`が両方有効な場合だけ、実`App::ui`の入口付近と元のheartbeat記録位置に最大2件のstructured recordを追加した。`poll_and_prepare`後とpanel表示後の時刻は保持して終了時にまとめ、逐次ログを増やさない。begin/endはheartbeat番号とeguiの`cumulative_pass_nr`で対応を確認する。通常の診断OFFではclock取得・viewport取得・追加ログを行わず、DEBUGがなくても元のheartbeat記録は維持する。
+
+`prepared_elapsed_us`と`panels_elapsed_us`は入口付近からの累積値であり、各区間の単独時間ではない。`ui_elapsed_us`は元heartbeat呼出し直前まででbeginログの観測負荷を含む。`heartbeat_record_us`は既存記録関数1回の前後を固定Instantで挟んだ値で、環境変数参照・counter・文字列生成・ファイル書込み等を含み、write syscallだけの時間とは呼ばない。`previous_cpu_usage`はeframeが提供する前フレームのUIとrenderのCPU時間（秒、vsync待機を除外）であり、現在フレームのGPU完了時間ではない。viewport/content寸法はpoint単位と明示し、pixels-per-point・最小化/遮蔽状態・前passの再描画要求元も記録する。
+
+実child・実tracing・実ファイルを使う対象検査は6件成功。ONのTerms経路で元のframe進行・未同意状態・begin/endの同じframe/pass・時刻の順序を検査し、heartbeat無し/DEBUG有効とheartbeat有り/DEBUG無しのOFF経路では追加ログがないことを検査した。後者でも元の`first-frame\nframe=1\n`を確認した。`just ast-lint`は30件成功、fmt・impacted lint・diff checkもexit0。結果は`tmp/oct26-windows-ui-phase-target-pass-id.log`、`tmp/oct26-windows-ui-phase-ast-final.log`、`tmp/oct26-windows-ui-phase-lint-final.log`。
+
+`tmp/oct26-ui-phase-source-identity.json`で、元`record_completed_frame`本文のbyte一致と、公開workflow SHA256 `8cf51a91eed6768a793add3875a5d55c92af09c7700f1fbfaff8b63f6249f875`・固定goal SHA256の不変を確認した。対象検査とソース比較は新HEADのCI・native結果の流用を許可するものではない。追加計測の実装を原因修復と呼ばず、通常commit/push・新current review/全CI・実Windows検査で時間内訳の回収を続ける。
