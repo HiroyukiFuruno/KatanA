@@ -114,6 +114,10 @@ assert_build_linux_step_contains 'Verify software Vulkan adapter' 'LIBGL_ALWAYS_
 assert_build_linux_step_contains 'Verify software Vulkan adapter' 'xvfb-run -a vulkaninfo --summary'
 assert_build_linux_step_contains 'Smoke launch packaged Linux app' 'lvp_icd=$(find /usr/share/vulkan/icd.d'
 assert_build_linux_step_contains 'Smoke launch packaged Linux app' 'export LIBGL_ALWAYS_SOFTWARE=1 VK_DRIVER_FILES="$lvp_icd" WGPU_BACKEND=vulkan'
+assert_build_linux_step_contains 'Smoke launch packaged Linux app' 'id: linux_startup_smoke'
+assert_build_linux_step_contains 'Upload Linux startup diagnostics' "if: failure() && steps.linux_startup_smoke.outcome == 'failure'"
+assert_build_linux_step_contains 'Upload Linux startup diagnostics' 'tmp/trash/*-startup.*/heartbeat.txt'
+assert_build_linux_step_contains 'Upload Linux startup diagnostics' 'tmp/trash/*-startup.*/startup.log'
 assert_contains "$WORKFLOW" 'cd "$APP_DIR"'
 assert_contains "$WORKFLOW" 'cd "$TEMP_DIR"'
 assert_contains "$WORKFLOW" 'Start-Process -FilePath $expectedExecutable -WorkingDirectory $directory'
