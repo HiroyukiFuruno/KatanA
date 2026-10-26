@@ -1,3 +1,7 @@
+### 2026-10-26 macOS coverageのFIFO容量fixture競合を修復する
+
+- [/] source328のCI40256001313はMac coverageの実テストで失敗。FIFO writer接続後も正当に早期取消・枠返却できる順序を旧fixtureが誤って必須容量エラーに固定していた。製品処理・元5秒・容量/終端/回復assertを維持し、private pool単体の決定的容量検査と実FIFO取消の厳密な期限内終端・原本照合を分離する。通常ローカル成功を実CIのRED否定や再実行免除にせず、修復/対象回帰/独立レビュー/通常統合/新CI/公開を継続する。[根拠](evidence/macos-fifo-capacity-race-2026-10-26.ja.md)。
+
 ### 2026-10-26 公開後の証跡更新と通常hookのphaseを整合する
 
 - [/] 固定postpub枝のCIはpost-release-automatedだが、通常pre-push/pre-prはpr-bootstrapのまま公開前version guardへ進み、公開後latest==target時に拒否する不足を一次sourceと実引数unitで確認。公開後のcontroller変更は公開物とのsource来歴差になるため、公開前に最小pure selectorとcallerの選択順序を整える。固定枝/target.42/空またはbootstrapだけを既存post modeへ振り分け、普通の版増分・公開済stable確認・全5asset検証と各quality条件を維持する。mock IT/新testport/hook迂回を追加せず、実入力unit/real Gitの拒否回帰・通常統合/新review/CI/公開後実検査まで継続する。[根拠](evidence/postpublication-bootstrap-routing-2026-10-26.ja.md)。

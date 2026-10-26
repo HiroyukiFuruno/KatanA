@@ -1,10 +1,14 @@
 use super::{LocalDocumentIntake, pool::IntakePool};
 use crate::preview_pane::PreviewPane;
+use katana_core::document_source::BinaryDocumentFormat;
 use katana_core::system::ProcessService;
 use std::os::unix::fs::OpenOptionsExt;
 
 const CHILD_ENV: &str = "KATANA_INTAKE_CAPACITY_CHILD";
 const TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
+const REGULAR_PDF: &[u8] = include_bytes!(
+    "../../../../../scripts/screenshot/fixtures/v0-22-38-multi-format/representative.pdf"
+);
 
 #[test]
 fn cancelled_fifo_reads_terminate_pending_requests_and_recover_capacity() {
@@ -85,11 +89,10 @@ fn fifo_capacity_child() {
             .capacity_failure_cause(&active[0].request)
             .is_none()
     );
-    queued.poll_document_intake(&eframe::egui::Context::default());
-    assert_capacity_failure(&queued);
+    settle_intake(&mut queued, &regular, "queued");
     let mut later = PreviewPane::default();
     later.full_render_document_path(&regular, false);
-    assert_capacity_failure(&later);
+    settle_intake(&mut later, &regular, "later");
     assert!(IntakePool::global().failure_cause().is_none());
     drop(active);
     /* WHY: 取消前に接続したwriterを閉じ、read待機へEOFを通知する。 */
@@ -112,13 +115,7 @@ fn create_inputs(
                 .success()
         );
     }
-    std::fs::write(
-        regular,
-        include_bytes!(
-            "../../../../../scripts/screenshot/fixtures/v0-22-38-multi-format/representative.pdf"
-        ),
-    )
-    .unwrap();
+    std::fs::write(regular, REGULAR_PDF).unwrap();
     fifos
 }
 
@@ -138,7 +135,7 @@ fn occupy_reads(fifos: &[std::path::PathBuf]) -> Vec<LocalDocumentIntake> {
     active
 }
 
-fn assert_capacity_failure(pane: &PreviewPane) {
+fn assert_capacity_failure(pane: &PreviewPane, phase: &str) {
     assert!(pane.document_intake.is_none());
     assert!(!pane.is_loading);
     let failure = pane
@@ -146,7 +143,44 @@ fn assert_capacity_failure(pane: &PreviewPane) {
         .as_ref()
         .expect("terminal capacity failure");
     assert_eq!(failure.operation, "start intake");
-    assert!(failure.cause.contains("occupied by cancelled reads"));
+    assert!(
+        failure.cause.contains("occupied by cancelled reads"),
+        "{phase} intake failure was not a capacity failure: {failure:?}"
+    );
+}
+
+fn settle_intake(pane: &mut PreviewPane, regular: &std::path::Path, phase: &str) {
+    let expected_revision = super::super::source_io::revision(REGULAR_PDF);
+    let deadline = std::time::Instant::now() + TIMEOUT;
+    loop {
+        pane.poll_document_intake(&eframe::egui::Context::default());
+        if pane.document_intake.is_none() {
+            if pane.document_failure.is_some() {
+                assert_capacity_failure(pane, phase);
+            } else {
+                let surface = pane
+                    .document_surface
+                    .as_ref()
+                    .expect("successful intake creates a document surface");
+                assert!(!pane.is_loading);
+                assert_eq!(
+                    surface.source.uri,
+                    url::Url::from_file_path(regular.canonicalize().unwrap())
+                        .unwrap()
+                        .to_string()
+                );
+                assert_eq!(surface.source.format, BinaryDocumentFormat::Pdf);
+                assert_eq!(surface.source.mime, BinaryDocumentFormat::Pdf.mime());
+                assert_eq!(surface.source.revision, expected_revision);
+            }
+            return;
+        }
+        assert!(
+            std::time::Instant::now() < deadline,
+            "intake did not reach a terminal result"
+        );
+        std::thread::yield_now();
+    }
 }
 
 fn wait_for_fifo_reader(
@@ -194,6 +228,19 @@ fn cancellation_before_fifo_open_returns_a_bounded_rendezvous_failure() {
     assert_eq!(error.kind(), std::io::ErrorKind::NotFound);
 }
 
+#[test]
+fn uncontended_regular_pdf_intake_reaches_surface() {
+    let directory = tempfile::tempdir().unwrap();
+    let regular = directory.path().join("uncontended.pdf");
+    std::fs::write(&regular, REGULAR_PDF).unwrap();
+    let mut pane = PreviewPane::default();
+    pane.full_render_document_path(&regular, false);
+
+    settle_intake(&mut pane, &regular, "uncontended");
+    assert!(pane.document_failure.is_none());
+    assert!(pane.document_surface.is_some());
+}
+
 fn wait_for_reads_to_finish() {
     let deadline = std::time::Instant::now() + TIMEOUT;
     while !IntakePool::global()
@@ -209,8 +256,9 @@ fn wait_for_reads_to_finish() {
 }
 
 fn verify_recovered_read(regular: &std::path::Path) {
+    let expected_revision = super::super::source_io::revision(REGULAR_PDF);
     let pending = LocalDocumentIntake::start(regular.to_path_buf(), false).unwrap();
-    let super::super::source_revision::IntakeOutcome::Loaded(source) = pending
+    let super::super::source_revision::IntakeOutcome::Loaded(mut source) = pending
         .result
         .recv_timeout(TIMEOUT)
         .unwrap()
@@ -224,4 +272,8 @@ fn verify_recovered_read(regular: &std::path::Path) {
             .unwrap()
             .to_string()
     );
+    assert_eq!(source.format, BinaryDocumentFormat::Pdf);
+    assert_eq!(source.mime, BinaryDocumentFormat::Pdf.mime());
+    assert_eq!(source.revision, expected_revision);
+    assert_eq!(source.take_bytes().unwrap(), REGULAR_PDF);
 }
