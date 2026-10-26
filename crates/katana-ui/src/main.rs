@@ -26,6 +26,7 @@ use katana_ui::app_state::AppState;
 #[cfg(not(test))]
 use katana_ui::shell::KatanaApp;
 
+mod native_graphics;
 #[cfg(not(test))]
 mod window_setup;
 #[cfg(not(test))]
@@ -65,7 +66,7 @@ fn main() -> eframe::Result<()> {
     let cache = std::sync::Arc::new(katana_platform::DefaultCacheService::default());
     let state = AppState::new(ai_registry, plugin_registry, settings, cache);
 
-    let native_options = eframe::NativeOptions {
+    let mut native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_title("KatanA")
             .with_icon(load_icon())
@@ -75,6 +76,7 @@ fn main() -> eframe::Result<()> {
         centered: true,
         ..Default::default()
     };
+    native_graphics::NativeGraphicsOps::configure_presentation(&mut native_options);
 
     eframe::run_native(
         "KatanA",

@@ -1,3 +1,7 @@
+### 2026-10-27 Windows の描画同期待ちを減らす候補を検証する
+
+- [ ] 同一 M 配布物の Server2022 比較は元 smoke に合格したが、実 frame 間隔は中央値298.053msで、元 Server2025 の274.240msと同様に約300msだった。合格 host へ変更して済ませず、Windows の既存自動表示方式 AutoNoVsync を最小候補として検証する。最大待機frame1・他OS既定値・元200ms×10と全予算は維持。bin対象1件/strictClippy/fmt/独立レビュー成功、合格時にも描画記録を残す3行追加以外の元smoke完全一致・比較6契約成功を確認した。通常commit/push・current review・全CI・実配布記録は継続し、候補を待機開始APIの確定や改善済みとは扱わない。[根拠](evidence/windows-presentation-sync-candidate-2026-10-27.ja.md)。
+
 ### 2026-10-27 配布起動の記録読取失敗を切り分ける
 
 - [/] source d2b78cef の正式公開 run40388796186 は Linux 配布起動で描画番号の読取に失敗した。記録ファイルの truncate 中に空読みが起きる独立不具合を実ファイルで再現し、完成済み一時ファイルの同一ディレクトリ置換へ補正する。失敗時の記録・ログだけを回収する契約は旧 source で RED、補正後の既存契約・release flow 20件・actionlint は成功。元 200ms/10回・全予算・全OS公開条件を維持する。今回の Linux 失敗の原因確定、新 source の通常検査・current review・実配布受入と公開は未完。[根拠](evidence/startup-heartbeat-atomic-publication-2026-10-27.ja.md)。
