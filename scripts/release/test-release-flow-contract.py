@@ -5,6 +5,7 @@ from pathlib import Path
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -120,6 +121,93 @@ def verify_post_publication_artifact_route(workflow: str) -> None:
 
 
 class WorkflowContractTests(unittest.TestCase):
+    def run_check_pr_ready_fixture(self, branch: str, cargo_version: str) -> subprocess.CompletedProcess[str]:
+        # hook由来のGit環境や個人設定を隔離し、fixtureの操作が実作業repoへ向かないようにする。
+        environment = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+        environment["GIT_CONFIG_NOSYSTEM"] = "1"
+        environment["GIT_CONFIG_GLOBAL"] = os.devnull
+        environment["GITHUB_ACTIONS"] = "false"
+        temporary_root = ROOT / "tmp"
+        temporary_root.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix="katana-readiness-selector-", dir=temporary_root) as temporary:
+            root = Path(temporary)
+            subprocess.run(
+                ["git", "init", "--quiet", "--initial-branch", branch, str(root)],
+                check=True,
+                capture_output=True,
+                text=True,
+                env=environment,
+            )
+            release = root / "scripts/release"
+            release.mkdir(parents=True)
+            for name in ("check-pr-ready.sh", "extract-release-branch-version.sh", "select-pr-readiness-mode.sh"):
+                shutil.copy2(ROOT / "scripts/release" / name, release / name)
+                (release / name).chmod(0o755)
+            (root / "Cargo.toml").write_text(f'[package]\nname = "fixture"\nversion = "{cargo_version}"\n', encoding="utf-8")
+            return subprocess.run(
+                ["bash", "scripts/release/check-pr-ready.sh", "--pr-bootstrap"],
+                cwd=root,
+                env=environment,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+
+    def test_private_readiness_mode_selector_matrix(self) -> None:
+        selector = "scripts/release/select-pr-readiness-mode.sh"
+        matrix = (
+            ("release/v0.22.42-public-release-evidence", "0.22.42", "", "post-release-automated"),
+            ("release/v0.22.42-public-release-evidence", "0.22.42", "pr-bootstrap", "post-release-automated"),
+            ("release/v0.22.42-public-release-evidence", "0.22.42", "strict", "strict"),
+            ("release/v0.22.42-public-release-evidence", "0.22.42", "automated-release", "automated-release"),
+            ("release/v0.22.42-public-release-evidence", "0.22.42", "release-artifact-pending", "release-artifact-pending"),
+            ("release/v0.22.42-public-release-evidence", "0.22.42", "post-release-evidence", "post-release-evidence"),
+            ("release/v0.22.42-public-release-evidence", "0.22.42", "post-release-host", "post-release-host"),
+            ("release/v0.22.42", "0.22.42", "pr-bootstrap", "pr-bootstrap"),
+            ("release/v0.22.42-public-release-evidence-extra", "0.22.42", "pr-bootstrap", "pr-bootstrap"),
+            ("docs/v0.22.42-public-release-evidence", "0.22.42", "pr-bootstrap", "pr-bootstrap"),
+            ("release/v0.22.43-public-release-evidence", "0.22.43", "", ""),
+            ("release/v0.22.42-public-release-evidence", "0.22.43", "", ""),
+        )
+        for branch, target, requested, expected in matrix:
+            with self.subTest(branch=branch, target=target, requested=requested):
+                result = subprocess.run(
+                    ["bash", selector, branch, target, requested],
+                    cwd=ROOT,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=5,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout, expected + "\n")
+
+    def test_readiness_selector_is_before_existing_version_guard(self) -> None:
+        source = (ROOT / "scripts/release/check-pr-ready.sh").read_text(encoding="utf-8")
+        assignment = 'TASK_GATE_MODE=$(bash "$READINESS_MODE_SELECTOR" "$CURRENT_BRANCH" "$TARGET_VERSION" "$TASK_GATE_MODE")'
+        matches = list(re.finditer(r"(?m)^" + re.escape(assignment) + r"$", source))
+        self.assertEqual(len(matches), 1)
+        self.assertGreater(matches[0].start(), source.index("# 3. Determine Target Version"))
+        self.assertLess(matches[0].start(), source.index("# 4. Check for Consistency"))
+        self.assertLess(
+            matches[0].start(),
+            source.index("# 5. Version increment or published-release guard"),
+        )
+        self.assertIn("gh release view", source)
+        self.assertIn("draft=false prerelease=false", source)
+
+    def test_selector_preserves_version_rejection_for_exact_and_ordinary_branches(self) -> None:
+        exact = self.run_check_pr_ready_fixture(
+            "release/v0.22.42-public-release-evidence",
+            "0.22.43",
+        )
+        ordinary = self.run_check_pr_ready_fixture("release/v0.22.43", "0.22.42")
+        self.assertEqual(exact.returncode, 1, exact.stdout + exact.stderr)
+        self.assertIn("does not match target version", exact.stderr)
+        self.assertEqual(ordinary.returncode, 1, ordinary.stdout + ordinary.stderr)
+        self.assertIn("does not match target version", ordinary.stderr)
+
     def test_post_release_manifest_checks_execute_actual_tag_run_attempt_binding(self) -> None:
         workflow = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")
         match = re.search(r"<<'PY'\n(.*?)\n          PY", workflow, re.S)

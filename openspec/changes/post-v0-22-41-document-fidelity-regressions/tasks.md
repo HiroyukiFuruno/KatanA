@@ -1,3 +1,7 @@
+### 2026-10-26 公開後の証跡更新と通常hookのphaseを整合する
+
+- [/] 固定postpub枝のCIはpost-release-automatedだが、通常pre-push/pre-prはpr-bootstrapのまま公開前version guardへ進み、公開後latest==target時に拒否する不足を一次sourceと実引数unitで確認。公開後のcontroller変更は公開物とのsource来歴差になるため、公開前に最小pure selectorとcallerの選択順序を整える。固定枝/target.42/空またはbootstrapだけを既存post modeへ振り分け、普通の版増分・公開済stable確認・全5asset検証と各quality条件を維持する。mock IT/新testport/hook迂回を追加せず、実入力unit/real Gitの拒否回帰・通常統合/新review/CI/公開後実検査まで継続する。[根拠](evidence/postpublication-bootstrap-routing-2026-10-26.ja.md)。
+
 ### 2026-10-26 Readiness終了処理回帰の時間超過を観測する
 
 - [/] source151のReadiness40241669703は実プロセス回帰launcher_ignoringがstart5/end12/delta7となり、元6秒条件で不合格。保存traceの時刻と内容を失敗ログから回収できない不足を修復し、Bash組込みSECONDSの各command時刻と計測終了後のtrace出力を追加する。製品・cleanup helper・元2秒/6秒・4ケース・identity1/1/2/2・無関係PID生存・実child/launcher消失・caller状態復元を維持する。ローカル既存回帰の旧新成功や時刻行追加はクラウド時間超過の原因解消と扱わず、通常統合・新current review/必須CI・実配布検査を継続する。[根拠](evidence/readiness-cleanup-timing-2026-10-26.ja.md)。

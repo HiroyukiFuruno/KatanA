@@ -51,6 +51,7 @@ is_ci() { [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; }
 
 TASK_BRANCH_PATTERN='^release/v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9][A-Za-z0-9._-]*)?-task-?[0-9A-Za-z]+(-fix)?$'
 RELEASE_BRANCH_VERSION_SCRIPT='scripts/release/extract-release-branch-version.sh'
+READINESS_MODE_SELECTOR='scripts/release/select-pr-readiness-mode.sh'
 
 # 1. Check for uncommitted changes (Local only)
 if ! is_ci; then
@@ -103,6 +104,9 @@ else
         info "If you intend to release, please run: ./scripts/release/check-pr-ready.sh <version>"
     fi
 fi
+
+# WHY: target確定後にだけ厳密な公開証跡branchの自動検証modeを選択し、他branchのmodeを変更しない。
+TASK_GATE_MODE=$(bash "$READINESS_MODE_SELECTOR" "$CURRENT_BRANCH" "$TARGET_VERSION" "$TASK_GATE_MODE")
 
 # 4. Check for Consistency against TARGET_VERSION
 # Check Cargo.toml matches TARGET_VERSION
