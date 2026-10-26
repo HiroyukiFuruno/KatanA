@@ -134,4 +134,4 @@ def overlay_config(source: str) -> str:
         raise ValueError("deny.toml advisories.ignore list is missing")
     entries = "\n".join(f'  {{ id = "{advisory}", reason = "{REASON}" }},' for advisory in ADVISORIES)
     end = section.start(1) + match.end()
-    return source[: end - 1] + "\n" + entries + source[end - 1 :]
+    return source[: end - 1] + "\n" + entries + "\n" + source[end - 1 :]

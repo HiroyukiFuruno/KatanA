@@ -7,5 +7,6 @@ command -v cargo-deny >/dev/null || {
     exit 127
 }
 python3 -B -m unittest discover -s scripts/ci -p test_zip_advisory_overlay.py
+python3 -B -m unittest discover -s scripts/ci -p test_zstd_advisory_policy.py
 python3 scripts/ci/zip_advisory_overlay.py --deny-file deny.toml \
     Cargo.toml scripts/screenshot/Cargo.toml scripts/paint-metrics/Cargo.toml

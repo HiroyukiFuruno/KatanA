@@ -1,3 +1,7 @@
+### 2026-10-27 最新本人指示: 上流待ちに戻さず先行公開する
+
+- [/] KDVはKRR待ち、KRRは対応中、KatanAは現公開上流版のまま独立改善を先行公開する。残存脆弱性の実影響を調べ期限付きで管理するという元指示を再確認事項にしない。依存に影響版があることと、問題APIの利用・発生条件の成立を切り離して評価する。今回監査ではZIPの問題extract処理と旧Zstdの問題デコーダの利用を確認していない。監査済み0403の固定経路だけを既存入口へ接続し、未知ID/版/caller/経路/非registry/期限切れの拒否と全品質条件を維持して通常push・current review・CI・全OS公開へ進める。[調査・適用範囲](evidence/zstd-0403-risk-assessment-2026-10-26.ja.md)。
+
 ### 2026-10-27 Windows診断の有効なstack設定と欠落を記録する
 
 - [/] 元ETLの長待機33件に待機開始stackが無い原因を推測で決めず、所有WPR instanceのcollector詳細をアプリ起動前と終了処理後・trace停止前に保存する。元GeneralProfile/有界memory/アプリ観測10秒/200ms基準・PID照合は維持し、照会失敗でもWPR停止へ進む。新回帰の旧source RED、17契約成功・実PowerShell parser成功・同tryへ壊すmutation拒否を確認した。診断設定の実Windows回収、stack欠落原因、描画遅延修復・公開成功は未完。[根拠](evidence/windows-wpr-collector-visibility-2026-10-27.ja.md)。
