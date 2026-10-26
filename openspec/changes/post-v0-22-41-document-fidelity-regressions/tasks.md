@@ -1,3 +1,7 @@
+### 2026-10-27 Windows の読取中の描画記録を置換する
+
+- [/] PR370/headc3e39dae の Ready CI は Windows で記録置換のアクセス拒否により4件失敗し、全体cancelled。Readiness成功を全CI成功へ流用せずDraftへ戻した。現行Rust標準renameのPOSIX対応経路へ切り替え、同一dirの完成記録・失敗時cleanup・ログを保持する。既存テスト無変更で対象8件/strictClippy/fmt/diff成功。新unsafe/依存/retry/ignoreや元200ms等の変更は無し。新通常commit/push・current review・全CI・実配布検証は未完。[根拠](evidence/windows-open-heartbeat-rename-2026-10-27.ja.md)。
+
 ### 2026-10-27 Windows の描画同期待ちを減らす候補を検証する
 
 - [ ] 同一 M 配布物の Server2022 比較は元 smoke に合格したが、実 frame 間隔は中央値298.053msで、元 Server2025 の274.240msと同様に約300msだった。合格 host へ変更して済ませず、Windows の既存自動表示方式 AutoNoVsync を最小候補として検証する。最大待機frame1・他OS既定値・元200ms×10と全予算は維持。bin対象1件/strictClippy/fmt/独立レビュー成功、合格時にも描画記録を残す3行追加以外の元smoke完全一致・比較6契約成功を確認した。通常commit/push・current review・全CI・実配布記録は継続し、候補を待機開始APIの確定や改善済みとは扱わない。[根拠](evidence/windows-presentation-sync-candidate-2026-10-27.ja.md)。

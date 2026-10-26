@@ -135,10 +135,11 @@ fn write_frame(path: &Path, frame: u64) -> std::io::Result<()> {
         .unwrap_or_else(|| Path::new("."));
     let mut temporary = tempfile::NamedTempFile::new_in(parent)?;
     temporary.write_all(StartupHeartbeat::contents(frame).as_bytes())?;
-    temporary
-        .persist(path)
-        .map(|_| ())
-        .map_err(|error| error.error)
+    let mut temporary_path = temporary.into_temp_path();
+    /* WHY: Windowsの読取中ハンドルを扱う置換を、標準renameのPOSIX対応経路に任せる。 */
+    std::fs::rename(&temporary_path, path)?;
+    temporary_path.disable_cleanup(true);
+    Ok(())
 }
 
 #[cfg(test)]
