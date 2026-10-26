@@ -269,6 +269,7 @@ class WorkflowContractTests(unittest.TestCase):
         source = checker.read_text(encoding="utf-8")
         self.assertIn("set -euo pipefail", source)
         self.assertIn("python3 -B -m unittest discover -s scripts/ci -p test_zip_advisory_overlay.py", source)
+        self.assertIn("python3 -B -m unittest discover -s scripts/ci -p test_zstd_advisory_policy.py", source)
         self.assertIn("python3 scripts/ci/zip_advisory_overlay.py --deny-file deny.toml", source)
         for manifest in ("Cargo.toml", "scripts/screenshot/Cargo.toml", "scripts/paint-metrics/Cargo.toml"):
             self.assertIn(manifest, source)

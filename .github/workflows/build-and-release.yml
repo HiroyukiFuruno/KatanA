@@ -362,6 +362,8 @@ jobs:
     name: Build Windows
     needs: preflight
     runs-on: windows-latest
+    outputs:
+      startup_smoke_outcome: ${{ steps.windows_startup_smoke.outcome }}
 
     steps:
       - name: Preserve source bytes for artifact provenance
@@ -535,6 +537,16 @@ jobs:
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
           }
 
+      - name: Upload failed Windows comparison payload
+        if: failure() && steps.windows_startup_smoke.outcome == 'failure' && needs.preflight.outputs.version_bare == '0.22.42'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: windows-native-comparison-payload-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ./KatanA-windows-x86_64.zip
+            tmp/identity-windows.json
+          retention-days: 5
+
       - name: Trace failed packaged Windows startup
         if: failure() && steps.windows_startup_smoke.outcome == 'failure'
         shell: pwsh
@@ -556,6 +568,135 @@ jobs:
           path: |
             KatanA-windows-x86_64.zip
             KatanA-windows-x86_64.msi
+
+  windows_startup_comparison:
+    name: Compare Windows packaged startup (Server 2022)
+    needs: [preflight, build_windows]
+    if: always() && needs.preflight.result == 'success' && needs.preflight.outputs.version_bare == '0.22.42' && needs.build_windows.outputs.startup_smoke_outcome == 'failure'
+    runs-on: windows-2022
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Preserve source bytes for comparison provenance
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.preflight.outputs.commit_sha }}
+          fetch-depth: 0
+      - name: Download failed Windows comparison payload
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: windows-native-comparison-payload-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}\windows-native-comparison-payload-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Prepare original Windows startup smoke body
+        shell: pwsh
+        run: >-
+          python scripts/release/prepare-windows-startup-comparison.py
+          --payload-dir "${{ runner.temp }}\windows-native-comparison-payload-${{ github.run_id }}-${{ github.run_attempt }}"
+          --workflow "$env:GITHUB_WORKSPACE\.github\workflows\build-and-release.yml"
+          --current-root "$env:GITHUB_WORKSPACE"
+          --output-script "${{ runner.temp }}\windows-native-startup-comparison.ps1"
+          --output-metadata "${{ runner.temp }}\windows-native-startup-comparison.json"
+          --expected-version "${{ needs.preflight.outputs.version }}"
+          --expected-source-commit "${{ needs.preflight.outputs.commit_sha }}"
+          --expected-run-id "${{ github.run_id }}"
+          --expected-run-attempt "${{ github.run_attempt }}"
+      - name: Run original Windows startup smoke on Server 2022
+        id: windows_startup_comparison_smoke
+        shell: pwsh
+        run: |
+          $payload = Join-Path $env:RUNNER_TEMP "windows-native-comparison-payload-${{ github.run_id }}-${{ github.run_attempt }}"
+          Set-Location -LiteralPath $payload
+          $scriptPath = Join-Path $env:RUNNER_TEMP "windows-native-startup-comparison.ps1"
+          $diagnostics = $null
+          $heartbeat = $null
+          $stdoutLog = $null
+          $log = $null
+          $originalFailure = $null
+          $evidenceFailure = $null
+          try {
+            . $scriptPath
+          }
+          catch {
+            $originalFailure = $_
+          }
+          finally {
+            try {
+              if ($null -ne $diagnostics -and (Test-Path -LiteralPath $diagnostics)) {
+                if ($null -ne $heartbeat -and (Test-Path -LiteralPath $heartbeat.FullName)) {
+                  Copy-Item -LiteralPath $heartbeat.FullName -Destination (Join-Path $diagnostics "heartbeat.txt") -Force -ErrorAction Stop
+                }
+                if ($null -ne $stdoutLog -and (Test-Path -LiteralPath $stdoutLog.FullName)) {
+                  Copy-Item -LiteralPath $stdoutLog.FullName -Destination (Join-Path $diagnostics "stdout.log") -Force -ErrorAction Stop
+                }
+                if ($null -ne $log -and (Test-Path -LiteralPath $log.FullName)) {
+                  Copy-Item -LiteralPath $log.FullName -Destination (Join-Path $diagnostics "stderr.log") -Force -ErrorAction Stop
+                }
+                foreach ($evidencePath in @("heartbeat.txt", "stdout.log", "stderr.log")) {
+                  if (-not (Test-Path -LiteralPath (Join-Path $diagnostics $evidencePath))) {
+                    throw "Comparison evidence file was not retained: $evidencePath"
+                  }
+                }
+              } else {
+                throw "Comparison diagnostics directory was not created"
+              }
+            }
+            catch {
+              $evidenceFailure = $_
+              Write-Warning "Could not retain comparison startup evidence: $($_.Exception.Message)"
+            }
+          }
+          if ($null -ne $originalFailure) { throw $originalFailure }
+          if ($null -ne $evidenceFailure) { throw $evidenceFailure }
+      - name: Capture Windows comparison host metadata
+        if: always()
+        shell: pwsh
+        run: |
+          $payload = Join-Path $env:RUNNER_TEMP "windows-native-comparison-payload-${{ github.run_id }}-${{ github.run_attempt }}"
+          $metadata = Join-Path $env:RUNNER_TEMP "windows-native-startup-comparison-host.json"
+          $identity = Join-Path $env:RUNNER_TEMP "windows-native-startup-comparison.json"
+          $smokeDirectory = Join-Path $env:RUNNER_TEMP "katana-windows-smoke"
+          $executable = Join-Path $smokeDirectory "KatanA.exe"
+          $worker = Join-Path $smokeDirectory "kdv-office-worker.exe"
+          $os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
+          $executableIdentity = if (Test-Path -LiteralPath $executable) {
+            $hash = (Get-FileHash -LiteralPath $executable -Algorithm SHA256).Hash
+            [ordered]@{ path = $executable; sha256 = $hash; size = (Get-Item -LiteralPath $executable).Length }
+          } else { $null }
+          $workerIdentity = if (Test-Path -LiteralPath $worker) {
+            $hash = (Get-FileHash -LiteralPath $worker -Algorithm SHA256).Hash
+            [ordered]@{ path = $worker; sha256 = $hash; size = (Get-Item -LiteralPath $worker).Length }
+          } else { $null }
+          $record = [ordered]@{
+            runner_os = $env:RUNNER_OS
+            image_os = $env:ImageOS
+            image_version = $env:ImageVersion
+            os_caption = if ($null -ne $os) { $os.Caption } else { $null }
+            os_version = if ($null -ne $os) { $os.Version } else { $null }
+            github_run_id = $env:GITHUB_RUN_ID
+            github_run_attempt = $env:GITHUB_RUN_ATTEMPT
+            run_identity = "$env:GITHUB_RUN_ID/$env:GITHUB_RUN_ATTEMPT"
+            parent_session_id = [Diagnostics.Process]::GetCurrentProcess().SessionId
+            payload_directory = $payload
+            identity_manifest = $identity
+            executable_identity = $executableIdentity
+            worker_identity = $workerIdentity
+          }
+          $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $metadata -Encoding utf8
+      - name: Upload Windows comparison diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: windows-native-comparison-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}\windows-native-startup-comparison.json
+            ${{ runner.temp }}\windows-native-startup-comparison.ps1
+            ${{ runner.temp }}\windows-native-startup-comparison-host.json
+            ${{ steps.windows_startup_comparison_smoke.outputs.diagnostics_directory }}
+          retention-days: 5
 
   publish:
     name: Publish Release

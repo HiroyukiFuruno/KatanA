@@ -3,8 +3,11 @@ import importlib.util
 import json
 import sys
 import unittest
+import tomllib
 from pathlib import Path
 from unittest import mock
+
+from test_zstd_advisory_policy import metadata as zstd_metadata, node as zstd_node
 
 
 ROOT = Path(__file__).parent
@@ -105,6 +108,18 @@ class ZipOverlayTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             MODULE.validate_metadata(fixture)
 
+    def test_old_zip_direct_workspace_root_is_rejected(self):
+        fixture = metadata()
+        fixture["workspace_members"].append(fixture["resolve"]["nodes"][0]["id"])
+        with self.assertRaises(ValueError):
+            MODULE.validate_metadata(fixture)
+
+    def test_orphaned_old_zip_parent_chain_is_rejected(self):
+        fixture = metadata()
+        fixture["resolve"]["nodes"][2]["deps"] = []
+        with self.assertRaises(ValueError):
+            MODULE.validate_metadata(fixture)
+
     def test_wrong_section_is_rejected(self):
         with self.assertRaises(ValueError):
             MODULE.overlay_config("[graph]\nignore = []\n[advisories]\nunused = true\n")
@@ -121,6 +136,85 @@ class ZipOverlayTests(unittest.TestCase):
         before = deny.read_bytes()
         MODULE.overlay_config(deny.read_text(encoding="utf-8"))
         self.assertEqual(before, deny.read_bytes())
+
+    def test_runner_uses_per_manifest_scoped_configs_and_removes_them(self):
+        affected = zstd_metadata()
+        modern = zstd_metadata()
+        next(p for p in modern["packages"] if p["id"] == "safe")["version"] = "8.2.0"
+        metadata_results = iter((affected, modern))
+        configs, temporary_files = [], []
+        manifests = [ROOT / "root.toml", ROOT / "modern.toml"]
+        deny = ROOT / "../../deny.toml"
+        original = deny.read_bytes()
+
+        def command(args, **kwargs):
+            if args[:2] == ["cargo", "metadata"]:
+                self.assertIn("--locked", args)
+                self.assertIn("--all-features", args)
+                return mock.Mock(returncode=0, stdout=json.dumps(next(metadata_results)), stderr="")
+            self.assertEqual(args[0], "cargo-deny")
+            self.assertEqual(args[-2:], ["check", "--hide-inclusion-graph"])
+            self.assertIn("--locked", args)
+            path = Path(args[args.index("--config") + 1])
+            temporary_files.append(path)
+            config = tomllib.loads(path.read_text(encoding="utf-8"))
+            configs.append(config)
+            self.assertEqual(args[args.index("--manifest-path") + 1], str(manifests[len(configs) - 1]))
+            for section in ("bans", "licenses", "sources"):
+                self.assertEqual(config[section], tomllib.loads(original.decode())[section])
+            return mock.Mock(returncode=0)
+
+        with mock.patch.object(MODULE.subprocess, "run", side_effect=command):
+            self.assertEqual(MODULE.run("cargo-deny", deny, manifests), 0)
+        ids = [[entry["id"] if isinstance(entry, dict) else entry
+                for entry in config["advisories"]["ignore"]] for config in configs]
+        self.assertIn("RUSTSEC-2026-0403", ids[0])
+        self.assertNotIn("RUSTSEC-2026-0403", ids[1])
+        self.assertTrue(all(not path.exists() for path in temporary_files))
+        self.assertEqual(deny.read_bytes(), original)
+
+    def test_runner_rejects_unapproved_path_before_writing_or_deny(self):
+        data = zstd_metadata()
+        zstd_node(data, "root")["deps"].append({"pkg": "safe"})
+        result = mock.Mock(returncode=0, stdout=json.dumps(data), stderr="")
+        with mock.patch.object(MODULE.subprocess, "run", return_value=result) as command, \
+                mock.patch.object(MODULE.tempfile, "NamedTemporaryFile") as temporary:
+            self.assertEqual(MODULE.run("cargo-deny", ROOT / "../../deny.toml", [ROOT / "Cargo.toml"]), 78)
+            self.assertEqual(command.call_count, 1)
+            temporary.assert_not_called()
+
+    def test_runner_preserves_metadata_failure_and_does_not_write_config(self):
+        result = mock.Mock(returncode=23, stdout="", stderr="locked resolution failed\n")
+        with mock.patch.object(MODULE.subprocess, "run", return_value=result) as command, \
+                mock.patch.object(MODULE.tempfile, "NamedTemporaryFile") as temporary:
+            self.assertEqual(MODULE.run("cargo-deny", ROOT / "../../deny.toml", [ROOT / "Cargo.toml"]), 23)
+            self.assertEqual(command.call_count, 1)
+            temporary.assert_not_called()
+
+    def test_runner_rejects_malformed_metadata_before_config(self):
+        for output in ("not-json", "null", '{"resolve": null}'):
+            with self.subTest(output=output):
+                result = mock.Mock(returncode=0, stdout=output, stderr="")
+                with mock.patch.object(MODULE.subprocess, "run", return_value=result) as command, \
+                        mock.patch.object(MODULE.tempfile, "NamedTemporaryFile") as temporary:
+                    self.assertEqual(MODULE.run("cargo-deny", ROOT / "../../deny.toml", [ROOT / "Cargo.toml"]), 78)
+                    self.assertEqual(command.call_count, 1)
+                    temporary.assert_not_called()
+
+    def test_runner_expiry_prevents_metadata_config_and_deny(self):
+        with mock.patch.object(MODULE, "policy_expired", return_value=True), \
+                mock.patch.object(MODULE.subprocess, "run") as command, \
+                mock.patch.object(MODULE.tempfile, "NamedTemporaryFile") as temporary:
+            self.assertEqual(MODULE.run("cargo-deny", ROOT / "../../deny.toml", [ROOT / "Cargo.toml"]), 78)
+            command.assert_not_called()
+            temporary.assert_not_called()
+
+    def test_scoped_runner_preserves_deny_failure_and_stops_next_manifest(self):
+        metadata_result = mock.Mock(returncode=0, stdout=json.dumps(zstd_metadata()), stderr="")
+        deny_result = mock.Mock(returncode=19)
+        with mock.patch.object(MODULE.subprocess, "run", side_effect=[metadata_result, deny_result]) as command:
+            self.assertEqual(MODULE.run("cargo-deny", ROOT / "../../deny.toml", [ROOT / "one.toml", ROOT / "two.toml"]), 19)
+            self.assertEqual(command.call_count, 2)
 
 
 if __name__ == "__main__":

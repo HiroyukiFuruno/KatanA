@@ -101,8 +101,13 @@ def _validate_ancestry(metadata: dict, packages: dict, edges: dict, zip_edges: d
         for child in edges.get(frontier.pop(), ()):
             if child not in blocked and child not in kdv:
                 blocked.add(child); frontier.append(child)
-    if any(item in OLD_ZIP_PARENTS and parent_id in blocked for (parent_id, _), item in zip_edges.items()):
-        raise ValueError("old ZIP route bypasses KDV")
+    for (parent_id, child_id), item in zip_edges.items():
+        if item not in OLD_ZIP_PARENTS:
+            continue
+        if parent_id not in reachable or child_id not in reachable:
+            raise ValueError("old ZIP route is orphaned from workspace roots")
+        if parent_id in blocked or child_id in blocked:
+            raise ValueError("old ZIP route bypasses KDV")
 
 
 def validate_metadata(metadata: dict) -> None:
@@ -129,4 +134,4 @@ def overlay_config(source: str) -> str:
         raise ValueError("deny.toml advisories.ignore list is missing")
     entries = "\n".join(f'  {{ id = "{advisory}", reason = "{REASON}" }},' for advisory in ADVISORIES)
     end = section.start(1) + match.end()
-    return source[: end - 1] + "\n" + entries + source[end - 1 :]
+    return source[: end - 1] + "\n" + entries + "\n" + source[end - 1 :]

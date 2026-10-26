@@ -1,3 +1,23 @@
+### 2026-10-27 最新本人指示: 上流待ちに戻さず先行公開する
+
+- [/] KDVはKRR待ち、KRRは対応中、KatanAは現公開上流版のまま独立改善を先行公開する。残存脆弱性の実影響を調べ期限付きで管理するという元指示を再確認事項にしない。依存に影響版があることと、問題APIの利用・発生条件の成立を切り離して評価する。今回監査ではZIPの問題extract処理と旧Zstdの問題デコーダの利用を確認していない。監査済み0403の固定経路だけを既存入口へ接続し、未知ID/版/caller/経路/非registry/期限切れの拒否と全品質条件を維持して通常push・current review・CI・全OS公開へ進める。[調査・適用範囲](evidence/zstd-0403-risk-assessment-2026-10-26.ja.md)。
+
+### 2026-10-27 Windows診断の有効なstack設定と欠落を記録する
+
+- [/] 元ETLの長待機33件に待機開始stackが無い原因を推測で決めず、所有WPR instanceのcollector詳細をアプリ起動前と終了処理後・trace停止前に保存する。元GeneralProfile/有界memory/アプリ観測10秒/200ms基準・PID照合は維持し、照会失敗でもWPR停止へ進む。新回帰の旧source RED、17契約成功・実PowerShell parser成功・同tryへ壊すmutation拒否を確認した。診断設定の実Windows回収、stack欠落原因、描画遅延修復・公開成功は未完。[根拠](evidence/windows-wpr-collector-visibility-2026-10-27.ja.md)。
+
+### 2026-10-27 期限の出所と本人承認を区別する
+
+- [/] 本人の承認は「実影響を確認し期限付き例外で先行公開する方針」であり、具体的な11月7日は担当エージェントが設定した期限である。日付への明示承認は確認できていないため、「本人が承認した期限」という説明と既存記録を訂正する。新0403の承認・例外適用・期限延長は行わない。通常チャットでの説明要求を承認にせず、選択画面を重ねない。[訂正](evidence/zip-risk-acceptance-2026-10-24.ja.md)。
+
+### 2026-10-27 既存ZIP例外の到達性を厳密にする
+
+- [/] 既存3ID policyが旧ZIP自身を起点とするKDV迂回と到達不能な旧依存鎖を合成metadataで受理する不足を修復する。旧関数の同2入力ACCEPTを確認し、親/子の実起点到達とKDV除外後の親/子到達拒否を追加、正式18回帰と実3manifest graph照合は成功。対象ID/版/registry/Nov7期限/元cargo-deny失敗保持は不変。0403は未承認・未接続のまま、通常統合と公開は別工程として追跡する。[根拠](evidence/zip-policy-reachability-2026-10-27.ja.md)。
+
+### 2026-10-26 Windows描画待機のraw解析と元条件での修復
+
+- [/] source ee91の正式公開run40313264436はWindows元200ms×10検査3→3で不合格、Linux/macOS両arch成功、Publish/cleanup skipped。失敗後の同exe限定WPRを実回収し、同ETLのCSwitch/ReadyThread/StackWalkを公式schemaとsource QPCで厳密照合した。33長待機はgraphics/compositor起床で、待機279–317msとready後CPU取得0.013–0.054msを区別できたが開始APIは未確定。元基準・保護・既存表示修正を維持して修復経路と副作用を評価する。OS比較では同一配布bytesを使い、driver/backendや元述語を強制変更しない。通常統合/新CI/Windows実配布起動/全OS公開へ継続する。[根拠](evidence/windows-compositor-wait-2026-10-26.ja.md)。診断成功や外部依存という分類を元smoke成功へ置換しない。
+
 ### 2026-10-26 Windows実UIとnativeイベント間の待機を判別する
 
 - [/] merge6862の全3OS main CIは成功したが、正式公開run40272327344のWindows nativeは元200ms観測3→3で不合格。新計測7対ではUI3〜11ms・記録0.2〜0.4ms、開始間約300ms。窓resize/surface再設定等の未観測区間を切り分け、元smoke失敗後だけ公式OS traceを補助採取する。元200ms×10・100ms・各品質条件・本人設定を維持し、診断や外部原因の推測を合格へ置換しない。通常統合/新current review/CI/実trace回収/必要修復/全OS公開を継続する。[根拠](evidence/windows-native-phase-boundary-2026-10-26.ja.md)。

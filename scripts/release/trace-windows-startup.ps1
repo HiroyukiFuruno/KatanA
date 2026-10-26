@@ -206,6 +206,10 @@ try {
         $ownedStatus.Text -notmatch '(?im)^\s*Status\s*:\s*Recording\s*$') {
         throw 'WPR status did not confirm the unique diagnostic instance is recording.'
     }
+    $collectorsBefore = Invoke-BoundedNative -Path $wprCommand.Source `
+        -Arguments @('-status', 'collectors', '-details', '-instancename', $wprInstance) `
+        -Operation 'wpr-collectors-before' -OutputDirectory $diagnostics -TimeoutSeconds 30
+    if ($collectorsBefore.ExitCode -ne 0) { throw "Collector status failed before capture: $($collectorsBefore.ExitCode)." }
 
     $nonce = [guid]::NewGuid().ToString('N')
     $config = Join-Path $diagnostics "empty-config-$nonce"
@@ -287,6 +291,15 @@ finally {
         }
     }
     if ($wprStartAttempted) {
+        try {
+            $collectorsAfter = Invoke-BoundedNative -Path $wprCommand.Source `
+                -Arguments @('-status', 'collectors', '-details', '-instancename', $wprInstance) `
+                -Operation 'wpr-collectors-after' -OutputDirectory $DiagnosticsDirectory -TimeoutSeconds 30
+            if ($collectorsAfter.ExitCode -ne 0) { throw "Collector status failed after capture: $($collectorsAfter.ExitCode)." }
+        }
+        catch {
+            if ($null -eq $failure) { $failure = $_.Exception.Message }
+        }
         try {
             $stop = Invoke-BoundedNative -Path $wprCommand.Source `
                 -Arguments @('-stop', $etl, 'bounded packaged startup diagnosis', '-skipPdbGen', '-instancename', $wprInstance) `
