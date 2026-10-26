@@ -1,3 +1,7 @@
+### 2026-10-26 Windows実UIとnativeイベント間の待機を判別する
+
+- [/] merge6862の全3OS main CIは成功したが、正式公開run40272327344のWindows nativeは元200ms観測3→3で不合格。新計測7対ではUI3〜11ms・記録0.2〜0.4ms、開始間約300ms。窓resize/surface再設定等の未観測区間を切り分け、元smoke失敗後だけ公式OS traceを補助採取する。元200ms×10・100ms・各品質条件・本人設定を維持し、診断や外部原因の推測を合格へ置換しない。通常統合/新current review/CI/実trace回収/必要修復/全OS公開を継続する。[根拠](evidence/windows-native-phase-boundary-2026-10-26.ja.md)。
+
 ### 2026-10-26 macOS coverageのFIFO容量fixture競合を修復する
 
 - [/] source328のCI40256001313はMac coverageの実テストで失敗。FIFO writer接続後も正当に早期取消・枠返却できる順序を旧fixtureが誤って必須容量エラーに固定していた。製品処理・元5秒・容量/終端/回復assertを維持し、private pool単体の決定的容量検査と実FIFO取消の厳密な期限内終端・原本照合を分離する。通常ローカル成功を実CIのRED否定や再実行免除にせず、修復/対象回帰/独立レビュー/通常統合/新CI/公開を継続する。[根拠](evidence/macos-fifo-capacity-race-2026-10-26.ja.md)。
