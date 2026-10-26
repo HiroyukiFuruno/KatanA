@@ -1,3 +1,7 @@
+### 2026-10-27 既存ZIP例外の到達性を厳密にする
+
+- [/] 既存3ID policyが旧ZIP自身を起点とするKDV迂回と到達不能な旧依存鎖を合成metadataで受理する不足を修復する。旧関数の同2入力ACCEPTを確認し、親/子の実起点到達とKDV除外後の親/子到達拒否を追加、正式18回帰と実3manifest graph照合は成功。対象ID/版/registry/Nov7期限/元cargo-deny失敗保持は不変。0403は未承認・未接続のまま、通常統合と公開は別工程として追跡する。[根拠](evidence/zip-policy-reachability-2026-10-27.ja.md)。
+
 ### 2026-10-26 Windows描画待機のraw解析と元条件での修復
 
 - [/] source ee91の正式公開run40313264436はWindows元200ms×10検査3→3で不合格、Linux/macOS両arch成功、Publish/cleanup skipped。失敗後の同exe限定WPRを実回収し、同ETLのCSwitch/ReadyThread/StackWalkを公式schemaとsource QPCで厳密照合した。33長待機はgraphics/compositor起床で、待機279–317msとready後CPU取得0.013–0.054msを区別できたが開始APIは未確定。元基準・保護・既存表示修正を維持して修復経路と副作用を評価する。OS比較では同一配布bytesを使い、driver/backendや元述語を強制変更しない。通常統合/新CI/Windows実配布起動/全OS公開へ継続する。[根拠](evidence/windows-compositor-wait-2026-10-26.ja.md)。診断成功や外部依存という分類を元smoke成功へ置換しない。

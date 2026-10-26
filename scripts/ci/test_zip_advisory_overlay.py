@@ -105,6 +105,18 @@ class ZipOverlayTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             MODULE.validate_metadata(fixture)
 
+    def test_old_zip_direct_workspace_root_is_rejected(self):
+        fixture = metadata()
+        fixture["workspace_members"].append(fixture["resolve"]["nodes"][0]["id"])
+        with self.assertRaises(ValueError):
+            MODULE.validate_metadata(fixture)
+
+    def test_orphaned_old_zip_parent_chain_is_rejected(self):
+        fixture = metadata()
+        fixture["resolve"]["nodes"][2]["deps"] = []
+        with self.assertRaises(ValueError):
+            MODULE.validate_metadata(fixture)
+
     def test_wrong_section_is_rejected(self):
         with self.assertRaises(ValueError):
             MODULE.overlay_config("[graph]\nignore = []\n[advisories]\nunused = true\n")
