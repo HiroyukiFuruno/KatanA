@@ -66,6 +66,24 @@ class WindowsStartupTraceContractTests(unittest.TestCase):
             self.assertIn(identity, self.source)
         self.assertIn("if ($ExpectedProcess.HasExited) { return $false }", self.source)
 
+    def test_owned_collector_configuration_is_recorded_before_and_after_capture(self):
+        arguments = "@('-status', 'collectors', '-details', '-instancename', $wprInstance)"
+        self.assertEqual(self.source.count(arguments), 2)
+        before = self.source.index("-Operation 'wpr-collectors-before'")
+        launch = self.source.index("$process = Start-Process")
+        cleanup = self.source.index("$process.Kill()")
+        after = self.source.index("-Operation 'wpr-collectors-after'")
+        stop = self.source.index("-Operation 'wpr-stop'")
+        self.assertLess(before, launch)
+        self.assertLess(cleanup, after)
+        self.assertLess(after, stop)
+        cleanup_boundary = self.source[after:stop]
+        self.assertRegex(cleanup_boundary, r"\}\s*catch\s*\{")
+        self.assertRegex(cleanup_boundary, r"\}\s*try\s*\{")
+        self.assertIn("Collector status failed before capture", self.source)
+        self.assertIn("Collector status failed after capture", self.source)
+        self.assertIn("-OutputDirectory $DiagnosticsDirectory -TimeoutSeconds 30", self.source)
+
     def test_capture_is_bounded_and_uses_isolated_config_and_existing_diagnostics(self):
         self.assertIn("$process.WaitForExit(200)", self.source)
         self.assertIn("$timer.Elapsed.TotalSeconds -lt 10", self.source)

@@ -1,3 +1,7 @@
+### 2026-10-27 Windows診断の有効なstack設定と欠落を記録する
+
+- [/] 元ETLの長待機33件に待機開始stackが無い原因を推測で決めず、所有WPR instanceのcollector詳細をアプリ起動前と終了処理後・trace停止前に保存する。元GeneralProfile/有界memory/アプリ観測10秒/200ms基準・PID照合は維持し、照会失敗でもWPR停止へ進む。新回帰の旧source RED、17契約成功・実PowerShell parser成功・同tryへ壊すmutation拒否を確認した。診断設定の実Windows回収、stack欠落原因、描画遅延修復・公開成功は未完。[根拠](evidence/windows-wpr-collector-visibility-2026-10-27.ja.md)。
+
 ### 2026-10-27 期限の出所と本人承認を区別する
 
 - [/] 本人の承認は「実影響を確認し期限付き例外で先行公開する方針」であり、具体的な11月7日は担当エージェントが設定した期限である。日付への明示承認は確認できていないため、「本人が承認した期限」という説明と既存記録を訂正する。新0403の承認・例外適用・期限延長は行わない。通常チャットでの説明要求を承認にせず、選択画面を重ねない。[訂正](evidence/zip-risk-acceptance-2026-10-24.ja.md)。
