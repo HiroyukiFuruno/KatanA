@@ -23,7 +23,7 @@ PLATFORM = "windows"
 ARCHIVE_NAME = "KatanA-windows-x86_64.zip"
 MAIN_ENTRY = "KatanA.exe"
 WORKER_ENTRY = "kdv-office-worker.exe"
-ORIGINAL_BLOCK_SHA256 = "726979a6a0eb68c1eb8c64f4b277c4fef923d9f67043b21469caa376b7ac7cd7"
+ORIGINAL_BLOCK_SHA256 = "f4a7e1010e974d03171d5d5ba4b046da701328c98fc5670d08559afeaac4b852"
 SMOKE_NAME = "Smoke launch packaged Windows app"
 
 

@@ -132,7 +132,7 @@ assert_build_windows_step_contains 'Smoke launch packaged Windows app' 'Start-Sl
 assert_build_windows_step_contains 'Smoke launch packaged Windows app' 'foreach ($attempt in 1..10)'
 assert_build_windows_step_contains 'Smoke launch packaged Windows app' 'if ($peakRss -gt 512MB)'
 assert_build_windows_step_contains 'Smoke launch packaged Windows app' 'if ($fontBytes -gt 134217728)'
-assert_build_windows_step_contains 'Upload Windows startup diagnostics' "if: failure() && steps.windows_startup_smoke.outcome == 'failure'"
+assert_build_windows_step_contains 'Upload Windows startup diagnostics' "if: always() && (steps.windows_startup_smoke.outcome == 'failure' || steps.windows_startup_smoke.outcome == 'success')"
 assert_build_windows_step_contains 'Upload Windows startup diagnostics' 'path: ${{ steps.windows_startup_smoke.outputs.diagnostics_directory }}'
 assert_contains "$WORKFLOW" "Office worker is live in an empty workspace"
 assert_contains "$WORKFLOW" "UI heartbeat stalled after first frame"

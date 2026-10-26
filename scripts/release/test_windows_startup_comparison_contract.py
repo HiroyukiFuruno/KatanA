@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts/release/prepare-windows-startup-comparison.py"
 WORKFLOW = ROOT / ".github/workflows/build-and-release.yml"
-EXPECTED_BLOCK_SHA = "726979a6a0eb68c1eb8c64f4b277c4fef923d9f67043b21469caa376b7ac7cd7"
+EXPECTED_BLOCK_SHA = "f4a7e1010e974d03171d5d5ba4b046da701328c98fc5670d08559afeaac4b852"
 
 
 def load_helper():
@@ -166,6 +166,16 @@ class WindowsStartupComparisonContractTests(unittest.TestCase):
                 self.helper.extract_original_smoke_block(workflow)
         finally:
             temporary.cleanup()
+
+    def test_original_smoke_retains_final_logs_on_success_and_failure(self):
+        block, _powershell = self.helper.extract_original_smoke_block(ROOT / ".github/workflows/build-and-release.yml")
+        final = block.split("finally {", 1)[1]
+        for name in ("completed-stdout.log", "completed-stderr.log", "completed-heartbeat.txt"):
+            self.assertIn(name, final)
+        upload = self.workflow.split("- name: Upload Windows startup diagnostics", 1)[1].split("\n      - name:", 1)[0]
+        self.assertIn("always()", upload)
+        self.assertIn("steps.windows_startup_smoke.outcome == 'success'", upload)
+        self.assertIn("steps.windows_startup_smoke.outcome == 'failure'", upload)
 
     def test_comparison_preserves_original_publish_contract_and_captures_success(self):
         publish = self.workflow.split("  publish:", 1)[1]

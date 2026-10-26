@@ -545,6 +545,9 @@ jobs:
           }
           finally {
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+            Copy-Item -LiteralPath $stdoutLog.FullName -Destination (Join-Path $diagnostics "completed-stdout.log") -ErrorAction Continue
+            Copy-Item -LiteralPath $log.FullName -Destination (Join-Path $diagnostics "completed-stderr.log") -ErrorAction Continue
+            Copy-Item -LiteralPath $heartbeat.FullName -Destination (Join-Path $diagnostics "completed-heartbeat.txt") -ErrorAction Continue
           }
 
       - name: Upload failed Windows comparison payload
@@ -564,11 +567,12 @@ jobs:
           & "$env:GITHUB_WORKSPACE/scripts/release/trace-windows-startup.ps1" -ExecutablePath (Join-Path $env:RUNNER_TEMP "katana-windows-smoke/KatanA.exe") -DiagnosticsDirectory "${{ steps.windows_startup_smoke.outputs.diagnostics_directory }}"
 
       - name: Upload Windows startup diagnostics
-        if: failure() && steps.windows_startup_smoke.outcome == 'failure'
+        if: always() && (steps.windows_startup_smoke.outcome == 'failure' || steps.windows_startup_smoke.outcome == 'success')
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: windows-startup-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.windows_startup_smoke.outputs.diagnostics_directory }}
+          if-no-files-found: error
           retention-days: 5
 
       - name: Upload Windows Artifacts
