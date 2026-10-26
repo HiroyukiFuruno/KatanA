@@ -1,3 +1,7 @@
+### 2026-10-26 Windows描画待機のraw解析と元条件での修復
+
+- [/] source ee91の正式公開run40313264436はWindows元200ms×10検査3→3で不合格、Linux/macOS両arch成功、Publish/cleanup skipped。失敗後の同exe限定WPRを実回収し、同ETLのCSwitch/ReadyThread/StackWalkを公式schemaとsource QPCで厳密照合した。33長待機はgraphics/compositor起床で、待機279–317msとready後CPU取得0.013–0.054msを区別できたが開始APIは未確定。元基準・保護・既存表示修正を維持して修復経路と副作用を評価する。OS比較では同一配布bytesを使い、driver/backendや元述語を強制変更しない。通常統合/新CI/Windows実配布起動/全OS公開へ継続する。[根拠](evidence/windows-compositor-wait-2026-10-26.ja.md)。診断成功や外部依存という分類を元smoke成功へ置換しない。
+
 ### 2026-10-26 Windows実UIとnativeイベント間の待機を判別する
 
 - [/] merge6862の全3OS main CIは成功したが、正式公開run40272327344のWindows nativeは元200ms観測3→3で不合格。新計測7対ではUI3〜11ms・記録0.2〜0.4ms、開始間約300ms。窓resize/surface再設定等の未観測区間を切り分け、元smoke失敗後だけ公式OS traceを補助採取する。元200ms×10・100ms・各品質条件・本人設定を維持し、診断や外部原因の推測を合格へ置換しない。通常統合/新current review/CI/実trace回収/必要修復/全OS公開を継続する。[根拠](evidence/windows-native-phase-boundary-2026-10-26.ja.md)。
