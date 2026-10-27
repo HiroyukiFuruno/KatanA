@@ -95,3 +95,17 @@ ImageLoad が記録した timestamp と SizeOfImage に対応する DLL を Micr
 次は同じ配布物の前後既定条件と、公開 API の `WGPU_DX12_PRESENTATION_SYSTEM=DxgiFromVisual` を比較する。採取と元の起動検査を分離し、環境値・source・実行ファイル・元閾値を束縛する。実結果は未回収で、製品設定へは採用していない。driver や window style、OS 保護、元品質条件は変更しない。
 
 この比較入口は対象契約 17 件、Actionlint、生成した smoke と分離入口の実 PowerShell parser、最終独立レビューを通過し、通常 commit `a5ffd846` へ統合した。既定前と Visual の元 smoke を先に保存してから、同じ exe の別所有 process を採取する。採取失敗も別項目へ保存して後続ケースを継続し、環境値を `finally` で復元する。既存のログ比較、待機方式比較、無引数の wait-stack 診断は維持する。実 Windows の比較結果は通常 push 後に別途回収する。
+
+## 2026-10-28 presentation比較の実結果と解析訂正
+
+[比較40551477572](https://github.com/HiroyukiFuruno/KatanA/actions/runs/40551477572)は同じ配布物・実行ファイルで既定前/Visual/既定後を検査し、元200ms条件でそれぞれframe4/2/4の進行停止を検出した。Visualへの変更は採用しない。独立した両WPR採取は成功し、各32長待機の再開側に32件の対象stackがあり、lost eventは0。中央値は既定約311ms/Visual約306msで、改善の証明ではない。artifact12753909883のZIP SHA256は`c6509fdaed63dcb47a6ba4a2fcfde9ccc3e7c1584184fa7a2c0dcaa632f1a80e`、controllerは`f9b21d79a6ee274547e2b9d616bbdea8d2f02f87`。元Release・全OS公開の不合格は維持する。
+
+旧ETLを再解析したところ、以前の記録にも32件すべての再開側stackが存在した。最初の解析でswitch-out側だけを検索して見落としていたため、「追加採取がなければcall chainを取得できなかった」という解釈は撤回する。新規採取の37待機とAPI照合結果は保持し、待機開始・再開の両境界を照合する。実行ファイルにPDBがないため、PEの関数範囲・IAT呼出し・静的source locationとの対応を、完全なRust symbolizationや原因確定とは扱わない。
+
+## 2026-10-28 CPU sampleと描画コンパイラの次の比較
+
+同じM673の旧GeneralProfileを実ETLから再解析し、対象processのCPU sample37,539件を抽出した。既存CSVのStackWalkをraw QPC/TID/PIDで完全一致させ、37,536件が結合、3件は未結合のまま除外した。GUI候補TID4344の32長待機区間内には、別threadの結合済みsample37,328件があり、うちmodule範囲外IPの36,942件でstackに`d3d10warp.dll`を含んだ。これは主thread待機中にWindowsのソフトウェア描画経路でCPU処理がある根拠であり、module範囲外のIPを確定したJIT関数や特定shaderとは呼ばない。sample payloadのCountを保存していないため、件数をCPU時間・CPU使用率へ換算しない。
+
+元記録のImageLoadはsystem `D3DCompiler_47.dll`を含み、`dxcompiler.dll`/`dxil.dll`はなかった。公開wgpu-hal30.0.1のAutoがDynamicDXC未発見時にFXCへ進む経路と整合する。待機方式・presentation比較の不成功を踏まえ、次は診断専用の同一EXEでコンパイラだけを比較する。元ZIP/EXE/workerを変更せず、Microsoft公式DXC `v1.9.2609`（2026-09-29公開）の固定asset ID596913261・archive SHA256 `ad31b1fc8443175d204f77a611fdb3ef2ec42759bdc2f1167368de24a4a7e7f1` とx64の2DLLのSHA/PEを検証し、専用一時dirのPATHを対象caseだけに適用・復元する。driver・OS保護・製品設定・200ms条件は変更しない。比較入口は署名付き通常commit `0f08b765`へ統合した。DXCの効果・製品採用・公開成功はまだ未確認。
+
+診断入口の対象検証はcontroller/入力準備/固定asset拒否/receipt整合/traceの合計40件が成功（skip0）。公式assetの実ダウンロード・2DLLのSHA/AMD64・現helperのprepare/verifyを確認した。PowerShell 5 sourceの実構文解析と、receipt hash改変拒否・元の環境変数の復元も成功した。最初のPowerShell実行環境のCoreCLR137は一時書込領域とGC予算の設定後に解消し、本体不具合とは扱わない。新unit fixtureの期待表と記録表の共有によるassertion失敗1件はfixtureを独立化して修復し、製品修復の証明には数えない。独立レビューでP0/P1なし、ambient compiler継承による比較汚染と、成功fixtureからのDLL/receipt改変拒否回帰不足のP2を対応した。これらはローカルの診断入口検証であり、WindowsでのDLLロード・元200ms条件の改善・全OS公開は次の実行で確認する。
