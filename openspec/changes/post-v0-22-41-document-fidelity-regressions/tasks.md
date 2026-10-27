@@ -1,6 +1,7 @@
 ### 2026-10-27 次の同一配布物比較と証跡依存更新
 
-- [ ] Windows診断run40524518173は同一exeの元ログ/低減ログとも元200ms条件で不合格。ログ低減を修復扱いせず、公式WGPUのDX12待機方式だけを変えた同一配布物比較を前後の既定条件付きで実装した。対象13契約・Actionlint・実PowerShell構文解析・最終独立レビュー成功、通常commit60f3813d。実Windowsの回収・製品修復は未完了で継続する。元要求/閾値/正式公開条件は維持。[根拠](evidence/windows-paint-delivery-diagnosis-2026-10-27.ja.md)。
+- [x] Windows診断run40524518173は元/低減ログとも不合格。続くDX12待機方式の同一配布物比較を通常commit60f3813d/pushbd4へ統合し、対象13契約・Actionlint・実PowerShell構文解析・最終レビュー成功。実Windows40534985776は既定前/DontWait/None/既定後の全4ケースが元200ms不合格で回収完了。元配布物の実行ファイルhash/API artifact digest一致。診断結果の回収を完了とし、設定変更は製品へ採用しない。製品修復・公開は下の未完了項目で継続する。[根拠](evidence/windows-paint-delivery-diagnosis-2026-10-27.ja.md)。
+- [/] Windowsのpaint配送gapと待機開始を識別する。既存ETLはtarget threadのexact switch-out stackを確認できなかったため、元smokeの後に同じ配布物の別所有processを短時間記録し、CSwitch stackを明示した固定profileで採取する入口を通常commit ed3968adへ統合した。対象14+10契約・実PowerShell構文/XML準備/hash・Actionlint・独立レビューは成功。既存GeneralProfile・所有権・元200msと全品質条件は維持。実Windows採取・原因確認・製品修復・公開は未完で継続し、採取成功を製品修復や公開成功へ置き換えない。
 - [ ] Issue374: GitHub open alerts41件は配布証跡ツールPillow12.3.0の指定に集中していた。製品Cargo graphや既存ZIP/Zstd評価と分離し、公開Pillow13.0.0を隔離導入し、PyPI wheel hash一致・119既存契約・実fixture PNGのproduction検査が成功。要求版1行を通常commit d6481c46へ統合、通常push・公開は継続する。警告件数だけで公開停止や実影響を断定せず、例外/閾値緩和にしない。[根拠](evidence/release-evidence-pillow-refresh-2026-10-27.ja.md)。
 
 ### 2026-10-27 Windowsのpaint配送遅延を同一配布物で切り分ける

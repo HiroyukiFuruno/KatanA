@@ -58,3 +58,26 @@ Controller の checkout と配布物 source の checkout を分離する。今�
 追加した比較入口の対象契約 13 件、Actionlint、生成した 6 ケース・workflow 本文 4 件・分離した PowerShell 入口 3 件と parser 自身の計 14 script の実構文解析は成功した。通常 preflight の `test_*.py` discovery から同じ 13 件を一度だけ実行する入口も追加した。構文解析は隔離した PowerShell で行い、Windows 上の描画結果とは区別する。
 
 Controller は dispatch 時の不変な commit を checkout し、GitHub token は run の照合 step だけに渡す。診断を実行するアプリの環境へ token を引き継がない。Windows の結果 artifact が存在しない場合は診断 job を不合格とし、前後の既定条件を含む 4 ケースの失敗を隠さず回収する。
+
+## 待機方式を変えた実比較の結果
+
+通常 push の全検査を通過した `bd4ff7f6` を controller とし、[run 40534985776](https://github.com/HiroyukiFuruno/KatanA/actions/runs/40534985776) で 4 ケースを実行した。すべて同じ元配布物の実行ファイル SHA と一致し、取得した診断 artifact `12746794327` の SHA も GitHub API digest と一致した。
+
+| 実行順と条件 | 元 200ms 検査の不合格時の観測 |
+| --- | --- |
+| 既定条件・前 | frame 6 から進まず不合格 |
+| `DontWait` | frame 3 から進まず不合格 |
+| `None` | frame 4 から進まず不合格 |
+| 既定条件・後 | frame 4 から進まず不合格 |
+
+この比較では修復できなかったため、製品へ待機方式の変更を採用しない。起動から終了処理までのログには後続 frame も含まれるので、それらを元の 200ms 観測で進行した証拠へ混ぜない。元の正式公開の不合格は保持し、Windows の paint 配送と待機開始の識別を続ける。生ログと case ごとの hash・実結果の正本は `tmp/oct28-40534985776-diagnostics/`、取得と解析の receipt は `tmp/oct28-40534985776-receipt.json` に保存した。
+
+## 待機開始の追加採取
+
+既存 ETL の解析では、32 区間の target thread の exact-QPC switch-out stack を確認できなかった。解析の誤結合を示す証拠はなかったが、記録自体に stack がなかったとも確定しない。起床側の stack だけで待機 API を決めず、明示的な追加採取を行う。
+
+非必須の `wait-stacks` 選択時だけ、元の起動検査と結果保存の後に、同じ実行ファイルの別所有 process を短時間記録する。呼出し前に source/run/attempt/main hash を再照合する。既存の `GeneralProfile` は既定のまま、新しい `-WaitStacks` は repository 内の固定 WPR profile のみを使用する。CSwitch/ReadyThread の stack、ProcessThread/Loader の keyword を指定し、profile 本文・hash・WPR が実際に選んだ profile の status を保存する。
+
+既存の記録がないことの確認、固有 instance 名、所有 PID/実行ファイルの確認、timeout と終了処理は維持する。任意の profile、default instance の停止、OS 保護の無効化は追加しない。追加採取の成功を本体の元 200ms 検査の成功にせず、採取失敗は別の error として記録する。
+
+追加入口 14 件と trace 契約 10 件、変更 workflow の Actionlint、隔離 PowerShell の実構文解析と固定 XML の準備・hash 照合は成功した。これらは Windows 上の WPR による schema 受理や、必要な stack が実際に取得できた証明ではない。実採取・原因確認・製品修復・公開は後続工程として継続する。
