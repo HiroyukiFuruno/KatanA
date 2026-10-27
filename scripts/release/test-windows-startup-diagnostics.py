@@ -78,6 +78,19 @@ class WindowsStartupDiagnosticTests(unittest.TestCase):
                 self.assertEqual(result, expected)
                 self.assert_protected_contract(result)
 
+    def test_dx12_presentation_case_only_sets_visual_system(self):
+        result = self.helper.diagnostic_variant(
+            self.body, "dx12-presentation", presentation_system="DxgiFromVisual")
+        expected = self.body.replace(self.helper.SMOKE_DIRECTORY_LINE,
+                                     self.helper.ISOLATED_DIRECTORY_LINE, 1)
+        expected = expected.replace(self.helper.DEBUG_LINE, self.helper.DEBUG_LINE +
+                                    self.helper.PRESENTATION_ENVIRONMENT_LINE.format(
+                                        value="DxgiFromVisual"), 1)
+        self.assertEqual(result, expected)
+        self.assert_protected_contract(result)
+        with self.assertRaisesRegex(self.helper.PreparationError, "unsupported DX12 presentation system"):
+            self.helper.diagnostic_variant(self.body, "dx12-presentation", presentation_system="Visual")
+
     def test_dx12_run_labels_separate_semantics_and_restore_process_environment(self):
         windows = self.diagnostics_workflow.split("  windows-startup-diagnostics:", 1)[1]
         for label in ("original-before", "dx12-dont-wait", "dx12-none", "original-after"):
@@ -96,6 +109,8 @@ class WindowsStartupDiagnosticTests(unittest.TestCase):
                     self.helper.PreparationError, message):
                 self.helper.diagnostic_variant(self.body, case, value)
         self.assertNotIn("original", self.helper.CASE_LABELS["dx12-waiting"])
+        with self.assertRaisesRegex(self.helper.PreparationError, "only valid for dx12-presentation"):
+            self.helper.diagnostic_variant(self.body, "original", presentation_system="DxgiFromVisual")
 
     def test_unknown_control_cases_are_rejected(self):
         for case in ("no-redirection-bitmap", "control-frame-change"):
@@ -116,6 +131,20 @@ class WindowsStartupDiagnosticTests(unittest.TestCase):
         self.assertLess(capture.index("Get-FileHash"), capture.index("-WaitStacks"))
         self.assert_protected_contract(self.helper.diagnostic_variant(self.body, "original"))
 
+    def test_presentation_mode_traces_default_and_visual_cases_separately(self):
+        self.assertIn("- dx12-presentation", self.diagnostics_workflow)
+        self.assertIn("dx12-visual", self.prepare_cases)
+        self.assertIn("dx12-presentation", self.run_cases)
+        self.assertIn("WGPU_DX12_PRESENTATION_SYSTEM", self.run_cases)
+        self.assertIn("-CaseLabel $caseLabel", self.run_cases)
+        self.assertIn("presentation_wait_stack_trace_errors", self.run_cases)
+        self.assertIn("$caseLabel -in @('original-before', 'dx12-visual')", self.run_cases)
+        self.assertIn("$traceFailures.Count -gt 0", self.run_cases)
+        capture = (ROOT / "scripts/release/capture-windows-startup-wait-stacks.ps1").read_text(encoding="utf-8")
+        self.assertIn("ValidateSet('original', 'original-before', 'dx12-visual', 'original-after')", capture)
+        self.assertIn("DxgiFromVisual", capture)
+        self.assertIn("finally {", capture)
+
     def test_macos_sampler_defaults_remain_separate_from_windows_dispatch(self):
         native = self.diagnostics_workflow.split("  native-sample:", 1)[1].split("\n  windows-startup-diagnostics:", 1)[0]
         windows = self.diagnostics_workflow.split("  windows-startup-diagnostics:", 1)[1]
@@ -128,6 +157,7 @@ class WindowsStartupDiagnosticTests(unittest.TestCase):
         self.assertIn("actions: read", windows)
         self.assertIn("windows_comparison:\n        description: Windows diagnostic comparison mode\n        required: false\n        type: choice", self.diagnostics_workflow)
         self.assertIn("default: logging", self.diagnostics_workflow)
+        self.assertIn("- dx12-presentation", self.diagnostics_workflow)
         self.assertIn("inputs.windows_run_attempt != '')", windows.split("runs-on:", 1)[0])
         self.assertNotIn("inputs.windows_comparison", windows.split("runs-on:", 1)[0])
 

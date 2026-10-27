@@ -25,6 +25,12 @@ if ($env:WINDOWS_COMPARISON -eq 'dx12-waiting') {
     )
 } elseif ($env:WINDOWS_COMPARISON -eq 'wait-stacks') {
     $cases = @(@{ Case = 'original'; Label = 'original' })
+} elseif ($env:WINDOWS_COMPARISON -eq 'dx12-presentation') {
+    $cases = @(
+        @{ Case = 'original'; Label = 'original-before' },
+        @{ Case = 'dx12-presentation'; Label = 'dx12-visual'; PresentationSystem = 'DxgiFromVisual' },
+        @{ Case = 'original'; Label = 'original-after' }
+    )
 } else {
     $cases = @(
         @{ Case = 'original'; Label = 'original' },
@@ -35,10 +41,12 @@ if ($env:WINDOWS_COMPARISON -eq 'dx12-waiting') {
 foreach ($case in $cases) {
     $caseLabel = [string]$case['Label']
     $caseType = [string]$case['Case']
+    $casePresentation = $case['PresentationSystem']
     $caseScript = Join-Path $env:RUNNER_TEMP "windows-startup-diagnostics-$caseLabel.ps1"
     $caseMetadata = Join-Path $env:RUNNER_TEMP "windows-startup-diagnostics-$caseLabel.json"
     $extraArgs = @()
     if ($case.ContainsKey('Value')) { $extraArgs = @('--dx12-value', $case.Value) }
+    if ($casePresentation) { $extraArgs += @('--presentation-system', $casePresentation) }
     python scripts/release/prepare-windows-startup-diagnostics.py `
         --source-script $originalScript `
         --source-metadata $originalMetadata `

@@ -90,6 +90,30 @@ class WindowsStartupDiagnosticPreparationTests(unittest.TestCase):
             self.assertEqual((result["diagnostic_case"], result["run_label"],
                 result["dx12_environment_value"]), ("dx12-waiting", "dx12-dont-wait", "DontWait"))
 
+    def test_presentation_preparation_binds_the_visual_case_and_value(self):
+        with tempfile.TemporaryDirectory(prefix="katana-windows-presentation-diagnostic-") as name:
+            root = Path(name)
+            source, metadata = root / "source.ps1", root / "source.json"
+            source.write_text(self.body, encoding="utf-8")
+            metadata.write_text(json.dumps({"powershell_body_sha256": hashlib.sha256(
+                self.body.encode()).hexdigest(), "version": "v0.22.42", "source_commit": "a" * 40,
+                "github_run_id": "123", "github_run_attempt": "1"}), encoding="utf-8")
+            args = SimpleNamespace(source_script=str(source), source_metadata=str(metadata),
+                output_script=str(root / "visual.ps1"), output_metadata=str(root / "visual.json"),
+                expected_source_commit="a" * 40, expected_run_id="123", expected_run_attempt="1",
+                case="dx12-presentation", run_label="dx12-visual", dx12_value=None,
+                presentation_system="DxgiFromVisual")
+            self.helper.prepare(args)
+            result = json.loads(Path(args.output_metadata).read_text(encoding="utf-8"))
+            self.assertEqual(result["dx12_presentation_system"], "DxgiFromVisual")
+            self.assertIn('WGPU_DX12_PRESENTATION_SYSTEM = "DxgiFromVisual"',
+                          Path(args.output_script).read_text(encoding="utf-8"))
+            args.output_script, args.output_metadata = str(root / "bad.ps1"), str(root / "bad.json")
+            args.run_label = "original-after"
+            with self.assertRaisesRegex(self.helper.PreparationError,
+                                        "presentation system does not match diagnostic run label"):
+                self.helper.prepare(args)
+
     def test_outputs_cannot_overwrite_input_files(self):
         with tempfile.TemporaryDirectory(prefix="katana-windows-diagnostic-") as name:
             root = Path(name)

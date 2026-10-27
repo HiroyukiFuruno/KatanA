@@ -25,6 +25,7 @@ on:
         options:
           - logging
           - dx12-waiting
+          - dx12-presentation
           - wait-stacks
         default: logging
   pull_request:
