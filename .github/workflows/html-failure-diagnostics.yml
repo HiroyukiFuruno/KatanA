@@ -4,20 +4,28 @@ on:
   workflow_dispatch:
     inputs:
       windows_run_id:
-        description: 失敗したv0.22.42 build-and-releaseのrun id
+        description: Failed v0.22.42 build-and-release run ID
         required: false
         type: string
         default: ''
       windows_source_commit:
-        description: Windows payloadに記録された40桁source commit
+        description: 40-character source commit recorded in the Windows payload
         required: false
         type: string
         default: ''
       windows_run_attempt:
-        description: 対象runのattempt
+        description: Attempt of the selected run
         required: false
         type: string
         default: ''
+      windows_comparison:
+        description: Windows diagnostic comparison mode
+        required: false
+        type: choice
+        options:
+          - logging
+          - dx12-waiting
+        default: logging
   pull_request:
     branches: [master]
     types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
@@ -29,6 +37,11 @@ on:
       - 'scripts/release/prepare-windows-startup-comparison.py'
       - 'scripts/release/prepare-windows-startup-diagnostics.py'
       - 'scripts/release/test-windows-startup-diagnostics.py'
+      - 'scripts/release/test-windows-startup-diagnostic-preparation.py'
+      - 'scripts/release/test_windows_startup_diagnostics_contract.py'
+      - 'scripts/release/validate-windows-startup-diagnostic-run.ps1'
+      - 'scripts/release/prepare-windows-startup-diagnostic-cases.ps1'
+      - 'scripts/release/run-windows-startup-diagnostic-cases.ps1'
       - '.github/workflows/html-failure-diagnostics.yml'
 
 permissions:
@@ -109,50 +122,26 @@ jobs:
       WINDOWS_RUN_ID: ${{ inputs.windows_run_id }}
       WINDOWS_SOURCE_COMMIT: ${{ inputs.windows_source_commit }}
       WINDOWS_RUN_ATTEMPT: ${{ inputs.windows_run_attempt }}
-      GH_TOKEN: ${{ github.token }}
+      WINDOWS_COMPARISON: ${{ inputs.windows_comparison }}
     steps:
-      - name: Validate selected failed payload run
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          New-Item -ItemType Directory -Path (Join-Path $env:GITHUB_WORKSPACE 'target/windows-startup-diagnostics') -Force | Out-Null
-          if ($env:WINDOWS_RUN_ID -notmatch '^[1-9][0-9]*$') { throw 'windows_run_id must be a positive decimal string' }
-          if ($env:WINDOWS_SOURCE_COMMIT -notmatch '^[0-9a-f]{40}$') { throw 'windows_source_commit must be a lowercase 40-character commit' }
-          if ($env:WINDOWS_RUN_ATTEMPT -notmatch '^[1-9][0-9]*$') { throw 'windows_run_attempt must be a positive decimal string' }
-          $runJson = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$env:WINDOWS_RUN_ID"
-          if ($LASTEXITCODE -ne 0) { throw 'Could not read selected GitHub Actions run' }
-          $run = $runJson | ConvertFrom-Json
-          if ($run.path -ne '.github/workflows/build-and-release.yml') { throw 'Selected run is not the v0.22.42 release workflow' }
-          if ($run.repository.full_name -ne $env:GITHUB_REPOSITORY) { throw 'Selected run belongs to another repository' }
-          if ($run.head_repository.full_name -ne $env:GITHUB_REPOSITORY) { throw 'Forked release runs are not accepted' }
-          if ([string]$run.run_attempt -ne $env:WINDOWS_RUN_ATTEMPT) { throw 'Selected run attempt differs' }
-          if ($run.conclusion -ne 'failure') { throw 'Selected source run is not a failed release run' }
-          if ($run.head_sha -ne $env:WINDOWS_SOURCE_COMMIT) {
-            if ($run.event -ne 'pull_request') { throw 'Only a pull_request run may use the merge-commit source relation' }
-            # WHY: A closed-PR release run records the PR head; the payload identity binds the merged source checkout.
-            $commitJson = gh api "repos/$env:GITHUB_REPOSITORY/commits/$env:WINDOWS_SOURCE_COMMIT"
-            if ($LASTEXITCODE -ne 0) { throw 'Could not read expected artifact source commit' }
-            $expectedCommit = $commitJson | ConvertFrom-Json
-            $parentShas = @($expectedCommit.parents | ForEach-Object { $_.sha })
-            if ($run.head_sha -notin $parentShas) { throw 'Expected payload source is neither run head nor a direct merge commit child' }
-          }
-          $jobsJson = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$env:WINDOWS_RUN_ID/jobs?per_page=100"
-          if ($LASTEXITCODE -ne 0) { throw 'Could not read selected run jobs' }
-          $jobs = ($jobsJson | ConvertFrom-Json).jobs
-          $build = @($jobs | Where-Object { $_.name -eq 'Build Windows' })
-          if ($build.Count -ne 1 -or $build[0].conclusion -ne 'failure') { throw 'Selected run does not contain one failed Build Windows job' }
-          $smoke = @($build[0].steps | Where-Object { $_.name -eq 'Smoke launch packaged Windows app' })
-          if ($smoke.Count -ne 1 -or $smoke[0].conclusion -ne 'failure') { throw 'Selected Build Windows failure was not the packaged startup smoke' }
-          Write-Host "validated_failed_smoke_run=$env:WINDOWS_RUN_ID; attempt=$env:WINDOWS_RUN_ATTEMPT; source=$env:WINDOWS_SOURCE_COMMIT"
-
       - name: Preserve source bytes for payload validation
         shell: pwsh
-        run: git config --global core.autocrlf false
+        run: |
+          git config --global core.autocrlf false
+          if ($LASTEXITCODE -ne 0) { throw 'Could not preserve source bytes for payload validation' }
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
           path: controller
+
+      - name: Validate selected failed payload run
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          & (Join-Path $env:GITHUB_WORKSPACE 'controller/scripts/release/validate-windows-startup-diagnostic-run.ps1')
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -168,114 +157,16 @@ jobs:
           run-id: ${{ inputs.windows_run_id }}
           github-token: ${{ github.token }}
 
-      - name: Validate payload provenance and prepare two smoke variants
+      - name: Validate payload provenance and prepare smoke variants
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
-          Set-Location -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'controller')
-          $payload = Join-Path $env:RUNNER_TEMP "windows-native-comparison-payload-$env:WINDOWS_RUN_ID-$env:WINDOWS_RUN_ATTEMPT"
-          $originalScript = Join-Path $env:RUNNER_TEMP 'windows-startup-validated-original.ps1'
-          $originalMetadata = Join-Path $env:RUNNER_TEMP 'windows-startup-validated-original.json'
-          $inputSource = Join-Path $env:GITHUB_WORKSPACE 'input-source'
-          python scripts/release/prepare-windows-startup-comparison.py `
-            --payload-dir $payload `
-            --workflow (Join-Path $inputSource '.github/workflows/build-and-release.yml') `
-            --current-root $inputSource `
-            --output-script $originalScript `
-            --output-metadata $originalMetadata `
-            --expected-version v0.22.42 `
-            --expected-source-commit $env:WINDOWS_SOURCE_COMMIT `
-            --expected-run-id $env:WINDOWS_RUN_ID `
-            --expected-run-attempt $env:WINDOWS_RUN_ATTEMPT
-          if ($LASTEXITCODE -ne 0) { throw 'Validated original smoke preparation failed' }
-          foreach ($caseName in @('original', 'reduced-native-trace')) {
-            $caseScript = Join-Path $env:RUNNER_TEMP "windows-startup-diagnostics-$caseName.ps1"
-            $caseMetadata = Join-Path $env:RUNNER_TEMP "windows-startup-diagnostics-$caseName.json"
-            python scripts/release/prepare-windows-startup-diagnostics.py `
-              --source-script $originalScript `
-              --source-metadata $originalMetadata `
-              --output-script $caseScript `
-              --output-metadata $caseMetadata `
-              --expected-source-commit $env:WINDOWS_SOURCE_COMMIT `
-              --expected-run-id $env:WINDOWS_RUN_ID `
-              --expected-run-attempt $env:WINDOWS_RUN_ATTEMPT `
-              --case $caseName
-            if ($LASTEXITCODE -ne 0) { throw "Could not prepare diagnostic case: $caseName" }
-          }
+          & (Join-Path $env:GITHUB_WORKSPACE 'controller/scripts/release/prepare-windows-startup-diagnostic-cases.ps1')
 
       - name: Run isolated startup cases and retain each result
         id: run_cases
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
-          Set-Location -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'controller')
-          $payload = Join-Path $env:RUNNER_TEMP "windows-native-comparison-payload-$env:WINDOWS_RUN_ID-$env:WINDOWS_RUN_ATTEMPT"
-          $resultsRoot = Join-Path $env:GITHUB_WORKSPACE 'target/windows-startup-diagnostics'
-          New-Item -ItemType Directory -Path $resultsRoot -Force | Out-Null
-          Set-Location -LiteralPath $payload
-          $results = [System.Collections.Generic.List[object]]::new()
-          foreach ($caseName in @('original', 'reduced-native-trace')) {
-            $caseDirectory = Join-Path $resultsRoot $caseName
-            New-Item -ItemType Directory -Path $caseDirectory -Force | Out-Null
-            $caseScript = Join-Path $env:RUNNER_TEMP "windows-startup-diagnostics-$caseName.ps1"
-            $caseMetadataPath = Join-Path $env:RUNNER_TEMP "windows-startup-diagnostics-$caseName.json"
-            $caseMetadata = Get-Content -LiteralPath $caseMetadataPath -Raw | ConvertFrom-Json
-            Copy-Item -LiteralPath $caseMetadataPath -Destination (Join-Path $caseDirectory 'validated-identity.json')
-            $caseOutput = Join-Path $caseDirectory 'github-output.txt'
-            $consoleLog = Join-Path $caseDirectory 'powershell-console.log'
-            [System.IO.File]::WriteAllText($caseOutput, '')
-            $env:GITHUB_OUTPUT = $caseOutput
-            $env:KATANA_STARTUP_DIAGNOSTICS_CASE = $caseName
-            $caseFailure = $null
-            try { & { . $caseScript } *> $consoleLog }
-            catch { $caseFailure = $_.Exception.Message }
-            $diagnosticsPath = $null
-            $outputLine = Get-Content -LiteralPath $caseOutput | Where-Object { $_ -like 'diagnostics_directory=*' } | Select-Object -Last 1
-            if ($null -ne $outputLine) { $diagnosticsPath = $outputLine.Substring('diagnostics_directory='.Length) }
-            if (-not $diagnosticsPath -or -not (Test-Path -LiteralPath $diagnosticsPath -PathType Container)) {
-              if (-not $caseFailure) { $caseFailure = 'Smoke did not retain its raw diagnostics directory' }
-            } else {
-              $rawDirectory = Join-Path $caseDirectory 'raw'
-              New-Item -ItemType Directory -Path $rawDirectory -Force | Out-Null
-              Copy-Item -Path (Join-Path $diagnosticsPath '*') -Destination $rawDirectory -Recurse -Force
-            }
-            $exePath = Join-Path $env:RUNNER_TEMP "katana-windows-smoke-$caseName/KatanA.exe"
-            $actualExeSha256 = $null
-            if (Test-Path -LiteralPath $exePath -PathType Leaf) {
-              $actualExeSha256 = (Get-FileHash -LiteralPath $exePath -Algorithm SHA256).Hash.ToLowerInvariant()
-              if ($actualExeSha256 -ne $caseMetadata.main_sha256) { $caseFailure = 'Extracted executable hash differs from validated payload identity' }
-            } elseif (-not $caseFailure) { $caseFailure = 'Smoke extraction did not retain KatanA.exe' }
-            $caseOutcome = if ($caseFailure) { 'failure' } else { 'success' }
-            $result = [ordered]@{
-              diagnostic_case = $caseName
-              source_commit = $caseMetadata.source_commit
-              source_run_id = $caseMetadata.github_run_id
-              source_run_attempt = $caseMetadata.github_run_attempt
-              archive_sha256 = $caseMetadata.archive_sha256
-              original_powershell_body_sha256 = $caseMetadata.powershell_body_sha256
-              diagnostic_powershell_body_sha256 = $caseMetadata.diagnostic_body_sha256
-              expected_main_sha256 = $caseMetadata.main_sha256
-              actual_executable_sha256 = $actualExeSha256
-              diagnostics_directory = $diagnosticsPath
-              outcome = $caseOutcome
-              error = $caseFailure
-            }
-            $results.Add($result)
-            $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $caseDirectory 'result.json') -Encoding utf8
-          }
-          $summary = [ordered]@{
-            source_commit = $env:WINDOWS_SOURCE_COMMIT
-            source_run_id = $env:WINDOWS_RUN_ID
-            source_run_attempt = $env:WINDOWS_RUN_ATTEMPT
-            diagnostic_only = $true
-            original_required_smoke_outcome_unchanged = $true
-            cases = @($results)
-          }
-          $summary | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $resultsRoot 'summary.json') -Encoding utf8
-          if (@($results | Where-Object { $_.outcome -ne 'success' }).Count -gt 0) {
-            throw 'One or more diagnostic smoke cases failed; per-case evidence was retained'
-          }
-          Write-Host 'Both diagnostic cases completed and retained their payload-bound results.'
+          & (Join-Path $env:GITHUB_WORKSPACE 'controller/scripts/release/run-windows-startup-diagnostic-cases.ps1')
 
       - name: Upload Windows startup diagnostic cases
         if: always()
@@ -283,5 +174,5 @@ jobs:
         with:
           name: windows-startup-diagnostic-cases-${{ inputs.windows_run_id }}-${{ inputs.windows_run_attempt }}-${{ github.run_id }}
           path: target/windows-startup-diagnostics
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 5

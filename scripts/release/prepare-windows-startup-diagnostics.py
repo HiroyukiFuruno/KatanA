@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""必須smokeの判定と診断比較を混同しないよう、検証済み本文から限定派生scriptを作る。"""
+"""診断結果を必須smokeへ混同せず、検証済み本文から限定派生scriptを作る。"""
 
 from __future__ import annotations
 
@@ -25,7 +25,19 @@ ISOLATED_DIRECTORY_LINE = (
     '$directory = Join-Path $env:RUNNER_TEMP '
     '("katana-windows-smoke-" + $env:KATANA_STARTUP_DIAGNOSTICS_CASE)\n'
 )
-SUPPORTED_CASES = ("original", "reduced-native-trace")
+DEBUG_LINE = '$env:DEBUG = "true"\n'
+DX12_ENVIRONMENT_LINE = '$env:WGPU_DX12_USE_FRAME_LATENCY_WAITABLE_OBJECT = "{value}"\n'
+SUPPORTED_CASES = ("original", "reduced-native-trace", "dx12-waiting")
+SUPPORTED_DX12_VALUES = ("DontWait", "None")
+SUPPORTED_RUN_LABELS = (
+    "original", "reduced-native-trace", "original-before", "dx12-dont-wait",
+    "dx12-none", "original-after",
+)
+CASE_LABELS = {
+    "original": ("original", "original-before", "original-after"),
+    "reduced-native-trace": ("reduced-native-trace",),
+    "dx12-waiting": ("dx12-dont-wait", "dx12-none"),
+}
 
 
 class PreparationError(ValueError):
@@ -56,12 +68,17 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
     return source.replace(old, new, 1)
 
 
-def diagnostic_variant(source: str, case: str) -> str:
-    """各caseを独立実行し、元の検査条件を保った差だけを比較する。"""
+def diagnostic_variant(source: str, case: str, dx12_value: str | None = None) -> str:
     require(case in SUPPORTED_CASES, "unsupported diagnostic case")
     result = replace_once(source, SMOKE_DIRECTORY_LINE, ISOLATED_DIRECTORY_LINE, "smoke directory")
     if case == "reduced-native-trace":
         result = replace_once(result, RUN_LOG_LINE, REDUCED_LOG_LINE, "native trace RUST_LOG")
+    if case == "dx12-waiting":
+        require(dx12_value in SUPPORTED_DX12_VALUES, "unsupported DX12 waitable-object value")
+        result = replace_once(result, DEBUG_LINE, DEBUG_LINE + DX12_ENVIRONMENT_LINE.format(value=dx12_value),
+                              "debug environment")
+    else:
+        require(dx12_value is None, "DX12 environment value is only valid for dx12-waiting")
     return result
 
 
@@ -99,11 +116,18 @@ def prepare(args: argparse.Namespace) -> None:
             "validated run id differs")
     require(source_metadata.get("github_run_attempt") == args.expected_run_attempt,
             "validated run attempt differs")
-    result = diagnostic_variant(source, args.case)
+    require(args.run_label in SUPPORTED_RUN_LABELS, "unsupported diagnostic run label")
+    require(args.run_label in CASE_LABELS[args.case], "run label does not match diagnostic case")
+    require((args.case == "dx12-waiting") == (args.dx12_value is not None),
+            "DX12 environment value must match the diagnostic case")
+    expected_value = {"dx12-dont-wait": "DontWait", "dx12-none": "None"}.get(args.run_label)
+    require(args.dx12_value == expected_value, "DX12 value does not match diagnostic run label")
+    result = diagnostic_variant(source, args.case, args.dx12_value)
     output_script.parent.mkdir(parents=True, exist_ok=True)
     output_metadata.parent.mkdir(parents=True, exist_ok=True)
     output_script.write_text(result, encoding="utf-8", newline="")
-    source_metadata.update({"diagnostic_case": args.case,
+    source_metadata.update({"diagnostic_case": args.case, "run_label": args.run_label,
+                            "dx12_environment_value": args.dx12_value,
                             "diagnostic_body_sha256": sha256_bytes(result.encode("utf-8"))})
     output_metadata.write_text(json.dumps(source_metadata, indent=2) + "\n", encoding="utf-8", newline="")
 
@@ -118,6 +142,8 @@ def main() -> int:
     parser.add_argument("--expected-run-id", required=True)
     parser.add_argument("--expected-run-attempt", required=True)
     parser.add_argument("--case", choices=SUPPORTED_CASES, required=True)
+    parser.add_argument("--run-label", choices=SUPPORTED_RUN_LABELS, required=True)
+    parser.add_argument("--dx12-value", choices=SUPPORTED_DX12_VALUES)
     args = parser.parse_args()
     try:
         require(re.fullmatch(r"[0-9a-f]{40}", args.expected_source_commit) is not None,

@@ -1,0 +1,97 @@
+$ErrorActionPreference = 'Stop'
+Set-Location -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'controller')
+$payload = Join-Path $env:RUNNER_TEMP "windows-native-comparison-payload-$env:WINDOWS_RUN_ID-$env:WINDOWS_RUN_ATTEMPT"
+$resultsRoot = Join-Path $env:GITHUB_WORKSPACE 'target/windows-startup-diagnostics'
+New-Item -ItemType Directory -Path $resultsRoot -Force | Out-Null
+Set-Location -LiteralPath $payload
+$results = [System.Collections.Generic.List[object]]::new()
+# WHY: 待機方式をケース間で漏らさず、既定値の比較を同じrunner上で保つ。
+$settingName = 'WGPU_DX12_USE_FRAME_LATENCY_WAITABLE_OBJECT'
+$hadOriginalSetting = Test-Path -LiteralPath "Env:$settingName"
+$originalSetting = [Environment]::GetEnvironmentVariable($settingName, 'Process')
+$metadataNames = if ($env:WINDOWS_COMPARISON -eq 'dx12-waiting') {
+    @('original-before', 'dx12-dont-wait', 'dx12-none', 'original-after')
+} else { @('original', 'reduced-native-trace') }
+
+foreach ($caseLabel in $metadataNames) {
+    $caseDirectory = Join-Path $resultsRoot $caseLabel
+    New-Item -ItemType Directory -Path $caseDirectory -Force | Out-Null
+    $caseScript = Join-Path $env:RUNNER_TEMP "windows-startup-diagnostics-$caseLabel.ps1"
+    $caseMetadataPath = Join-Path $env:RUNNER_TEMP "windows-startup-diagnostics-$caseLabel.json"
+    $caseMetadata = Get-Content -LiteralPath $caseMetadataPath -Raw | ConvertFrom-Json
+    $caseName = $caseMetadata.diagnostic_case
+    Copy-Item -LiteralPath $caseMetadataPath -Destination (Join-Path $caseDirectory 'validated-identity.json')
+    $caseOutput = Join-Path $caseDirectory 'github-output.txt'
+    $consoleLog = Join-Path $caseDirectory 'powershell-console.log'
+    [System.IO.File]::WriteAllText($caseOutput, '')
+    $env:GITHUB_OUTPUT = $caseOutput
+    $env:KATANA_STARTUP_DIAGNOSTICS_CASE = $caseLabel
+    $caseFailure = $null
+    try {
+        if ($null -eq $caseMetadata.dx12_environment_value) {
+            Remove-Item -LiteralPath "Env:$settingName" -ErrorAction SilentlyContinue
+        } else {
+            [Environment]::SetEnvironmentVariable($settingName, [string]$caseMetadata.dx12_environment_value, 'Process')
+        }
+        & { . $caseScript } *> $consoleLog
+    }
+    catch { $caseFailure = $_.Exception.Message }
+    finally {
+        if ($hadOriginalSetting) {
+            [Environment]::SetEnvironmentVariable($settingName, $originalSetting, 'Process')
+        } else {
+            Remove-Item -LiteralPath "Env:$settingName" -ErrorAction SilentlyContinue
+        }
+    }
+    $diagnosticsPath = $null
+    $outputLine = Get-Content -LiteralPath $caseOutput | Where-Object { $_ -like 'diagnostics_directory=*' } | Select-Object -Last 1
+    if ($null -ne $outputLine) { $diagnosticsPath = $outputLine.Substring('diagnostics_directory='.Length) }
+    if (-not $diagnosticsPath -or -not (Test-Path -LiteralPath $diagnosticsPath -PathType Container)) {
+        if (-not $caseFailure) { $caseFailure = 'Smoke did not retain its raw diagnostics directory' }
+    } else {
+        $rawDirectory = Join-Path $caseDirectory 'raw'
+        New-Item -ItemType Directory -Path $rawDirectory -Force | Out-Null
+        Copy-Item -Path (Join-Path $diagnosticsPath '*') -Destination $rawDirectory -Recurse -Force
+    }
+    $exePath = Join-Path $env:RUNNER_TEMP "katana-windows-smoke-$caseLabel/KatanA.exe"
+    $actualExeSha256 = $null
+    if (Test-Path -LiteralPath $exePath -PathType Leaf) {
+        $actualExeSha256 = (Get-FileHash -LiteralPath $exePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($actualExeSha256 -ne $caseMetadata.main_sha256) {
+            $caseFailure = 'Extracted executable hash differs from validated payload identity'
+        }
+    } elseif (-not $caseFailure) { $caseFailure = 'Smoke extraction did not retain KatanA.exe' }
+    $caseOutcome = if ($caseFailure) { 'failure' } else { 'success' }
+    $result = [ordered]@{
+        diagnostic_case = $caseName
+        run_label = $caseLabel
+        dx12_environment_value = $caseMetadata.dx12_environment_value
+        source_commit = $caseMetadata.source_commit
+        source_run_id = $caseMetadata.github_run_id
+        source_run_attempt = $caseMetadata.github_run_attempt
+        archive_sha256 = $caseMetadata.archive_sha256
+        original_powershell_body_sha256 = $caseMetadata.powershell_body_sha256
+        diagnostic_powershell_body_sha256 = $caseMetadata.diagnostic_body_sha256
+        expected_main_sha256 = $caseMetadata.main_sha256
+        actual_executable_sha256 = $actualExeSha256
+        diagnostics_directory = $diagnosticsPath
+        outcome = $caseOutcome
+        error = $caseFailure
+    }
+    $results.Add($result)
+    $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $caseDirectory 'result.json') -Encoding utf8
+}
+
+$summary = [ordered]@{
+    source_commit = $env:WINDOWS_SOURCE_COMMIT
+    source_run_id = $env:WINDOWS_RUN_ID
+    source_run_attempt = $env:WINDOWS_RUN_ATTEMPT
+    diagnostic_only = $true
+    original_required_smoke_outcome_unchanged = $true
+    cases = @($results)
+}
+$summary | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $resultsRoot 'summary.json') -Encoding utf8
+if (@($results | Where-Object { $_.outcome -ne 'success' }).Count -gt 0) {
+    throw 'One or more diagnostic smoke cases failed; per-case evidence was retained'
+}
+Write-Host 'All diagnostic smoke cases were attempted and their payload-bound results retained.'
