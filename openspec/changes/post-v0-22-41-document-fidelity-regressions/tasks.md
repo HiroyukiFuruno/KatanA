@@ -1,3 +1,8 @@
+### 2026-10-28 Windowsの同一resize通知を抑える候補を検証する
+
+- [x] 同一配布物の任意診断40592186164を回収し、元smoke5→5の不合格と、3profileの実採取成功を分離した。現行EXEのSHA・ImageLoad・unwind/IAT/source文字列から、長い待機の復帰stackをWindowEvent::Resized→Surface再設定→GPU fence waitへ対応付けた。WM_SIZE発生元や製品修復の成功までは断定しない。
+- [/] KatanA所有root HWNDの同一SIZE種別/client寸法/DPI/monitorだけを抑制する候補を実装した。状態変化・不明・最小化・破棄を保持し、境界8件とWindows APIのsource compile/Clippyを確認し、通常署名commit `4ac14b9d`へ統合した。実Win32回帰3件・元200ms×10/latency1・全gate・通常push・current review・全OS公開は継続中。[根拠](evidence/windows-resize-coalescing-2026-10-28.ja.md)。
+
 ### 2026-10-28 Windowsの画面提示・GPUイベントを追加採取する
 
 > その採取成功テストだけ診断専用の非必須ジョブに分離してください。本体の必須検査と基準は維持して、修正・検証・コミットからリリースまで、報告だけで止まらず進めてね。
