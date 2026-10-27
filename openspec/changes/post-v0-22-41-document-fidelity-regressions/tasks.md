@@ -1,6 +1,11 @@
+### 2026-10-27 次の同一配布物比較と証跡依存更新
+
+- [ ] Windows診断run40524518173は同一exeの元ログ/低減ログとも元200ms条件で不合格。ログ低減を修復扱いせず、公式WGPUのDX12待機方式だけを変えた同一配布物比較を前後の既定条件付きで実装した。対象13契約・Actionlint・実PowerShell構文解析・最終独立レビュー成功、通常commit60f3813d。実Windowsの回収・製品修復は未完了で継続する。元要求/閾値/正式公開条件は維持。[根拠](evidence/windows-paint-delivery-diagnosis-2026-10-27.ja.md)。
+- [ ] Issue374: GitHub open alerts41件は配布証跡ツールPillow12.3.0の指定に集中していた。製品Cargo graphや既存ZIP/Zstd評価と分離し、公開Pillow13.0.0を隔離導入し、PyPI wheel hash一致・119既存契約・実fixture PNGのproduction検査が成功。要求版1行を通常commit d6481c46へ統合、通常push・公開は継続する。警告件数だけで公開停止や実影響を断定せず、例外/閾値緩和にしない。[根拠](evidence/release-evidence-pillow-refresh-2026-10-27.ja.md)。
+
 ### 2026-10-27 Windowsのpaint配送遅延を同一配布物で切り分ける
 
-- [ ] 正式run40505473053はLinux/macOS両CPU起動成功・Windows元200ms×10でframe5→5失敗。後続frame9へ進行するため恒久停止とは断定しない。別診断PID7544の34frames/中央値312.634ms、32長待機の起床側dwm27/System5と開始stack欠測を分け、同一配布物の診断ログ負荷比較を実装した。派生9件/既存比較6件/native分離7件・Actionlint・実PowerShell構文は成功、実Windows結果は未回収。通常統合/push後に比較結果を回収する。元条件・identity・保護を維持し、原因確認後の修復/通常レビュー/必須CI/全OS公開へ継続。[根拠](evidence/windows-paint-delivery-diagnosis-2026-10-27.ja.md)。
+- [x] 正式run40505473053のWindows元200ms×10失敗と、別診断PID7544の34frames/開始stack欠測を分離して回収した。ログ負荷比較を通常commit/push040・DraftPR373へ統合し、対象契約/Actionlint/実PowerShell構文・exactCodex指摘0を確認。実Windows診断40524518173は同一exeの元ログ/低減ログとも200ms不合格で回収完了。これは診断工程の完了で、製品修復・全OS公開の成功ではない。後続の待機方式診断と元基準の修復・公開は上の未完了項目で継続。[根拠](evidence/windows-paint-delivery-diagnosis-2026-10-27.ja.md)。
 
 ### 2026-10-27 #364 テスト期待値のOS分岐によるcoverage不足を修復する
 
