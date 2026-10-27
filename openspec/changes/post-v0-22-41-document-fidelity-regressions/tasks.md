@@ -1,3 +1,7 @@
+### 2026-10-27 #364 テスト期待値のOS分岐によるcoverage不足を修復する
+
+- [/] d875cc2のCIは7/8成功・MaccoverageだけWindows期待値の未実行1行で失敗。test内のruntime cfg!をcompile-time cfg期待値へ変更し、production bytes・全assert・元品質条件を維持。実KatanA bin対象test1件exit0、当該file16/16行・21/21領域100%、fmt/diff・独立レビュー成功。対象Clippy（test含む）もexit0。通常commit/push/new全review/CI・実配布/公開は継続。[根拠](evidence/native-presentation-test-cfg-coverage-2026-10-27.ja.md)。
+
 ### 2026-10-27 #371 配布起動検査の終了猶予を共有する
 
 - [/] main/所有launcherの直列終了待ちでReadinessが7秒>元6秒となった。全TERM後に既存2秒猶予を共有、KILL前identity再確認と同PID dedupを実装。最終Mac実5ケース成功、旧helper RED・dedup/identity除去mutation各RED、ShellCheck/Bash syntax・独立レビュー成功。Linux実5ケース・Mac Office callerも成功。通常commit/push・新review/全CI・公開は継続する。[根拠](evidence/startup-cleanup-shared-grace-2026-10-27.ja.md)。

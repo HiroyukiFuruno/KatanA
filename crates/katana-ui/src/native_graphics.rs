@@ -17,16 +17,17 @@ impl NativeGraphicsOps {
 mod tests {
     #[test]
     fn presentation_configuration_preserves_latency_and_other_defaults() {
-        let mut expected = eframe::NativeOptions::default();
+        let expected = eframe::NativeOptions::default();
         let mut actual = expected.clone();
-        if cfg!(target_os = "windows") {
-            expected.wgpu_options.surface.present_mode = eframe::wgpu::PresentMode::AutoNoVsync;
-        }
+        #[cfg(target_os = "windows")]
+        let expected_present_mode = eframe::wgpu::PresentMode::AutoNoVsync;
+        #[cfg(not(target_os = "windows"))]
+        let expected_present_mode = expected.wgpu_options.surface.present_mode;
         super::NativeGraphicsOps::configure_presentation(&mut actual);
 
         assert_eq!(
             actual.wgpu_options.surface.present_mode,
-            expected.wgpu_options.surface.present_mode
+            expected_present_mode
         );
         assert_eq!(
             actual.wgpu_options.surface.desired_maximum_frame_latency,
