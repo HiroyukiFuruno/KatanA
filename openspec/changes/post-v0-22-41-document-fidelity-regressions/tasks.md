@@ -1,3 +1,7 @@
+### 2026-10-27 Windowsのpaint配送遅延を同一配布物で切り分ける
+
+- [ ] 正式run40505473053はLinux/macOS両CPU起動成功・Windows元200ms×10でframe5→5失敗。後続frame9へ進行するため恒久停止とは断定しない。別診断PID7544の34frames/中央値312.634ms、32長待機の起床側dwm27/System5と開始stack欠測を分け、同一配布物の診断ログ負荷比較を実装した。派生9件/既存比較6件/native分離7件・Actionlint・実PowerShell構文は成功、実Windows結果は未回収。通常統合/push後に比較結果を回収する。元条件・identity・保護を維持し、原因確認後の修復/通常レビュー/必須CI/全OS公開へ継続。[根拠](evidence/windows-paint-delivery-diagnosis-2026-10-27.ja.md)。
+
 ### 2026-10-27 #364 テスト期待値のOS分岐によるcoverage不足を修復する
 
 - [/] d875cc2のCIは7/8成功・MaccoverageだけWindows期待値の未実行1行で失敗。test内のruntime cfg!をcompile-time cfg期待値へ変更し、production bytes・全assert・元品質条件を維持。実KatanA bin対象test1件exit0、当該file16/16行・21/21領域100%、fmt/diff・独立レビュー成功。対象Clippy（test含む）もexit0。通常commit/push/new全review/CI・実配布/公開は継続。[根拠](evidence/native-presentation-test-cfg-coverage-2026-10-27.ja.md)。
