@@ -1,3 +1,7 @@
+### 2026-10-27 #371 配布起動検査の終了猶予を共有する
+
+- [/] main/所有launcherの直列終了待ちでReadinessが7秒>元6秒となった。全TERM後に既存2秒猶予を共有、KILL前identity再確認と同PID dedupを実装。最終Mac実5ケース成功、旧helper RED・dedup/identity除去mutation各RED、ShellCheck/Bash syntax・独立レビュー成功。Linux実5ケース・Mac Office callerも成功。通常commit/push・新review/全CI・公開は継続する。[根拠](evidence/startup-cleanup-shared-grace-2026-10-27.ja.md)。
+
 ### 2026-10-27 追加の共通ライブラリ公開版を取り込む
 
 - [/] CI中に追加されたKMM0.2.4/KAL0.5.3/KML0.19.6の4ファイルを保全。registry checksum・crate archive・GitHub tag/VCS一致、root/screenshot両locked offline metadataと前後lock hash不変、既存type-check成功を確認した。公開API差はなく、KMLの明示空見出し配列の診断変更を日英変更履歴へ記録する。通常commit/push・新graphのcurrent review/全CI・公開は継続し、旧1177のCIを新graph成功へ流用しない。[根拠](evidence/katana-library-refresh-2026-10-27.ja.md)。

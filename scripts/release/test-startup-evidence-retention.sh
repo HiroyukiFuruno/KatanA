@@ -47,7 +47,9 @@ grep -Fq 'APP_PID=""' "$CLEANUP_HELPER" || {
     exit 1
 }
 
+# shellcheck source=scripts/release/packaged-process-identity.sh
 source "$IDENTITY_HELPER"
+# shellcheck source=scripts/release/startup-process-cleanup.sh
 source "$CLEANUP_HELPER"
 launcher_pid=""
 unrelated_pid=""
@@ -91,6 +93,13 @@ wait_for_exit() {
     return 1
 }
 
+sleep() {
+    command sleep "$@"
+    if [[ "${STARTUP_COARSE_POLL_SLEEP:-0}" == 1 ]]; then
+        command sleep 0.2
+    fi
+}
+
 run_cleanup_with_identity_trace() {
     local trace_path="$1"
     local saved_ps4="$PS4" was_xtrace=0
@@ -108,20 +117,15 @@ run_cleanup_with_identity_trace() {
 }
 
 verify_wait_grace_uses_elapsed_time() {
-    local pid wait_started
+    local pid wait_started STARTUP_COARSE_POLL_SLEEP=1
     bash -c 'trap "" TERM; exec sleep 30' &
     pid=$!
     grace_pid="$pid"
     wait_started=$SECONDS
-    sleep() {
-        command sleep "$1"
-        command sleep 0.2
-    }
     if startup_wait_for_exit "$pid"; then
         echo 'FAIL: startup wait accepted a live TERM-ignoring process' >&2
         exit 1
     fi
-    unset -f sleep
     (( SECONDS - wait_started <= 3 )) || {
         echo 'FAIL: startup wait counted polling attempts instead of elapsed termination grace' >&2
         exit 1
@@ -135,6 +139,7 @@ run_cleanup_case() {
     local main_mode="$1"
     local launched_pid owned_pid cleanup_started cleanup_finished cleanup_delta
     local trace_path expected_identity_calls actual_identity_calls caller_ps4="$PS4"
+    local actual_term_calls actual_kill_calls
     local caller_xtrace_enabled=0 restored_xtrace_enabled=0
     [[ $- == *x* ]] && caller_xtrace_enabled=1
     EVIDENCE_DIR=$(mktemp -d -t katana-cleanup-evidence.XXXXXX)
@@ -147,6 +152,34 @@ run_cleanup_case() {
         bash -c 'trap "" TERM; exec sleep 30' &
     elif [[ "$main_mode" == launcher_ignoring ]]; then
         python3 -c 'import signal, subprocess; signal.signal(signal.SIGTERM, signal.SIG_IGN); subprocess.Popen(["sleep", "30"]).wait(); signal.pause()' &
+    elif [[ "$main_mode" == launcher_and_main_ignoring ]]; then
+        STARTUP_CLEANUP_TERM_EVENT="$EVIDENCE_DIR/launcher-term-event" python3 -c '
+import os
+import signal
+import subprocess
+
+event_path = os.environ["STARTUP_CLEANUP_TERM_EVENT"]
+child = None
+
+def on_term(_signum, _frame):
+    try:
+        waited_pid, _status = os.waitpid(child.pid, os.WNOHANG)
+    except ChildProcessError:
+        waited_pid = child.pid
+    with open(event_path, "w", encoding="utf-8") as event:
+        event.write("dead-main" if waited_pid == child.pid else "live-main")
+
+signal.signal(signal.SIGTERM, on_term)
+child = subprocess.Popen(
+    ["bash", "-c", "trap \"\" TERM; IFS= read -r _; exec sleep 30"],
+    stdin=subprocess.PIPE,
+)
+child.stdin.write(b"go\n")
+child.stdin.close()
+child.wait()
+while True:
+    signal.pause()
+' &
     else
         bash -c 'sleep 30 & wait' &
     fi
@@ -189,7 +222,8 @@ run_cleanup_case() {
             "$main_mode" "$trace_path" >&2
         exit 1
     fi
-    if [[ "$main_mode" == direct_ignoring || "$main_mode" == launcher_ignoring ]]; then
+    if [[ "$main_mode" == direct_ignoring || "$main_mode" == launcher_ignoring || \
+        "$main_mode" == launcher_and_main_ignoring ]]; then
         expected_identity_calls=2
     else
         expected_identity_calls=1
@@ -202,6 +236,17 @@ run_cleanup_case() {
             "$main_mode" "$cleanup_started" "$cleanup_finished" "$cleanup_delta" \
             "$actual_identity_calls" "$expected_identity_calls" "$trace_path" >&2
         exit 1
+    fi
+    if [[ "$main_mode" == direct_ignoring ]]; then
+        actual_term_calls=$(grep -Ec \
+            "^\\+STARTUP_CLEANUP_TRACE: kill -TERM ${owned_pid}$" "$trace_path" || true)
+        actual_kill_calls=$(grep -Ec \
+            "^\\+STARTUP_CLEANUP_TRACE: kill -KILL ${owned_pid}$" "$trace_path" || true)
+        if (( actual_term_calls != 1 || actual_kill_calls != 1 )); then
+            printf 'FAIL: shared main/launcher PID received duplicate signals: TERM=%s KILL=%s\n' \
+                "$actual_term_calls" "$actual_kill_calls" >&2
+            exit 1
+        fi
     fi
     printf 'PASS: startup cleanup identity protocol: mode=%s start=%s end=%s actual_delta=%s identity_calls=%s tracepath=%s\n' \
         "$main_mode" "$cleanup_started" "$cleanup_finished" "$cleanup_delta" \
@@ -223,6 +268,17 @@ run_cleanup_case() {
         echo 'FAIL: shared cleanup helper did not retain evidence' >&2
         exit 1
     }
+    if [[ "$main_mode" == launcher_and_main_ignoring ]]; then
+        [[ -f "$EVIDENCE_DIR/launcher-term-event" ]] || {
+            echo 'FAIL: owned launcher did not record when it received TERM' >&2
+            exit 1
+        }
+        [[ "$(<"$EVIDENCE_DIR/launcher-term-event")" == live-main ]] || {
+            printf 'FAIL: launcher received TERM only after main exited: event=%s\n' \
+                "$(<"$EVIDENCE_DIR/launcher-term-event")" >&2
+            exit 1
+        }
+    fi
     kill -0 "$unrelated_pid" 2>/dev/null || {
         echo 'FAIL: shared cleanup helper killed an unrelated process' >&2
         exit 1
@@ -234,6 +290,7 @@ run_cleanup_case verified
 run_cleanup_case discover
 run_cleanup_case direct_ignoring
 run_cleanup_case launcher_ignoring
+run_cleanup_case launcher_and_main_ignoring
 
 if [[ "$(uname -m)" == arm64 ]]; then
     if early_output=$(bash "$SMOKE" macos-arm64 /usr/bin/false 2>&1); then
