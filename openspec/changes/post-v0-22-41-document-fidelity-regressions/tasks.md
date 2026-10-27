@@ -1,3 +1,8 @@
+### 2026-10-27 本体の不具合・補助診断・未完了欄を区別する
+
+- [/] 本人の指摘: 補助診断の採取失敗だけで本体不具合や全作業停止としない。html_navigation.rsのcfg(all(test,macos))により採取moduleは配布本体に含まれず、失敗時のsample_errorは元HTML検査エラーへ追記されるだけ。現行hookの不合格を黙って成功へ変えず、診断テストの配置・環境不足と、本体のWindows描画/新HEAD CI未完を別に報告する。独立した証跡回収・状態修正は継続する。検索語: auxiliary diagnostics, product gate, profiler environment failure。
+- [/] 未完了のチェック欄だけで未実装と判断しない。source・既存契約・導入commit・実CI成果物を照合してから、実装済み/実測済み/検証待ちを分ける。#343の観測機能は既存実装を確認し、過去のWindows失敗artifactを今回回収して下のタスクと証跡を補正した。重複実装や旧CI結果の新HEAD流用はしない。
+
 ### 2026-10-27 Windows の読取中の描画記録を置換する
 
 - [/] PR370/headc3e39dae の Ready CI は Windows で記録置換のアクセス拒否により4件失敗し、全体cancelled。Readiness成功を全CI成功へ流用せずDraftへ戻した。現行Rust標準renameのPOSIX対応経路へ切り替え、同一dirの完成記録・失敗時cleanup・ログを保持する。既存テスト無変更で対象8件/strictClippy/fmt/diff成功。新unsafe/依存/retry/ignoreや元200ms等の変更は無し。新通常commit/push・current review・全CI・実配布検証は未完。[根拠](evidence/windows-open-heartbeat-rename-2026-10-27.ja.md)。
@@ -310,7 +315,8 @@ Windowsの実測未実施は、cache key/誤再利用拒否/Ready後の配線を
 
 - [x] #351 異source A/B→同一PDFの実HTTP redirect回帰を補完。両適用順で新しいBのrevision・世代・選択・独立HTML保持を検証し既存製品は成功、製品変更無し。fixtureの分割受信/途中切れ/上限超過は32277actual101/3assert RED→bounded reader修復後70625のURL81PASS2.55秒・AST30PASS14.04秒・全target/external-fixture strict成功。module宣言順だけfmt補正後公式fmt/diff0、独立再review必須無し。evidence/url-redirect-convergence-2026-10-16.md。通常push/current review/Ready必須CI/packaged/全公開は別未完。
 
-- [ ] #343 Windows観測と実測: registry cacheの結果と既存workspace testの一回の時間/exit・run/source/lock情報をCI summary/artifactへ記録する。元cache key/対象・全test・worker入口・失敗code・Draft guardを維持し、追加test実行やskip/reuse権限を導入しない。target cold/warm同等性やWindows実測済みとは扱わない。旧workflow契約3FAIL→3PASS、独立P2のsummary識別/実行後hash明示は94513actual1/2FAIL1ERROR→94406actual0/関連23PASS2.336秒、default actionlint22470actual0。独立再review必須P0/P1/P2無し→署名ef29a17d/15586actual0へ通常統合。evidence/windows-ci-observation-2026-10-16.md。通常push/current reviewの実結果はcurrentメモ/台帳で追跡し、Windows実測・matched cold/warm比較・全#343は未完。
+- [x] #343 Windows観測の実装と失敗時の実出力確認: 記録機能はef29a17dで既に実装済み。現在source ef94cc6fの既存観測契約4件/observer実subprocess10件成功を回収し、重複実装は行わない。実Windows run40402573799/attempt1・artifact12690785625のdigestと内容を照合し、既存workspace test1回/386.7617079秒/exit101・source/両lock安定・registry/target cache両missを確認。PR merge ref3289のtreeはpublicc3と同一で、現在ef94のCI成功へは流用しない。元cache key/対象・全test・worker入口・失敗code・Draft guardを維持し、skip/reuse権限無し。根拠: [回収記録](evidence/windows-ci-observation-2026-10-27.ja.md)。
+- [ ] #343 残る検証・最適化: 対応条件をそろえたWindows cold/warm比較、総時間の短縮効果、完全な同等性、trusted reuse、最新HEADの全CI・公開は未完。GitHub上のStep Summary表示は直接未確認で、追記実装と契約成功とを区別する。観測記録の実出力を製品検査成功や検査削減の証明にしない。
 
 - [/] #339 現8ec4e562 clean同HEAD/両lock不変で既存just package-mac31345 actualexit0。main/worker各IntelARM・全4slice minos13.0・Info v0.22.42・deep strict ad-hoc署名を実物で確認。evidence/current-static-package-8ec4e562-2026-10-16.mdにSHA/実log/初回worker名誤探索の補正を記録。静的ローカル配布候補だけであり本人実機・clean-machine・全OS・全5公開・起動障害解消の証明ではない。
 
