@@ -23,6 +23,8 @@ if ($env:WINDOWS_COMPARISON -eq 'dx12-waiting') {
         @{ Case = 'dx12-waiting'; Label = 'dx12-none'; Value = 'None' },
         @{ Case = 'original'; Label = 'original-after' }
     )
+} elseif ($env:WINDOWS_COMPARISON -eq 'wait-stacks') {
+    $cases = @(@{ Case = 'original'; Label = 'original' })
 } else {
     $cases = @(
         @{ Case = 'original'; Label = 'original' },

@@ -11,7 +11,8 @@ $hadOriginalSetting = Test-Path -LiteralPath "Env:$settingName"
 $originalSetting = [Environment]::GetEnvironmentVariable($settingName, 'Process')
 $metadataNames = if ($env:WINDOWS_COMPARISON -eq 'dx12-waiting') {
     @('original-before', 'dx12-dont-wait', 'dx12-none', 'original-after')
-} else { @('original', 'reduced-native-trace') }
+} elseif ($env:WINDOWS_COMPARISON -eq 'wait-stacks') { @('original') }
+else { @('original', 'reduced-native-trace') }
 
 foreach ($caseLabel in $metadataNames) {
     $caseDirectory = Join-Path $resultsRoot $caseLabel
@@ -82,16 +83,25 @@ foreach ($caseLabel in $metadataNames) {
     $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $caseDirectory 'result.json') -Encoding utf8
 }
 
+$traceFailure = $null
+if ($env:WINDOWS_COMPARISON -eq 'wait-stacks') {
+    # WHY: 元smokeの結果を保持した後で別processを採取し、採取結果で本体を合格にしない。
+    try {
+        & (Join-Path $env:GITHUB_WORKSPACE 'controller/scripts/release/capture-windows-startup-wait-stacks.ps1')
+    } catch { $traceFailure = $_.Exception.Message }
+}
+
 $summary = [ordered]@{
     source_commit = $env:WINDOWS_SOURCE_COMMIT
     source_run_id = $env:WINDOWS_RUN_ID
     source_run_attempt = $env:WINDOWS_RUN_ATTEMPT
     diagnostic_only = $true
     original_required_smoke_outcome_unchanged = $true
+    wait_stack_trace_error = $traceFailure
     cases = @($results)
 }
 $summary | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $resultsRoot 'summary.json') -Encoding utf8
-if (@($results | Where-Object { $_.outcome -ne 'success' }).Count -gt 0) {
+if ($traceFailure -or @($results | Where-Object { $_.outcome -ne 'success' }).Count -gt 0) {
     throw 'One or more diagnostic smoke cases failed; per-case evidence was retained'
 }
 Write-Host 'All diagnostic smoke cases were attempted and their payload-bound results retained.'

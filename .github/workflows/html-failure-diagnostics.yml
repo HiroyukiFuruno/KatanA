@@ -25,6 +25,7 @@ on:
         options:
           - logging
           - dx12-waiting
+          - wait-stacks
         default: logging
   pull_request:
     branches: [master]
@@ -42,6 +43,9 @@ on:
       - 'scripts/release/validate-windows-startup-diagnostic-run.ps1'
       - 'scripts/release/prepare-windows-startup-diagnostic-cases.ps1'
       - 'scripts/release/run-windows-startup-diagnostic-cases.ps1'
+      - 'scripts/release/capture-windows-startup-wait-stacks.ps1'
+      - 'scripts/release/trace-windows-startup.ps1'
+      - 'scripts/release/windows-startup-wait-stacks.wprp'
       - '.github/workflows/html-failure-diagnostics.yml'
 
 permissions:

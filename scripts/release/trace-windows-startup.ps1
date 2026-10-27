@@ -3,7 +3,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$ExecutablePath,
     [Parameter(Mandatory = $true)]
-    [string]$DiagnosticsDirectory
+    [string]$DiagnosticsDirectory,
+    [switch]$WaitStacks
 )
 
 Set-StrictMode -Version Latest
@@ -17,6 +18,9 @@ $process = $null
 $processStartTicks = $null
 $resolvedExecutable = $null
 $expectedSha256 = $null
+$wprProfilePath = $null
+$wprProfileName = 'GeneralProfile'
+$wprProfileSha256 = $null
 
 function ConvertTo-NativeArgument {
     param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Value)
@@ -153,6 +157,13 @@ try {
     if (-not (Test-Path -LiteralPath $diagnostics -PathType Container)) {
         throw 'Windows diagnostics directory is missing.'
     }
+    if ($WaitStacks) {
+        $preparedWprProfile = & (Join-Path $PSScriptRoot 'prepare-windows-startup-wpr-profile.ps1') `
+            -DiagnosticsDirectory $diagnostics
+        $wprProfilePath = $preparedWprProfile.profile_path
+        $wprProfileName = $preparedWprProfile.profile_name
+        $wprProfileSha256 = $preparedWprProfile.sha256
+    }
     $expectedSha256 = (Get-FileHash -LiteralPath $resolvedExecutable -Algorithm SHA256 -ErrorAction Stop).Hash
     $wprCommand = Get-Command -Name 'wpr.exe' -ErrorAction SilentlyContinue
     $tracerptCommand = Get-Command -Name 'tracerpt.exe' -ErrorAction SilentlyContinue
@@ -171,10 +182,17 @@ try {
     if ($help.ExitCode -ne 0 -or $help.Text -notmatch '(?i)-instancename') {
         throw 'WPR advanced help did not confirm -instancename support; no default-instance fallback is allowed.'
     }
-    $profiles = Invoke-BoundedNative -Path $wprCommand.Source -Arguments @('-profiles') `
+    $profileArguments = @('-profiles')
+    if ($WaitStacks) { $profileArguments = @('-profiles', $wprProfilePath) }
+    $profiles = Invoke-BoundedNative -Path $wprCommand.Source -Arguments $profileArguments `
         -Operation 'wpr-profiles' -OutputDirectory $diagnostics -TimeoutSeconds 30
     if ($profiles.ExitCode -ne 0) { throw "wpr -profiles failed with exit code $($profiles.ExitCode)." }
-    if ($profiles.Text -notmatch '(?im)^\s*GeneralProfile(?:\s|$)') {
+    if ($WaitStacks) {
+        if ($profiles.Text -notmatch '(?im)^\s*KatanAWaitStacks(?:\s|$)') {
+            throw 'The fixed wait-stack profile is not listed by WPR; no alternate profile was selected.'
+        }
+    }
+    elseif ($profiles.Text -notmatch '(?im)^\s*GeneralProfile(?:\s|$)') {
         throw 'GeneralProfile is not listed by wpr -profiles; no alternate profile was selected.'
     }
     $beforeStatus = Invoke-BoundedNative -Path $wprCommand.Source -Arguments @('-status') `
@@ -186,17 +204,41 @@ try {
     $etl = Join-Path $diagnostics 'windows-startup-diagnostic.etl'
     [pscustomobject]@{
         instance_name = $wprInstance
-        profile = 'GeneralProfile'
+        profile = $wprProfileName
+        profile_sha256 = $wprProfileSha256
+        profile_path = $wprProfilePath
         etl_path = $etl
         start_attempted = $true
         ownership_scope = 'unique instance name only; never stops the default WPR instance'
         recorded_at_utc = [DateTime]::UtcNow.ToString('o')
     } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $diagnostics 'wpr-ownership.json') -Encoding utf8
     $wprStartAttempted = $true
-    $start = Invoke-BoundedNative -Path $wprCommand.Source `
-        -Arguments @('-start', 'GeneralProfile', '-instancename', $wprInstance) `
-        -Operation 'wpr-start' -OutputDirectory $diagnostics -TimeoutSeconds 30
-    if ($start.ExitCode -ne 0) { throw "wpr -start GeneralProfile failed with exit code $($start.ExitCode)." }
+    $startArguments = @('-start', 'GeneralProfile', '-instancename', $wprInstance)
+    $startOperation = 'wpr-start'
+    if ($WaitStacks) {
+        $startArguments = @('-start', "$wprProfilePath!KatanAWaitStacks.Verbose", '-instancename', $wprInstance)
+        $startOperation = 'wpr-start-wait-stacks'
+    }
+    $start = Invoke-BoundedNative -Path $wprCommand.Source -Arguments $startArguments `
+        -Operation $startOperation -OutputDirectory $diagnostics -TimeoutSeconds 30
+    if ($start.ExitCode -ne 0) { throw "WPR profile start failed with exit code $($start.ExitCode)." }
+    if ($WaitStacks) {
+        $profileStatus = Invoke-BoundedNative -Path $wprCommand.Source `
+            -Arguments @('-status', 'profiles', '-instancename', $wprInstance) `
+            -Operation 'wpr-profile-status' -OutputDirectory $diagnostics -TimeoutSeconds 30
+        if ($profileStatus.ExitCode -ne 0 -or $profileStatus.Text -notmatch 'KatanAWaitStacks\.Verbose\.Memory') {
+            throw 'WPR did not confirm the requested wait-stack profile is active in memory mode.'
+        }
+        [pscustomobject]@{
+            requested_profile = 'KatanAWaitStacks.Verbose.Memory'
+            start_exit_code = $start.ExitCode
+            status_exit_code = $profileStatus.ExitCode
+            actual_status = $profileStatus.Text
+            profile_path = $wprProfilePath
+            profile_sha256 = $wprProfileSha256
+            interpretation = 'Profile selection evidence only; stack availability must be checked in the retained ETL.'
+        } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $diagnostics 'wpr-profile-selection.json') -Encoding utf8
+    }
     $ownedStatus = Invoke-BoundedNative -Path $wprCommand.Source `
         -Arguments @('-status', '-instancename', $wprInstance) `
         -Operation 'wpr-status-owned' -OutputDirectory $diagnostics -TimeoutSeconds 30

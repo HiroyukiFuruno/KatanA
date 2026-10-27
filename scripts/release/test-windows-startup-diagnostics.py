@@ -103,6 +103,19 @@ class WindowsStartupDiagnosticTests(unittest.TestCase):
                                                                 "unsupported diagnostic case"):
                 self.helper.diagnostic_variant(self.body, case)
 
+    def test_wait_stacks_keeps_original_smoke_and_separate_owned_trace(self):
+        self.assertIn("- wait-stacks", self.diagnostics_workflow)
+        self.assertIn("$env:WINDOWS_COMPARISON -eq 'wait-stacks'", self.prepare_cases)
+        self.assertIn("$env:WINDOWS_COMPARISON -eq 'wait-stacks'", self.run_cases)
+        self.assertIn("capture-windows-startup-wait-stacks.ps1", self.run_cases)
+        self.assertIn("wait_stack_trace_error = $traceFailure", self.run_cases)
+        capture = (ROOT / "scripts/release/capture-windows-startup-wait-stacks.ps1").read_text(encoding="utf-8")
+        self.assertIn("Get-FileHash", capture)
+        self.assertIn("$identity.main_sha256", capture)
+        self.assertIn("-WaitStacks", capture)
+        self.assertLess(capture.index("Get-FileHash"), capture.index("-WaitStacks"))
+        self.assert_protected_contract(self.helper.diagnostic_variant(self.body, "original"))
+
     def test_macos_sampler_defaults_remain_separate_from_windows_dispatch(self):
         native = self.diagnostics_workflow.split("  native-sample:", 1)[1].split("\n  windows-startup-diagnostics:", 1)[0]
         windows = self.diagnostics_workflow.split("  windows-startup-diagnostics:", 1)[1]
