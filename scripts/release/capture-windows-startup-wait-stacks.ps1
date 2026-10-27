@@ -1,12 +1,14 @@
 param(
-    [ValidateSet('original', 'original-before', 'dx12-visual', 'original-after')]
+    [ValidateSet('original', 'original-before', 'dx12-visual', 'dx12-dxc', 'original-after')]
     [string]$CaseLabel = 'original'
 )
 $ErrorActionPreference = 'Stop'
 $controller = Join-Path $env:GITHUB_WORKSPACE 'controller'
+. (Join-Path $controller 'scripts/release/windows-dx12-compiler-environment.ps1')
 $metadata = Join-Path $env:RUNNER_TEMP "windows-startup-diagnostics-$CaseLabel.json"
 $identity = Get-Content -LiteralPath $metadata -Raw | ConvertFrom-Json
-$expectedCase = if ($CaseLabel -eq 'dx12-visual') { 'dx12-presentation' } else { 'original' }
+$expectedCase = if ($CaseLabel -eq 'dx12-visual') { 'dx12-presentation' }
+    elseif ($CaseLabel -eq 'dx12-dxc') { 'dx12-compiler' } else { 'original' }
 if ($identity.source_commit -ne $env:WINDOWS_SOURCE_COMMIT -or
     [string]$identity.github_run_id -ne $env:WINDOWS_RUN_ID -or
     [string]$identity.github_run_attempt -ne $env:WINDOWS_RUN_ATTEMPT -or
@@ -31,6 +33,7 @@ $hadOriginalSetting = Test-Path -LiteralPath "Env:$settingName"
 $originalSetting = [Environment]::GetEnvironmentVariable($settingName, 'Process')
 $hadOriginalWaitSetting = Test-Path -LiteralPath "Env:$waitSettingName"
 $originalWaitSetting = [Environment]::GetEnvironmentVariable($waitSettingName, 'Process')
+$compilerEnvironment = $null
 try {
     if ($env:WINDOWS_COMPARISON -eq 'dx12-presentation') {
         Remove-Item -LiteralPath "Env:$waitSettingName" -ErrorAction SilentlyContinue
@@ -39,6 +42,9 @@ try {
         } else {
             [Environment]::SetEnvironmentVariable($settingName, $expectedPresentation, 'Process')
         }
+    }
+    if ($CaseLabel -eq 'dx12-dxc') {
+        $compilerEnvironment = Enable-WindowsDx12Compiler -Metadata $identity -ControllerRoot $controller
     }
     & (Join-Path $controller 'scripts/release/trace-windows-startup.ps1') `
         -ExecutablePath $executable -DiagnosticsDirectory $output -WaitStacks
@@ -53,6 +59,11 @@ try {
             [Environment]::SetEnvironmentVariable($settingName, $originalSetting, 'Process')
         } else {
             Remove-Item -LiteralPath "Env:$settingName" -ErrorAction SilentlyContinue
+        }
+    }
+    if ($CaseLabel -eq 'dx12-dxc') {
+        if ($null -ne $compilerEnvironment) {
+            Restore-WindowsDx12CompilerEnvironment -State $compilerEnvironment
         }
     }
 }

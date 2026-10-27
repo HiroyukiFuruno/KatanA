@@ -41,6 +41,7 @@ class WindowsStartupDiagnosticTests(unittest.TestCase):
         cls.diagnostics_workflow = DIAGNOSTIC_WORKFLOW.read_text(encoding="utf-8")
         cls.prepare_cases = PREPARE_CASES.read_text(encoding="utf-8")
         cls.run_cases = RUN_CASES.read_text(encoding="utf-8")
+        cls.capture = (ROOT / "scripts/release/capture-windows-startup-wait-stacks.ps1").read_text(encoding="utf-8")
 
     def assert_protected_contract(self, body: str) -> None:
         for contract in ("Start-Sleep -Milliseconds 200", "foreach ($attempt in 1..10)",
@@ -141,9 +142,23 @@ class WindowsStartupDiagnosticTests(unittest.TestCase):
         self.assertIn("$caseLabel -in @('original-before', 'dx12-visual')", self.run_cases)
         self.assertIn("$traceFailures.Count -gt 0", self.run_cases)
         capture = (ROOT / "scripts/release/capture-windows-startup-wait-stacks.ps1").read_text(encoding="utf-8")
-        self.assertIn("ValidateSet('original', 'original-before', 'dx12-visual', 'original-after')", capture)
+        self.assertIn("'dx12-visual'", capture)
         self.assertIn("DxgiFromVisual", capture)
         self.assertIn("finally {", capture)
+
+    def test_compiler_mode_rejects_ambient_override_and_traces_both_controls(self):
+        ambient_guard = "Ambient WGPU_DX12_COMPILER is set; refusing an ambiguous before/after comparison."
+        self.assertIn(ambient_guard, self.run_cases)
+        self.assertIn("Test-Path -LiteralPath 'Env:WGPU_DX12_COMPILER'", self.run_cases)
+        self.assertLess(self.run_cases.index("Test-Path -LiteralPath 'Env:WGPU_DX12_COMPILER'"),
+                        self.run_cases.index("foreach ($caseLabel in $metadataNames)"))
+        self.assertIn("setup_error = $compilerAmbientError", self.run_cases)
+        self.assertNotIn("Remove-Item -LiteralPath 'Env:WGPU_DX12_COMPILER'", self.run_cases)
+        self.assertIn("@('original-before', 'dx12-dxc')", self.run_cases)
+        self.assertIn("dx12_compiler_trace_errors = @($compilerTraceFailures)", self.run_cases)
+        self.assertIn("$compilerTraceFailures.Count -gt 0", self.run_cases)
+        self.assertIn("'original-before'", self.capture)
+        self.assertIn("'dx12-dxc'", self.capture)
 
     def test_macos_sampler_defaults_remain_separate_from_windows_dispatch(self):
         native = self.diagnostics_workflow.split("  native-sample:", 1)[1].split("\n  windows-startup-diagnostics:", 1)[0]

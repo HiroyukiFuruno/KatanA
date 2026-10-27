@@ -26,6 +26,7 @@ on:
           - logging
           - dx12-waiting
           - dx12-presentation
+          - dx12-compiler
           - wait-stacks
         default: logging
   pull_request:
@@ -38,6 +39,9 @@ on:
       - 'scripts/ci/test_native_profiler_job_contract.py'
       - 'scripts/release/prepare-windows-startup-comparison.py'
       - 'scripts/release/prepare-windows-startup-diagnostics.py'
+      - 'scripts/release/windows-dx12-compiler-assets.py'
+      - 'scripts/release/windows_dx12_compiler_case_metadata.py'
+      - 'scripts/release/windows-dx12-compiler-environment.ps1'
       - 'scripts/release/test-windows-startup-diagnostics.py'
       - 'scripts/release/test-windows-startup-diagnostic-preparation.py'
       - 'scripts/release/test_windows_startup_diagnostics_contract.py'

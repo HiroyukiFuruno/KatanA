@@ -1,5 +1,6 @@
 $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'controller')
+. (Join-Path $env:GITHUB_WORKSPACE 'controller/scripts/release/windows-dx12-compiler-environment.ps1')
 $payload = Join-Path $env:RUNNER_TEMP "windows-native-comparison-payload-$env:WINDOWS_RUN_ID-$env:WINDOWS_RUN_ATTEMPT"
 $resultsRoot = Join-Path $env:GITHUB_WORKSPACE 'target/windows-startup-diagnostics'
 New-Item -ItemType Directory -Path $resultsRoot -Force | Out-Null
@@ -13,10 +14,28 @@ $originalSetting = [Environment]::GetEnvironmentVariable($settingName, 'Process'
 $hadOriginalPresentation = Test-Path -LiteralPath "Env:$presentationName"
 $originalPresentation = [Environment]::GetEnvironmentVariable($presentationName, 'Process')
 $traceFailures = [System.Collections.Generic.List[object]]::new()
+$compilerTraceFailures = [System.Collections.Generic.List[object]]::new()
+$compilerAmbientError = $null
+if ($env:WINDOWS_COMPARISON -eq 'dx12-compiler' -and
+    (Test-Path -LiteralPath 'Env:WGPU_DX12_COMPILER')) {
+    $compilerAmbientError = 'Ambient WGPU_DX12_COMPILER is set; refusing an ambiguous before/after comparison.'
+    [ordered]@{
+        source_commit = $env:WINDOWS_SOURCE_COMMIT
+        source_run_id = $env:WINDOWS_RUN_ID
+        source_run_attempt = $env:WINDOWS_RUN_ATTEMPT
+        comparison_mode = $env:WINDOWS_COMPARISON
+        diagnostic_only = $true
+        original_required_smoke_outcome_unchanged = $true
+        setup_error = $compilerAmbientError
+        cases = @()
+    } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $resultsRoot 'summary.json') -Encoding utf8
+    throw $compilerAmbientError
+}
 $metadataNames = if ($env:WINDOWS_COMPARISON -eq 'dx12-waiting') {
     @('original-before', 'dx12-dont-wait', 'dx12-none', 'original-after')
 } elseif ($env:WINDOWS_COMPARISON -eq 'wait-stacks') { @('original') }
 elseif ($env:WINDOWS_COMPARISON -eq 'dx12-presentation') { @('original-before', 'dx12-visual', 'original-after') }
+elseif ($env:WINDOWS_COMPARISON -eq 'dx12-compiler') { @('original-before', 'dx12-dxc', 'original-after') }
 else { @('original', 'reduced-native-trace') }
 
 foreach ($caseLabel in $metadataNames) {
@@ -33,6 +52,7 @@ foreach ($caseLabel in $metadataNames) {
     $env:GITHUB_OUTPUT = $caseOutput
     $env:KATANA_STARTUP_DIAGNOSTICS_CASE = $caseLabel
     $caseFailure = $null
+    $compilerEnvironment = $null
     try {
         if ($null -eq $caseMetadata.dx12_environment_value) {
             Remove-Item -LiteralPath "Env:$settingName" -ErrorAction SilentlyContinue
@@ -45,6 +65,10 @@ foreach ($caseLabel in $metadataNames) {
             } else {
                 [Environment]::SetEnvironmentVariable($presentationName, [string]$caseMetadata.dx12_presentation_system, 'Process')
             }
+        }
+        if ($env:WINDOWS_COMPARISON -eq 'dx12-compiler' -and $caseLabel -eq 'dx12-dxc') {
+            $compilerEnvironment = Enable-WindowsDx12Compiler -Metadata $caseMetadata `
+                -ControllerRoot (Join-Path $env:GITHUB_WORKSPACE 'controller')
         }
         & { . $caseScript } *> $consoleLog
     }
@@ -60,6 +84,11 @@ foreach ($caseLabel in $metadataNames) {
                 [Environment]::SetEnvironmentVariable($presentationName, $originalPresentation, 'Process')
             } else {
                 Remove-Item -LiteralPath "Env:$presentationName" -ErrorAction SilentlyContinue
+            }
+        }
+        if ($env:WINDOWS_COMPARISON -eq 'dx12-compiler') {
+            if ($null -ne $compilerEnvironment) {
+                Restore-WindowsDx12CompilerEnvironment -State $compilerEnvironment
             }
         }
     }
@@ -87,6 +116,8 @@ foreach ($caseLabel in $metadataNames) {
         run_label = $caseLabel
         dx12_environment_value = $caseMetadata.dx12_environment_value
         dx12_presentation_system = $caseMetadata.dx12_presentation_system
+        dx12_compiler = $caseMetadata.dx12_compiler
+        dx12_compiler_receipt_sha256 = $caseMetadata.dx12_compiler_receipt_sha256
         source_commit = $caseMetadata.source_commit
         source_run_id = $caseMetadata.github_run_id
         source_run_attempt = $caseMetadata.github_run_attempt
@@ -116,6 +147,17 @@ foreach ($caseLabel in $metadataNames) {
             $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $resultPath -Encoding utf8
         }
     }
+    if ($env:WINDOWS_COMPARISON -eq 'dx12-compiler' -and
+        $caseLabel -in @('original-before', 'dx12-dxc')) {
+        try {
+            & (Join-Path $env:GITHUB_WORKSPACE 'controller/scripts/release/capture-windows-startup-wait-stacks.ps1') `
+                -CaseLabel $caseLabel
+        } catch {
+            $compilerTraceFailures.Add([ordered]@{ run_label = $caseLabel; error = $_.Exception.Message })
+            $result.dx12_compiler_trace_error = $_.Exception.Message
+            $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $resultPath -Encoding utf8
+        }
+    }
 }
 
 $traceFailure = $null
@@ -130,14 +172,17 @@ $summary = [ordered]@{
     source_commit = $env:WINDOWS_SOURCE_COMMIT
     source_run_id = $env:WINDOWS_RUN_ID
     source_run_attempt = $env:WINDOWS_RUN_ATTEMPT
+    comparison_mode = $env:WINDOWS_COMPARISON
     diagnostic_only = $true
     original_required_smoke_outcome_unchanged = $true
     wait_stack_trace_error = $traceFailure
     presentation_wait_stack_trace_errors = @($traceFailures)
+    dx12_compiler_trace_errors = @($compilerTraceFailures)
     cases = @($results)
 }
 $summary | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $resultsRoot 'summary.json') -Encoding utf8
-if ($traceFailure -or $traceFailures.Count -gt 0 -or @($results | Where-Object { $_.outcome -ne 'success' }).Count -gt 0) {
+if ($traceFailure -or $compilerTraceFailures.Count -gt 0 -or $traceFailures.Count -gt 0 -or
+    @($results | Where-Object { $_.outcome -ne 'success' }).Count -gt 0) {
     throw 'One or more diagnostic smoke cases failed; per-case evidence was retained'
 }
 Write-Host 'All diagnostic smoke cases were attempted and their payload-bound results retained.'

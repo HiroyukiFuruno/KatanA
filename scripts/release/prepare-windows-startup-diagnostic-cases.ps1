@@ -31,11 +31,26 @@ if ($env:WINDOWS_COMPARISON -eq 'dx12-waiting') {
         @{ Case = 'dx12-presentation'; Label = 'dx12-visual'; PresentationSystem = 'DxgiFromVisual' },
         @{ Case = 'original'; Label = 'original-after' }
     )
+} elseif ($env:WINDOWS_COMPARISON -eq 'dx12-compiler') {
+    $cases = @(
+        @{ Case = 'original'; Label = 'original-before' },
+        @{ Case = 'dx12-compiler'; Label = 'dx12-dxc' },
+        @{ Case = 'original'; Label = 'original-after' }
+    )
 } else {
     $cases = @(
         @{ Case = 'original'; Label = 'original' },
         @{ Case = 'reduced-native-trace'; Label = 'reduced-native-trace' }
     )
+}
+
+$compilerReceipt = $null
+if ($env:WINDOWS_COMPARISON -eq 'dx12-compiler') {
+    $compilerRoot = Join-Path $env:RUNNER_TEMP `
+        "katana-dx12-compiler-$env:WINDOWS_RUN_ID-$env:WINDOWS_RUN_ATTEMPT-$env:GITHUB_RUN_ID"
+    $compilerReceipt = Join-Path $compilerRoot 'compiler-receipt.json'
+    python scripts/release/windows-dx12-compiler-assets.py prepare --destination $compilerRoot
+    if ($LASTEXITCODE -ne 0) { throw 'Pinned official DXC asset preparation failed' }
 }
 
 foreach ($case in $cases) {
@@ -47,6 +62,7 @@ foreach ($case in $cases) {
     $extraArgs = @()
     if ($case.ContainsKey('Value')) { $extraArgs = @('--dx12-value', $case.Value) }
     if ($casePresentation) { $extraArgs += @('--presentation-system', $casePresentation) }
+    if ($caseLabel -eq 'dx12-dxc') { $extraArgs += @('--compiler-receipt', $compilerReceipt) }
     python scripts/release/prepare-windows-startup-diagnostics.py `
         --source-script $originalScript `
         --source-metadata $originalMetadata `

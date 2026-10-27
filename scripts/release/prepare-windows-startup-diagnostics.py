@@ -8,6 +8,7 @@ import hashlib
 import json
 import re
 from pathlib import Path
+from windows_dx12_compiler_case_metadata import compiler_metadata
 
 
 RUN_LOG_LINE = (
@@ -26,22 +27,24 @@ ISOLATED_DIRECTORY_LINE = (
     '("katana-windows-smoke-" + $env:KATANA_STARTUP_DIAGNOSTICS_CASE)\n'
 )
 DEBUG_LINE = '$env:DEBUG = "true"\n'
+COMPILER_CASE = "dx12-compiler"
+COMPILER_LABEL = "dx12-dxc"
 DX12_ENVIRONMENT_LINE = '$env:WGPU_DX12_USE_FRAME_LATENCY_WAITABLE_OBJECT = "{value}"\n'
 PRESENTATION_ENVIRONMENT_LINE = '$env:WGPU_DX12_PRESENTATION_SYSTEM = "{value}"\n'
-SUPPORTED_CASES = ("original", "reduced-native-trace", "dx12-waiting", "dx12-presentation")
+SUPPORTED_CASES = ("original", "reduced-native-trace", "dx12-waiting", "dx12-presentation", COMPILER_CASE)
 SUPPORTED_DX12_VALUES = ("DontWait", "None")
 SUPPORTED_PRESENTATION_SYSTEMS = ("DxgiFromVisual",)
 SUPPORTED_RUN_LABELS = (
     "original", "reduced-native-trace", "original-before", "dx12-dont-wait",
-    "dx12-none", "original-after", "dx12-visual",
+    "dx12-none", "original-after", "dx12-visual", COMPILER_LABEL,
 )
 CASE_LABELS = {
     "original": ("original", "original-before", "original-after"),
     "reduced-native-trace": ("reduced-native-trace",),
     "dx12-waiting": ("dx12-dont-wait", "dx12-none"),
     "dx12-presentation": ("original-before", "dx12-visual", "original-after"),
+    COMPILER_CASE: ("original-before", COMPILER_LABEL, "original-after"),
 }
-
 
 class PreparationError(ValueError):
     """検証済み本文の想定外変更を診断へ持ち込まないための例外。"""
@@ -146,6 +149,11 @@ def prepare(args: argparse.Namespace) -> None:
     require(source_metadata.get("github_run_attempt") == args.expected_run_attempt,
             "validated run attempt differs")
     presentation_system = validate_case_arguments(args)
+    try:
+        compiler_values = compiler_metadata(args.case, args.run_label,
+                                            getattr(args, "compiler_receipt", None))
+    except ValueError as error:
+        raise PreparationError(str(error)) from error
     result = diagnostic_variant(source, args.case, args.dx12_value, presentation_system)
     output_script.parent.mkdir(parents=True, exist_ok=True)
     output_metadata.parent.mkdir(parents=True, exist_ok=True)
@@ -154,6 +162,7 @@ def prepare(args: argparse.Namespace) -> None:
                             "dx12_environment_value": args.dx12_value,
                             "dx12_presentation_system": presentation_system,
                             "diagnostic_body_sha256": sha256_bytes(result.encode("utf-8"))})
+    source_metadata.update(compiler_values)
     output_metadata.write_text(json.dumps(source_metadata, indent=2) + "\n", encoding="utf-8", newline="")
 
 
@@ -170,6 +179,7 @@ def main() -> int:
     parser.add_argument("--run-label", choices=SUPPORTED_RUN_LABELS, required=True)
     parser.add_argument("--dx12-value", choices=SUPPORTED_DX12_VALUES)
     parser.add_argument("--presentation-system", choices=SUPPORTED_PRESENTATION_SYSTEMS)
+    parser.add_argument("--compiler-receipt")
     args = parser.parse_args()
     try:
         require(re.fullmatch(r"[0-9a-f]{40}", args.expected_source_commit) is not None,
