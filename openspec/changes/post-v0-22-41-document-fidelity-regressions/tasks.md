@@ -1,3 +1,7 @@
+### 2026-10-27 追加の共通ライブラリ公開版を取り込む
+
+- [/] CI中に追加されたKMM0.2.4/KAL0.5.3/KML0.19.6の4ファイルを保全。registry checksum・crate archive・GitHub tag/VCS一致、root/screenshot両locked offline metadataと前後lock hash不変、既存type-check成功を確認した。公開API差はなく、KMLの明示空見出し配列の診断変更を日英変更履歴へ記録する。通常commit/push・新graphのcurrent review/全CI・公開は継続し、旧1177のCIを新graph成功へ流用しない。[根拠](evidence/katana-library-refresh-2026-10-27.ja.md)。
+
 ### 2026-10-27 Windowsの検査用ソース読込をUTF-8へ固定する
 
 - [/] H6f2fa8b9のCIで、新しい診断分離契約5件がWindows既定cp1252によるUnicodeDecodeErrorになった。製品テストの失敗と区別し、検査用read_textの6入口でUTF-8を明示する。実ファイルを使い既定cp1252を再現する単独回帰は旧実装でRED、修復後は既存6件と新1件が成功。元native採取・hash・5秒・全製品条件を維持し、通常統合・新HEADレビュー/CI・公開へ継続する。[根拠](evidence/native-contract-windows-encoding-2026-10-27.ja.md)。

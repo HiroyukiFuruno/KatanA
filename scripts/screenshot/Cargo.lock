@@ -3931,9 +3931,9 @@ dependencies = [
 
 [[package]]
 name = "katana-markdown-linter"
-version = "0.19.5"
+version = "0.19.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f1e6cacc03058d24bab7f47f7b67b06c981e2d902ab109b594a116259511da1"
+checksum = "c4bf6202f77a1d1741d3a1f89efa81fc08ceee85afcbcd4259bf99e3cbaf3a3f"
 dependencies = [
  "glob",
  "ignore",
@@ -3946,9 +3946,9 @@ dependencies = [
 
 [[package]]
 name = "katana-markdown-model"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f557a53daba79b4e426c4009126ab39219bd1f56602a26eafd49dbecb52c7937"
+checksum = "5677179b946147f051c69708152400edeb0d1780287f11f91c82e715e4c598ce"
 dependencies = [
  "serde",
  "serde_json",

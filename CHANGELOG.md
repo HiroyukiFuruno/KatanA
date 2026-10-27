@@ -25,6 +25,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🐛 Bug Fixes
 
+- **Markdown heading structure**: An explicitly empty heading list now disallows headings when validating a custom heading structure.
 - **Markdown split-view background**: The editor and preview share the explorer background color in horizontal and vertical split views.
 - **Update archive handling**: Reject link entries and linked extraction destinations, and explicitly limit restored file permissions while retaining normal executable permissions.
 - **HTTPS certificate validation**: Updated certificate verification and trusted roots to reject distrusted certificate chains.
