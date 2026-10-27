@@ -82,6 +82,8 @@ fn main() -> eframe::Result<()> {
         "KatanA",
         native_options,
         Box::new(|cc| {
+            #[cfg(windows)]
+            native_graphics::NativeGraphicsOps::install_resize_filter(cc);
             GuiSetupOps::setup_fonts(&cc.egui_ctx);
             katana_ui::svg_loader::KatanaSvgLoader::install(&cc.egui_ctx);
             egui_extras::install_image_loaders(&cc.egui_ctx);

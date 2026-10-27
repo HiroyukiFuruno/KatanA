@@ -1,6 +1,19 @@
+#[cfg(any(windows, test))]
+mod resize_events;
+#[cfg(windows)]
+mod windows_resize;
+
 pub(super) struct NativeGraphicsOps;
 
 impl NativeGraphicsOps {
+    #[cfg(all(windows, not(test)))]
+    pub(super) fn install_resize_filter(context: &eframe::CreationContext<'_>) {
+        /* WHY: 最適化の登録失敗で起動まで失敗させず、既存経路を保って診断へ残す。 */
+        if let Err(error) = windows_resize::WindowsResizeOps::install(context) {
+            tracing::error!(event = "native_resize_filter_install_failed", %error);
+        }
+    }
+
     pub(super) fn configure_presentation(options: &mut eframe::NativeOptions) {
         /* WHY: Windowsの表示同期待ちを減らし、他OSの既定表示を保つ。 */
         #[cfg(not(target_os = "windows"))]
