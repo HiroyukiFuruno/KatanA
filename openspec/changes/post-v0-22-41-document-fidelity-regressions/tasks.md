@@ -1,3 +1,7 @@
+### 2026-10-27 Windowsの検査用ソース読込をUTF-8へ固定する
+
+- [/] H6f2fa8b9のCIで、新しい診断分離契約5件がWindows既定cp1252によるUnicodeDecodeErrorになった。製品テストの失敗と区別し、検査用read_textの6入口でUTF-8を明示する。実ファイルを使い既定cp1252を再現する単独回帰は旧実装でRED、修復後は既存6件と新1件が成功。元native採取・hash・5秒・全製品条件を維持し、通常統合・新HEADレビュー/CI・公開へ継続する。[根拠](evidence/native-contract-windows-encoding-2026-10-27.ja.md)。
+
 ### 2026-10-27 ZIP9.1.2更新と経路照合を整合する
 
 - [/] 本人更新のmodern ZIP9.1.2を旧固定リストが拒否する実不合格を確認。既存9.0.5を保持して正当なkatana-core0.22.42の9.1.2辺だけ追加し、source=None・正規core manifest一致・workspace rootsから親/子へ到達可能という束縛を検査する。別版/別parent/git/別path/orphanは拒否、旧例外ID/期限/registry/KDV迂回拒否は不変。ZIP27件/Zstd14件と実3manifest本番検証成功。全cargo-deny/通常push/新CI/公開は未完として続行。[根拠](evidence/zip912-graph-admission-2026-10-27.ja.md)。
