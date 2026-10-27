@@ -109,6 +109,7 @@ fn terminate_sample(child: &mut Child) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::{SAMPLE_TIMEOUT, enabled, sample_command, sample_timed_out};
+    #[cfg(all(target_os = "macos", feature = "native-profiler-diagnostics"))]
     use katana_core::system::ProcessService;
     use std::ffi::OsStr;
     use std::path::Path;
@@ -154,7 +155,8 @@ mod tests {
         assert!(sample_timed_out(start, start + SAMPLE_TIMEOUT));
     }
 
-    #[cfg(target_os = "macos")]
+    /* WHY: 採取環境の成否は本体の必須検査と分け、同じ実採取を専用ジョブで検証する。 */
+    #[cfg(all(target_os = "macos", feature = "native-profiler-diagnostics"))]
     #[test]
     fn sample_captures_owned_child_pid_to_workspace_failure_directory() {
         use super::{capture_process_sample, sample_output_directory};

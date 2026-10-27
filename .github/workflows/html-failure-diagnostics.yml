@@ -1,0 +1,74 @@
+name: HTML Failure Diagnostics
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+    paths:
+      - 'crates/katana-ui/src/app/action/html_navigation_diagnostics.rs'
+      - 'crates/katana-ui/Cargo.toml'
+      - 'just/tests.just'
+      - 'scripts/ci/test_native_profiler_job_contract.py'
+      - '.github/workflows/html-failure-diagnostics.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-sample:
+    name: Native HTML sample (diagnostic only)
+    # WHY: 採取環境の診断は本体の必須CIと分離し、Draftではrunnerを起動しない。
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && !github.event.pull_request.draft)
+    runs-on: macos-latest
+    timeout-minutes: 30
+    env:
+      CARGO_INCREMENTAL: 0
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_PROFILE_TEST_DEBUG: 0
+      CARGO_PROFILE_DEV_STRIP: none
+      CARGO_PROFILE_TEST_STRIP: none
+      RUST_TEST_THREADS: 2
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+
+      - name: Install just
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
+        with:
+          tool: just
+          fallback: none
+
+      - name: Cache diagnostic build inputs
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target/debug
+            target/.rustc_info.json
+          key: macOS-native-profiler-v1-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Capture owned native process
+        run: just test-native-html-diagnostics
+
+      - name: Upload native diagnostic reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-html-sample-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/html-startup-failures
+          if-no-files-found: warn
+          retention-days: 5

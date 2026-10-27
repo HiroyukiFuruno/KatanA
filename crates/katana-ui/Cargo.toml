@@ -11,6 +11,7 @@ description = "KatanA UI: egui application shell, panes, menu wiring, and presen
 screenshot-test-hooks = []
 # Compiles acceptance tests for explicitly supplied, non-repository fixtures.
 external-fixture-acceptance = []
+native-profiler-diagnostics = []
 
 [dependencies]
 katana-core = { version = "0.22.39", path = "../katana-core" }
@@ -30,7 +31,7 @@ rfd = "0.17"
 image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "webp"] }
 serde_json.workspace = true
 open = "5.4.5"
-resvg = { version = "0.48.1", default-features = true }
+resvg = { version = "0.49.0", default-features = true }
 ehttp = { version = "0.7.2", features = ["streaming"] }
 dirs = "7.0.0"
 sha2 = "0.11"

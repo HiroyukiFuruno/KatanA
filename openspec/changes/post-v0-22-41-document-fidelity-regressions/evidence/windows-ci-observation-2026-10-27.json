@@ -1,0 +1,153 @@
+{
+  "schema": 1,
+  "scope": "Windows CI observation only; not successful product or release validation",
+  "implementation_commit": "ef29a17d5d3da49ea865063e079023cc52a477f5",
+  "audited_local_source": "ef94cc6fc57ad75e2b33806ea6f796405d02970f",
+  "workflow_run_id": 40402573799,
+  "workflow_run_conclusion": "cancelled",
+  "windows_job_id": 121851995933,
+  "windows_job_conclusion": "failure",
+  "artifact": {
+    "id": 12690785625,
+    "name": "test-inventory-Windows",
+    "bytes": 82841,
+    "sha256": "00227c61c2fa5baa95790b1df194b907acccdb495eee9d2803775d3f704204a4",
+    "windows_timing_sha256": "661b7e995a2b38d178575c487d1e5dae7feea64a00d390e80950c7e955885d39"
+  },
+  "observation": {
+    "build_cache_state": "not_measured",
+    "cache_hit": null,
+    "cache_hit_raw": "",
+    "cache_scope": "cargo_registry_and_exact_compiled_target",
+    "cargo_lock_sha256": {
+      "Cargo.lock": "7e7484ba9d3e4b7a45f6316d08bbdc0b655d462497667cdcb118ae637775349e",
+      "scripts/screenshot/Cargo.lock": "a2257c23b26d7beec8e25ae818baac2b7558736775435d5da8c0c62f89901b71"
+    },
+    "cold_warm_equivalence": "not_evaluated",
+    "command_argv": [
+      "C:\\Program Files\\Git\\usr\\bin\\bash.exe",
+      "scripts/ci/with-office-test-worker.sh",
+      "cargo test --workspace"
+    ],
+    "compiled_target_cache": {
+      "eligible": true,
+      "hit": null,
+      "key": "windows-target-v1-cce25ef78f7bf4bdab43b138b08d5caef33c4fdc3dbce74ffb40f3e2a4b625ba"
+    },
+    "cwd": "D:\\a\\KatanA\\KatanA",
+    "diagnostic_only": true,
+    "elapsed_seconds": 386.76170790000003,
+    "executed_once": true,
+    "exit": 101,
+    "exit_code": 101,
+    "lock_observation_phase": "after_command",
+    "observed_at": "2026-10-26T21:30:17.688699+00:00",
+    "reuse_authorized": false,
+    "schema": 1,
+    "source": {
+      "GITHUB_RUN_ATTEMPT": "1",
+      "GITHUB_RUN_ID": "40402573799",
+      "GITHUB_SHA": "3289bd904ccc8f4544c33fe532eaf6a41ef25e2e",
+      "RUNNER_ARCH": "X64",
+      "RUNNER_OS": "Windows"
+    }
+  },
+  "source_identity": {
+    "pr_head": "c3e39dae2197b1960ee5412ab90300f7898ed520",
+    "ci_merge_commit": "3289bd904ccc8f4544c33fe532eaf6a41ef25e2e",
+    "ci_merge_tree": "808c22d093fe2e39f19a5081fac5948c2f00c7c2",
+    "pr_head_tree": "808c22d093fe2e39f19a5081fac5948c2f00c7c2",
+    "tree_equal": true,
+    "cargo_lock_sha256": {
+      "Cargo.lock": "b22d01b212376b0be3e89c135a076c31478c11dbf9036884ebed0ede45f5d3e3",
+      "scripts/screenshot/Cargo.lock": "0e7dcc7655e685fea740a1139a54849229e7b1e5b4cf4b06b8cd93f8044f872d"
+    },
+    "lock_line_ending_comparison": {
+      "Cargo.lock": {
+        "git_blob_sha256": "b22d01b212376b0be3e89c135a076c31478c11dbf9036884ebed0ede45f5d3e3",
+        "windows_crlf_sha256": "7e7484ba9d3e4b7a45f6316d08bbdc0b655d462497667cdcb118ae637775349e",
+        "observed_sha256": "7e7484ba9d3e4b7a45f6316d08bbdc0b655d462497667cdcb118ae637775349e",
+        "matches_crlf": true
+      },
+      "scripts/screenshot/Cargo.lock": {
+        "git_blob_sha256": "0e7dcc7655e685fea740a1139a54849229e7b1e5b4cf4b06b8cd93f8044f872d",
+        "windows_crlf_sha256": "a2257c23b26d7beec8e25ae818baac2b7558736775435d5da8c0c62f89901b71",
+        "observed_sha256": "a2257c23b26d7beec8e25ae818baac2b7558736775435d5da8c0c62f89901b71",
+        "matches_crlf": true
+      }
+    }
+  },
+  "inventory": {
+    "complete": false,
+    "exit_code": 101,
+    "source_stable": true,
+    "source_before": {
+      "clean": true,
+      "head": "3289bd904ccc8f4544c33fe532eaf6a41ef25e2e",
+      "locks": {
+        "Cargo.lock": "7e7484ba9d3e4b7a45f6316d08bbdc0b655d462497667cdcb118ae637775349e",
+        "scripts/screenshot/Cargo.lock": "a2257c23b26d7beec8e25ae818baac2b7558736775435d5da8c0c62f89901b71"
+      },
+      "status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "808c22d093fe2e39f19a5081fac5948c2f00c7c2"
+    },
+    "source_after": {
+      "clean": true,
+      "head": "3289bd904ccc8f4544c33fe532eaf6a41ef25e2e",
+      "locks": {
+        "Cargo.lock": "7e7484ba9d3e4b7a45f6316d08bbdc0b655d462497667cdcb118ae637775349e",
+        "scripts/screenshot/Cargo.lock": "a2257c23b26d7beec8e25ae818baac2b7558736775435d5da8c0c62f89901b71"
+      },
+      "status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree": "808c22d093fe2e39f19a5081fac5948c2f00c7c2"
+    }
+  },
+  "cache_log_evidence": {
+    "job_id": 121851995933,
+    "run_id": 40402573799,
+    "source": "authorized GitHub connector job log previously fetched; selected cache lines; control characters removed",
+    "lines": [
+      {
+        "line": 613,
+        "text": "2026-10-26T21:14:14.1354043Z   key: Windows-X64-cargo-registry-v1-f9cd44fe5e27c7c140a3e4691b6b1c8dad6039f073a757121dcc7b5a3260135f"
+      },
+      {
+        "line": 635,
+        "text": "2026-10-26T21:14:14.5042014Z Cache not found for input keys: Windows-X64-cargo-registry-v1-f9cd44fe5e27c7c140a3e4691b6b1c8dad6039f073a757121dcc7b5a3260135f"
+      },
+      {
+        "line": 656,
+        "text": "2026-10-26T21:14:17.8660806Z {\"cache_eligible\": true, \"key\": \"windows-target-v1-cce25ef78f7bf4bdab43b138b08d5caef33c4fdc3dbce74ffb40f3e2a4b625ba\", \"schema\": 1}"
+      },
+      {
+        "line": 662,
+        "text": "2026-10-26T21:14:17.9050682Z   key: windows-target-v1-cce25ef78f7bf4bdab43b138b08d5caef33c4fdc3dbce74ffb40f3e2a4b625ba"
+      },
+      {
+        "line": 684,
+        "text": "2026-10-26T21:14:18.2205914Z Cache not found for input keys: windows-target-v1-cce25ef78f7bf4bdab43b138b08d5caef33c4fdc3dbce74ffb40f3e2a4b625ba"
+      },
+      {
+        "line": 3227,
+        "text": "2026-10-26T21:23:50.8063600Z   WINDOWS_TARGET_CACHE_KEY: windows-target-v1-cce25ef78f7bf4bdab43b138b08d5caef33c4fdc3dbce74ffb40f3e2a4b625ba"
+      }
+    ]
+  },
+  "cache_interpretation": {
+    "registry": "miss proven by job log; raw empty and normalized null remain unchanged",
+    "compiled_target": "miss proven by job log; raw empty and normalized null remain unchanged",
+    "matched_cold_warm_comparison": "not performed"
+  },
+  "current_contract_tests": {
+    "windows_observation_contract": 4,
+    "observer_semantics": 10,
+    "failures": 0,
+    "local_log": "tmp/oct27-343-observation-contract-recheck.md"
+  },
+  "limits": [
+    "No successful new-head Windows CI or packaged startup is proven",
+    "No cold/warm performance equivalence or speedup is proven",
+    "No trusted reuse is authorized",
+    "Actual GitHub rendered Step Summary not inspected; summary-writing contracts passed"
+  ]
+}

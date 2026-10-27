@@ -1,3 +1,45 @@
+### 2026-10-27 #364 テスト期待値のOS分岐によるcoverage不足を修復する
+
+- [/] d875cc2のCIは7/8成功・MaccoverageだけWindows期待値の未実行1行で失敗。test内のruntime cfg!をcompile-time cfg期待値へ変更し、production bytes・全assert・元品質条件を維持。実KatanA bin対象test1件exit0、当該file16/16行・21/21領域100%、fmt/diff・独立レビュー成功。対象Clippy（test含む）もexit0。通常commit/push/new全review/CI・実配布/公開は継続。[根拠](evidence/native-presentation-test-cfg-coverage-2026-10-27.ja.md)。
+
+### 2026-10-27 #371 配布起動検査の終了猶予を共有する
+
+- [/] main/所有launcherの直列終了待ちでReadinessが7秒>元6秒となった。全TERM後に既存2秒猶予を共有、KILL前identity再確認と同PID dedupを実装。最終Mac実5ケース成功、旧helper RED・dedup/identity除去mutation各RED、ShellCheck/Bash syntax・独立レビュー成功。Linux実5ケース・Mac Office callerも成功。通常commit/push・新review/全CI・公開は継続する。[根拠](evidence/startup-cleanup-shared-grace-2026-10-27.ja.md)。
+
+### 2026-10-27 追加の共通ライブラリ公開版を取り込む
+
+- [/] CI中に追加されたKMM0.2.4/KAL0.5.3/KML0.19.6の4ファイルを保全。registry checksum・crate archive・GitHub tag/VCS一致、root/screenshot両locked offline metadataと前後lock hash不変、既存type-check成功を確認した。公開API差はなく、KMLの明示空見出し配列の診断変更を日英変更履歴へ記録する。通常commit/push・新graphのcurrent review/全CI・公開は継続し、旧1177のCIを新graph成功へ流用しない。[根拠](evidence/katana-library-refresh-2026-10-27.ja.md)。
+
+### 2026-10-27 Windowsの検査用ソース読込をUTF-8へ固定する
+
+- [/] H6f2fa8b9のCIで、新しい診断分離契約5件がWindows既定cp1252によるUnicodeDecodeErrorになった。製品テストの失敗と区別し、検査用read_textの6入口でUTF-8を明示する。実ファイルを使い既定cp1252を再現する単独回帰は旧実装でRED、修復後は既存6件と新1件が成功。元native採取・hash・5秒・全製品条件を維持し、通常統合・新HEADレビュー/CI・公開へ継続する。[根拠](evidence/native-contract-windows-encoding-2026-10-27.ja.md)。
+
+### 2026-10-27 ZIP9.1.2更新と経路照合を整合する
+
+- [/] 本人更新のmodern ZIP9.1.2を旧固定リストが拒否する実不合格を確認。既存9.0.5を保持して正当なkatana-core0.22.42の9.1.2辺だけ追加し、source=None・正規core manifest一致・workspace rootsから親/子へ到達可能という束縛を検査する。別版/別parent/git/別path/orphanは拒否、旧例外ID/期限/registry/KDV迂回拒否は不変。ZIP27件/Zstd14件と実3manifest本番検証成功。全cargo-deny/通常push/新CI/公開は未完として続行。[根拠](evidence/zip912-graph-admission-2026-10-27.ja.md)。
+
+### 2026-10-27 本人承認: 採取成功テストだけを非必須診断へ分離
+
+- [/] 採取成功1件を非default featureと専用workflowへ分離し、PID/Thread確認・元5秒・test本体を維持する。通常側の純粋3件は実成功、分離契約6件/元CI resource10件/actionlint成功。製品Run tests部分はbyte同一、既存required7件・3OS品質条件・Windows200ms×10は不変。実採取成功は未確認と明記し、専用jobの成否で本体検査を成功扱いしない。[根拠](evidence/native-profiler-job-separation-2026-10-27.ja.md)。新HEADの通常統合/review/CI/公開を継続する。
+- [/] 本人のjust update差分を取り込み、依存更新確認をリリース直前だけに限定しない。comrak0.59、resvg/usvg0.49、notify8.2.1、直接zip9.1.2と両lockを別関心で検証する。固定registry KDV0.5.12/KRR0.4.23は維持し、未公開sibling override無し。更新後コンパイルと対象3件成功は全gate成功へ流用しない。[依存更新](evidence/dependency-refresh-2026-10-27.ja.md)。
+
+### 2026-10-27 本体の不具合・補助診断・未完了欄を区別する
+
+- [/] 本人の指摘: 補助診断の採取失敗だけで本体不具合や全作業停止としない。html_navigation.rsのcfg(all(test,macos))により採取moduleは配布本体に含まれず、失敗時のsample_errorは元HTML検査エラーへ追記されるだけ。現行hookの不合格を黙って成功へ変えず、診断テストの配置・環境不足と、本体のWindows描画/新HEAD CI未完を別に報告する。独立した証跡回収・状態修正は継続する。検索語: auxiliary diagnostics, product gate, profiler environment failure。
+- [/] 未完了のチェック欄だけで未実装と判断しない。source・既存契約・導入commit・実CI成果物を照合してから、実装済み/実測済み/検証待ちを分ける。#343の観測機能は既存実装を確認し、過去のWindows失敗artifactを今回回収して下のタスクと証跡を補正した。重複実装や旧CI結果の新HEAD流用はしない。
+
+### 2026-10-27 Windows の読取中の描画記録を置換する
+
+- [/] PR370/headc3e39dae の Ready CI は Windows で記録置換のアクセス拒否により4件失敗し、全体cancelled。Readiness成功を全CI成功へ流用せずDraftへ戻した。現行Rust標準renameのPOSIX対応経路へ切り替え、同一dirの完成記録・失敗時cleanup・ログを保持する。既存テスト無変更で対象8件/strictClippy/fmt/diff成功。新unsafe/依存/retry/ignoreや元200ms等の変更は無し。新通常commit/push・current review・全CI・実配布検証は未完。[根拠](evidence/windows-open-heartbeat-rename-2026-10-27.ja.md)。
+
+### 2026-10-27 Windows の描画同期待ちを減らす候補を検証する
+
+- [ ] 同一 M 配布物の Server2022 比較は元 smoke に合格したが、実 frame 間隔は中央値298.053msで、元 Server2025 の274.240msと同様に約300msだった。合格 host へ変更して済ませず、Windows の既存自動表示方式 AutoNoVsync を最小候補として検証する。最大待機frame1・他OS既定値・元200ms×10と全予算は維持。bin対象1件/strictClippy/fmt/独立レビュー成功、合格時にも描画記録を残す3行追加以外の元smoke完全一致・比較6契約成功を確認した。通常commit/push・current review・全CI・実配布記録は継続し、候補を待機開始APIの確定や改善済みとは扱わない。[根拠](evidence/windows-presentation-sync-candidate-2026-10-27.ja.md)。
+
+### 2026-10-27 配布起動の記録読取失敗を切り分ける
+
+- [/] source d2b78cef の正式公開 run40388796186 は Linux 配布起動で描画番号の読取に失敗した。記録ファイルの truncate 中に空読みが起きる独立不具合を実ファイルで再現し、完成済み一時ファイルの同一ディレクトリ置換へ補正する。失敗時の記録・ログだけを回収する契約は旧 source で RED、補正後の既存契約・release flow 20件・actionlint は成功。元 200ms/10回・全予算・全OS公開条件を維持する。今回の Linux 失敗の原因確定、新 source の通常検査・current review・実配布受入と公開は未完。[根拠](evidence/startup-heartbeat-atomic-publication-2026-10-27.ja.md)。
+
 ### 2026-10-27 最新本人指示: 上流待ちに戻さず先行公開する
 
 - [/] KDVはKRR待ち、KRRは対応中、KatanAは現公開上流版のまま独立改善を先行公開する。残存脆弱性の実影響を調べ期限付きで管理するという元指示を再確認事項にしない。依存に影響版があることと、問題APIの利用・発生条件の成立を切り離して評価する。今回監査ではZIPの問題extract処理と旧Zstdの問題デコーダの利用を確認していない。監査済み0403の固定経路だけを既存入口へ接続し、未知ID/版/caller/経路/非registry/期限切れの拒否と全品質条件を維持して通常push・current review・CI・全OS公開へ進める。[調査・適用範囲](evidence/zstd-0403-risk-assessment-2026-10-26.ja.md)。
@@ -298,7 +340,8 @@ Windowsの実測未実施は、cache key/誤再利用拒否/Ready後の配線を
 
 - [x] #351 異source A/B→同一PDFの実HTTP redirect回帰を補完。両適用順で新しいBのrevision・世代・選択・独立HTML保持を検証し既存製品は成功、製品変更無し。fixtureの分割受信/途中切れ/上限超過は32277actual101/3assert RED→bounded reader修復後70625のURL81PASS2.55秒・AST30PASS14.04秒・全target/external-fixture strict成功。module宣言順だけfmt補正後公式fmt/diff0、独立再review必須無し。evidence/url-redirect-convergence-2026-10-16.md。通常push/current review/Ready必須CI/packaged/全公開は別未完。
 
-- [ ] #343 Windows観測と実測: registry cacheの結果と既存workspace testの一回の時間/exit・run/source/lock情報をCI summary/artifactへ記録する。元cache key/対象・全test・worker入口・失敗code・Draft guardを維持し、追加test実行やskip/reuse権限を導入しない。target cold/warm同等性やWindows実測済みとは扱わない。旧workflow契約3FAIL→3PASS、独立P2のsummary識別/実行後hash明示は94513actual1/2FAIL1ERROR→94406actual0/関連23PASS2.336秒、default actionlint22470actual0。独立再review必須P0/P1/P2無し→署名ef29a17d/15586actual0へ通常統合。evidence/windows-ci-observation-2026-10-16.md。通常push/current reviewの実結果はcurrentメモ/台帳で追跡し、Windows実測・matched cold/warm比較・全#343は未完。
+- [x] #343 Windows観測の実装と失敗時の実出力確認: 記録機能はef29a17dで既に実装済み。現在source ef94cc6fの既存観測契約4件/observer実subprocess10件成功を回収し、重複実装は行わない。実Windows run40402573799/attempt1・artifact12690785625のdigestと内容を照合し、既存workspace test1回/386.7617079秒/exit101・source/両lock安定・registry/target cache両missを確認。PR merge ref3289のtreeはpublicc3と同一で、現在ef94のCI成功へは流用しない。元cache key/対象・全test・worker入口・失敗code・Draft guardを維持し、skip/reuse権限無し。根拠: [回収記録](evidence/windows-ci-observation-2026-10-27.ja.md)。
+- [ ] #343 残る検証・最適化: 対応条件をそろえたWindows cold/warm比較、総時間の短縮効果、完全な同等性、trusted reuse、最新HEADの全CI・公開は未完。GitHub上のStep Summary表示は直接未確認で、追記実装と契約成功とを区別する。観測記録の実出力を製品検査成功や検査削減の証明にしない。
 
 - [/] #339 現8ec4e562 clean同HEAD/両lock不変で既存just package-mac31345 actualexit0。main/worker各IntelARM・全4slice minos13.0・Info v0.22.42・deep strict ad-hoc署名を実物で確認。evidence/current-static-package-8ec4e562-2026-10-16.mdにSHA/実log/初回worker名誤探索の補正を記録。静的ローカル配布候補だけであり本人実機・clean-machine・全OS・全5公開・起動障害解消の証明ではない。
 

@@ -114,6 +114,10 @@ assert_build_linux_step_contains 'Verify software Vulkan adapter' 'LIBGL_ALWAYS_
 assert_build_linux_step_contains 'Verify software Vulkan adapter' 'xvfb-run -a vulkaninfo --summary'
 assert_build_linux_step_contains 'Smoke launch packaged Linux app' 'lvp_icd=$(find /usr/share/vulkan/icd.d'
 assert_build_linux_step_contains 'Smoke launch packaged Linux app' 'export LIBGL_ALWAYS_SOFTWARE=1 VK_DRIVER_FILES="$lvp_icd" WGPU_BACKEND=vulkan'
+assert_build_linux_step_contains 'Smoke launch packaged Linux app' 'id: linux_startup_smoke'
+assert_build_linux_step_contains 'Upload Linux startup diagnostics' "if: failure() && steps.linux_startup_smoke.outcome == 'failure'"
+assert_build_linux_step_contains 'Upload Linux startup diagnostics' 'tmp/trash/*-startup.*/heartbeat.txt'
+assert_build_linux_step_contains 'Upload Linux startup diagnostics' 'tmp/trash/*-startup.*/startup.log'
 assert_contains "$WORKFLOW" 'cd "$APP_DIR"'
 assert_contains "$WORKFLOW" 'cd "$TEMP_DIR"'
 assert_contains "$WORKFLOW" 'Start-Process -FilePath $expectedExecutable -WorkingDirectory $directory'
@@ -128,7 +132,7 @@ assert_build_windows_step_contains 'Smoke launch packaged Windows app' 'Start-Sl
 assert_build_windows_step_contains 'Smoke launch packaged Windows app' 'foreach ($attempt in 1..10)'
 assert_build_windows_step_contains 'Smoke launch packaged Windows app' 'if ($peakRss -gt 512MB)'
 assert_build_windows_step_contains 'Smoke launch packaged Windows app' 'if ($fontBytes -gt 134217728)'
-assert_build_windows_step_contains 'Upload Windows startup diagnostics' "if: failure() && steps.windows_startup_smoke.outcome == 'failure'"
+assert_build_windows_step_contains 'Upload Windows startup diagnostics' "if: always() && (steps.windows_startup_smoke.outcome == 'failure' || steps.windows_startup_smoke.outcome == 'success')"
 assert_build_windows_step_contains 'Upload Windows startup diagnostics' 'path: ${{ steps.windows_startup_smoke.outputs.diagnostics_directory }}'
 assert_contains "$WORKFLOW" "Office worker is live in an empty workspace"
 assert_contains "$WORKFLOW" "UI heartbeat stalled after first frame"

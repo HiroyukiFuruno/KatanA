@@ -30,6 +30,7 @@ test-custom-cursor-cache:
 # デバッグ情報の容量対策で全test・coverage・受入を削減していないことを確認する。
 test-ci-resource-contract:
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
+    {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_native_profiler_job_contract.py -v
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/runner -p test_impacted.py -v
 
 # 実Cargoのロック競合と不明なtarget構造で、cache整理が安全に停止することを確認する。
@@ -68,6 +69,11 @@ test-verbose:
 # Run a specific test (e.g., just T=test_name test-specific)
 test-specific:
     {{CARGO}} test --workspace -- {{T}}
+
+# WHY: 採取環境の成否を製品の必須検査に混ぜず、同じ実採取回帰を明示実行する。
+test-native-html-diagnostics:
+    @if [ "$(uname -s)" != "Darwin" ]; then printf '%s\n' 'Native HTML sampling requires macOS'; exit 1; fi
+    {{CARGO}} test --locked -p katana-ui --lib --features native-profiler-diagnostics app::action::html_navigation::diagnostics::tests::sample_captures_owned_child_pid_to_workspace_failure_directory -- --exact --nocapture
 
 # Run integration tests - fixture tests only (requires: egui_kittest)
 test-integration: check-native-office-worker-contract
