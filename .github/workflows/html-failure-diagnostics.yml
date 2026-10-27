@@ -2,6 +2,33 @@ name: HTML Failure Diagnostics
 
 on:
   workflow_dispatch:
+    inputs:
+      windows_run_id:
+        description: Failed v0.22.42 build-and-release run ID
+        required: false
+        type: string
+        default: ''
+      windows_source_commit:
+        description: 40-character source commit recorded in the Windows payload
+        required: false
+        type: string
+        default: ''
+      windows_run_attempt:
+        description: Attempt of the selected run
+        required: false
+        type: string
+        default: ''
+      windows_comparison:
+        description: Windows diagnostic comparison mode
+        required: false
+        type: choice
+        options:
+          - logging
+          - dx12-waiting
+          - dx12-presentation
+          - dx12-compiler
+          - wait-stacks
+        default: logging
   pull_request:
     branches: [master]
     types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
@@ -10,6 +37,20 @@ on:
       - 'crates/katana-ui/Cargo.toml'
       - 'just/tests.just'
       - 'scripts/ci/test_native_profiler_job_contract.py'
+      - 'scripts/release/prepare-windows-startup-comparison.py'
+      - 'scripts/release/prepare-windows-startup-diagnostics.py'
+      - 'scripts/release/windows-dx12-compiler-assets.py'
+      - 'scripts/release/windows_dx12_compiler_case_metadata.py'
+      - 'scripts/release/windows-dx12-compiler-environment.ps1'
+      - 'scripts/release/test-windows-startup-diagnostics.py'
+      - 'scripts/release/test-windows-startup-diagnostic-preparation.py'
+      - 'scripts/release/test_windows_startup_diagnostics_contract.py'
+      - 'scripts/release/validate-windows-startup-diagnostic-run.ps1'
+      - 'scripts/release/prepare-windows-startup-diagnostic-cases.ps1'
+      - 'scripts/release/run-windows-startup-diagnostic-cases.ps1'
+      - 'scripts/release/capture-windows-startup-wait-stacks.ps1'
+      - 'scripts/release/trace-windows-startup.ps1'
+      - 'scripts/release/windows-startup-wait-stacks.wprp'
       - '.github/workflows/html-failure-diagnostics.yml'
 
 permissions:
@@ -23,7 +64,10 @@ jobs:
   native-sample:
     name: Native HTML sample (diagnostic only)
     # WHY: 採取環境の診断は本体の必須CIと分離し、Draftではrunnerを起動しない。
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && !github.event.pull_request.draft)
+    if: >-
+      (github.event_name == 'workflow_dispatch' && inputs.windows_run_id == '' &&
+       inputs.windows_source_commit == '' && inputs.windows_run_attempt == '') ||
+      (github.event_name == 'pull_request' && !github.event.pull_request.draft)
     runs-on: macos-latest
     timeout-minutes: 30
     env:
@@ -71,4 +115,73 @@ jobs:
           name: native-html-sample-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/html-startup-failures
           if-no-files-found: warn
+          retention-days: 5
+
+  windows-startup-diagnostics:
+    name: Windows startup diagnostic cases (diagnostic only)
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      (inputs.windows_run_id != '' || inputs.windows_source_commit != '' || inputs.windows_run_attempt != '')
+    runs-on: windows-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+    env:
+      WINDOWS_RUN_ID: ${{ inputs.windows_run_id }}
+      WINDOWS_SOURCE_COMMIT: ${{ inputs.windows_source_commit }}
+      WINDOWS_RUN_ATTEMPT: ${{ inputs.windows_run_attempt }}
+      WINDOWS_COMPARISON: ${{ inputs.windows_comparison }}
+    steps:
+      - name: Preserve source bytes for payload validation
+        shell: pwsh
+        run: |
+          git config --global core.autocrlf false
+          if ($LASTEXITCODE -ne 0) { throw 'Could not preserve source bytes for payload validation' }
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          path: controller
+
+      - name: Validate selected failed payload run
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          & (Join-Path $env:GITHUB_WORKSPACE 'controller/scripts/release/validate-windows-startup-diagnostic-run.ps1')
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.windows_source_commit }}
+          persist-credentials: false
+          path: input-source
+
+      - name: Download existing failed Windows payload and identity
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: windows-native-comparison-payload-${{ inputs.windows_run_id }}-${{ inputs.windows_run_attempt }}
+          path: ${{ runner.temp }}\windows-native-comparison-payload-${{ inputs.windows_run_id }}-${{ inputs.windows_run_attempt }}
+          run-id: ${{ inputs.windows_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Validate payload provenance and prepare smoke variants
+        shell: pwsh
+        run: |
+          & (Join-Path $env:GITHUB_WORKSPACE 'controller/scripts/release/prepare-windows-startup-diagnostic-cases.ps1')
+
+      - name: Run isolated startup cases and retain each result
+        id: run_cases
+        shell: pwsh
+        run: |
+          & (Join-Path $env:GITHUB_WORKSPACE 'controller/scripts/release/run-windows-startup-diagnostic-cases.ps1')
+
+      - name: Upload Windows startup diagnostic cases
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: windows-startup-diagnostic-cases-${{ inputs.windows_run_id }}-${{ inputs.windows_run_attempt }}-${{ github.run_id }}
+          path: target/windows-startup-diagnostics
+          if-no-files-found: error
           retention-days: 5

@@ -1,10 +1,13 @@
 import os
 from pathlib import Path
 import re
+import xml.etree.ElementTree as ET
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = Path(os.environ.get("WINDOWS_TRACE_SCRIPT_PATH", ROOT / "scripts/release/trace-windows-startup.ps1"))
+WAIT_STACK_PROFILE = ROOT / "scripts/release/windows-startup-wait-stacks.wprp"
+WAIT_STACK_PREPARER = ROOT / "scripts/release/prepare-windows-startup-wpr-profile.ps1"
 
 
 class WindowsStartupTraceContractTests(unittest.TestCase):
@@ -19,7 +22,7 @@ class WindowsStartupTraceContractTests(unittest.TestCase):
         self.assertIn("Resolve-Path -LiteralPath $ExecutablePath", self.source)
         self.assertIn("Resolve-Path -LiteralPath $DiagnosticsDirectory", self.source)
 
-    def test_wpr_is_fail_closed_and_only_general_profile_is_selected(self):
+    def test_default_wpr_is_fail_closed_and_selects_general_profile(self):
         self.assertIn("Get-Command -Name 'wpr.exe'", self.source)
         self.assertIn("Get-Command -Name 'tracerpt.exe'", self.source)
         self.assertIn("@('-profiles')", self.source)
@@ -43,6 +46,40 @@ class WindowsStartupTraceContractTests(unittest.TestCase):
         self.assertNotIn("if ($wprOwned)", self.source)
         self.assertIn("wprFileVersion =", self.source)
         self.assertIn("@('-help', 'advanced')", self.source)
+
+    def test_wait_stack_profile_requests_kernel_switch_and_ready_stacks(self):
+        root = ET.parse(WAIT_STACK_PROFILE).getroot()
+        profiles = root.findall("./Profiles/Profile")
+        self.assertEqual({profile.get("Id") for profile in profiles}, {
+            "KatanAWaitStacks.Verbose.Memory", "KatanAWaitStacks.Verbose.File"
+        })
+        provider = root.find("./Profiles/SystemProvider[@Id='KatanAWaitStacksProvider']")
+        self.assertIsNotNone(provider)
+        self.assertEqual({node.get("Value") for node in provider.findall("./Keywords/Keyword")}, {
+            "ProcessThread", "Loader", "CSwitch", "ReadyThread"
+        })
+        self.assertEqual({node.get("Value") for node in provider.findall("./Stacks/Stack")}, {
+            "CSwitch", "ReadyThread"
+        })
+        collector = root.find("./Profiles/SystemCollector[@Id='KatanAWaitStacksCollector']")
+        self.assertEqual(collector.get("Name"), "NT Kernel Logger")
+        for profile in profiles:
+            reference = profile.find("./Collectors/SystemCollectorId")
+            self.assertEqual(reference.get("Value"), "KatanAWaitStacksCollector")
+            provider_reference = reference.find("./SystemProviderId")
+            self.assertEqual(provider_reference.get("Value"), "KatanAWaitStacksProvider")
+
+    def test_wait_stack_capture_is_opt_in_and_records_profile_identity(self):
+        self.assertIn("[switch]$WaitStacks", self.source)
+        self.assertIn("prepare-windows-startup-wpr-profile.ps1", self.source)
+        self.assertIn("@('-profiles', $wprProfilePath)", self.source)
+        self.assertIn('"$wprProfilePath!KatanAWaitStacks.Verbose"', self.source)
+        self.assertIn("profile_sha256 = $wprProfileSha256", self.source)
+        self.assertIn("wpr-profile-selection.json", self.source)
+        self.assertIn("start_exit_code = $start.ExitCode", self.source)
+        self.assertIn("profileStatus.ExitCode", self.source)
+        self.assertIn("if ($wprStartAttempted)", self.source)
+        self.assertIn("$profileName = 'KatanAWaitStacks'", WAIT_STACK_PREPARER.read_text(encoding="utf-8"))
 
 
     def test_official_wpr_active_status_is_recognized_without_matching_idle_status(self):

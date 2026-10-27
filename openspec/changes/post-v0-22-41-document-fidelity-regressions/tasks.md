@@ -1,3 +1,15 @@
+### 2026-10-27 次の同一配布物比較と証跡依存更新
+
+- [x] Windows診断run40524518173は元/低減ログとも不合格。続くDX12待機方式の同一配布物比較を通常commit60f3813d/pushbd4へ統合し、対象13契約・Actionlint・実PowerShell構文解析・最終レビュー成功。実Windows40534985776は既定前/DontWait/None/既定後の全4ケースが元200ms不合格で回収完了。元配布物の実行ファイルhash/API artifact digest一致。診断結果の回収を完了とし、設定変更は製品へ採用しない。製品修復・公開は下の未完了項目で継続する。[根拠](evidence/windows-paint-delivery-diagnosis-2026-10-27.ja.md)。
+- [x] 明示CSwitch stackの所有採取を通常commit ed3968ad/push7a15へ統合し、対象14+10契約・実PowerShell/XML/hash・Actionlint・独立/新Codexレビュー成功。実Windows40542795332は元smoke frame4で不合格だが、別processの固定profile選択/start/status/stop/変換は成功し、source/exe/profile/API digestを照合。37待機区間のswitch-inにtarget threadのuser/kernel stackを回収した。追加採取工程の完了とし、製品修復や公開成功には置き換えない。
+- [x] 同一配布物のpresentation比較40551477572を回収。元200ms smokeは既定前4→4/Visual2→2/既定後4→4の全3件FAIL、別所有WPRは両方式で成功。各32長待機/resume stack32/lost0、待機中央値は約311/306msでVisualを製品修正に採用しない。codea5ffd846/docsf9b21d79の通常pushは実exit0、新HEADレビュー重大指摘なし。比較の回収のみ完了、製品修復と全OS公開は未完として継続する。[根拠](evidence/windows-paint-delivery-diagnosis-2026-10-27.ja.md)。
+- [/] Windowsの継続待機中のWARP経由CPU処理を既存実ETL/CSVで確認し、compiler比較入口を署名付き通常commit `0f08b765`へ統合した。公式DXC固定asset/2DLLのSHA・AMD64・実prepare/verify、拒否回帰とcontroller/trace合計40件、実PowerShell構文5sourceとreceipt改変拒否/環境復元、Actionlint、独立レビューP0/P1なしを確認。ambient compiler指定は比較を曖昧にしないため変更せず拒否し、既定前/DXC/既定後の元smokeと前/DXCの別WPRを回収する。元200ms10/latency1/identity/cleanupは維持、driver/製品Rust/Cargo未変更。通常push・実Windows比較・必要修復・全OS公開は未完。[根拠](evidence/windows-paint-delivery-diagnosis-2026-10-27.ja.md)。
+- [ ] Issue374: GitHub open alerts41件は配布証跡ツールPillow12.3.0の指定に集中していた。製品Cargo graphや既存ZIP/Zstd評価と分離し、公開Pillow13.0.0を隔離導入し、PyPI wheel hash一致・119既存契約・実fixture PNGのproduction検査が成功。要求版1行を通常commit d6481c46へ統合、通常push・公開は継続する。警告件数だけで公開停止や実影響を断定せず、例外/閾値緩和にしない。[根拠](evidence/release-evidence-pillow-refresh-2026-10-27.ja.md)。
+
+### 2026-10-27 Windowsのpaint配送遅延を同一配布物で切り分ける
+
+- [x] 正式run40505473053のWindows元200ms×10失敗と、別診断PID7544の34frames/開始stack欠測を分離して回収した。ログ負荷比較を通常commit/push040・DraftPR373へ統合し、対象契約/Actionlint/実PowerShell構文・exactCodex指摘0を確認。実Windows診断40524518173は同一exeの元ログ/低減ログとも200ms不合格で回収完了。これは診断工程の完了で、製品修復・全OS公開の成功ではない。後続の待機方式診断と元基準の修復・公開は上の未完了項目で継続。[根拠](evidence/windows-paint-delivery-diagnosis-2026-10-27.ja.md)。
+
 ### 2026-10-27 #364 テスト期待値のOS分岐によるcoverage不足を修復する
 
 - [/] d875cc2のCIは7/8成功・MaccoverageだけWindows期待値の未実行1行で失敗。test内のruntime cfg!をcompile-time cfg期待値へ変更し、production bytes・全assert・元品質条件を維持。実KatanA bin対象test1件exit0、当該file16/16行・21/21領域100%、fmt/diff・独立レビュー成功。対象Clippy（test含む）もexit0。通常commit/push/new全review/CI・実配布/公開は継続。[根拠](evidence/native-presentation-test-cfg-coverage-2026-10-27.ja.md)。

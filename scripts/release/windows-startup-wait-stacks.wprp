@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0" Author="KatanA" Company="KatanA">
+  <Profiles>
+    <SystemCollector Id="KatanAWaitStacksCollector" Name="NT Kernel Logger">
+      <BufferSize Value="1024" />
+      <Buffers Value="64" />
+    </SystemCollector>
+    <SystemProvider Id="KatanAWaitStacksProvider">
+      <Keywords>
+        <Keyword Value="ProcessThread" />
+        <Keyword Value="Loader" />
+        <Keyword Value="CSwitch" />
+        <Keyword Value="ReadyThread" />
+      </Keywords>
+      <Stacks>
+        <Stack Value="CSwitch" />
+        <Stack Value="ReadyThread" />
+      </Stacks>
+    </SystemProvider>
+    <Profile Id="KatanAWaitStacks.Verbose.Memory" Name="KatanAWaitStacks" DetailLevel="Verbose" LoggingMode="Memory" Description="KatanA short wait-stack startup diagnosis">
+      <Collectors>
+        <SystemCollectorId Value="KatanAWaitStacksCollector">
+          <SystemProviderId Value="KatanAWaitStacksProvider" />
+        </SystemCollectorId>
+      </Collectors>
+    </Profile>
+    <Profile Id="KatanAWaitStacks.Verbose.File" Name="KatanAWaitStacks" DetailLevel="Verbose" LoggingMode="File" Description="KatanA short wait-stack startup diagnosis">
+      <Collectors>
+        <SystemCollectorId Value="KatanAWaitStacksCollector">
+          <SystemProviderId Value="KatanAWaitStacksProvider" />
+        </SystemCollectorId>
+      </Collectors>
+    </Profile>
+  </Profiles>
+</WindowsPerformanceRecorder>
