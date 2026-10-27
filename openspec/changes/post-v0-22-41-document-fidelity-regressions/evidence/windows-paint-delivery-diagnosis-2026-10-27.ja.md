@@ -81,3 +81,17 @@ Controller は dispatch 時の不変な commit を checkout し、GitHub token �
 既存の記録がないことの確認、固有 instance 名、所有 PID/実行ファイルの確認、timeout と終了処理は維持する。任意の profile、default instance の停止、OS 保護の無効化は追加しない。追加採取の成功を本体の元 200ms 検査の成功にせず、採取失敗は別の error として記録する。
 
 追加入口 14 件と trace 契約 10 件、変更 workflow の Actionlint、隔離 PowerShell の実構文解析と固定 XML の準備・hash 照合は成功した。これらは Windows 上の WPR による schema 受理や、必要な stack が実際に取得できた証明ではない。実採取・原因確認・製品修復・公開は後続工程として継続する。
+
+## 明示採取の実結果と推論の訂正
+
+[run 40542795332](https://github.com/HiroyukiFuruno/KatanA/actions/runs/40542795332) では、元の起動検査は frame 4 から進まず不合格だった。別 process の追加採取は成功し、WPR は要求した `KatanAWaitStacks.Verbose.Memory` を選択、start/status/stop/CSV 変換は終了コード 0 だった。profile 本文と保存 hash、実行ファイル hash、取得 artifact の GitHub API digest を照合した。記録の lost events は 0。
+
+PID 8964 の初期 thread 7568 に対応する長い待機区間は 37 件。switch-out の exact-QPC に target の stack は見つからなかったが、switch-in の exact-QPC には全 37 件で同じ PID/TID の kernel と user stack があった。取得した履歴を、起床側の別 process の stack と混同しない。正本は `tmp/oct28-40542795332-receipt.json` と `tmp/oct28-40542795332-switchin-stacks.json` に保存した。
+
+ImageLoad が記録した timestamp と SizeOfImage に対応する DLL を Microsoft の公式 symbol server から取得し、export とアドレスを照合した。先頭は `NtWaitForSingleObject` と `WaitForSingleObjectEx` に対応する。KatanA の実行ファイルも元 artifact から hash 照合して抽出し、32 件の呼出し復帰先が DX12 surface の取得時の待機、初期 5 件が fence 待機のコード形状・静的な source location と対応することを確認した。ただし一致する PDB はないため、application callsite の source 行を symbol 化して確定したとは扱わない。
+
+以前の「`request_redraw` から次の `RepaintNow` のログまでを GPU 外の遅延とみなす」推論は撤回する。eframe の `RedrawRequested` は `run_ui_and_paint` を実行してから `handle_event_result` のログを出すため、その間にも GPU の surface 取得や描画待ちを含み得る。短い UI 処理時間だけで Windows の message 配送側へ原因を決めない。
+
+次は同じ配布物の前後既定条件と、公開 API の `WGPU_DX12_PRESENTATION_SYSTEM=DxgiFromVisual` を比較する。採取と元の起動検査を分離し、環境値・source・実行ファイル・元閾値を束縛する。実結果は未回収で、製品設定へは採用していない。driver や window style、OS 保護、元品質条件は変更しない。
+
+この比較入口は対象契約 17 件、Actionlint、生成した smoke と分離入口の実 PowerShell parser、最終独立レビューを通過し、通常 commit `a5ffd846` へ統合した。既定前と Visual の元 smoke を先に保存してから、同じ exe の別所有 process を採取する。採取失敗も別項目へ保存して後続ケースを継続し、環境値を `finally` で復元する。既存のログ比較、待機方式比較、無引数の wait-stack 診断は維持する。実 Windows の比較結果は通常 push 後に別途回収する。
