@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import re
 import tomllib
+from pathlib import Path
 
 EXPIRES_ON = dt.date(2026, 11, 7)
 ADVISORIES = ("RUSTSEC-2026-0367", "RUSTSEC-2026-0368", "RUSTSEC-2026-0369")
@@ -12,6 +13,10 @@ OLD_ZIP_PARENTS = {
     ("8.6.0", "katana-document-viewer", "0.5.12"),
 }
 SAFE_ZIP = ("9.0.5", "katana-core", "0.22.42")
+SAFE_ZIP_EDGES = frozenset((SAFE_ZIP, ("9.1.2", "katana-core", "0.22.42")))
+SAFE_ZIP_MANIFEST = (
+    Path(__file__).resolve().parents[2] / "crates" / "katana-core" / "Cargo.toml"
+).resolve()
 REASON = ("KatanA issue https://github.com/HiroyukiFuruno/KatanA/issues/354 source audit found only in-memory XML/asset reads and no vulnerable ZipArchive::extract or ZipStreamReader::extract use in the checked KDV/parent crates; not proof of whole-program safety; openspec/changes/post-v0-22-41-document-fidelity-regressions/evidence/zip-risk-acceptance-2026-10-24.ja.md; expires 2026-11-07 UTC")
 
 
@@ -80,7 +85,7 @@ def _collect_edges(metadata: dict, packages: dict, nodes: list, node_ids: set[st
 
 def _validate_ancestry(metadata: dict, packages: dict, edges: dict, zip_edges: dict, parents: set) -> None:
     for item in sorted(parents):
-        if item != SAFE_ZIP and item not in OLD_ZIP_PARENTS:
+        if item not in SAFE_ZIP_EDGES and item not in OLD_ZIP_PARENTS:
             raise ValueError(f"unapproved ZIP edge: {item}")
     records = {p["id"]: p for p in metadata["packages"]}
     kdv = [p_id for p_id, (name, version) in packages.items() if name == "katana-document-viewer" and version == "0.5.12"]
@@ -102,6 +107,14 @@ def _validate_ancestry(metadata: dict, packages: dict, edges: dict, zip_edges: d
             if child not in blocked and child not in kdv:
                 blocked.add(child); frontier.append(child)
     for (parent_id, child_id), item in zip_edges.items():
+        if item in SAFE_ZIP_EDGES:
+            parent = records[parent_id]
+            manifest_path = parent.get("manifest_path")
+            if (parent.get("source") is not None or not isinstance(manifest_path, str)
+                    or Path(manifest_path).resolve() != SAFE_ZIP_MANIFEST):
+                raise ValueError("approved ZIP edge parent is not the local katana-core manifest")
+            if parent_id not in reachable or child_id not in reachable:
+                raise ValueError("approved ZIP edge is orphaned from workspace roots")
         if item not in OLD_ZIP_PARENTS:
             continue
         if parent_id not in reachable or child_id not in reachable:

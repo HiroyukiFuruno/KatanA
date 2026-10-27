@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest import mock
 
 from test_zstd_advisory_policy import metadata as zstd_metadata, node as zstd_node
+import zip_advisory_policy as zip_policy
 
 
 ROOT = Path(__file__).parent
@@ -36,6 +37,24 @@ def metadata(zip_version="0.6.6", parent="ironcalc", parent_version="0.8.3"):
     return {"packages": packages, "workspace_members": [root_id], "resolve": {"nodes": nodes}}
 
 
+def direct_workspace_zip_metadata(zip_version="9.1.2", parent="katana-core", parent_version="0.22.42"):
+    repo_root = zip_policy.SAFE_ZIP_MANIFEST.parents[2]
+    core_manifest = zip_policy.SAFE_ZIP_MANIFEST
+    screenshot_manifest = repo_root / "scripts" / "screenshot" / "Cargo.toml"
+    zip_id = f"registry+https://github.com/rust-lang/crates.io-index#zip@{zip_version}"
+    parent_id = f"path+{core_manifest.parent.as_uri()}#{parent_version}"
+    root_id = f"path+{screenshot_manifest.parent.as_uri()}#katana-screenshot@0.1.0"
+    packages = [{"id": zip_id, "name": "zip", "version": zip_version,
+                 "source": "registry+https://github.com/rust-lang/crates.io-index"},
+                {"id": parent_id, "name": parent, "version": parent_version, "source": None,
+                 "manifest_path": str(core_manifest)},
+                {"id": root_id, "name": "katana-screenshot", "version": "0.1.0",
+                 "source": None, "manifest_path": str(screenshot_manifest)}]
+    nodes = [{"id": zip_id, "deps": []}, {"id": parent_id, "deps": [{"pkg": zip_id}]},
+             {"id": root_id, "deps": [{"pkg": parent_id}]}]
+    return {"packages": packages, "workspace_members": [root_id], "resolve": {"nodes": nodes}}
+
+
 class ZipOverlayTests(unittest.TestCase):
     def test_expiry_boundary_is_closed(self):
         self.assertFalse(MODULE.policy_expired(dt.date(2026, 11, 6)))
@@ -53,6 +72,35 @@ class ZipOverlayTests(unittest.TestCase):
     def test_new_zip_version_is_rejected(self):
         with self.assertRaises(ValueError):
             MODULE.validate_metadata(metadata("0.6.7"))
+
+    def test_exact_current_direct_zip_edge_is_accepted(self):
+        for version in ("9.0.5", "9.1.2"):
+            with self.subTest(version=version):
+                MODULE.validate_metadata(direct_workspace_zip_metadata(zip_version=version))
+
+    def test_unapproved_direct_zip_version_or_parent_is_rejected(self):
+        for fixture in (direct_workspace_zip_metadata(zip_version="9.1.3"),
+                        direct_workspace_zip_metadata(parent="other-root")):
+            with self.subTest(fixture=fixture["packages"]):
+                with self.assertRaises(ValueError):
+                    MODULE.validate_metadata(fixture)
+
+    def test_safe_direct_zip_edge_requires_local_manifest_and_reachable_route(self):
+        git_parent = direct_workspace_zip_metadata()
+        next(package for package in git_parent["packages"] if package["name"] == "katana-core")["source"] = (
+            "git+https://example.invalid/katana-core")
+        other_path = direct_workspace_zip_metadata()
+        next(package for package in other_path["packages"] if package["name"] == "katana-core")["manifest_path"] = (
+            "/workspace/fork/crates/katana-core/Cargo.toml")
+        orphaned = direct_workspace_zip_metadata()
+        root_id = next(package["id"] for package in orphaned["packages"]
+                       if package["name"] == "katana-screenshot")
+        next(node for node in orphaned["resolve"]["nodes"]
+             if node["id"] == root_id)["deps"] = []
+        for fixture in (git_parent, other_path, orphaned):
+            with self.subTest(fixture=fixture["packages"]):
+                with self.assertRaises(ValueError):
+                    MODULE.validate_metadata(fixture)
 
     def test_new_direct_parent_is_rejected(self):
         with self.assertRaises(ValueError):

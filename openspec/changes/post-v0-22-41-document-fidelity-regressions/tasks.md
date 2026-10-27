@@ -1,3 +1,7 @@
+### 2026-10-27 ZIP9.1.2更新と経路照合を整合する
+
+- [/] 本人更新のmodern ZIP9.1.2を旧固定リストが拒否する実不合格を確認。既存9.0.5を保持して正当なkatana-core0.22.42の9.1.2辺だけ追加し、source=None・正規core manifest一致・workspace rootsから親/子へ到達可能という束縛を検査する。別版/別parent/git/別path/orphanは拒否、旧例外ID/期限/registry/KDV迂回拒否は不変。ZIP27件/Zstd14件と実3manifest本番検証成功。全cargo-deny/通常push/新CI/公開は未完として続行。[根拠](evidence/zip912-graph-admission-2026-10-27.ja.md)。
+
 ### 2026-10-27 本人承認: 採取成功テストだけを非必須診断へ分離
 
 - [/] 採取成功1件を非default featureと専用workflowへ分離し、PID/Thread確認・元5秒・test本体を維持する。通常側の純粋3件は実成功、分離契約6件/元CI resource10件/actionlint成功。製品Run tests部分はbyte同一、既存required7件・3OS品質条件・Windows200ms×10は不変。実採取成功は未確認と明記し、専用jobの成否で本体検査を成功扱いしない。[根拠](evidence/native-profiler-job-separation-2026-10-27.ja.md)。新HEADの通常統合/review/CI/公開を継続する。

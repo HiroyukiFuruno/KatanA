@@ -12,24 +12,27 @@ TODAY = dt.date(2026, 11, 6)
 
 def metadata():
     selected = {
-        "root": ("katana-core", "0.22.42"),
+        "root": ("katana-screenshot", "0.1.0"),
+        "core": ("katana-core", "0.22.42"),
         "kdv": ("katana-document-viewer", "0.5.12"),
         "iron": ("ironcalc", "0.8.3"),
         "office": ("office2pdf", "0.8.1"),
         "zip": ("zip", "0.6.6"),
         "zstd": ("zstd", "0.11.2+zstd.1.5.2"),
         "safe": ("zstd-safe", "5.0.2+zstd.1.5.2"),
-        "zipnew": ("zip", "9.0.5"),
+        "zipnew": ("zip", "9.1.2"),
         "zstdnew": ("zstd", "0.14.3"),
         "safenew": ("zstd-safe", "8.2.0"),
     }
-    edges = {"root": ["kdv", "zipnew"], "kdv": ["iron", "office"],
+    edges = {"root": ["core", "kdv"],
+             "core": ["zipnew"], "kdv": ["iron", "office"],
              "iron": ["zip"], "office": ["zip"], "zip": ["zstd"],
              "zstd": ["safe"], "safe": [], "zipnew": ["zstdnew"],
              "zstdnew": ["safenew"], "safenew": []}
     return {"packages": [
         {"id": pid, "name": name, "version": version,
-         "source": None if pid == "root" else policy.REGISTRY}
+         "source": None if pid in {"root", "core"} else policy.REGISTRY,
+         **({"manifest_path": str(policy.zip_policy.SAFE_ZIP_MANIFEST)} if pid == "core" else {})}
         for pid, (name, version) in selected.items()],
         "workspace_members": ["root"],
         "resolve": {"nodes": [
@@ -55,9 +58,10 @@ class ZstdPolicyTests(unittest.TestCase):
 
     def test_modern_only_and_graph_without_kdv_need_no_exception(self):
         data = metadata()
-        data["packages"] = [p for p in data["packages"] if p["id"] in {"root", "zipnew", "zstdnew", "safenew"}]
-        data["resolve"]["nodes"] = [n for n in data["resolve"]["nodes"] if n["id"] in {"root", "zipnew", "zstdnew", "safenew"}]
-        node(data, "root")["deps"] = [{"pkg": "zipnew"}]
+        data["packages"] = [p for p in data["packages"] if p["id"] in {"root", "core", "zipnew", "zstdnew", "safenew"}]
+        data["resolve"]["nodes"] = [n for n in data["resolve"]["nodes"] if n["id"] in {"root", "core", "zipnew", "zstdnew", "safenew"}]
+        node(data, "root")["deps"] = [{"pkg": "core"}]
+        node(data, "core")["deps"] = [{"pkg": "zipnew"}]
         self.assertFalse(policy.validate_metadata(data, TODAY))
         node(data, "root")["deps"] = []
         data["packages"] = [package(data, "root")]
