@@ -1,3 +1,8 @@
+### 2026-10-27 本人承認: 採取成功テストだけを非必須診断へ分離
+
+- [/] 採取成功1件を非default featureと専用workflowへ分離し、PID/Thread確認・元5秒・test本体を維持する。通常側の純粋3件は実成功、分離契約6件/元CI resource10件/actionlint成功。製品Run tests部分はbyte同一、既存required7件・3OS品質条件・Windows200ms×10は不変。実採取成功は未確認と明記し、専用jobの成否で本体検査を成功扱いしない。[根拠](evidence/native-profiler-job-separation-2026-10-27.ja.md)。新HEADの通常統合/review/CI/公開を継続する。
+- [/] 本人のjust update差分を取り込み、依存更新確認をリリース直前だけに限定しない。comrak0.59、resvg/usvg0.49、notify8.2.1、直接zip9.1.2と両lockを別関心で検証する。固定registry KDV0.5.12/KRR0.4.23は維持し、未公開sibling override無し。更新後コンパイルと対象3件成功は全gate成功へ流用しない。[依存更新](evidence/dependency-refresh-2026-10-27.ja.md)。
+
 ### 2026-10-27 本体の不具合・補助診断・未完了欄を区別する
 
 - [/] 本人の指摘: 補助診断の採取失敗だけで本体不具合や全作業停止としない。html_navigation.rsのcfg(all(test,macos))により採取moduleは配布本体に含まれず、失敗時のsample_errorは元HTML検査エラーへ追記されるだけ。現行hookの不合格を黙って成功へ変えず、診断テストの配置・環境不足と、本体のWindows描画/新HEAD CI未完を別に報告する。独立した証跡回収・状態修正は継続する。検索語: auxiliary diagnostics, product gate, profiler environment failure。

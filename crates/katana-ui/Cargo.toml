@@ -11,6 +11,7 @@ description = "KatanA UI: egui application shell, panes, menu wiring, and presen
 screenshot-test-hooks = []
 # Compiles acceptance tests for explicitly supplied, non-repository fixtures.
 external-fixture-acceptance = []
+native-profiler-diagnostics = []
 
 [dependencies]
 katana-core = { version = "0.22.39", path = "../katana-core" }

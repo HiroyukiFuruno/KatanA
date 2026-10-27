@@ -143,6 +143,7 @@ jobs:
         shell: bash
         run: |
           python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
+          python3 -B -m unittest discover -s scripts/ci -p test_native_profiler_job_contract.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_observe_ci_command.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_windows_ci_observation_contract.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_windows_compiled_cache_contract.py -v
