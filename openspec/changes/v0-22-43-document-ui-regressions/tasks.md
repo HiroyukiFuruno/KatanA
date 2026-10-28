@@ -92,6 +92,10 @@
 - [x] 7.1 ボードB01〜B11に対応する実装・自動検査の結果を提示し、追加報告を同じ台帳へ登録する。本人の返答や実機確認を公開停止条件にしない。
 - [x] 7.2 B01〜B11を共通操作/Loading/画像/グループ/close/配置の実装と自動回帰へ照合し、原本全事象の未確認とKDV #70を未解決として明記する。既存の自動検証優先・本人確認非停止・上流非停止方針を維持し、Issueを全面解決として閉じない。
 
+### 独立レビュー指摘
+
+- [/] P2: closeと最初の次frameが時間の合否に入っていなかった検査を補強した。元の5秒を増やさずclose前から単一の絶対deadlineを共有し、既にworkerがidleでも期限切れを拒否する。実workerの代表4形式と実await入口の期限切れnegativeが成功。通常push・thread返信/resolve・current reviewは8.2/8.3で別に実施する。
+
 ## 8. Final Verification & Release Work
 
 - [x] 8.1 自己レビュー、変更範囲のfmt/lint/回帰、文書検査、依存関係調査・更新を完了する。品質条件は下げない。
@@ -138,3 +142,9 @@ b5257652の通常pushはUI lib 1412成功/1失敗。移動したprovider検査�
 言語干渉の隔離修正後、同じ通常profile/実workerでUI lib全体を並列再検証し1413成功・0失敗・既存ignored2/fixture filter2を確認した。子判定用の同名環境変数が親にある条件でもexact argvを確認して隔離し、親のlocaleを変更しない。結果: `tmp/v0.22.43-prep/palette-isolation-parallel-lib.log` / exit0。8.1を対象検証完了へ戻し、通常push成功の8.2は未完了を維持する。
 
 共通ProcessServiceを使う最終隔離版でも、実workerを供給した並列UI lib 1413成功/0失敗。Windowsのheadless起動規約をテストでも維持し、ASTが拒否した直Command版は採用しない。最終検証logは `tmp/v0.22.43-prep/palette-isolation-parallel-lib-facade.log` / exit0。
+
+### PR389独立P2の実経路再検証
+
+公開thread `discussion_r4406997730` に指摘を記録。最終修正はclose前の絶対deadlineをforce close直後・次frame直後・worker idle前/中/後に検査し、元CLOSE_TIMEOUT=5秒を維持した。negativeはassert helperだけでなく、空の隔離HarnessとRenderEnvLockで実await_workers_idleへ期限切れを渡し、入口で拒否することを検証した。固定sleepや商用API変更なし。
+
+実worker付き2 tests成功。HTML/DOCX/XLSX/PPTXの force_close_ms / close_to_next_frame_ms / worker_idle_wait_ms は順に1/3/0、0/2/0、0/1/11、0/2/0。正規の配布版受入・原本全close解消とは混同しない。証跡 `tmp/v0.22.43-prep/close-deadline-review-fix/close-deadline-idle-entry-regression.log` / exit0。

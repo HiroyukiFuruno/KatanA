@@ -143,21 +143,32 @@ pub(in crate::app::doc_close_latency_tests) fn await_workers_idle(
     harness: &mut Harness<'_, KatanaApp>,
     baseline: usize,
     format: &str,
+    deadline: Instant,
 ) -> u128 {
-    let started = Instant::now();
-    let deadline = started + CLOSE_TIMEOUT;
+    let wait_started = Instant::now();
+    assert_before_deadline(deadline, format, "worker idle");
     while harness
         .state_mut()
         .document_lifecycle_resources_for_test()
         .0
         > baseline
     {
-        assert!(
-            Instant::now() < deadline,
-            "{format} worker close deadline exceeded"
-        );
+        assert_before_deadline(deadline, format, "worker idle");
         harness.step();
+        assert_before_deadline(deadline, format, "worker idle");
         thread::yield_now();
     }
-    started.elapsed().as_millis()
+    assert_before_deadline(deadline, format, "worker idle");
+    wait_started.elapsed().as_millis()
+}
+
+pub(in crate::app::doc_close_latency_tests) fn assert_before_deadline(
+    deadline: Instant,
+    format: &str,
+    phase: &str,
+) {
+    assert!(
+        Instant::now() < deadline,
+        "{format} {phase} exceeded the shared close deadline"
+    );
 }
