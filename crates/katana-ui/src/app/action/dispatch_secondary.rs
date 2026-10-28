@@ -4,6 +4,9 @@ use crate::shell::*;
 
 impl KatanaApp {
     pub(super) fn dispatch_secondary(&mut self, ctx: &egui::Context, action: AppAction) {
+        if self.dispatch_preview_operation_action(ctx, &action) {
+            return;
+        }
         match action {
             AppAction::PickOpenFileInCurrentWorkspace | AppAction::PickOpenFileInNewWorkspace => {
                 self.handle_action_pick_open_file(action);
@@ -58,24 +61,6 @@ impl KatanaApp {
             /* WHY: Image ingest — implemented in Task 2 (stubs for now). */
             AppAction::IngestImageFile => self.handle_action_ingest_image_file(),
             AppAction::IngestClipboardImage => self.handle_action_ingest_clipboard_image(),
-            AppAction::SetSplitDirection(dir) => self.state.set_active_split_direction(dir),
-            AppAction::SetPaneOrder(order) => self.state.set_active_pane_order(order),
-            AppAction::SetViewMode(mode) => {
-                if mode != ViewMode::PreviewOnly
-                    && !crate::views::panels::preview::PreviewMenuAvailability::for_path(
-                        self.state
-                            .active_document()
-                            .map(|document| document.path.as_path()),
-                        crate::views::panels::preview::PreviewMenu::Tools,
-                    )
-                {
-                    return;
-                }
-                self.state.set_active_view_mode(mode);
-            }
-            AppAction::ToggleScrollSync(is_on) => {
-                self.state.scroll.sync_override = Some(is_on);
-            }
             AppAction::Quit => {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Close);
             }
@@ -89,26 +74,6 @@ impl KatanaApp {
                         let _ = katana_core::update::UpdateInstallerOps::execute_relauncher(_prep);
                         std::process::exit(0);
                     }
-                }
-            }
-            AppAction::OpenDocSearch => {
-                self.state.search.doc_search_open = true;
-                ctx.memory_mut(|m| {
-                    m.data
-                        .insert_temp(egui::Id::new("search_newly_opened"), true)
-                });
-            }
-            AppAction::ToggleDocSearch => {
-                if !self.state.search.doc_search_open {
-                    self.state.search.doc_search_open = true;
-                    ctx.memory_mut(|m| {
-                        m.data
-                            .insert_temp(egui::Id::new("search_newly_opened"), true)
-                    });
-                    self.trigger_action(AppAction::DocSearchQueryChanged);
-                } else {
-                    self.state.search.doc_search_open = false;
-                    self.state.search.doc_search_matches.clear();
                 }
             }
             AppAction::DocSearchQueryChanged => self.handle_action_doc_search_changed(),
@@ -131,33 +96,6 @@ impl KatanaApp {
                             .insert_temp(egui::Id::new("filter_newly_enabled"), true)
                     });
                 }
-            }
-            AppAction::ToggleSplitMode => {
-                if !crate::views::panels::preview::PreviewMenuAvailability::for_path(
-                    self.state
-                        .active_document()
-                        .map(|document| document.path.as_path()),
-                    crate::views::panels::preview::PreviewMenu::Tools,
-                ) {
-                    return;
-                }
-                self.state.set_active_view_mode(ViewMode::Split);
-            }
-            AppAction::ToggleCodePreview => {
-                if !crate::views::panels::preview::PreviewMenuAvailability::for_path(
-                    self.state
-                        .active_document()
-                        .map(|document| document.path.as_path()),
-                    crate::views::panels::preview::PreviewMenu::Tools,
-                ) {
-                    return;
-                }
-                let next_mode = match self.state.active_view_mode() {
-                    ViewMode::Split => ViewMode::PreviewOnly,
-                    ViewMode::PreviewOnly => ViewMode::CodeOnly,
-                    ViewMode::CodeOnly => ViewMode::PreviewOnly,
-                };
-                self.state.set_active_view_mode(next_mode);
             }
             AppAction::SelectNextTab => self.handle_action_next_tab(),
             AppAction::SelectPrevTab => self.handle_action_prev_tab(),

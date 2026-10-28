@@ -112,8 +112,13 @@ impl CanvasSurface {
     pub(crate) fn show(&mut self, ui: &mut egui::Ui, labels: &CanvasSurfaceLabels<'_>) {
         match &self.state {
             CanvasLoadState::Loading => {
-                ui.spinner();
-                ui.label(labels.loading);
+                let loading = crate::widgets::LoadingPresentation::new(
+                    crate::widgets::LoadingState::Pending,
+                    crate::widgets::LoadingLabel::Localized(labels.loading),
+                );
+                ui.centered_and_justified(|ui| {
+                    crate::widgets::LoadingIndicator::show(ui, &loading);
+                });
             }
             CanvasLoadState::Failed(error) => notices::CanvasNotices::error_ui(ui, error, labels),
             CanvasLoadState::Ready(document) => {

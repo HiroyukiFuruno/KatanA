@@ -54,13 +54,20 @@ impl HtmlBrowserSurface {
         );
     }
 
-    fn show_loading(&self, ui: &egui::Ui, rect: egui::Rect) {
-        ui.painter().text(
-            rect.center(),
-            egui::Align2::CENTER_CENTER,
-            "Loading HTML browser...",
-            egui::TextStyle::Body.resolve(ui.style()),
-            ui.visuals().weak_text_color(),
+    fn show_loading(&self, ui: &mut egui::Ui, rect: egui::Rect) {
+        let loading = crate::widgets::LoadingPresentation::new(
+            crate::widgets::LoadingState::Pending,
+            crate::widgets::LoadingLabel::RenderingKind("HTML browser"),
+        );
+        ui.scope_builder(
+            egui::UiBuilder::new()
+                .max_rect(rect)
+                .layout(egui::Layout::centered_and_justified(
+                    egui::Direction::TopDown,
+                )),
+            |ui| {
+                crate::widgets::LoadingIndicator::show(ui, &loading);
+            },
         );
     }
 }

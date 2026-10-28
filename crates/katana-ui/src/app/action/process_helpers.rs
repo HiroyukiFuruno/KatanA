@@ -4,8 +4,9 @@ use crate::shell::*;
 
 impl KatanaApp {
     pub(super) fn handle_action_toggle_slideshow(&mut self, ctx: &egui::Context) {
-        if !crate::views::panels::preview::PreviewMenuAvailability::for_app(
-            self,
+        self.refresh_document_operation_runtime();
+        if !crate::views::panels::preview::PreviewMenuAvailability::for_state(
+            &self.state,
             crate::views::panels::preview::PreviewMenu::Slideshow,
         ) {
             if self.state.layout.show_slideshow

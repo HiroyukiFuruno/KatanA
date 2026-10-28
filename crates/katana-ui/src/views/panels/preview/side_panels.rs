@@ -28,17 +28,23 @@ impl<'a> PreviewSidePanels<'a> {
             tools_available,
             slideshow_available,
         ) = {
-            let path = self
-                .app
-                .state
-                .active_document()
-                .map(|document| document.path.as_path());
+            let settings = super::PreviewMenuAvailability::settings_for_app(self.app);
             (
-                super::PreviewMenuAvailability::for_path(path, super::PreviewMenu::Toc),
-                super::PreviewMenuAvailability::for_path(path, super::PreviewMenu::Export),
-                super::PreviewMenuAvailability::for_path(path, super::PreviewMenu::Story),
-                super::PreviewMenuAvailability::for_path(path, super::PreviewMenu::Tools),
-                super::PreviewMenuAvailability::for_app(self.app, super::PreviewMenu::Slideshow),
+                settings.allows(super::DocumentOperation::PreviewMenu(
+                    super::PreviewMenu::Toc,
+                )),
+                settings.allows(super::DocumentOperation::PreviewMenu(
+                    super::PreviewMenu::Export,
+                )),
+                settings.allows(super::DocumentOperation::PreviewMenu(
+                    super::PreviewMenu::Story,
+                )),
+                settings.allows(super::DocumentOperation::PreviewMenu(
+                    super::PreviewMenu::Tools,
+                )),
+                settings.allows(super::DocumentOperation::PreviewMenu(
+                    super::PreviewMenu::Slideshow,
+                )),
             )
         };
         if !toc_available {

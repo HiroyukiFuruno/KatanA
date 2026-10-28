@@ -13,6 +13,7 @@ use std::path::{Path, PathBuf};
 pub mod about;
 pub(super) mod about_widgets;
 pub mod command_palette;
+mod command_palette_keyboard;
 pub(super) mod command_palette_results;
 mod command_palette_scroll_tests;
 pub mod diff_review;

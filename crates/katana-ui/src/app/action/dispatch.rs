@@ -5,6 +5,25 @@ use crate::shell::*;
 impl KatanaApp {
     #[allow(clippy::too_many_lines)]
     pub(super) fn dispatch_action(&mut self, ctx: &egui::Context, action: AppAction) {
+        match &action {
+            AppAction::ShowMetaInfo(_)
+                if !crate::views::panels::preview::PreviewMenuAvailability::for_app(
+                    self,
+                    crate::views::panels::preview::PreviewMenu::Info,
+                ) =>
+            {
+                return;
+            }
+            AppAction::ExportDocument(_)
+                if !crate::views::panels::preview::PreviewMenuAvailability::for_app(
+                    self,
+                    crate::views::panels::preview::PreviewMenu::Export,
+                ) =>
+            {
+                return;
+            }
+            _ => {}
+        }
         match action {
             AppAction::PickOpenWorkspace => {
                 if crate::shell_ui::ShellUiOps::is_headless() {
@@ -77,6 +96,12 @@ impl KatanaApp {
             AppAction::SaveDocument => self.handle_save_document(),
             AppAction::RefreshDiagrams => self.handle_action_refresh_diagrams(ctx),
             AppAction::RefreshDocument { is_manual } => {
+                if !crate::views::panels::preview::PreviewMenuAvailability::for_app(
+                    self,
+                    crate::views::panels::preview::PreviewMenu::Refresh,
+                ) {
+                    return;
+                }
                 self.handle_action_refresh_document(ctx, is_manual)
             }
             AppAction::ChangeLanguage(lang) => self.handle_action_change_language(lang),
@@ -108,10 +133,20 @@ impl KatanaApp {
             }
             AppAction::ToggleSlideshow => self.handle_action_toggle_slideshow(ctx),
             AppAction::ToggleSlideshowHoverHighlight => {
-                self.state.layout.slideshow_hover_highlight ^= true
+                if crate::views::panels::preview::PreviewMenuAvailability::for_app(
+                    self,
+                    crate::views::panels::preview::PreviewMenu::Story,
+                ) {
+                    self.state.layout.slideshow_hover_highlight ^= true;
+                }
             }
             AppAction::ToggleSlideshowShowDiagramControls => {
-                self.state.layout.slideshow_show_diagram_controls ^= true
+                if crate::views::panels::preview::PreviewMenuAvailability::for_app(
+                    self,
+                    crate::views::panels::preview::PreviewMenu::Story,
+                ) {
+                    self.state.layout.slideshow_show_diagram_controls ^= true;
+                }
             }
             other => self.dispatch_secondary(ctx, other),
         }

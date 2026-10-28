@@ -10,9 +10,14 @@ pub const FILE_PRIMARY_MATCH_SCORE: f32 = 0.9;
 pub const FILE_SECONDARY_MATCH_SCORE: f32 = 0.5;
 
 use crate::state::command_inventory::CommandInventory;
+use crate::state::document::ViewMode;
+use crate::views::panels::preview::DocumentOperationSettings;
 
 /// Provides common application actions from the shared CommandInventory.
-pub struct AppCommandProvider;
+pub struct AppCommandProvider {
+    pub(crate) operation_settings: DocumentOperationSettings,
+    pub(crate) current_mode: ViewMode,
+}
 
 impl CommandPaletteProvider for AppCommandProvider {
     fn name(&self) -> &'static str {
@@ -38,6 +43,13 @@ impl CommandPaletteProvider for AppCommandProvider {
         const EMPTY_QUERY_PENALTY: f32 = 0.2;
 
         for cmd in commands {
+            if self
+                .operation_settings
+                .allows_action(&cmd.action, self.current_mode)
+                == Some(false)
+            {
+                continue;
+            }
             let label = (cmd.label)();
             let base_score = COMMAND_BASE_SCORE;
 

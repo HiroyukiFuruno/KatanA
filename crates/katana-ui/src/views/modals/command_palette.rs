@@ -5,34 +5,7 @@ use crate::state::command_palette::{
 };
 use eframe::egui;
 
-fn handle_key_input(
-    ui: &mut egui::Ui,
-    state: &mut crate::state::command_palette::CommandPaletteState,
-    action: &mut AppAction,
-    is_open: &mut bool,
-) -> bool {
-    let mut changed_by_keyboard = false;
-    if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
-        *is_open = false;
-        return changed_by_keyboard;
-    }
-    if ui.input(|i| i.key_pressed(egui::Key::ArrowDown)) {
-        state.move_down();
-        changed_by_keyboard = true;
-    }
-    if ui.input(|i| i.key_pressed(egui::Key::ArrowUp)) {
-        state.move_up();
-        changed_by_keyboard = true;
-    }
-    if ui.input(|i| i.key_pressed(egui::Key::Enter)) {
-        let res = state.results.get(state.selected_index).cloned();
-        if let Some(res) = res {
-            execute_payload(action, &res.execute_payload);
-            *is_open = false;
-        }
-    }
-    changed_by_keyboard
-}
+use super::command_palette_keyboard::handle_key_input;
 
 const COMMAND_PALETTE_WIDTH: f32 = 600.0;
 const COMMAND_PALETTE_DEFAULT_HEIGHT: f32 = 600.0;
@@ -56,6 +29,7 @@ pub(crate) struct CommandPaletteModal<'a> {
     pub workspace: Option<&'a katana_core::workspace::Workspace>,
     pub action: &'a mut AppAction,
     pub providers: &'a [Box<dyn CommandPaletteProvider>],
+    operation_context: Option<(u64, crate::state::document::ViewMode)>,
 }
 
 impl<'a> CommandPaletteModal<'a> {
@@ -70,7 +44,16 @@ impl<'a> CommandPaletteModal<'a> {
             workspace,
             action,
             providers,
+            operation_context: None,
         }
+    }
+
+    pub(crate) fn with_operation_context(
+        mut self,
+        context: (u64, crate::state::document::ViewMode),
+    ) -> Self {
+        self.operation_context = Some(context);
+        self
     }
 
     pub fn show(self, ctx: &egui::Context) {
@@ -137,7 +120,10 @@ impl<'a> CommandPaletteModal<'a> {
                     ui.painter().galley(pos - egui::vec2(0.0, galley.size().y / 2.0), galley, ui.visuals().text_color());
                 }
 
-                if response.changed() || self.state.results.is_empty() {
+                let operation_context_changed = self.operation_context.is_some_and(|context| {
+                    self.state.last_operation_context != Some(context)
+                });
+                if response.changed() || self.state.results.is_empty() || operation_context_changed {
                     /* WHY: Gather results from providers based on the query prefix.
                     If the query starts with '>', it only searches Katana commands.
                     Otherwise, it excludes Katana commands. */
@@ -170,6 +156,7 @@ impl<'a> CommandPaletteModal<'a> {
                             .unwrap_or(std::cmp::Ordering::Equal)
                     });
                     self.state.update_results(gathered);
+                    self.state.last_operation_context = self.operation_context;
                 }
 
                 /* WHY: Keyboard interactions */

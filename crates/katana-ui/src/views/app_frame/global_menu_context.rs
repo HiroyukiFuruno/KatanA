@@ -9,6 +9,7 @@ pub(super) struct GlobalMenuContext<'a> {
 
 impl<'a> GlobalMenuContext<'a> {
     pub(super) fn new(app: &'a mut KatanaApp, i18n: &'a crate::i18n::I18nMessages) -> Self {
+        app.refresh_document_operation_runtime();
         Self { app, i18n }
     }
 

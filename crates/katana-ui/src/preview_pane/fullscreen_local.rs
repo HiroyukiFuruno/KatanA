@@ -54,7 +54,13 @@ pub(super) fn show_fullscreen_local(
                         ctx.request_repaint_after(std::time::Duration::from_millis(
                             REPAINT_INTERVAL_MS,
                         ));
-                        ui.label(&crate::i18n::I18nOps::get().preview.rendering);
+                        let loading = crate::widgets::LoadingPresentation::new(
+                            crate::widgets::LoadingState::Pending,
+                            crate::widgets::LoadingLabel::RenderingKind("image"),
+                        );
+                        ui.centered_and_justified(|ui| {
+                            crate::widgets::LoadingIndicator::show(ui, &loading);
+                        });
                     }
                     super::local_image_loader::LocalImageStatus::Failed(error) => {
                         ui.label(&crate::i18n::I18nOps::get().preview.missing_image)
@@ -75,9 +81,13 @@ pub(super) fn show_fullscreen_local(
                 None => return,
             };
 
+            let (image_area, controls_area) =
+                crate::diagram_controller::DiagramControllerOps::image_and_controls_rects(
+                    blocker_rect,
+                );
             let avail = Vec2::new(
-                screen.width() - FULLSCREEN_PADDING * 2.0,
-                screen.height() - FULLSCREEN_PADDING * 2.0,
+                (image_area.width() - FULLSCREEN_PADDING * 2.0).max(0.0),
+                (image_area.height() - FULLSCREEN_PADDING * 2.0).max(0.0),
             );
             let base_scale = (avail.x / width as f32)
                 .min(avail.y / height as f32)
@@ -86,8 +96,8 @@ pub(super) fn show_fullscreen_local(
                 width as f32 * base_scale * viewer_state.zoom,
                 height as f32 * base_scale * viewer_state.zoom,
             );
-            let img_pos = screen.center() - size / 2.0 + viewer_state.pan;
-            ui.painter().with_clip_rect(blocker_rect).image(
+            let img_pos = image_area.center() - size / 2.0 + viewer_state.pan;
+            ui.painter().with_clip_rect(image_area).image(
                 texture_handle.id(),
                 egui::Rect::from_min_size(img_pos, size),
                 egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
@@ -96,7 +106,7 @@ pub(super) fn show_fullscreen_local(
             crate::diagram_controller::DiagramControllerOps::draw_controls(
                 ui,
                 viewer_state,
-                blocker_rect,
+                controls_area,
             );
             if super::fullscreen::render_fullscreen_close_button(ui, blocker_rect, dc_close, 1.0) {
                 keep_open = false;

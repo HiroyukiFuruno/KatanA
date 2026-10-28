@@ -90,6 +90,11 @@ fn assert_ready_actions(app: &mut KatanaApp, context: &egui::Context) {
         app,
         PreviewMenu::Slideshow
     ));
+    assert!(PreviewMenuAvailability::for_app(app, PreviewMenu::Story));
+    app.process_action(context, AppAction::ToggleStoryPanel);
+    assert!(app.state.layout.show_story_panel);
+    app.process_action(context, AppAction::ToggleStoryPanel);
+    assert!(!app.state.layout.show_story_panel);
     app.process_action(context, AppAction::ToggleSlideshow);
     let mut output = context.run_ui(preview_input(), |ui| {
         app.show_system_modals(ui.ctx());
@@ -156,7 +161,7 @@ fn external_pptx_ready_slideshow_accepts_active_frame_and_rejects_stale_tab() {
         let context = egui::Context::default();
         let mut app = pptx_app(path);
         assert!(!PreviewMenuAvailability::for_app(
-            &app,
+            &mut app,
             PreviewMenu::Slideshow
         ));
         await_frame(&mut app, &context, 0);

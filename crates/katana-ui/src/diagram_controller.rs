@@ -4,6 +4,8 @@ use crate::preview_pane::ViewerState;
 use crate::theme_bridge::ThemeBridgeOps;
 use eframe::egui::{self, Shape, Vec2};
 
+mod layout;
+
 const BUTTON_SIZE: f32 = 28.0;
 const MARGIN: f32 = 8.0;
 const GAP: f32 = 2.0;
@@ -181,25 +183,12 @@ impl DiagramControllerOps {
 
         ControlAction::None
     }
-
-    pub(crate) fn draw_fullscreen_button(ui: &mut egui::Ui, container_rect: egui::Rect) -> bool {
-        let msgs = i18n::I18nOps::get();
-        let dc = &msgs.preview.diagram_controller;
-
-        let btn_rect = egui::Rect::from_min_size(
-            egui::pos2(
-                container_rect.right() - BUTTON_SIZE - MARGIN,
-                container_rect.top() + MARGIN,
-            ),
-            Vec2::splat(BUTTON_SIZE),
-        );
-        Self::render_control_button(ui, btn_rect, Icon::Fullscreen, &dc.fullscreen, true).clicked()
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::DiagramControllerOps;
+    use crate::preview_pane::ViewerState;
     use egui_kittest::Harness;
     use egui_kittest::kittest::Queryable;
     use std::sync::Arc;
@@ -224,6 +213,47 @@ mod tests {
         assert_eq!(border.width, 1.0);
         assert_eq!((border_r, border_g, border_b), (255, 255, 255));
         assert!(focus.color.a() >= 0xe0);
+    }
+
+    #[test]
+    fn fullscreen_image_and_controls_remain_disjoint_across_viewports() {
+        for size in [
+            egui::vec2(160.0, 240.0),
+            egui::vec2(640.0, 480.0),
+            egui::vec2(1920.0, 1080.0),
+        ] {
+            let viewport = egui::Rect::from_min_size(egui::pos2(12.0, 20.0), size);
+            let (image, controls) = DiagramControllerOps::image_and_controls_rects(viewport);
+            assert!(viewport.contains_rect(image));
+            assert!(viewport.contains_rect(controls));
+            assert_eq!(image.bottom(), controls.top());
+            assert_eq!(controls.bottom(), viewport.bottom());
+            assert!(image.height() >= DiagramControllerOps::minimum_image_height());
+            assert_eq!(controls.height(), DiagramControllerOps::controls_height());
+        }
+    }
+
+    #[test]
+    fn small_image_controls_have_their_own_region_below_the_fullscreen_button() {
+        for image_height in [1.0_f32, 16.0, 44.0, 426.0] {
+            let context = egui::Context::default();
+            let mut rectangles = None;
+            let mut output = context.run_ui(egui::RawInput::default(), |ui| {
+                let size = egui::vec2(
+                    320.0,
+                    image_height.max(DiagramControllerOps::minimum_image_height()),
+                );
+                let (image, _) = ui.allocate_exact_size(size, egui::Sense::hover());
+                let controls =
+                    DiagramControllerOps::draw_controls_below(ui, &mut ViewerState::default());
+                rectangles = Some((image, controls));
+            });
+            output.textures_delta.clear();
+            let (image, controls) = rectangles.expect("image and controls rendered");
+            assert!(controls.top() >= image.bottom());
+            assert!(!controls.intersects(image));
+            assert!(image.height() >= super::BUTTON_SIZE + super::MARGIN * 2.0);
+        }
     }
 
     #[test]

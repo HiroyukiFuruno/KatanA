@@ -5,12 +5,25 @@ use crate::state::shortcut_context::ShortcutContext;
 
 pub struct ViewCommands;
 
-fn tools_available(state: &AppState) -> bool {
-    crate::views::panels::preview::PreviewMenuAvailability::for_path(
-        state
-            .active_document()
-            .map(|document| document.path.as_path()),
-        crate::views::panels::preview::PreviewMenu::Tools,
+fn split_mode_available(state: &AppState) -> bool {
+    crate::views::panels::preview::PreviewMenuAvailability::for_view_mode(
+        state,
+        crate::app_state::ViewMode::Split,
+    )
+}
+
+fn code_preview_available(state: &AppState) -> bool {
+    crate::views::panels::preview::PreviewMenuAvailability::for_action(
+        state,
+        &AppAction::ToggleCodePreview,
+    )
+    .unwrap_or(false)
+}
+
+fn slideshow_available(state: &AppState) -> bool {
+    crate::views::panels::preview::PreviewMenuAvailability::for_state(
+        state,
+        crate::views::panels::preview::PreviewMenu::Slideshow,
     )
 }
 
@@ -134,7 +147,7 @@ impl ViewCommands {
                 group: CommandGroup::Behavior,
                 context: ShortcutContext::Global,
                 label: || I18nOps::get().search.command_toggle_split.clone(),
-                is_available: tools_available,
+                is_available: split_mode_available,
                 default_shortcuts: &["primary+Shift+\\"],
             },
             CommandInventoryItem {
@@ -143,7 +156,7 @@ impl ViewCommands {
                 group: CommandGroup::Behavior,
                 context: ShortcutContext::Global,
                 label: || I18nOps::get().search.command_toggle_code_preview.clone(),
-                is_available: tools_available,
+                is_available: code_preview_available,
                 default_shortcuts: &["primary+\\"],
             },
             CommandInventoryItem {
@@ -170,14 +183,7 @@ impl ViewCommands {
                 group: CommandGroup::Behavior,
                 context: ShortcutContext::Global,
                 label: || I18nOps::get().preview.toggle_slideshow.clone(),
-                is_available: |state| {
-                    crate::views::panels::preview::PreviewMenuAvailability::for_path(
-                        state
-                            .active_document()
-                            .map(|document| document.path.as_path()),
-                        crate::views::panels::preview::PreviewMenu::Slideshow,
-                    )
-                },
+                is_available: slideshow_available,
                 default_shortcuts: &["primary+alt+Enter", "F5"],
             },
         ]

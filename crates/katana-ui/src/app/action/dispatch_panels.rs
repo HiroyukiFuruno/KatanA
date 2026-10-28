@@ -68,12 +68,7 @@ impl KatanaApp {
         let Some(target) = PreviewPanel::from_name(panel) else {
             return;
         };
-        if !PreviewMenuAvailability::for_path(
-            self.state
-                .active_document()
-                .map(|document| document.path.as_path()),
-            target.menu(),
-        ) {
+        if !PreviewMenuAvailability::for_app(self, target.menu()) {
             target.set_open(&mut self.state.layout, false);
             return;
         }

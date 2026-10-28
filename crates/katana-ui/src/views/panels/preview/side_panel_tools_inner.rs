@@ -1,4 +1,5 @@
 use super::side_panels::{LIGHT_MODE_ICON_BG, PANEL_HEAD_SPACE, PreviewSidePanels};
+use super::{DocumentOperation, PreviewMenuAvailability};
 use crate::app_state::{AppAction, ViewMode};
 use crate::icon::IconSize;
 use eframe::egui;
@@ -21,21 +22,15 @@ impl<'a> PreviewSidePanels<'a> {
                 let i18n = crate::i18n::I18nOps::get();
                 let view_mode = self.app.state.active_view_mode();
                 let is_split = view_mode == ViewMode::Split;
+                let operations = PreviewMenuAvailability::settings_for_state(&self.app.state);
 
                 /* Split Toggle */
-                let mut split_on = is_split;
-                let split_resp = ui.add(
-                    crate::widgets::LabeledToggle::new(i18n.view_mode.split.clone(), &mut split_on)
-                        .position(crate::widgets::TogglePosition::Right)
-                        .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+                let _ = self.render_split_toggle(
+                    ui,
+                    view_mode,
+                    operations.allows(DocumentOperation::ViewMode(ViewMode::Split)),
+                    &i18n.view_mode.split,
                 );
-                if split_resp.changed() {
-                    if split_on {
-                        self.app.pending_action = AppAction::SetViewMode(ViewMode::Split);
-                    } else {
-                        self.app.pending_action = AppAction::SetViewMode(ViewMode::PreviewOnly);
-                    }
-                }
 
                 ui.add_space(SPLIT_SECTION_SPACE);
 
@@ -133,17 +128,119 @@ impl<'a> PreviewSidePanels<'a> {
                 } else {
                     /* When Split is OFF: Tangochou (Code/Preview Switch) */
                     let i18n2 = crate::i18n::I18nOps::get();
-                    if let Some(action) = (TangochouWidget {
-                        view_mode: self.app.state.active_view_mode(),
-                        label_front: &i18n2.view_mode.code,
-                        label_back: &i18n2.view_mode.preview,
-                    })
-                    .show(ui)
-                    {
-                        self.app.pending_action = action;
-                    }
+                    let _ = self.render_code_toggle(
+                        ui,
+                        view_mode,
+                        operations.allows(DocumentOperation::ViewMode(ViewMode::CodeOnly)),
+                        &i18n2.view_mode.code,
+                        &i18n2.view_mode.preview,
+                    );
                 }
             });
         });
+    }
+
+    fn render_split_toggle(
+        &mut self,
+        ui: &mut egui::Ui,
+        view_mode: ViewMode,
+        available: bool,
+        label: &str,
+    ) -> egui::Response {
+        let mut split_on = view_mode == ViewMode::Split;
+        let response = ui.add_enabled_ui(available || split_on, |ui| {
+            ui.add(
+                crate::widgets::LabeledToggle::new(label.to_owned(), &mut split_on)
+                    .position(crate::widgets::TogglePosition::Right)
+                    .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+            )
+        });
+        if response.inner.changed() {
+            self.app.pending_action = if split_on {
+                AppAction::SetViewMode(ViewMode::Split)
+            } else {
+                AppAction::SetViewMode(ViewMode::PreviewOnly)
+            };
+        }
+        response.response
+    }
+
+    fn render_code_toggle(
+        &mut self,
+        ui: &mut egui::Ui,
+        view_mode: ViewMode,
+        available: bool,
+        code_label: &str,
+        preview_label: &str,
+    ) -> egui::Response {
+        let response = ui.add_enabled_ui(available || view_mode == ViewMode::CodeOnly, |ui| {
+            if let Some(action) = (TangochouWidget {
+                view_mode,
+                label_front: code_label,
+                label_back: preview_label,
+            })
+            .show(ui)
+            {
+                self.app.pending_action = action;
+            }
+        });
+        response.response
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::app_state::AppState;
+    use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
+    use std::sync::Arc;
+
+    fn app_with_document(path: &str) -> crate::shell::KatanaApp {
+        let mut state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state
+            .document
+            .open_documents
+            .push(katana_core::document::Document::new_empty(path));
+        state.document.active_doc_idx = Some(0);
+        crate::shell::KatanaApp::new(state)
+    }
+
+    fn rendered_toggle_states(path: &str) -> (bool, bool) {
+        let context = egui::Context::default();
+        let mut app = app_with_document(path);
+        let mut states = None;
+        let mut output = context.run_ui(egui::RawInput::default(), |ui| {
+            let mut panels = PreviewSidePanels::new(&mut app);
+            let settings = PreviewMenuAvailability::settings_for_app(panels.app);
+            let mode = panels.app.state.active_view_mode();
+            let i18n = crate::i18n::I18nOps::get();
+            let split = panels.render_split_toggle(
+                ui,
+                mode,
+                settings.allows(DocumentOperation::ViewMode(ViewMode::Split)),
+                &i18n.view_mode.split,
+            );
+            let code = panels.render_code_toggle(
+                ui,
+                mode,
+                settings.allows(DocumentOperation::ViewMode(ViewMode::CodeOnly)),
+                &i18n.view_mode.code,
+                &i18n.view_mode.preview,
+            );
+            states = Some((split.enabled(), code.enabled()));
+        });
+        output.textures_delta.clear();
+        states.expect("mode toggle state")
+    }
+
+    #[test]
+    fn mode_widgets_are_disabled_for_pdf_but_enabled_for_markdown() {
+        assert_eq!(rendered_toggle_states("manual.pdf"), (false, false));
+        assert_eq!(rendered_toggle_states("readme.md"), (true, true));
     }
 }
