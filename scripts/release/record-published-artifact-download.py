@@ -9,9 +9,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-from document_host_acceptance import provenance
 from document_host_io import decode, digest, read, require, write_new
-from document_host_publication import ASSETS, file_digest, module, verify_generated
+from document_host_publication import ASSETS, file_digest, verify_generated
+from postpublication_controller_scope import verify_controller_scope
+from published_git_source import git_source_identity
 
 REPOSITORY = "HiroyukiFuruno/KatanA"
 TAG = "v0.22.42"
@@ -29,10 +30,9 @@ def record(root: Path, directory: Path, manifests: Path) -> tuple[dict, dict]:
             and isinstance(release.get("published_at"), str), "actual published Release does not exist")
     commit = api(f"repos/{REPOSITORY}/commits/{TAG}")
     require(isinstance(commit, dict) and isinstance(commit.get("sha"), str), "actual Release commit could not be resolved")
-    builder = module("_generated_publication_source", "record-generated-artifact-identity.py")
-    source = builder.source_identity(root)
-    source["source_commit"] = commit["sha"]
-    provenance(root, source)
+    # WHY: 公開後の検証コードと配布物のソースを区別し、実タグの全Git objectをproducerと照合する。
+    verify_controller_scope(root, commit["sha"])
+    source = git_source_identity(root, commit["sha"])
     expected = set().union(*ASSETS.values())
     assets = release.get("assets")
     require(isinstance(assets, list), "Release asset metadata missing")
@@ -64,7 +64,7 @@ def record(root: Path, directory: Path, manifests: Path) -> tuple[dict, dict]:
         require(item.get("browser_download_url") == url, "Release asset download URL differs")
         downloaded[name] = {"asset_id": item["id"], "size": item["size"], "sha256": actual_sha,
                             "downloaded_at": datetime.now(timezone.utc).isoformat(), "download_url": url}
-    generated = verify_generated(root, directory, manifests, source)
+    generated = verify_generated(root, directory, manifests, source, published_commit=commit["sha"])
     # WHY: Releaseを読んだ後に公開物が置き換わっていないか、asset ID/size/digestとtag commitをもう一度照合する。
     after = api(f"repos/{REPOSITORY}/releases/tags/{TAG}")
     require(after.get("id") == release.get("id") and after.get("draft") is False

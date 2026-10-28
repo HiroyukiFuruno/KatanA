@@ -66,6 +66,7 @@ jobs:
         run: brew install sevenzip
       - name: Verify actual published release artifacts
         if: github.head_ref == 'release/v0.22.42-public-release-evidence'
+        id: actual_published_artifacts
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -73,10 +74,15 @@ jobs:
           set -euo pipefail
           tag_commit="$(gh api repos/HiroyukiFuruno/KatanA/commits/v0.22.42 --jq .sha)"
           [[ "$tag_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "Invalid published tag commit" >&2; exit 1; }
-          selection="$(gh run list --repo HiroyukiFuruno/KatanA --workflow build-and-release.yml --commit "$tag_commit" --status success --limit 1 --json databaseId,attempt,headSha,status,conclusion --jq '.[0] | select(.status == "completed" and .conclusion == "success") | [.databaseId, .attempt, .headSha] | @tsv')"
+          echo "Verification controller: $GITHUB_SHA; published artifact source: $tag_commit"
+          python3 -B scripts/release/test-published-git-source.py
+          python3 -B scripts/release/test-postpublication-controller-scope.py
+          python3 -B scripts/release/test-postpublication-run-admission.py
+          work="$(mktemp -d "${RUNNER_TEMP}/katana-post-release.XXXXXX")"
+          selection="$(python3 -B scripts/release/postpublication_run_admission.py --repository HiroyukiFuruno/KatanA --source "$tag_commit" --output "$work/run-admission.json")"
+          echo "admission_path=$work/run-admission.json" >> "$GITHUB_OUTPUT"
           read -r build_run build_attempt build_sha <<< "$selection"
           [[ "$build_run" =~ ^[1-9][0-9]*$ && "$build_attempt" =~ ^[1-9][0-9]*$ && "$build_sha" == "$tag_commit" ]] || { echo "Published tag has no verified successful build run" >&2; exit 1; }
-          work="$(mktemp -d "${RUNNER_TEMP}/katana-post-release.XXXXXX")"
           gh run download "$build_run" --repo HiroyukiFuruno/KatanA --dir "$work/manifests" --name artifacts-identity-macos --name artifacts-identity-linux --name artifacts-identity-windows
           for platform in macos linux windows; do
             mv "$work/manifests/artifacts-identity-$platform/identity-$platform.json" "$work/manifests/artifacts-identity-$platform/identity.json"
@@ -93,3 +99,10 @@ jobs:
           PY
           echo "Published artifact build: tag=v0.22.42 commit=$tag_commit run=$build_run attempt=$build_attempt"
           tmp/release-evidence-python/bin/python scripts/release/check-published-artifact-identity.py --root . --assets "$work/assets" --version v0.22.42 --scope automated-release --phase postpublication --build-manifests "$work/manifests"
+      - name: Preserve published run admission
+        if: always() && github.head_ref == 'release/v0.22.42-public-release-evidence' && steps.actual_published_artifacts.outputs.admission_path != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: published-run-admission
+          path: ${{ steps.actual_published_artifacts.outputs.admission_path }}
+          if-no-files-found: error
