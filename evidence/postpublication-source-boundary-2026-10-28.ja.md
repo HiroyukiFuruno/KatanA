@@ -37,6 +37,12 @@
 - 新job admission CLIを実GitHub APIで実行し、`40672472894 / 1 / 8c89a1544e9ac693d5ba388792a843baa55c9363` を取得した。optional cleanup failureはそのまま記録される。これは全workflow成功の主張ではない。
 - 独立差分レビューのP0/P1は0件。低優先度のrun admission保存は対応し、Git fixture objectの生成と既存exclude-standard範囲は根拠付きで記録した。
 
+## CIツール依存の実環境回帰
+
+公開後admission CLIの初期案は、開発端末のrtkを内部呼出しに使っていた。GitHub CLIだけをPATHへ置いた隔離したプロセス環境で、実API照合がrtk不存在で失敗するREDを再現した。内部呼出しをCI標準のghへ合わせ、同じ環境から実GitHub APIで同じ7必須job/run40672472894/attempt1/sourceMを照合してGREENを確認した（実行17863 exit0）。tool shellのrtk利用方針と、配布用・CIコードの実行依存を混同しない。
+
+admission境界13件も再成功。テスト都合のAPIやfallbackは追加せず、既存のread-only gh呼出しだけを使う。根拠は `tmp/oct28-postpublication-gh-only-red.log`、`tmp/oct28-postpublication-gh-only-green.log`、`tmp/oct28-postpublication-job-transport-tests.log`。
+
 ## 続行する作業
 
-新コードの通常commit・通常push hook・current review・Ready後の必須CIを回収する。新経路でのfresh公開ファイル照合、Issue状態更新、3機能だけのspec sync/archive、単一後処理PRの通常merge、安全なbranch/worktree整理は、root作業台帳で未完として継続する。公開済みtag/assetの再作成やforce更新は行わない。
+通常署名source commit b72065b1/47942653を完了した。commit後の厳密controller scopeは成功し、修正版のfresh実取得78200 exit0でも元の全5公開asset ID/size/SHA256・タグM・全producer/本体workerが一致した。通常push hook・current review・Ready後の必須CI、Issue更新、限定3機能のspec sync/archive、単一後処理PRの通常merge、安全なbranch/worktree整理は、root作業台帳で未完として継続する。公開済みtag/assetの再作成やforce更新は行わない。

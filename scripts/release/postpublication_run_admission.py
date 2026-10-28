@@ -128,8 +128,9 @@ def verify_run(run: dict, pages: list, source: str) -> dict:
 
 def _api_json(endpoint: str) -> object:
     try:
+        # WHY: CIにあるghを使い、開発端末専用のrtkを実行条件にしない。
         result = subprocess.run(
-            ["rtk", "proxy", "gh", "api", "--paginate", "--slurp", endpoint],
+            ["gh", "api", "--paginate", "--slurp", endpoint],
             check=False, capture_output=True, text=True, timeout=API_TIMEOUT_SECONDS,
         )
     except (OSError, subprocess.TimeoutExpired) as error:
