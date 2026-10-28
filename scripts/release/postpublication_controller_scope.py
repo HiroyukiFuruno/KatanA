@@ -29,6 +29,7 @@ CONTROLLER_PATHS = frozenset({
     "scripts/release/sync-external.sh",
     "scripts/release/test-sync-external.py",
     "scripts/release/test_windows_startup_comparison_contract.py",
+    "scripts/release/update-homebrew.sh",
 })
 WORKFLOW_BOUNDARIES = {
     ".github/workflows/build-and-release.yml": b"  cleanup_default:\n",

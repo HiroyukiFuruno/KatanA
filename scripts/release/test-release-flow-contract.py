@@ -2,10 +2,12 @@
 """Verify that local and release gates have one owner each."""
 
 from pathlib import Path
+import base64
 import json
 import os
 import re
 import shutil
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -127,6 +129,91 @@ def verify_post_publication_artifact_route(workflow: str) -> None:
 
 
 class WorkflowContractTests(unittest.TestCase):
+    def test_homebrew_cask_generator_emits_current_declarative_dsl(self) -> None:
+        updater_source = ROOT / "scripts/release/update-homebrew.sh"
+        with tempfile.TemporaryDirectory(prefix="katana-homebrew-generator-") as temporary:
+            root = Path(temporary)
+            fake_bin = root / "bin"
+            fake_bin.mkdir()
+            captures = root / "requests.jsonl"
+            curl = fake_bin / "curl"
+            curl.write_text(
+                "#!/usr/bin/env python3\n"
+                "import json, os, sys\n"
+                "args = sys.argv[1:]\n"
+                "if '-X' in args and args[args.index('-X') + 1] == 'PUT':\n"
+                " payload = json.loads(args[args.index('-d') + 1])\n"
+                " with open(os.environ['CASK_REQUESTS'], 'a', encoding='utf-8') as out:\n"
+                "  out.write(json.dumps(payload) + '\\n')\n"
+                " print(json.dumps({'content': {'html_url': 'https://example.invalid/cask'}}) + '\\n200')\n"
+                "else:\n"
+                " print(json.dumps({'sha': 'fixture-current-sha'}))\n",
+                encoding="utf-8",
+            )
+            curl.chmod(0o700)
+            python = fake_bin / "python3"
+            python.write_text("#!/bin/sh\nexec " + shlex.quote(sys.executable) + ' "$@"\n')
+            python.chmod(0o700)
+            environment = {
+                "PATH": os.pathsep.join((str(fake_bin), "/usr/bin", "/bin")),
+                "HOME": str(root),
+                "ZDOTDIR": str(root),
+                "EXPECTED_CURL": str(curl),
+                "HOMEBREW_KATANA_GIT_TOKEN": "fixture-token",
+                "CASK_REQUESTS": str(captures),
+            }
+            probe = subprocess.run(
+                ["/bin/zsh", "-df", "-c",
+                 '[[ "$(command -v curl)" = "$EXPECTED_CURL" && "$HOMEBREW_KATANA_GIT_TOKEN" = "fixture-token" ]]'],
+                cwd=root, env=environment, capture_output=True, check=False, timeout=10,
+            )
+            self.assertEqual(probe.returncode, 0, "Generator fixture environment is not isolated")
+            result = subprocess.run(
+                ["/bin/zsh", "-df", str(updater_source), "v0.22.43", "ab" * 32, "KatanA-Desktop-0.22.43.dmg"],
+                cwd=root,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=15,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertTrue(captures.is_file(), result.stdout + result.stderr)
+            payloads = [json.loads(line) for line in captures.read_text(encoding="utf-8").splitlines()]
+            self.assertEqual(len(payloads), 2)
+            rendered = [base64.b64decode(item["content"]).decode("utf-8") for item in payloads]
+            expected_step = (
+                'postflight_steps do\n'
+                '    run "/usr/bin/xattr", args: ["-cr", "{{appdir}}/KatanA Desktop.app"]\n'
+                '  end'
+            )
+            for cask in rendered:
+                self.assertIn("depends_on macos: :ventura", cask)
+                self.assertIn(expected_step, cask)
+                self.assertNotIn('depends_on macos: ">= :ventura"', cask)
+                self.assertNotIn("postflight do", cask)
+                self.assertNotIn("system_command", cask)
+                description = re.search(r'^  desc "([^"]+)"', cask, re.MULTILINE).group(1)
+                self.assertLessEqual(len(description), 80)
+                zap_paths = re.findall(r'^    "(~/Library/[^\"]+)",', cask, re.MULTILINE)
+                self.assertEqual(zap_paths, sorted(zap_paths))
+                self.assertIn("https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.43/KatanA-Desktop-0.22.43.dmg", cask)
+
+    def test_homebrew_generator_rejects_placeholder_digest_before_network_or_auth(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="katana-homebrew-invalid-digest-") as temporary:
+            root = Path(temporary)
+            environment = {"PATH": "/usr/bin:/bin", "HOME": str(root), "ZDOTDIR": str(root)}
+            for digest in ("0" * 64, "invalid", "a" * 63):
+                with self.subTest(digest=digest):
+                    result = subprocess.run(
+                        ["/bin/zsh", "-df", str(ROOT / "scripts/release/update-homebrew.sh"),
+                         "v0.22.43", digest, "KatanA-Desktop-0.22.43.dmg"],
+                        cwd=root, env=environment, capture_output=True, text=True, timeout=15,
+                    )
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("SHA256", result.stderr)
+                    self.assertNotIn("Fetching", result.stdout)
+
     def test_external_registry_failures_are_detected_without_blocking_product_release(self) -> None:
         result = subprocess.run(
             [sys.executable, "-B", str(ROOT / "scripts/release/test-sync-external.py")],
