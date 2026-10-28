@@ -29,18 +29,13 @@ impl DocCloseOps for KatanaApp {
             self.state.document.active_doc_idx = if self.state.document.open_documents.is_empty() {
                 None
             } else {
-                Some(
-                    self.state
-                        .document
-                        .active_doc_idx
-                        .unwrap_or(0)
-                        .saturating_sub(if self.state.document.active_doc_idx == Some(idx) {
-                            1
-                        } else {
-                            0
-                        })
-                        .min(self.state.document.open_documents.len().saturating_sub(1)),
-                )
+                let active_idx = self.state.document.active_doc_idx.unwrap_or(0);
+                let active_idx = if idx <= active_idx {
+                    active_idx.saturating_sub(1)
+                } else {
+                    active_idx
+                };
+                Some(active_idx.min(self.state.document.open_documents.len().saturating_sub(1)))
             };
         }
         self.save_workspace_state();

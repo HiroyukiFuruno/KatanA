@@ -37,3 +37,8 @@ pub(crate) use preview::PreviewOps;
 pub use types::*;
 pub(crate) use update::UpdateOps;
 pub(crate) use workspace::WorkspaceOps;
+
+#[cfg(test)]
+mod doc_close_latency_tests;
+#[cfg(test)]
+mod doc_close_tests;
