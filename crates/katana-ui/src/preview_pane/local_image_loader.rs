@@ -165,11 +165,26 @@ impl LocalImageLoader {
             generation,
             revision,
         };
-        if pool.request_tx.try_send(work).is_err() {
-            self.remove_pending(&key);
-            return LocalImageStatus::Failed("image loader queue is full".to_owned());
+        self.enqueue_to(&pool.request_tx, &key, work)
+    }
+
+    fn enqueue_to(
+        &self,
+        sender: &mpsc::SyncSender<Work>,
+        key: &RequestKey,
+        work: Work,
+    ) -> LocalImageStatus {
+        match sender.try_send(work) {
+            Ok(()) => LocalImageStatus::Pending,
+            Err(mpsc::TrySendError::Full(_)) => {
+                self.remove_pending(key);
+                LocalImageStatus::Pending
+            }
+            Err(mpsc::TrySendError::Disconnected(_)) => {
+                self.remove_pending(key);
+                LocalImageStatus::Failed("image loader unavailable".to_owned())
+            }
         }
-        LocalImageStatus::Pending
     }
 }
 
@@ -187,6 +202,12 @@ mod fullscreen_gui_tests;
 mod gui_tests;
 #[cfg(test)]
 mod healthy_decode_retry_tests;
+#[cfg(test)]
+mod queue_lifecycle_tests;
+#[cfg(test)]
+mod queue_pressure_tests;
+#[cfg(test)]
+mod repaint_tests;
 #[cfg(test)]
 mod retry_tests;
 #[cfg(test)]
