@@ -101,9 +101,9 @@
 ## 8. Final Verification & Release Work
 
 - [x] 8.1 自己レビュー、変更範囲のfmt/lint/回帰、文書検査、依存関係調査・更新を完了する。品質条件は下げない。
-- [ ] 8.2 関心別の署名付き通常commit、通常push hook一回の結果を回収し、失敗を修正する。重い同検査を直前に重複実行しない。
-- [ ] 8.3 Draft PRで自己・独立・Codex reviewを全ページ取得し、P0/P1修復・各thread reply/resolve・fresh確認後にReadyへ進める。
-- [ ] 8.4 新HEADの全OS/build/test/lint/coverage/security/packaging/host受入の必須CIを確認し、通常mergeする。元のRSS cold 196608KiB/steady 65536KiBと独立したphysical-footprint予算、KatanA所有資源の解放・通常終了の既存自動検査を維持する。KDV #70へ切り分けた同期open中のworker終了未達は明記し、解消済みとはしない。旧HEADの合格を流用しない。
+- [x] 8.2 関心別の署名付き通常commit、通常push hook一回の結果を回収し、失敗を修正する。重い同検査を直前に重複実行しない。
+- [x] 8.3 Draft PRで自己・独立・Codex reviewを全ページ取得し、P0/P1修復・各thread reply/resolve・fresh確認を完了する。Readyへの昇格は次の8.4で行う。
+- [ ] 8.4 レビュー完了後にReadyへ昇格し、新HEADの全OS/build/test/lint/coverage/security/packaging/host受入の必須CIを確認し、通常mergeする。元のRSS cold 196608KiB/steady 65536KiBと独立したphysical-footprint予算、KatanA所有資源の解放・通常終了の既存自動検査を維持する。KDV #70へ切り分けた同期open中のworker終了未達は明記し、解消済みとはしない。旧HEADの合格を流用しない。
 - [ ] 8.5 GitHub Actionsの公開と全5asset/checksum・配布検証・外部配布同期の実結果を回収する。
 - [ ] 8.6 Issue状態更新・OpenSpec archive・branch/worktree/stashの安全な後処理を完了する。リモートbranchは明示指示なしに削除しない。
 
@@ -158,3 +158,9 @@ b5257652の通常pushはUI lib 1412成功/1失敗。移動したprovider検査�
 新P2を修正するため、旧d68200fcだけを検査中だった自分のpush session96989をSIGINTで終了しactual130を回収した。古い内容の途中検査を成功扱いせず、remoteはd0d3b475のまま、残存check/lease processなしを確認。両P2修復の新HEADを通常pushで改めて全検証する。
 
 Loadingの最終実装は既存の共通AlignCenter(shrink_to_fit)を再利用した。直接ui.horizontalは既存AST horizontal-layout規約に拒否されたため採用せず、閾値・ルールを無効化しなかった。最終版もgeometry/locale3件成功、log `tmp/v0.22.43-prep/loading-inline-review-fix/inline-layout-align-center-green.log` / exit0。
+
+### 実装構成3bb1ad10のDraftレビュー完了
+
+実装修正を含む通常pushは `normal-push-3bb1ad10.log` / exit0、remote同期0/0。GitHub上で20commit全てVerified。Codexのcurrent commit3bb1ad10の機械receiptはstatus=completed/has_any_findings=false/has_unresolved_findings=false。全REST頁とGraphQL全connection/nestedコメントを回収し、2つのP2に個別reply/resolve後、未解決thread0をfresh確認した。High独立レビューの最終deltaもP0/P1/P2追加なし。
+
+この台帳確定では実装・自動検証条件を変えない。8.3は実施済みDraftレビューと指摘解決の記録、まだ未実施のReady操作と新HEAD必須CI/mergeは8.4へ分け、将来イベントを完了扱いにしない。台帳のみの最終commit/push/自己レビュー後にReadyへ進み、現HEADの全必須CIを実施する。3bb1ad10の旧CIを新HEADへ流用しない。
