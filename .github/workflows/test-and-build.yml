@@ -161,7 +161,7 @@ jobs:
 
       - name: Install cargo-sweep
         run: |
-          cargo install cargo-sweep --locked
+          cargo install cargo-sweep --version 0.8.0 --locked
           cargo sweep --version
 
       - name: Verify Cargo sweep safety contract

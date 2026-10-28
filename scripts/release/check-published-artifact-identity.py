@@ -207,7 +207,8 @@ def main():
         print(f"ERROR: publication executable identity: {error}", file=sys.stderr)
         return 1
     if args.scope == "automated-release":
-        print("OK: all five publication payloads match current-source build manifests; manual document QA remains not verified")
+        source_label = "published-tag" if args.phase == "postpublication" else "current-source"
+        print(f"OK: all five publication payloads match {source_label} build manifests; manual document QA remains not verified")
         return 0
     print("OK: all five publication payloads match " + ("their independently built source/lock/target/payload manifests; final host QA remains pending" if args.scope == "katana-host" and args.phase == "prepublish" else "the accepted main and sidecar bytes"))
     return 0

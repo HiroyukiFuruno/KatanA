@@ -102,9 +102,28 @@ def verify_build_record(platform: str, value: object, source: dict, assets: Path
     return targets, identity
 
 
-def verify_generated(root: Path, assets: Path, manifest_directory: Path, source: dict, *, run_id: str | None = None,
-                     run_attempt: str | None = None) -> dict:
+def verify_generated_provenance(root: Path, record: dict, published_commit: str | None) -> None:
     from document_host_acceptance import provenance
+    if published_commit is None:
+        provenance(root, record)
+    else:
+        from published_git_source import verify_git_provenance
+        verify_git_provenance(root, record, published_commit)
+
+
+def verify_publication_context(root: Path, source: dict, published_commit: str | None,
+                               run_id: str | None, run_attempt: str | None) -> None:
+    if published_commit is None:
+        return
+    from postpublication_controller_scope import verify_controller_scope
+    require(run_id is None and run_attempt is None, "frozen source is only valid after publication")
+    require(source.get("source_commit") == published_commit, "published source commit differs")
+    verify_controller_scope(root, published_commit)
+
+
+def verify_generated(root: Path, assets: Path, manifest_directory: Path, source: dict, *, run_id: str | None = None,
+                     run_attempt: str | None = None, published_commit: str | None = None) -> dict:
+    verify_publication_context(root, source, published_commit, run_id, run_attempt)
     manifests, targets, run_identity = {}, {}, None
     require(not manifest_directory.is_symlink(), "manifest directory cannot be symlinked")
     for platform in ASSETS:
@@ -112,7 +131,7 @@ def verify_generated(root: Path, assets: Path, manifest_directory: Path, source:
         require(not path.parent.is_symlink(), "manifest directory cannot be symlinked")
         record = decode(read(path))
         platform_targets, identity = verify_build_record(platform, record, source, assets)
-        provenance(root, record["provenance"])
+        verify_generated_provenance(root, record["provenance"], published_commit)
         actual_build_commit = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], check=True,
                                              capture_output=True, text=True).stdout.strip()
         require(run_id is None or record["provenance"]["source_commit"] == actual_build_commit,

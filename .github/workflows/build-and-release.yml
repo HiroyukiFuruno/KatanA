@@ -43,6 +43,7 @@ on:
       - '.gitignore'
       - 'openspec/**'
       - 'docs/**'
+      - 'evidence/**'
       - 'Justfile'
       - 'just/**'
       - 'scripts/**'
@@ -802,8 +803,10 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
       - uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
         with:
-          tool: just,cargo-deny@0.20.2,cargo-sweep@0.8.0
+          tool: just,cargo-deny@0.20.2
           fallback: none
+      - name: Install pinned cleanup tool
+        run: cargo install cargo-sweep --version 0.8.0 --locked
       - name: Install normal hook dependencies
         run: |
           sudo apt-get update

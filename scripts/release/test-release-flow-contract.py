@@ -103,7 +103,10 @@ def verify_post_publication_artifact_route(workflow: str) -> None:
     required = (
         "if: github.head_ref == 'release/v0.22.42-public-release-evidence'",
         "repos/HiroyukiFuruno/KatanA/commits/v0.22.42",
-        'gh run list --repo HiroyukiFuruno/KatanA --workflow build-and-release.yml --commit "$tag_commit" --status success',
+        'scripts/release/postpublication_run_admission.py --repository HiroyukiFuruno/KatanA --source "$tag_commit" --output "$work/run-admission.json"',
+        "python3 -B scripts/release/test-published-git-source.py",
+        "python3 -B scripts/release/test-postpublication-controller-scope.py",
+        "python3 -B scripts/release/test-postpublication-run-admission.py",
         'gh run download "$build_run"',
         "--name artifacts-identity-macos --name artifacts-identity-linux --name artifacts-identity-windows",
         'record.get("github_run_id"), record.get("github_run_attempt"), record.get("provenance", {}).get("source_commit")',
@@ -116,6 +119,9 @@ def verify_post_publication_artifact_route(workflow: str) -> None:
         raise ValueError("post-release artifacts must bind the actual tag, build run, and all five payloads")
     if "  actions: read\n" not in workflow:
         raise ValueError("cross-run artifact downloads need read-only Actions permission")
+    if ('name: published-run-admission' not in workflow or
+            'steps.actual_published_artifacts.outputs.admission_path' not in workflow):
+        raise ValueError("post-publication job admission must retain its full run and attempt evidence")
     if "check-document-host" in body or "--scope katana-host" in body:
         raise ValueError("published artifact checks must not require manual document QA")
 
@@ -244,7 +250,7 @@ class WorkflowContractTests(unittest.TestCase):
         for before, after in (
             ("--phase postpublication", "--phase prepublish"),
             ('--assets "$work/assets"', '--assets "$work"'),
-            ('--commit "$tag_commit"', "--branch master"),
+            ('--source "$tag_commit"', "--branch master"),
             ('gh run download "$build_run"', "gh run download"),
             ("--name artifacts-identity-windows", ""),
             ("(build_run, build_attempt, tag_commit)", "(build_run, build_attempt, 'unverified')"),

@@ -1,0 +1,336 @@
+{
+  "reviewed_commit": "a6584bcef524d4d26d42f5176b0cb343ceca0599",
+  "merge_commit": "8c89a1544e9ac693d5ba388792a843baa55c9363",
+  "reviewed_tree": "07a3931a8227a74a46afea095f29d9c83b8eb7f2",
+  "merge_tree": "07a3931a8227a74a46afea095f29d9c83b8eb7f2",
+  "run": 40660526599,
+  "source_ci_logs": {
+    "windows": {
+      "path": "tmp/oct28-a6584bce-windows-ci.log",
+      "sha256": "34ece23fdb5c9f4e656fd3c66654cae87e347566839c6a10a3c886c95a43d9b1"
+    },
+    "linux": {
+      "path": "tmp/oct28-a6584bce-linux-ci.log",
+      "sha256": "79ad6ac5d202fbd1ce16fcbbe40ad5ce7389c5336045b0bd1cfde7ba3dc8098c"
+    },
+    "macos": {
+      "path": "tmp/oct28-a6584bce-macos-ci.log",
+      "sha256": "30cb82dfe25252a236ce779c886c3e03e0f65eb53724830701813fb01be20333"
+    }
+  },
+  "entries": [
+    {
+      "feature": "local PNG async + revision/recovery",
+      "source": "crates/katana-ui/src/preview_pane/local_image_loader/tests.rs",
+      "test": "local_png_is_decoded_off_request_and_composited",
+      "source_line": 28,
+      "evidence_by_os": {
+        "windows": {
+          "log": "tmp/oct28-a6584bce-windows-ci.log",
+          "line": 5859,
+          "text": "2026-10-28T09:22:19.3537680Z test preview_pane::local_image_loader::tests::local_png_is_decoded_off_request_and_composited ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "linux": {
+          "log": "tmp/oct28-a6584bce-linux-ci.log",
+          "line": 6204,
+          "text": "2026-10-28T09:13:42.5929783Z test preview_pane::local_image_loader::tests::local_png_is_decoded_off_request_and_composited ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "macos": {
+          "log": "tmp/oct28-a6584bce-macos-ci.log",
+          "line": 3609,
+          "text": "2026-10-28T09:06:26.5286620Z test preview_pane::local_image_loader::tests::local_png_is_decoded_off_request_and_composited ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        }
+      }
+    },
+    {
+      "feature": "local PNG async + revision/recovery",
+      "source": "crates/katana-ui/src/preview_pane/local_image_loader/tests.rs",
+      "test": "reset_discards_old_generation_result",
+      "source_line": 85,
+      "evidence_by_os": {
+        "windows": {
+          "log": "tmp/oct28-a6584bce-windows-ci.log",
+          "line": 5861,
+          "text": "2026-10-28T09:22:19.6279058Z test preview_pane::local_image_loader::tests::reset_discards_old_generation_result ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "linux": {
+          "log": "tmp/oct28-a6584bce-linux-ci.log",
+          "line": 6206,
+          "text": "2026-10-28T09:13:42.8403683Z test preview_pane::local_image_loader::tests::reset_discards_old_generation_result ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "macos": {
+          "log": "tmp/oct28-a6584bce-macos-ci.log",
+          "line": 3611,
+          "text": "2026-10-28T09:06:27.0846020Z test preview_pane::local_image_loader::tests::reset_discards_old_generation_result ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        }
+      }
+    },
+    {
+      "feature": "local PNG async + revision/recovery",
+      "source": "crates/katana-ui/src/preview_pane/local_image_loader/retry_tests.rs",
+      "test": "missing_parent_recovers_after_directory_and_png_are_created",
+      "source_line": 29,
+      "evidence_by_os": {
+        "windows": {
+          "log": "tmp/oct28-a6584bce-windows-ci.log",
+          "line": 5855,
+          "text": "2026-10-28T09:22:19.2583487Z test preview_pane::local_image_loader::retry_tests::missing_parent_recovers_after_directory_and_png_are_created ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "linux": {
+          "log": "tmp/oct28-a6584bce-linux-ci.log",
+          "line": 6200,
+          "text": "2026-10-28T09:13:42.5092983Z test preview_pane::local_image_loader::retry_tests::missing_parent_recovers_after_directory_and_png_are_created ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "macos": {
+          "log": "tmp/oct28-a6584bce-macos-ci.log",
+          "line": 3605,
+          "text": "2026-10-28T09:06:26.2231180Z test preview_pane::local_image_loader::retry_tests::missing_parent_recovers_after_directory_and_png_are_created ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        }
+      }
+    },
+    {
+      "feature": "local PNG async + revision/recovery",
+      "source": "crates/katana-ui/src/preview_pane/local_image_loader/failed_decode_retry_tests.rs",
+      "test": "failed_decode_retries_at_watch_deadline_without_watch_success",
+      "source_line": 50,
+      "evidence_by_os": {
+        "windows": {
+          "log": "tmp/oct28-a6584bce-windows-ci.log",
+          "line": 5840,
+          "text": "2026-10-28T09:22:18.6828608Z test preview_pane::local_image_loader::failed_decode_retry_tests::failed_decode_retries_at_watch_deadline_without_watch_success ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "linux": {
+          "log": "tmp/oct28-a6584bce-linux-ci.log",
+          "line": 6185,
+          "text": "2026-10-28T09:13:42.0613747Z test preview_pane::local_image_loader::failed_decode_retry_tests::failed_decode_retries_at_watch_deadline_without_watch_success ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "macos": {
+          "log": "tmp/oct28-a6584bce-macos-ci.log",
+          "line": 3590,
+          "text": "2026-10-28T09:06:25.4373440Z test preview_pane::local_image_loader::failed_decode_retry_tests::failed_decode_retries_at_watch_deadline_without_watch_success ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        }
+      }
+    },
+    {
+      "feature": "local PNG revision invalidation FIFO regression",
+      "source": "crates/katana-ui/src/preview_pane/local_image_loader/cancellation_tests.rs",
+      "test": "invalidate_path_does_not_leave_fifo_decode_blocking_followup",
+      "source_line": 24,
+      "evidence_by_os": {
+        "windows": {
+          "result": "NOT RUN",
+          "reason": "Unix-only FIFO regression",
+          "tested_commit": "a6584bcef524d4d26d42f5176b0cb343ceca0599",
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "linux": {
+          "log": "tmp/oct28-a6584bce-linux-ci.log",
+          "line": 6180,
+          "text": "2026-10-28T09:13:42.0441795Z test preview_pane::local_image_loader::cancellation_tests::invalidate_path_does_not_leave_fifo_decode_blocking_followup ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "macos": {
+          "log": "tmp/oct28-a6584bce-macos-ci.log",
+          "line": 3585,
+          "text": "2026-10-28T09:06:25.2381400Z test preview_pane::local_image_loader::cancellation_tests::invalidate_path_does_not_leave_fifo_decode_blocking_followup ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        }
+      }
+    },
+    {
+      "feature": "Markdown split background",
+      "source": "crates/katana-ui/src/views/layout/split.rs",
+      "test": "split_background_uses_explorer_window_role_only_for_markdown",
+      "source_line": 124,
+      "evidence_by_os": {
+        "windows": {
+          "log": "tmp/oct28-a6584bce-windows-ci.log",
+          "line": 6273,
+          "text": "2026-10-28T09:22:31.1635361Z test views::layout::split::tests::split_background_uses_explorer_window_role_only_for_markdown ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "linux": {
+          "log": "tmp/oct28-a6584bce-linux-ci.log",
+          "line": 6621,
+          "text": "2026-10-28T09:13:53.1523329Z test views::layout::split::tests::split_background_uses_explorer_window_role_only_for_markdown ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "macos": {
+          "log": "tmp/oct28-a6584bce-macos-ci.log",
+          "line": 4027,
+          "text": "2026-10-28T09:06:38.7010510Z test views::layout::split::tests::split_background_uses_explorer_window_role_only_for_markdown ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        }
+      }
+    },
+    {
+      "feature": "focused PDF/PPTX arrow paging",
+      "source": "crates/katana-ui/src/preview_pane/document_surface/render_keyboard_tests.rs",
+      "test": "focused_page_arrow_events_dispatch_viewer_commands_for_pdf_and_pptx",
+      "source_line": 99,
+      "evidence_by_os": {
+        "windows": {
+          "log": "tmp/oct28-a6584bce-windows-ci.log",
+          "line": 5654,
+          "text": "2026-10-28T09:22:13.3639126Z test preview_pane::document_surface::page_navigation::keyboard_tests::focused_page_arrow_events_dispatch_viewer_commands_for_pdf_and_pptx ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "linux": {
+          "log": "tmp/oct28-a6584bce-linux-ci.log",
+          "line": 5994,
+          "text": "2026-10-28T09:13:38.5194708Z test preview_pane::document_surface::page_navigation::keyboard_tests::focused_page_arrow_events_dispatch_viewer_commands_for_pdf_and_pptx ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "macos": {
+          "log": "tmp/oct28-a6584bce-macos-ci.log",
+          "line": 3398,
+          "text": "2026-10-28T09:06:23.2458940Z test preview_pane::document_surface::page_navigation::keyboard_tests::focused_page_arrow_events_dispatch_viewer_commands_for_pdf_and_pptx ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        }
+      }
+    },
+    {
+      "feature": "focused PDF/PPTX arrow paging",
+      "source": "crates/katana-ui/src/preview_pane/document_surface/render_keyboard_tests.rs",
+      "test": "page_navigation_ignores_unfocused_widgets_other_formats_modifiers_and_boundaries",
+      "source_line": 121,
+      "evidence_by_os": {
+        "windows": {
+          "log": "tmp/oct28-a6584bce-windows-ci.log",
+          "line": 5657,
+          "text": "2026-10-28T09:22:13.4213280Z test preview_pane::document_surface::page_navigation::keyboard_tests::page_navigation_ignores_unfocused_widgets_other_formats_modifiers_and_boundaries ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "linux": {
+          "log": "tmp/oct28-a6584bce-linux-ci.log",
+          "line": 5995,
+          "text": "2026-10-28T09:13:38.5776307Z test preview_pane::document_surface::page_navigation::keyboard_tests::page_navigation_ignores_unfocused_widgets_other_formats_modifiers_and_boundaries ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        },
+        "macos": {
+          "log": "tmp/oct28-a6584bce-macos-ci.log",
+          "line": 3399,
+          "text": "2026-10-28T09:06:23.2559770Z test preview_pane::document_surface::page_navigation::keyboard_tests::page_navigation_ignores_unfocused_widgets_other_formats_modifiers_and_boundaries ... ok",
+          "tested_commit": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+          "run": 40660526599,
+          "result": "PASS",
+          "tree_equivalent_to_current_M": true,
+          "reviewed_head": "a6584bcef524d4d26d42f5176b0cb343ceca0599"
+        }
+      }
+    }
+  ],
+  "boundary": "ActualCI40660526599 checkout2aa64b46/H a658/M8c89 tree equal. Formal40672472894 all build/native/Publish success; cleanup only failed, workflow overall failure retained. Public all5 bytes verified by original56766 and frozen78200. No unperformed manual/95/15s success claim.",
+  "historical_evidence": {
+    "scope": "H0464/Meb12 only, not the current H/M",
+    "logs": [
+      "tmp/oct28-0464-windows-ci.log",
+      "tmp/oct28-eb12-master-macos-ci.log"
+    ]
+  },
+  "actual_ci_checkout": "2aa64b46c1595bc45bc91bfffe092f70f64ffd0a",
+  "publication_receipts": [
+    "evidence/v0.22.42-public-download-40672472894.json",
+    "evidence/v0.22.42-public-frozen-controller-47942653.json"
+  ]
+}

@@ -182,7 +182,7 @@ class CiResourceContractTest(unittest.TestCase):
     def test_existing_test_and_acceptance_commands_remain(self):
         job = current_test_job()
         sweep_install = step_block(job, "Install cargo-sweep")
-        self.assertIn("cargo install cargo-sweep --locked", sweep_install)
+        self.assertIn("cargo install cargo-sweep --version 0.8.0 --locked", sweep_install)
         self.assertIn("cargo sweep --version", sweep_install)
         sweep_contract = step_block(job, "Verify Cargo sweep safety contract")
         self.assertIn("test_cargo_*guard.py", sweep_contract)
