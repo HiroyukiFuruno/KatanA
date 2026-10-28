@@ -30,7 +30,7 @@ katana-document-viewer = "=0.5.12"
 katana-render-runtime = "=0.4.23"
 katana-markdown-model = "0.2.4"
 katana-ast-lint = "0.5.3"
-katana-markdown-linter = "0.19.6"
+katana-markdown-linter = "0.20.0"
 
 # Serialization / config
 serde = { version = "1", features = ["derive"] }
