@@ -2,6 +2,7 @@
 
 import json
 import os
+import shlex
 from pathlib import Path
 import subprocess
 import sys
@@ -42,6 +43,7 @@ class SyncExternalTests(unittest.TestCase):
             " print('simulated lookup failure', file=sys.stderr)\n"
             " sys.exit(17)\n"
             "if args[0] == 'update' and mode == 'create-ref-failure':\n"
+            " print(os.environ.get('WINGET_GH_TOKEN'), file=sys.stderr)\n"
             " print('HiroyukiFuruno does not have the correct permissions to execute `CreateRef`', file=sys.stderr)\n"
             " sys.exit(1)\n",
         )
@@ -90,9 +92,8 @@ class SyncExternalTests(unittest.TestCase):
             environment.pop("WINGET_GH_TOKEN", None)
         if not komac_available:
             (self.bin / "komac").unlink()
-            environment["PATH"] = os.pathsep.join(
-                (str(self.bin), str(Path(sys.executable).parent), "/usr/bin", "/bin")
-            )
+            self._write_command("python3", "#!/bin/sh\nexec " + shlex.quote(sys.executable) + ' "$@"\n')
+            environment["PATH"] = os.pathsep.join((str(self.bin), "/usr/bin", "/bin"))
         return subprocess.run(
             ["bash", str(self.script), "0.22.43", "v0.22.43", str(self.artifacts)],
             cwd=self.project,

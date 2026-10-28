@@ -28,6 +28,7 @@ CONTROLLER_PATHS = frozenset({
     "scripts/release/test-release-flow-contract.py",
     "scripts/release/sync-external.sh",
     "scripts/release/test-sync-external.py",
+    "scripts/release/test_windows_startup_comparison_contract.py",
 })
 WORKFLOW_BOUNDARIES = {
     ".github/workflows/build-and-release.yml": b"  cleanup_default:\n",

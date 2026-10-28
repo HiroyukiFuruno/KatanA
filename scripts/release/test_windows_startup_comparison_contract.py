@@ -192,7 +192,9 @@ class WindowsStartupComparisonContractTests(unittest.TestCase):
         self.assertIn("image_version = $env:ImageVersion", self.workflow)
         self.assertIn("Start-Sleep -Milliseconds 200", self.workflow)
         self.assertIn("foreach ($attempt in 1..10)", self.workflow)
-        self.assertNotIn("continue-on-error", self.workflow[self.workflow.index("Smoke launch packaged Windows app"):])
+        original_smoke, _ = self.helper.extract_original_smoke_block(
+            ROOT / ".github/workflows/build-and-release.yml")
+        self.assertNotIn("continue-on-error", original_smoke)
 
 
 if __name__ == "__main__":
