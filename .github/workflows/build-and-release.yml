@@ -121,7 +121,7 @@ jobs:
         run: scripts/release/verify-version-bump-ci.sh "${{ github.event.pull_request.merge_commit_sha }}"
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
           components: llvm-tools-preview
@@ -173,7 +173,7 @@ jobs:
           cat RELEASE_NOTES.md
 
       - name: Upload Release Notes
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-notes
           path: RELEASE_NOTES.md
@@ -188,7 +188,7 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.commit_sha }}
           fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
           targets: aarch64-apple-darwin,x86_64-apple-darwin
@@ -246,12 +246,12 @@ jobs:
           python3 scripts/release/record-generated-artifact-identity.py --root . --platform macos --main "target/release/bundle/osx/KatanA Desktop.app/Contents/MacOS/KatanA" --worker "target/release/bundle/osx/KatanA Desktop.app/Contents/MacOS/kdv-office-worker" --asset target/release/KatanA-macOS.zip --asset target/release/KatanA-Desktop-0.22.42.dmg --output tmp/identity-macos.json
       - name: Upload generated macOS payload identity
         if: needs.preflight.outputs.version_bare == '0.22.42'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-identity-macos
           path: tmp/identity-macos.json
       - name: Upload macOS Artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-macos
           path: |
@@ -278,7 +278,7 @@ jobs:
           ref: ${{ needs.preflight.outputs.commit_sha }}
           fetch-depth: 0
       - name: Download universal macOS artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: artifacts-macos
           path: artifacts-macos
@@ -302,7 +302,7 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.commit_sha }}
           fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -339,7 +339,7 @@ jobs:
           python3 scripts/release/record-generated-artifact-identity.py --root . --platform linux --main target/release/KatanA --worker target/release/kdv-office-worker --asset target/release/KatanA-linux-x86_64.tar.gz --output tmp/identity-linux.json
       - name: Upload generated Linux payload identity
         if: needs.preflight.outputs.version_bare == '0.22.42'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-identity-linux
           path: tmp/identity-linux.json
@@ -356,7 +356,7 @@ jobs:
           "$GITHUB_WORKSPACE/scripts/release/smoke-launch-packaged-app.sh" linux-x86_64 "$TEMP_DIR/KatanA"
       - name: Upload Linux startup diagnostics
         if: failure() && steps.linux_startup_smoke.outcome == 'failure'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: linux-startup-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -364,7 +364,7 @@ jobs:
             tmp/trash/*-startup.*/startup.log
           if-no-files-found: error
       - name: Upload Linux Artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-linux
           path: target/release/KatanA-linux-x86_64.tar.gz
@@ -383,7 +383,7 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.commit_sha }}
           fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -401,7 +401,7 @@ jobs:
         run: cargo build --workspace --release
 
       - name: Install cargo-binstall
-        uses: cargo-bins/cargo-binstall@75b4bfae1b2c753a6806bbce6e6cb89b602de33c # main
+        uses: cargo-bins/cargo-binstall@81df5c23b0dc775b009efdfc9895c5965b7a4e40 # main
 
       - name: Package Windows Artifacts
         shell: bash
@@ -417,7 +417,7 @@ jobs:
           python scripts/release/record-generated-artifact-identity.py --root . --platform windows --main target/release/KatanA.exe --worker target/release/kdv-office-worker.exe --asset KatanA-windows-x86_64.zip --asset KatanA-windows-x86_64.msi --output tmp/identity-windows.json
       - name: Upload generated Windows payload identity
         if: needs.preflight.outputs.version_bare == '0.22.42'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-identity-windows
           path: tmp/identity-windows.json
@@ -553,7 +553,7 @@ jobs:
 
       - name: Upload failed Windows comparison payload
         if: failure() && steps.windows_startup_smoke.outcome == 'failure' && needs.preflight.outputs.version_bare == '0.22.42'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows-native-comparison-payload-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -569,7 +569,7 @@ jobs:
 
       - name: Upload Windows startup diagnostics
         if: always() && (steps.windows_startup_smoke.outcome == 'failure' || steps.windows_startup_smoke.outcome == 'success')
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows-startup-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.windows_startup_smoke.outputs.diagnostics_directory }}
@@ -577,7 +577,7 @@ jobs:
           retention-days: 5
 
       - name: Upload Windows Artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-windows
           path: |
@@ -602,7 +602,7 @@ jobs:
           ref: ${{ needs.preflight.outputs.commit_sha }}
           fetch-depth: 0
       - name: Download failed Windows comparison payload
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: windows-native-comparison-payload-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}\windows-native-comparison-payload-${{ github.run_id }}-${{ github.run_attempt }}
@@ -703,7 +703,7 @@ jobs:
           $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $metadata -Encoding utf8
       - name: Upload Windows comparison diagnostics
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows-native-comparison-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -728,7 +728,7 @@ jobs:
           ref: ${{ needs.preflight.outputs.commit_sha }}
           fetch-depth: 0
       - name: Download all artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       - name: Normalize generated payload identity filenames
         if: needs.preflight.outputs.version_bare == '0.22.42'
         run: |
@@ -796,7 +796,7 @@ jobs:
         with:
           ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
           components: rustfmt, clippy
@@ -838,7 +838,7 @@ jobs:
             --merge-commit "$MERGE_COMMIT" --pull-request "$PULL_REQUEST" --remote
       - name: Preserve cleanup receipts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: published-release-cleanup-receipts
           path: .git/katana-cleanup-receipts/*.jsonl
