@@ -21,3 +21,13 @@
 
 - source ee9c27b1は通常commit10467実exit0。root identity/新契約はbff6f290、通常commit14941実exit0。hook迂回なし。独立再レビューの残P0/P1は0件。
 - 通常push、新HEAD current review/必須CI/Windows実行、正式全OS公開・公開後処理は継続する。
+
+## クロス検査でのresource生成
+
+- 8cbff96bの通常push54589は実exit1。Windows本体ではなく、Linuxのcargo xwin checkでrc.exeが見つからずFAIL101。並列preflightも終端まで回収した。
+- Windows nativeまたはGNU targetはwinresの既存compilerを使い、失敗を明示する。non-Windows host/MSVCだけ、既存LLVMrcで同じwinres-generated resourceを生成して同じlink directivesを出す。manifestを省略した成功やfallbackにはしない。
+- 公式just check-windows35433 actual0、Windows本体の実行とは区別する。実winres/icon/version/manifestからMacと既存Docker LLVMでMSVC.resを生成し、type24/id1内のmanifest575bytesが実sourceと完全一致した。prototypeとproduction helperのSHAも一致する。
+- 手動style-fmt-check/docs-formatは現Justfileに無く、過去の複合shell最終exitを個別成功と取り違えた。これらのログは成功証拠にしない。正式fmt-check24088 actual0と対象2文書KML actual0を取り直した。通常commit/push hooksの結果とは分離する。
+- 新しいWindows loader/実Win32テスト、元200ms基準、公開全5成果物は引き続き未完。今回も品質条件とOS保護は変更しない。
+
+- cross helperは通常署名commit6535a7c1（77079実exit0）へ統合。正規pre-commitを使用し、新HEADの通常push・current review・全CIを継続する。
