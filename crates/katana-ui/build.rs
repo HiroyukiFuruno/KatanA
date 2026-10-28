@@ -4,6 +4,9 @@
  * because build scripts cannot depend on `katana-core` (would form a build-time cycle). */
 include!("build_support/process.rs");
 
+#[path = "build_support/windows_resources.rs"]
+mod windows_resources;
+
 fn main() {
     println!("cargo::rustc-check-cfg=cfg(coverage)");
 
@@ -51,7 +54,7 @@ fn main() {
         res.set_icon("../../assets/icon.ico");
         /* WHY: 名前で読み込むsubclass APIにはCommon Controls v6の有効化が必要。 */
         res.set_manifest_file("windows.manifest");
-        res.compile()
+        windows_resources::WindowsResources::compile(&res)
             .expect("Windows resources and Common Controls v6 manifest must compile");
     }
 }
