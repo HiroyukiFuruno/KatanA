@@ -158,3 +158,6 @@ impl CommandPaletteProvider for WorkspaceFileProvider {
 
 pub mod markdown_content;
 pub use markdown_content::MarkdownContentProvider;
+
+#[cfg(test)]
+mod tests;
