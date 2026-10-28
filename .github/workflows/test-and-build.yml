@@ -185,6 +185,9 @@ jobs:
       - name: Test patched custom cursor cache
         run: cargo test --locked -p katana-ui -p egui-winit --lib cursor_cache::tests
 
+      - name: Test patched native surface size contracts
+        run: just test-wgpu-native-surface-size
+
       - name: Run tests
         id: workspace_tests
         shell: bash

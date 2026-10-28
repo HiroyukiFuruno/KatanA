@@ -1,3 +1,8 @@
+### 2026-10-28 描画時の実寸でWindows surfaceを同期する
+
+- [x] PR377全CI/review完了→署名valid/tree同一M991cへ通常mergeし、M push CI成功。正式direct40648617381はLinux/macOS両CPU/Server2022比較成功、Windows元smoke3→3FAIL、Publish/cleanup skippedで回収した。新EXE/ImageLoad/IAT/生ETLで初期のSurface再設定待機4件と別stack1件を区別した。
+- [/] winitの最大化cache更新を保つため、初期WM_SIZEを捨てず、egui-wgpu0.36.2のWindows描画経路を実寸同期へ限定修正する。元crate checksum・公式licenseを照合し、両manifest/lockへ同じvendor patchを適用。判定RED1→GREEN3、locked metadata/型検査/MSVC厳格Clippy/AST30/fmt/Actionlint/KML成功、通常署名commit `b2a14ce4` へ統合。新HEAD通常push・current review/全gate・元200ms配布起動・全OS公開と後処理を継続する。[根拠](evidence/windows-native-surface-size-sync-2026-10-28.ja.md)。
+
 ### 2026-10-28 Windows生成前通知と描画取得待機を区別して修復する
 
 - [x] 正式direct run40628216485を終端failureまで回収。Linux/macOS両archはsuccess、Windows元200msは2→2、Server2022比較は8→8でFAIL、Publish/cleanup skipped。新EXEのhash/ImageLoad/PE/importと生ETLを照合し、長待機32件のうち5件のサイズ処理と26件のDX12取得待機を区別した。全待機をサイズ通知へまとめず、旧RVAや別環境の成功を流用しない。
