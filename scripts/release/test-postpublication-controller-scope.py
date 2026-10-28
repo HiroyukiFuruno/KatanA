@@ -2,6 +2,7 @@
 
 import json
 import unittest
+import tomllib
 from pathlib import Path
 
 from document_host_io import HostEvidenceError
@@ -25,9 +26,16 @@ class PublishedControllerScopeTests(unittest.TestCase):
     def published(self, path):
         return git(ROOT, "show", f"{PUBLISHED}:{path}")
 
-    def test_current_committed_changes_are_controller_only(self):
+    def test_current_head_cannot_relabel_product_changes_as_published_controller(self):
         head = git(ROOT, "rev-parse", "HEAD").decode().strip()
-        self.assertLessEqual(set(verify_committed_scope(ROOT, PUBLISHED, head)), CONTROLLER_PATHS)
+        original = tomllib.loads(self.published("Cargo.toml").decode())
+        current = tomllib.loads(git(ROOT, "show", f"{head}:Cargo.toml").decode())
+        if current["workspace"]["package"]["version"] == original["workspace"]["package"]["version"]:
+            self.assertLessEqual(set(verify_committed_scope(ROOT, PUBLISHED, head)), CONTROLLER_PATHS)
+        else:
+            # WHY: 次版の製品変更を、公開済み版の非配布controller修正として認めない。
+            with self.assertRaises(HostEvidenceError):
+                verify_committed_scope(ROOT, PUBLISHED, head)
 
     def test_rejects_every_product_and_unrelated_tool_change(self):
         for path in ("Cargo.lock", "Cargo.toml", "crates/katana-ui/src/main.rs",

@@ -2,6 +2,21 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.43] - 2026-10-28 19:47:20 (UTC)
+
+### ✨ Improvements
+
+- **Consistent document tools**: Document previews, shortcuts and command search share the same format and loading-state rules, including PowerPoint slideshow availability.
+- **Consistent loading messages**: Image, HTML, Office and Canvas previews use a shared loading presentation and resolve the document-kind label before display.
+- **Image controls**: Zoom and navigation controls occupy a separate area below the image in normal and full-screen views, including small images.
+
+### 🐛 Bug Fixes
+
+- **Repeated image loading**: Automatic refresh preserves unchanged images instead of discarding their preview repeatedly. Manual reload and real file changes still refresh the image.
+- **Image loading completion**: Background image loading requests a new frame when its result becomes available; a full loading queue remains retryable instead of displaying a permanent failure.
+- **Tab group naming**: Confirming, cancelling or dismissing a group-name popup releases its input focus, and removing the last group member clears any remaining rename state.
+- **Unavailable document modes**: PDF and Office documents reject unsupported code-only and split modes consistently across menus, shortcuts and commands.
+
 ## [0.22.42] - 2026-10-24 08:45:11 (UTC)
 
 ### 🚀 Features
