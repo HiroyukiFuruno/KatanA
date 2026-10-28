@@ -27,7 +27,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 - **Markdown heading structure**: An explicitly empty heading list now disallows headings when validating a custom heading structure.
 - **Markdown split-view background**: The editor and preview share the explorer background color in horizontal and vertical split views.
-- **Windows window responsiveness**: Register resize handling during window creation and avoid an additional rendering wait while preserving the GPU queue limit and explicit configuration.
+- **Windows window responsiveness**: Register resize handling during window creation, use the current window size when painting instead of replaying stale startup sizes, and avoid an additional rendering wait while preserving the GPU queue limit and explicit configuration.
 - **Update archive handling**: Reject link entries and linked extraction destinations, and explicitly limit restored file permissions while retaining normal executable permissions.
 - **HTTPS certificate validation**: Updated certificate verification and trusted roots to reject distrusted certificate chains.
 - **Document memory usage**: Removed an extra copy of document input data retained throughout a viewer session.
