@@ -3,6 +3,7 @@ from pathlib import Path
 import re
 import xml.etree.ElementTree as ET
 import unittest
+from windows_startup_graphics_profile_contract import assert_graphics_profile_contract
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = Path(os.environ.get("WINDOWS_TRACE_SCRIPT_PATH", ROOT / "scripts/release/trace-windows-startup.ps1"))
@@ -80,6 +81,9 @@ class WindowsStartupTraceContractTests(unittest.TestCase):
         self.assertIn("profileStatus.ExitCode", self.source)
         self.assertIn("if ($wprStartAttempted)", self.source)
         self.assertIn("$profileName = 'KatanAWaitStacks'", WAIT_STACK_PREPARER.read_text(encoding="utf-8"))
+
+    def test_wait_stack_graphics_profiles_are_exported_hashed_and_required_in_memory_status(self):
+        assert_graphics_profile_contract(self.source)
 
 
     def test_official_wpr_active_status_is_recognized_without_matching_idle_status(self):

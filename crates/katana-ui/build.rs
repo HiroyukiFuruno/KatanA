@@ -4,6 +4,9 @@
  * because build scripts cannot depend on `katana-core` (would form a build-time cycle). */
 include!("build_support/process.rs");
 
+#[path = "build_support/windows_resources.rs"]
+mod windows_resources;
+
 fn main() {
     println!("cargo::rustc-check-cfg=cfg(coverage)");
 
@@ -46,8 +49,12 @@ fn main() {
 
     if std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default() == "windows" {
         println!("cargo:rerun-if-changed=../../assets/icon.ico");
+        println!("cargo:rerun-if-changed=windows.manifest");
         let mut res = winres::WindowsResource::new();
         res.set_icon("../../assets/icon.ico");
-        let _ = res.compile();
+        /* WHY: 名前で読み込むsubclass APIにはCommon Controls v6の有効化が必要。 */
+        res.set_manifest_file("windows.manifest");
+        windows_resources::WindowsResources::compile(&res)
+            .expect("Windows resources and Common Controls v6 manifest must compile");
     }
 }

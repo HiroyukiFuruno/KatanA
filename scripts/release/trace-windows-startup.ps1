@@ -21,6 +21,7 @@ $expectedSha256 = $null
 $wprProfilePath = $null
 $wprProfileName = 'GeneralProfile'
 $wprProfileSha256 = $null
+$graphicsProfileEvidence = $null
 
 function ConvertTo-NativeArgument {
     param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Value)
@@ -177,6 +178,48 @@ try {
     $wprFileVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($wprCommand.Source).FileVersion
     [pscustomobject]@{ path = $wprCommand.Source; file_version = $wprFileVersion } |
         ConvertTo-Json | Set-Content -LiteralPath (Join-Path $diagnostics 'wpr-file-version.json') -Encoding utf8
+    if ($WaitStacks) {
+        $gpuProfilePath = Join-Path $diagnostics 'GPU.Verbose.wprp'
+        $desktopProfilePath = Join-Path $diagnostics 'DesktopComposition.Verbose.wprp'
+        foreach ($path in @($gpuProfilePath, $desktopProfilePath, (Join-Path $diagnostics 'wpr-profile-selection.json'))) {
+            if (Test-Path -LiteralPath $path) { throw "Refusing to overwrite WPR graphics-profile evidence: $path" }
+        }
+        $graphicsProfileEvidence = [ordered]@{
+            requested_profile = 'KatanAWaitStacks.Verbose.Memory'
+            profile_path = $wprProfilePath
+            profile_sha256 = $wprProfileSha256
+            requested_profiles = @('KatanAWaitStacks.Verbose.Memory', 'GPU.Verbose.Memory', 'DesktopComposition.Verbose.Memory')
+            wpr_path = $wprCommand.Source
+            wpr_file_version = $wprFileVersion
+            definitions = [ordered]@{
+                'GPU.Verbose' = @{ path = $gpuProfilePath; sha256 = $null }
+                'DesktopComposition.Verbose' = @{ path = $desktopProfilePath; sha256 = $null }
+                'KatanAWaitStacks.Verbose' = @{ path = $wprProfilePath; sha256 = $wprProfileSha256 }
+            }
+            start_exit_code = $null
+            status_exit_code = $null
+            actual_status = $null
+            interpretation = $null
+        }
+        $graphicsProfileEvidence | ConvertTo-Json -Depth 5 |
+            Set-Content -LiteralPath (Join-Path $diagnostics 'wpr-profile-selection.json') -Encoding utf8
+        foreach ($profile in @(
+            @{ name = 'GPU.Verbose'; path = $gpuProfilePath; operation = 'wpr-export-gpu-profile' },
+            @{ name = 'DesktopComposition.Verbose'; path = $desktopProfilePath; operation = 'wpr-export-desktop-composition-profile' }
+        )) {
+            $export = Invoke-BoundedNative -Path $wprCommand.Source `
+                -Arguments @('-exportprofile', $profile.name, $profile.path) `
+                -Operation $profile.operation -OutputDirectory $diagnostics -TimeoutSeconds 30
+            if ($export.ExitCode -ne 0) { throw "WPR export of $($profile.name) failed with exit code $($export.ExitCode)." }
+            if (-not (Test-Path -LiteralPath $profile.path -PathType Leaf)) {
+                throw "WPR export of $($profile.name) did not produce its definition file."
+            }
+            $graphicsProfileEvidence.definitions[$profile.name].sha256 =
+                (Get-FileHash -LiteralPath $profile.path -Algorithm SHA256 -ErrorAction Stop).Hash
+            $graphicsProfileEvidence | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath (Join-Path $diagnostics 'wpr-profile-selection.json') -Encoding utf8
+        }
+    }
     $help = Invoke-BoundedNative -Path $wprCommand.Source -Arguments @('-help', 'advanced') `
         -Operation 'wpr-help-advanced' -OutputDirectory $diagnostics -TimeoutSeconds 30
     if ($help.ExitCode -ne 0 -or $help.Text -notmatch '(?i)-instancename') {
@@ -216,28 +259,38 @@ try {
     $startArguments = @('-start', 'GeneralProfile', '-instancename', $wprInstance)
     $startOperation = 'wpr-start'
     if ($WaitStacks) {
-        $startArguments = @('-start', "$wprProfilePath!KatanAWaitStacks.Verbose", '-instancename', $wprInstance)
+        $startArguments = @(
+            '-start', "$wprProfilePath!KatanAWaitStacks.Verbose",
+            '-start', "$gpuProfilePath!GPU.Verbose",
+            '-start', "$desktopProfilePath!DesktopComposition.Verbose",
+            '-instancename', $wprInstance
+        )
         $startOperation = 'wpr-start-wait-stacks'
     }
     $start = Invoke-BoundedNative -Path $wprCommand.Source -Arguments $startArguments `
         -Operation $startOperation -OutputDirectory $diagnostics -TimeoutSeconds 30
+    if ($WaitStacks) {
+        $graphicsProfileEvidence.start_exit_code = $start.ExitCode
+        $graphicsProfileEvidence | ConvertTo-Json -Depth 5 |
+            Set-Content -LiteralPath (Join-Path $diagnostics 'wpr-profile-selection.json') -Encoding utf8
+    }
     if ($start.ExitCode -ne 0) { throw "WPR profile start failed with exit code $($start.ExitCode)." }
     if ($WaitStacks) {
         $profileStatus = Invoke-BoundedNative -Path $wprCommand.Source `
             -Arguments @('-status', 'profiles', '-instancename', $wprInstance) `
             -Operation 'wpr-profile-status' -OutputDirectory $diagnostics -TimeoutSeconds 30
-        if ($profileStatus.ExitCode -ne 0 -or $profileStatus.Text -notmatch 'KatanAWaitStacks\.Verbose\.Memory') {
-            throw 'WPR did not confirm the requested wait-stack profile is active in memory mode.'
+        $graphicsStatusMatches = @(
+            @('KatanAWaitStacks\.Verbose\.Memory', 'GPU\.Verbose\.Memory', 'DesktopComposition\.Verbose\.Memory') |
+                Where-Object { $profileStatus.Text -match $_ }
+        )
+        $graphicsProfileEvidence.status_exit_code = $profileStatus.ExitCode
+        $graphicsProfileEvidence.actual_status = $profileStatus.Text
+        $graphicsProfileEvidence.interpretation = 'Profile selection evidence only; event availability must be checked in the retained ETL.'
+        $graphicsProfileEvidence | ConvertTo-Json -Depth 5 |
+            Set-Content -LiteralPath (Join-Path $diagnostics 'wpr-profile-selection.json') -Encoding utf8
+        if ($profileStatus.ExitCode -ne 0 -or $graphicsStatusMatches.Count -ne 3) {
+            throw 'WPR status did not confirm all requested wait-stack and graphics profiles are active in memory mode.'
         }
-        [pscustomobject]@{
-            requested_profile = 'KatanAWaitStacks.Verbose.Memory'
-            start_exit_code = $start.ExitCode
-            status_exit_code = $profileStatus.ExitCode
-            actual_status = $profileStatus.Text
-            profile_path = $wprProfilePath
-            profile_sha256 = $wprProfileSha256
-            interpretation = 'Profile selection evidence only; stack availability must be checked in the retained ETL.'
-        } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $diagnostics 'wpr-profile-selection.json') -Encoding utf8
     }
     $ownedStatus = Invoke-BoundedNative -Path $wprCommand.Source `
         -Arguments @('-status', '-instancename', $wprInstance) `

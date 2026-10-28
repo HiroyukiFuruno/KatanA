@@ -1,3 +1,24 @@
+### 2026-10-28 クロス検査のWindows resource生成を補正
+
+- [/] 8cb通常push54589はrc.exe不存在でFAIL、Linux cargo-xwin checkの失敗と本体loader失敗を区別。同じmanifest/icon/versionをnon-Windows/MSVCでは既存LLVMrcで生成し、native/GNUのwinres compilerとfail-fastを維持。公式check-windows35433 actual0、MSVC.res type24/id1の実XML一致、manifest契約2件、正式fmt-check/対象KML成功。source6535a7c1へ通常commit済み。新HEAD通常push/review/Windows実行/公開は継続する。[証跡](evidence/windows-common-controls-activation-2026-10-28.ja.md)。
+
+### 2026-10-28 Windows Common Controls有効化の補正
+
+- [/] 新aefa CI40603722343でUI lib1353件成功後、mainテストEXEが実行前にSTATUS_ENTRYPOINT_NOT_FOUND(0xc0000139)で終了。追加3件は未実行。名前指定のsubclass APIが要求するCommon Controls v6 manifestが既存winresに無いことを確認し、Windows専用manifestを本体/テスト共通resourceへ追加。必須resource生成の失敗も黙殺しない。source ee9c27b1/bff6f290へ通常署名commit。独立指摘のroot identityも補正し、実旧manifest RED1→現GREEN2の新契約/fmt成功。Windows実行と新HEAD全gate/レビュー/公開は未完。[証跡](evidence/windows-common-controls-activation-2026-10-28.ja.md)。
+
+### 2026-10-28 Windowsの同一resize通知を抑える候補を検証する
+
+- [x] 同一配布物の任意診断40592186164を回収し、元smoke5→5の不合格と、3profileの実採取成功を分離した。現行EXEのSHA・ImageLoad・unwind/IAT/source文字列から、長い待機の復帰stackをWindowEvent::Resized→Surface再設定→GPU fence waitへ対応付けた。WM_SIZE発生元や製品修復の成功までは断定しない。
+- [/] KatanA所有root HWNDの同一SIZE種別/client寸法/DPI/monitorだけを抑制する候補を実装した。状態変化・不明・最小化・破棄を保持し、境界8件とWindows APIのsource compile/Clippyを確認し、通常署名commit `4ac14b9d`へ統合した。実Win32回帰3件・元200ms×10/latency1・全gate・通常push・current review・全OS公開は継続中。[根拠](evidence/windows-resize-coalescing-2026-10-28.ja.md)。
+
+### 2026-10-28 Windowsの画面提示・GPUイベントを追加採取する
+
+> その採取成功テストだけ診断専用の非必須ジョブに分離してください。本体の必須検査と基準は維持して、修正・検証・コミットからリリースまで、報告だけで止まらず進めてね。
+
+- [x] PR373の全review・必須CI・署名を確認し、tree同一のマージ234bc381へ通常統合。正式全OS公開40578480784/attempt1を実行して終端failureまで回収した。Linux/Mac両CPUの配布起動とServer2022比較は成功、元Windows2025は4→4で不合格、Publish/cleanupはskipped。元環境の失敗を別環境の成功へ付け替えない。
+- [x] 今回および既存4本のETL由来CSVで、検査したGPU/画面提示providerの一致行が0件であることを確認した。既存の待機スタックの欠落とは混同せず、CPU名だけの原因断定もしない。
+- [ ] 既存の任意wait-stacks診断だけにWindows組込GPU/desktop composition profileのexport・hash・Memory選択検証を追加する。対象契約11/18件、独立機械レビュー、PowerShell 7.4.2実parser・status一致式4件は成功。通常commit/push→Draft review→同一配布物の実採取を続け、必要な製品修復と元必須検査・公開を完了する。診断の採取成功を公開の新条件へ加えない。[根拠](evidence/windows-graphics-profile-diagnosis-2026-10-28.ja.md)。
+
 ### 2026-10-27 次の同一配布物比較と証跡依存更新
 
 - [x] Windows診断run40524518173は元/低減ログとも不合格。続くDX12待機方式の同一配布物比較を通常commit60f3813d/pushbd4へ統合し、対象13契約・Actionlint・実PowerShell構文解析・最終レビュー成功。実Windows40534985776は既定前/DontWait/None/既定後の全4ケースが元200ms不合格で回収完了。元配布物の実行ファイルhash/API artifact digest一致。診断結果の回収を完了とし、設定変更は製品へ採用しない。製品修復・公開は下の未完了項目で継続する。[根拠](evidence/windows-paint-delivery-diagnosis-2026-10-27.ja.md)。
@@ -186,7 +207,7 @@
 
 ## 要件(Verbatim Requirements)
 
-最新の承認済み目標は[更新目標](evidence/release-goal-2026-10-24.ja.md)。macOS隔離配布版の実操作・描画・正常終了を優先し、通常profileへのキャッシュ・起動時副作用の漏れを実行前に修復する。HTML読取専用観測の限定実装・回帰は[証跡](evidence/html-resource-observation-2026-10-24.ja.md)へ分離し、実配布受入を完了扱いしない。
+承認済み目標と変更履歴は[更新目標](evidence/release-goal-2026-10-24.ja.md)を参照する。現在の公開判定は2026-10-25の本人指示に従い、既存の自動検証・全OS配布起動を維持して先行公開する。以前のmacOS隔離操作記録や未達は保持し、本人だけの実機確認を公開・Issue Close条件へ戻さない。通常profileへの副作用の修復や、HTML読取専用観測の[証跡](evidence/html-resource-observation-2026-10-24.ja.md)を、未実施の実配布受入の成功へ置き換えない。
 
 > じゃあその方針で進めてください。KatanA側で直せる部分は修正して、残る脆弱性は実際の影響を確認したうえで期限付きの例外にして、KDV/KRRを待たずにリリースまで進めてね。報告だけで止まらないでください。
 
@@ -225,11 +246,18 @@
 >
 > もちろん解消することがわかっているなら、safe modeは急務ではないですが、アプリケーションとして起動できないは致命的なので、いずれは対処しないとです。
 
+2026-10-28の依存更新指示（原文）:
+
+> 更新した。
+>
+> いま全世界的に脆弱性対応が様々な観点で行われているから、取り込みは頻繁にして。
+
 ### この要件から導出される制約(MUST)
 
 - 上流待ちではないKatanA作業を検証・実装・整理し、公開準備を継続する。
 - KDV/KRR不備は次期へ分離し、今回のKatanA改善と混同しない。
 - 起動不能の復旧と原因確認は次期で追跡し、Safe Modeを無条件に今回の停止条件へ追加しない。
+- 依存更新を頻繁に確認・取り込み、直接依存・推移依存・lockfileと既存の自動検証を併せて確認する。更新前のgraphの合格を更新後へ流用しない。
 
 ### 設計判断時の参照義務
 
