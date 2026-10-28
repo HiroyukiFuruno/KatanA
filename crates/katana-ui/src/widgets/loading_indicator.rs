@@ -36,11 +36,13 @@ impl LoadingIndicator {
     pub(crate) fn show(ui: &mut egui::Ui, presentation: &LoadingPresentation) -> egui::Response {
         match presentation.state {
             LoadingState::Pending => {
-                ui.horizontal_centered(|ui| {
-                    ui.spinner();
-                    ui.label(egui::RichText::new(&presentation.label).weak());
-                })
-                .response
+                /* WHY: 本文フローの高さを保ち、全面表示の中央寄せは呼出側レイアウトに委ねる。 */
+                crate::widgets::AlignCenter::new()
+                    .spacing(ui.spacing().item_spacing.x)
+                    .shrink_to_fit(true)
+                    .left(|ui| ui.spinner())
+                    .left(|ui| ui.label(egui::RichText::new(&presentation.label).weak()))
+                    .show(ui)
             }
         }
     }
@@ -48,7 +50,46 @@ impl LoadingIndicator {
 
 #[cfg(test)]
 mod tests {
-    use super::{LoadingLabel, LoadingPresentation, LoadingState};
+    use super::{LoadingIndicator, LoadingLabel, LoadingPresentation, LoadingState};
+
+    const INLINE_VIEWPORT: eframe::egui::Vec2 = eframe::egui::vec2(320.0, 600.0);
+    const MAX_LOADING_ROW_HEIGHT: f32 = 48.0;
+    const MAX_FOLLOWING_BODY_TOP: f32 = 96.0;
+
+    #[test]
+    fn pending_indicator_uses_content_height_before_following_body() {
+        let context = eframe::egui::Context::default();
+        let input = eframe::egui::RawInput {
+            screen_rect: Some(eframe::egui::Rect::from_min_size(
+                eframe::egui::Pos2::ZERO,
+                INLINE_VIEWPORT,
+            )),
+            ..eframe::egui::RawInput::default()
+        };
+        let presentation =
+            LoadingPresentation::new(LoadingState::Pending, LoadingLabel::Localized("loading"));
+        let mut measured = None;
+
+        let output = context.run_ui(input, |ui| {
+            let loading = LoadingIndicator::show(ui, &presentation);
+            let following_body = ui.label("following body");
+            measured = Some((loading.rect, following_body.rect));
+        });
+        output.drop_without_applying_deltas();
+
+        let (loading_rect, following_body_rect) = measured.expect("real egui layout ran");
+        assert!(
+            loading_rect.height() <= MAX_LOADING_ROW_HEIGHT,
+            "inline loading row consumed {} points in a {} point viewport",
+            loading_rect.height(),
+            INLINE_VIEWPORT.y
+        );
+        assert!(
+            following_body_rect.min.y <= MAX_FOLLOWING_BODY_TOP,
+            "following body was pushed down to y={}",
+            following_body_rect.min.y
+        );
+    }
 
     #[test]
     fn rendering_label_resolves_the_document_kind() {

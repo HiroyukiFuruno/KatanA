@@ -96,6 +96,8 @@
 
 - [/] P2: closeと最初の次frameが時間の合否に入っていなかった検査を補強した。元の5秒を増やさずclose前から単一の絶対deadlineを共有し、既にworkerがidleでも期限切れを拒否する。実workerの代表4形式と実await入口の期限切れnegativeが成功。通常push・thread返信/resolve・current reviewは8.2/8.3で別に実施する。
 
+- [/] Codex P2: 本文内の共通Loadingがviewport全高を消費して後続本文を押し出す問題を修正。実egui 320×600で旧row=600ptのRED、content-height horizontalへ変更後のgeometry回帰と文言2件がGREEN。全面表示callerの中央配置は維持し、通常push/個別reply/resolveは8.2/8.3へ残す。
+
 ## 8. Final Verification & Release Work
 
 - [x] 8.1 自己レビュー、変更範囲のfmt/lint/回帰、文書検査、依存関係調査・更新を完了する。品質条件は下げない。
@@ -148,3 +150,11 @@ b5257652の通常pushはUI lib 1412成功/1失敗。移動したprovider検査�
 公開thread `discussion_r4406997730` に指摘を記録。最終修正はclose前の絶対deadlineをforce close直後・次frame直後・worker idle前/中/後に検査し、元CLOSE_TIMEOUT=5秒を維持した。negativeはassert helperだけでなく、空の隔離HarnessとRenderEnvLockで実await_workers_idleへ期限切れを渡し、入口で拒否することを検証した。固定sleepや商用API変更なし。
 
 実worker付き2 tests成功。HTML/DOCX/XLSX/PPTXの force_close_ms / close_to_next_frame_ms / worker_idle_wait_ms は順に1/3/0、0/2/0、0/1/11、0/2/0。正規の配布版受入・原本全close解消とは混同しない。証跡 `tmp/v0.22.43-prep/close-deadline-review-fix/close-deadline-idle-entry-regression.log` / exit0。
+
+### PR389 Codex P2 — inline Loading
+
+`PRRT_kwDORm09y86xWh4u` の指摘に従い、共通widgetをcontent-height horizontalへ修正した。文書別の重複widgetや商用test APIは追加せず、6系統callerは従来のfull-surface中央配置/inline本文配置を保持。実egui0.36.2の旧実装RED=viewport600ptを消費、修正後3 tests成功。初回のunused_mut compile失敗はREDとして扱わず別logへ保持した。証跡 `tmp/v0.22.43-prep/loading-inline-review-fix/inline-layout-red-retry.log` と `inline-layout-green.log`。
+
+新P2を修正するため、旧d68200fcだけを検査中だった自分のpush session96989をSIGINTで終了しactual130を回収した。古い内容の途中検査を成功扱いせず、remoteはd0d3b475のまま、残存check/lease processなしを確認。両P2修復の新HEADを通常pushで改めて全検証する。
+
+Loadingの最終実装は既存の共通AlignCenter(shrink_to_fit)を再利用した。直接ui.horizontalは既存AST horizontal-layout規約に拒否されたため採用せず、閾値・ルールを無効化しなかった。最終版もgeometry/locale3件成功、log `tmp/v0.22.43-prep/loading-inline-review-fix/inline-layout-align-center-green.log` / exit0。
