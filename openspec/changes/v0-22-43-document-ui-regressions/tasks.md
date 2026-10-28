@@ -53,50 +53,72 @@
 
 ## 1. 画像の遅延と安定性 — #385 / B01〜B04
 
-- [ ] 1.1 元PNGのhash/sizeを結合し、image-onlyとOffice/HTML混在の選択→保存→full frame→初回texture準備を計測する。
-- [ ] 1.2 未変更の反復とタブ往復でtexture/revision/要求回数を調べ、再loadingとMissing表示の原因を切り分けて修正する。
-- [ ] 1.3 確認したworker完了wake修正を、実callerの回帰と一緒に正式統合する。単体の高速decodeだけで30秒問題を閉じない。
+- [x] 1.1 元PNGのhash/sizeを結合し、image-onlyとOffice/HTML混在の選択→保存→full frame→初回texture準備を計測する。
+- [/] 1.2 未変更の反復とタブ往復でtexture/revision/要求回数を調べ、再loadingとMissing表示の原因を切り分けて修正する。
+- [x] 1.3 確認したworker完了wake修正を、実callerの回帰と一緒に正式統合する。単体の高速decodeだけで30秒問題を閉じない。
 
 ## 2. 共通操作設定とLoading — #383 / B04〜B08
 
-- [ ] 2.1 形式×状態の可否表を一元化し、TOC/refresh/search/export/story/tools/infoとCode/Split/Slideshowを全入口へ適用する。
-- [ ] 2.2 PDFを含む全binaryの禁止mode、ready PPTXのsettings/start、same-path reopenのstale readinessを自動回帰する。
-- [ ] 2.3 submenuのSplit/Tangochouも共通設定で表示可否を制御し、実widget状態を検証する。
-- [ ] 2.4 全6系統のLoadingを共通化し、ローカライズとplaceholder未露出を検証する。
+- [x] 2.1 形式×状態の可否表を一元化し、TOC/refresh/search/export/story/tools/infoとCode/Split/Slideshowを全入口へ適用する。
+- [x] 2.2 PDFを含む全binaryの禁止mode、ready PPTXのsettings/start、same-path reopenのstale readinessを自動回帰する。
+- [x] 2.3 submenuのSplit/Tangochouも共通設定で表示可否を制御し、実widget状態を検証する。
+- [x] 2.4 全6系統のLoadingを共通化し、ローカライズとplaceholder未露出を検証する。
 
 ## 3. グループ操作 — #384 / B09
 
-- [ ] 3.1 popupの一回開始、draft/focus保持、Enter/confirm/Escape/外側clickの終了を一つの状態管理へまとめる。
-- [ ] 3.2 実eguiイベントとdispatcherで名前反映・matching IDのみの解除・後続タブ操作を回帰し、変更関数の規約を確認する。
+- [x] 3.1 popupの一回開始、draft/focus保持、Enter/confirm/Escape/外側clickの終了を一つの状態管理へまとめる。
+- [x] 3.2 実eguiイベントとdispatcherで名前反映・matching IDのみの解除・後続タブ操作を回帰し、変更関数の規約を確認する。
 
 ## 4. HTML・Office close — #386 / B10
 
-- [ ] 4.1 隔離fixtureでHTML/DOCX/XLSX/PPTXのsave・preview drop・allocator返却・最初のUI frame・worker idleを段階別に測る。
-- [ ] 4.2 計測したKatanA側の停止原因を修正し、背景teardown完了と元のメモリ/正常終了条件を維持する。
-- [ ] 4.3 診断専用instrumentationを整理し、永続的な実経路回帰と証拠を残す。
+- [x] 4.1 隔離fixtureでHTML/DOCX/XLSX/PPTXのsave・preview drop・allocator返却・最初のUI frame・worker idleを段階別に測る。
+- [/] 4.2 計測したKatanA側の停止原因を修正し、背景teardown完了と元のメモリ/正常終了条件を維持する。
+- [x] 4.3 診断専用instrumentationを整理し、永続的な実経路回帰と証拠を残す。
 
 ## 5. 画像制御配置 — #387 / B11
 
-- [ ] 5.1 通常/全画面の画像clipと下部制御領域を分離し、1px/小画像/通常/縦長・viewport別の非重複と操作を検証する。
+- [x] 5.1 通常/全画面の画像clipと下部制御領域を分離し、1px/小画像/通常/縦長・viewport別の非重複と操作を検証する。
 
 ## 6. 配布とDocker — #381 / #382 / #376
 
-- [ ] 6.1 対象別同期結果・失敗検知・receipt保持を正式統合し、元の必須公開検査を維持する。
-- [ ] 6.2 Homebrew生成DSL・zero SHA拒否・fixture認証/コマンド隔離を再発回帰と一緒に正式統合する。
-- [ ] 6.3 owner/purpose/run ID、実producerの保存先、停止後の証跡export/hash、対象限定just入口と保持方針を統合する。
-- [ ] 6.4 統合後のunitと実Dockerで作成/稼働/停止参照、正常終了/失敗/保存失敗/再実行を検証し、元のLinux/Windows/UI条件を維持する。
-- [ ] 6.5 既存Open Issue #357/#372/#362/#343/#338/#339の独立残件を一次情報で処理し、実装/検証/上流待ちをIssueと台帳へ反映する。
+- [x] 6.1 対象別同期結果・失敗検知・receipt保持を正式統合し、元の必須公開検査を維持する。
+- [x] 6.2 Homebrew生成DSL・zero SHA拒否・fixture認証/コマンド隔離を再発回帰と一緒に正式統合する。
+- [x] 6.3 owner/purpose/run ID、実producerの保存先、停止後の証跡export/hash、対象限定just入口と保持方針を統合する。
+- [/] 6.4 統合後のunitと実Dockerで作成/稼働/停止参照、正常終了/失敗/保存失敗/再実行を検証し、元のLinux/Windows/UI条件を維持する。
+- [/] 6.5 既存Open Issue #357/#372/#362/#343/#338/#339の独立残件を一次情報で処理し、実装/検証/上流待ちをIssueと台帳へ反映する。
 
 ## 7. User Review (Pre-Final Phase)
 
-- [ ] 7.1 ボードB01〜B11に対応する実装・自動検査の結果を提示し、追加報告を同じ台帳へ登録する。本人の返答や実機確認を公開停止条件にしない。
+- [x] 7.1 ボードB01〜B11に対応する実装・自動検査の結果を提示し、追加報告を同じ台帳へ登録する。本人の返答や実機確認を公開停止条件にしない。
 - [ ] 7.2 未対応フィードバックを残さず、個別劣後が本人から指示された場合だけ根拠を記録する。
 
 ## 8. Final Verification & Release Work
 
-- [ ] 8.1 自己レビュー、変更範囲のfmt/lint/回帰、文書検査、依存関係調査・更新を完了する。品質条件は下げない。
-- [ ] 8.2 関心別の署名付き通常commit、通常push hook一回の結果を回収し、失敗を修正する。重い同検査を直前に重複実行しない。
+- [/] 8.1 自己レビュー、変更範囲のfmt/lint/回帰、文書検査、依存関係調査・更新を完了する。品質条件は下げない。
+- [/] 8.2 関心別の署名付き通常commit、通常push hook一回の結果を回収し、失敗を修正する。重い同検査を直前に重複実行しない。
 - [ ] 8.3 Draft PRで自己・独立・Codex reviewを全ページ取得し、P0/P1修復・各thread reply/resolve・fresh確認後にReadyへ進める。
 - [ ] 8.4 新HEADの全OS/build/test/lint/coverage/security/packaging/host受入の必須CIを確認し、通常mergeする。旧HEADの合格を流用しない。
 - [ ] 8.5 GitHub Actionsの公開と全5asset/checksum・配布検証・外部配布同期の実結果を回収する。
 - [ ] 8.6 Issue状態更新・OpenSpec archive・branch/worktree/stashの安全な後処理を完了する。リモートbranchは明示指示なしに削除しない。
+
+## 最新の実装・検証証跡（2026-10-29）
+
+`[x]` は当該工程の実装・対象検証完了、`[/]` は一部完了または検証継続であり、公開完了を意味しない。公開は8.3〜8.6で別に確認する。
+
+- グループ入力: 通常commit `452094e9`。実egui/dispatcherの4回帰が最新依存構成でも成功。
+- 画像: 通常commit `dd48838e`。未変更auto保持・手動reload・実watch変更、worker完了wake、実global queue満杯から完了/取消後の表示復旧を検証。本人の約30秒待ちとMissing表示すべての原因を確定したとはしない。
+- 共通操作・Loading・下部画像制御: 通常commit `d952a162`。7形式ポリシー、実SelectAndJump、登録コマンド、Loading2件、controller7件等を含む最新構成の42対象回帰成功。新構成のslideshow16件も成功し、実PPTX fixtureでready/next/stale拒否/closeを検証した。
+- close: 通常commit `078b861d`。手前タブを閉じた際の誤選択をRED→GREENで修正。代表HTML/DOCX/XLSX/PPTXの描画後closeと資源解放も自動回帰成功。ただし原本の全closeフリーズが解消したとはしない。通常診断OFFの大型PPTXは表示40.410秒、close0.758ms、次HTML/保存/解放を確認。大型XLSXは約51秒のworker読込制限で表示前に失敗し、close結果ではない。描画開始直後の原本closeを追加診断中。
+- Docker資源管理: 通常commit `11f06971`、unit11件/実Docker7件成功。既存volume不変、診断用fixture残留なし。全OS/配布受入は今後の正規工程。
+- 公開元照合: 通常commit `6ee75e45`、binding7/admission14/flow24とv42実API照合成功。新v43の公開後source/3manifest/5asset照合は公開後に実施する。
+- 依存更新: 通常commit `73f1efe4`、公開KML0.20.0と互換依存を両lockへ採用。KDV0.5.12/KRR0.4.23固定を維持。`just outdated` の一時診断はlibc最新要求とKDVの固定要求で失敗したが、実manifest/lockの解決失敗とは区別し、通常のcargo更新と最新構成の対象回帰は成功。
+- 検証環境TLS: 通常commit `6bece25f`。保持2venvをpip26.2.2へ更新、更新前後とも同一pip標準contextで正常対照/不正4経路を検査。observerのCA bundle欠落を修正した実imageでも5条件成功。旧image ID所有判定等の残件はIssue372へ保持。
+- 正式AST/Clippyは通常commit hookで成功。初回の失敗は取り消さず証跡へ保持。通常push hook・Draft review・Ready CI・公開は未実施。
+
+### close追加診断と上流責任の切分け
+
+原本の描画開始直後に実CloseDocumentを実行した3独立プロセスで、HTMLはclose0.524ms/次UI1.360ms・即時解放、PPTXは0.513ms/次UI2.012ms、XLSXは0.322ms/次UI1.689ms。Office2件はUIが応答していてもworkerが元の5秒条件内でidleにならなかった。この未達を成功へ変換しない。隔離runnerの所有する残存workerだけを回収し、原本SHA前後一致を確認した。
+
+KatanAのtab除去と次frameは同期openの完了を待たない。KDVのDocumentSession::open中は文書単位のcancel/PID handleがまだ返らず、PPTX/Spreadsheetの子processはKDVが所有するため、他の文書を巻き込むprocess-list killで回避しない。[KDV Issue #70](https://github.com/HiroyukiFuruno/katana-document-viewer/issues/70)へ実測・API境界・自動回帰/公開DoDを引き継いだ。既存#65〜#67とは区別した。通常eframe終了時の孤児化は未検証であり、test runner終了後の残存をその証明にしない。
+
+本人の既存方針「KatanA側で改善できるか否かが判断軸」「KDV, KRRはissue立ててあなたは作業しなくて良い」に従い、KatanAの実装・レビュー・必須CI・公開をこの上流対応待ちで停止しない。初回30秒報告やclose全体が解消したと偽らず、既存Issueの結果区分を維持する。
