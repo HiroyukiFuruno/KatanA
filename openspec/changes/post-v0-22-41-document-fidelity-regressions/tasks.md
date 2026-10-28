@@ -1,3 +1,7 @@
+### 2026-10-28 Windows Common Controls有効化の補正
+
+- [/] 新aefa CI40603722343でUI lib1353件成功後、mainテストEXEが実行前にSTATUS_ENTRYPOINT_NOT_FOUND(0xc0000139)で終了。追加3件は未実行。名前指定のsubclass APIが要求するCommon Controls v6 manifestが既存winresに無いことを確認し、Windows専用manifestを本体/テスト共通resourceへ追加。必須resource生成の失敗も黙殺しない。source ee9c27b1/bff6f290へ通常署名commit。独立指摘のroot identityも補正し、実旧manifest RED1→現GREEN2の新契約/fmt成功。Windows実行と新HEAD全gate/レビュー/公開は未完。[証跡](evidence/windows-common-controls-activation-2026-10-28.ja.md)。
+
 ### 2026-10-28 Windowsの同一resize通知を抑える候補を検証する
 
 - [x] 同一配布物の任意診断40592186164を回収し、元smoke5→5の不合格と、3profileの実採取成功を分離した。現行EXEのSHA・ImageLoad・unwind/IAT/source文字列から、長い待機の復帰stackをWindowEvent::Resized→Surface再設定→GPU fence waitへ対応付けた。WM_SIZE発生元や製品修復の成功までは断定しない。
