@@ -11,7 +11,7 @@ type-check:
     {{CARGO}} check --workspace
 
 # Run impacted unit tests (local default)
-test: test-cargo-sweep-contract test-ci-resource-contract test-html-host-contract test-commonmark-html-trace test-commonmark-backend test-custom-cursor-cache test-wgpu-native-surface-size test-impacted
+test: test-docker-volume-lifecycle test-cargo-sweep-contract test-ci-resource-contract test-html-host-contract test-commonmark-html-trace test-commonmark-backend test-custom-cursor-cache test-wgpu-native-surface-size test-impacted
 
 # vendor workspaceの別lockを更新せず、依存なしの実要約moduleを直接検査する。
 test-commonmark-html-trace:
@@ -93,8 +93,16 @@ check-linux-office-worker-contract:
 check-native-office-worker-contract:
     {{RTK_CMD}}bash scripts/ci/check-native-office-worker-contract.sh
 
+# Verify the managed Docker volume lifecycle with disposable labeled fixtures.
+test-docker-volume-lifecycle:
+    {{RTK_CMD}}python3 -B scripts/docker/test-volume-lifecycle.py -v
+
+# Use real Docker containers, including stopped-volume references, without project images.
+check-docker-volume-lifecycle:
+    {{RTK_CMD}}python3 -B scripts/docker/test-volume-lifecycle-real.py -v
+
 # Verify test execution in isolated Linux environment
-check-linux: check-linux-office-worker-contract
+check-linux: check-linux-office-worker-contract check-docker-volume-lifecycle
     {{DOCKER}} compose -f platforms/linux/ci/compose.yml run --rm -e RUST_TEST_THREADS="{{RUST_TEST_THREADS}}" -e RUSTFLAGS="{{RUSTFLAGS}} -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "ulimit -c 0 && cargo sweep --time 7 --dry-run && python3 scripts/ci/test_html_fixture_host_contract.py && python3 scripts/ci/test_html_host_process_group.py && cargo build --locked -p katana-ui --bin kdv-office-worker && KATANA_KDV_OFFICE_WORKER=/app/target/debug/kdv-office-worker cargo test --locked -q --workspace"
 
 # Verify Windows cross-compilation without running tests

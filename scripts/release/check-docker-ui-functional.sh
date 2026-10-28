@@ -37,6 +37,27 @@ OBSERVER="katana-${RUN_ID}-observer"
 APP="katana-${RUN_ID}-app"
 X11_VOLUME="katana-${RUN_ID}-x11"
 EVIDENCE_VOLUME="katana-${RUN_ID}-evidence"
+create_owned_volume() {
+    local name=$1 purpose=$2 labels
+    docker volume create \
+        --label "io.katana.owner=HiroyukiFuruno/KatanA" \
+        --label "io.katana.purpose=$purpose" \
+        --label "io.katana.run-id=$RUN_ID" \
+        "$name" >/dev/null
+    labels=$(docker volume inspect -f '{{json .Labels}}' "$name")
+    python3 - "$labels" "$purpose" "$RUN_ID" <<'PY'
+import json
+import sys
+labels = json.loads(sys.argv[1] or "{}")
+expected = {
+    "io.katana.owner": "HiroyukiFuruno/KatanA",
+    "io.katana.purpose": sys.argv[2],
+    "io.katana.run-id": sys.argv[3],
+}
+if any(labels.get(key) != value for key, value in expected.items()):
+    raise SystemExit("Docker volume name already exists without the expected owner/purpose labels")
+PY
+}
 echo "RUN_DIR=$RUN_DIR"
 docker image inspect "$OBSERVER_IMAGE" "$APP_IMAGE" >"$RUN_DIR/images.json"
 [[ "$(docker image inspect -f '{{.Architecture}}' "$APP_IMAGE")" == amd64 ]] || {
@@ -77,50 +98,25 @@ if [[ "$DOCUMENT_MODE" == true ]]; then
     fi
 fi
 
-remove_owned_resources() {
-    local id_file container_id
-    for id_file in "$RUN_DIR/app.id" "$RUN_DIR/observer.id"; do
-        [[ -s "$id_file" ]] || continue
-        container_id=$(tr -d '\n' <"$id_file")
-        [[ "$container_id" =~ ^[a-f0-9]{64}$ ]] || return 1
-        docker rm "$container_id" >/dev/null || return 1
-    done
-    docker volume rm "$X11_VOLUME" "$EVIDENCE_VOLUME" >"$RUN_DIR/removed-volumes.txt"
-}
-
 cleanup() {
     local status=$?
-    local initial_status=$status
-    local cleanup_failed=0
     trap - EXIT
-    docker logs "$APP" >"$RUN_DIR/application.log" 2>&1 || true
-    docker inspect "$OBSERVER" "$APP" >"$RUN_DIR/containers.json" 2>/dev/null || true
-    mkdir -p "$RUN_DIR/evidence"
-    if ! docker exec "$OBSERVER" tar --exclude='./package' -C /evidence -cf - . \
-        | tar -xf - -C "$RUN_DIR/evidence"; then
-        echo "FAIL: functional evidence export failed" >&2
-        cleanup_failed=1
-    fi
-    if [[ "$(docker inspect -f '{{.State.Running}}' "$APP" 2>/dev/null)" == true ]]; then
-        echo "Forced cleanup, not normal exit" >"$RUN_DIR/forced-cleanup.txt"
-        cleanup_failed=1
-        docker stop -t 5 "$APP" >/dev/null || true
-    fi
-    docker stop -t 5 "$OBSERVER" >/dev/null 2>&1 || true
-    if [[ "$initial_status" == 0 || "$initial_status" == 2 ]] && [[ "$cleanup_failed" == 0 ]]; then
-        if ! remove_owned_resources; then
-            echo "FAIL: owned Docker resource cleanup failed" >&2
-            cleanup_failed=1
-        fi
-    fi
-    if [[ "$cleanup_failed" == 1 ]]; then status=1; else status=$initial_status; fi
-    printf '%s\n' "$status" >"$RUN_DIR/driver-exit.txt"
-    echo "Functional evidence retained: $RUN_DIR"
-    exit "$status"
+    set +e
+    python3 "$ROOT_DIR/scripts/docker/ui-functional-cleanup.py" \
+        --root "$ROOT_DIR" --run-dir "$RUN_DIR" --run-id "$RUN_ID" \
+        --app-name "$APP" --observer-name "$OBSERVER" \
+        --app-id-file "$RUN_DIR/app.id" --observer-id-file "$RUN_DIR/observer.id" \
+        --x11-volume "$X11_VOLUME" --evidence-volume "$EVIDENCE_VOLUME" \
+        --initial-status "$status"
+    exit $?
 }
 trap cleanup EXIT
 
-docker run -d --name "$OBSERVER" --cpus 1 --memory 1g \
+create_owned_volume "$X11_VOLUME" ui-x11
+create_owned_volume "$EVIDENCE_VOLUME" ui-evidence
+
+docker run -d --name "$OBSERVER" --label "io.katana.owner=HiroyukiFuruno/KatanA" \
+    --label "io.katana.run-id=$RUN_ID" --cpus 1 --memory 1g \
     --mount "type=volume,src=$X11_VOLUME,dst=/tmp/.X11-unix" \
     --mount "type=volume,src=$EVIDENCE_VOLUME,dst=/evidence" \
     --mount "type=bind,src=$ROOT_DIR,dst=/app,readonly" --env DISPLAY=:99 \
@@ -155,7 +151,8 @@ if [[ "$DOCUMENT_MODE" == true ]]; then
     docker exec "$OBSERVER" mkdir -p "$RECEIPT_DIR"
     APP_RECEIPT_ENV=(--env "KATANA_DOCUMENT_RESOURCE_RECEIPT_DIR=$RECEIPT_DIR" --env "KATANA_DOCUMENT_RESOURCE_RUN_ID=$RUN_ID")
 fi
-docker run -d --name "$APP" --platform linux/amd64 --pid="container:$OBSERVER" \
+docker run -d --name "$APP" --label "io.katana.owner=HiroyukiFuruno/KatanA" \
+    --label "io.katana.run-id=$RUN_ID" --platform linux/amd64 --pid="container:$OBSERVER" \
     --cpus 3 --memory 3g \
     --mount "type=volume,src=$X11_VOLUME,dst=/tmp/.X11-unix" \
     --mount "type=volume,src=$EVIDENCE_VOLUME,dst=/evidence" \
