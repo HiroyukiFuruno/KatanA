@@ -26,6 +26,8 @@ CONTROLLER_PATHS = frozenset({
     "scripts/release/record-published-artifact-download.py",
     "scripts/release/check-published-artifact-identity.py",
     "scripts/release/test-release-flow-contract.py",
+    "scripts/release/sync-external.sh",
+    "scripts/release/test-sync-external.py",
 })
 WORKFLOW_BOUNDARIES = {
     ".github/workflows/build-and-release.yml": b"  cleanup_default:\n",
@@ -38,6 +40,16 @@ NEW_CLEANUP_INSTALL = (b"          tool: just,cargo-deny@0.20.2\n          fallb
                        b"      - name: Install pinned cleanup tool\n        run: " + PINNED_SWEEP + b"\n")
 OLD_DOCUMENT_FILTER = b"      - 'docs/**'\n"
 NEW_DOCUMENT_FILTER = OLD_DOCUMENT_FILTER + b"      - 'evidence/**'\n"
+REGISTRY_RECEIPT_UPLOAD = (
+    b"      - name: Preserve external registry sync results\n"
+    b"        if: always()\n"
+    b"        continue-on-error: true\n"
+    b"        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1\n"
+    b"        with:\n"
+    b"          name: external-registry-sync\n"
+    b"          path: release-files/external-registry-sync.json\n"
+    b"          if-no-files-found: warn\n\n"
+)
 PIN_ONLY_PATHS = (".github/workflows/test-and-build.yml", "scripts/ci/test_ci_resource_contract.py")
 
 
@@ -63,7 +75,8 @@ def validate_workflow_prefix(path: str, published: bytes, controller: bytes) -> 
             "post-publication workflow boundary missing or ambiguous")
     comparison = controller
     if path == ".github/workflows/build-and-release.yml":
-        comparison = controller.replace(NEW_DOCUMENT_FILTER, OLD_DOCUMENT_FILTER, 1)
+        comparison = controller.replace(REGISTRY_RECEIPT_UPLOAD, b"", 1)
+        comparison = comparison.replace(NEW_DOCUMENT_FILTER, OLD_DOCUMENT_FILTER, 1)
     require(published.split(boundary)[0] == comparison.split(boundary)[0],
             "build/native/publication or required readiness workflow changed")
     if path == ".github/workflows/build-and-release.yml" and published != controller:
@@ -71,8 +84,10 @@ def validate_workflow_prefix(path: str, published: bytes, controller: bytes) -> 
                 "published cleanup tool definition differs")
         expected = published.replace(OLD_CLEANUP_INSTALL, NEW_CLEANUP_INSTALL, 1)
         expected = expected.replace(OLD_DOCUMENT_FILTER, NEW_DOCUMENT_FILTER, 1)
+        if REGISTRY_RECEIPT_UPLOAD in controller:
+            expected = expected.replace(boundary, REGISTRY_RECEIPT_UPLOAD + boundary, 1)
         require(expected == controller,
-                "cleanup change exceeds the pinned installer repair")
+                "controller change exceeds cleanup repair and registry receipt retention")
 
 
 def validate_tool_pin(published: bytes, controller: bytes) -> None:

@@ -127,6 +127,13 @@ def verify_post_publication_artifact_route(workflow: str) -> None:
 
 
 class WorkflowContractTests(unittest.TestCase):
+    def test_external_registry_failures_are_detected_without_blocking_product_release(self) -> None:
+        result = subprocess.run(
+            [sys.executable, "-B", str(ROOT / "scripts/release/test-sync-external.py")],
+            cwd=ROOT, capture_output=True, text=True, timeout=60,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def run_check_pr_ready_fixture(self, branch: str, cargo_version: str) -> subprocess.CompletedProcess[str]:
         # hook由来のGit環境や個人設定を隔離し、fixtureの操作が実作業repoへ向かないようにする。
         environment = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
