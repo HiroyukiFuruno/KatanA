@@ -37,6 +37,8 @@ bash scripts/release/check-git-capability.sh
 # 1. Release flow ownership contract
 info "1/14 Verifying release flow ownership contract..."
 python3 scripts/release/test-release-flow-contract.py
+python3 -B scripts/release/test-postpublication-source-binding.py
+python3 -B scripts/release/test-postpublication-run-admission.py
 python3 scripts/release/test-windows-registry-cache-contract.py
 python3 scripts/release/test-commit-issue-reference.py
 python3 scripts/release/test-issue-reference-live.py

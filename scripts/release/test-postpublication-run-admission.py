@@ -11,9 +11,11 @@ from postpublication_run_admission import (
     REQUIRED_JOBS,
     OPTIONAL_JOBS,
     _candidate_runs,
+    _newest_candidate,
     _write_new_output,
     verify_run,
 )
+from postpublication_source_binding import bind_workflow_run
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = Path(__file__).with_name("postpublication_run_admission.py")
@@ -25,16 +27,30 @@ def run_record() -> dict:
             "path": ".github/workflows/build-and-release.yml", "event": "workflow_dispatch",
             "status": "completed", "conclusion": "failure",
             "repository": {"full_name": "HiroyukiFuruno/KatanA"},
+            "head_repository": {"full_name": "HiroyukiFuruno/KatanA"},
+            "head_branch": "master",
             "created_at": "2026-10-28T00:00:00Z"}
 
 
-def jobs_record() -> list[dict]:
-    return [{"id": index, "run_id": 40672472894, "run_attempt": 1, "head_sha": SOURCE,
+def jobs_record(run_id: int = 40672472894) -> list[dict]:
+    return [{"id": index, "run_id": run_id, "run_attempt": 1, "head_sha": SOURCE,
              "name": name, "status": "completed", "conclusion": "success"}
             for index, name in enumerate(sorted(REQUIRED_JOBS), 1)]
 
 
 class PostpublicationRunAdmissionTests(unittest.TestCase):
+    def test_pr_run_jobs_bind_to_verified_head_H_while_manifests_bind_to_product_M(self) -> None:
+        head = "9ea1d1331885ed889ee2c87608c61ef1f447314a"
+        run = run_record() | {
+            "head_sha": head,
+            "event": "pull_request",
+            "head_branch": "release/v0.22.42",
+        }
+        jobs = [job | {"head_sha": head} for job in jobs_record()]
+        result = verify_run(run, [{"jobs": jobs}], SOURCE, run_head_sha=head)
+        self.assertEqual(result["run"]["head_sha"], head)
+        self.assertEqual(result["jobs"][0]["head_sha"], head)
+
     def test_admits_required_successes_even_when_cleanup_failed_in_overall_run(self) -> None:
         result = verify_run(run_record(), [{"jobs": jobs_record()}], SOURCE)
         self.assertEqual(result["run"]["conclusion"], "failure")
@@ -107,8 +123,12 @@ class PostpublicationRunAdmissionTests(unittest.TestCase):
                     verify_run(run, [{"jobs": jobs_record()}], SOURCE)
 
     def test_cli_rejects_bad_repository_and_source(self) -> None:
-        for args in (("--repository", "other/repo", "--source", SOURCE, "--output", "/tmp/out.json"),
-                     ("--repository", "HiroyukiFuruno/KatanA", "--source", "bad", "--output", "/tmp/out.json")):
+        for args in (("--repository", "other/repo", "--source", SOURCE,
+                      "--version", "v0.22.42", "--output", "/tmp/out.json"),
+                     ("--repository", "HiroyukiFuruno/KatanA", "--source", "bad",
+                      "--version", "v0.22.42", "--output", "/tmp/out.json"),
+                     ("--repository", "HiroyukiFuruno/KatanA", "--source", SOURCE,
+                      "--version", "0.22.42", "--output", "/tmp/out.json")):
             result = subprocess.run([sys.executable, "-B", str(SCRIPT), *args],
                                     cwd=ROOT, capture_output=True, text=True, check=False)
             self.assertEqual(result.returncode, 2)
@@ -155,12 +175,16 @@ class PostpublicationRunAdmissionTests(unittest.TestCase):
     def test_selects_newest_matching_run_and_does_not_fall_back_by_validation(self) -> None:
         older = run_record() | {"id": 10, "created_at": "2026-10-27T00:00:00Z"}
         newest = run_record() | {"id": 11, "created_at": "2026-10-28T00:00:00Z",
-                                "conclusion": "cancelled"}
+                                "conclusion": "failure"}
         candidates = _candidate_runs([{"workflow_runs": [older, newest]}], SOURCE)
-        selected = max(candidates, key=lambda item: (item["created_at"], item["id"]))
+        selected, _ = _newest_candidate([
+            (run, bind_workflow_run(run, SOURCE, "v0.22.42")) for run in candidates
+        ])
         self.assertEqual(selected["id"], 11)
+        jobs = jobs_record(run_id=11)
+        jobs[0]["conclusion"] = "failure"
         with self.assertRaises(ValueError):
-            verify_run(selected, [{"jobs": jobs_record()}], SOURCE)
+            verify_run(selected, [{"jobs": jobs}], SOURCE)
 
 
 if __name__ == "__main__":

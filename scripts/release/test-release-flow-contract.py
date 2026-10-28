@@ -105,7 +105,8 @@ def verify_post_publication_artifact_route(workflow: str) -> None:
     required = (
         "if: github.head_ref == 'release/v0.22.42-public-release-evidence'",
         "repos/HiroyukiFuruno/KatanA/commits/v0.22.42",
-        'scripts/release/postpublication_run_admission.py --repository HiroyukiFuruno/KatanA --source "$tag_commit" --output "$work/run-admission.json"',
+        'scripts/release/postpublication_run_admission.py --repository HiroyukiFuruno/KatanA --source "$tag_commit" --version v0.22.42 --output "$work/run-admission.json"',
+        "python3 -B scripts/release/test-postpublication-source-binding.py",
         "python3 -B scripts/release/test-published-git-source.py",
         "python3 -B scripts/release/test-postpublication-controller-scope.py",
         "python3 -B scripts/release/test-postpublication-run-admission.py",
@@ -117,10 +118,13 @@ def verify_post_publication_artifact_route(workflow: str) -> None:
         '--assets "$work/assets"',
         '--build-manifests "$work/manifests"',
     )
-    if any(marker not in body for marker in required):
+    if any(marker not in body for marker in required) or "--version v0.22.42" not in body:
         raise ValueError("post-release artifacts must bind the actual tag, build run, and all five payloads")
-    if "  actions: read\n" not in workflow:
-        raise ValueError("cross-run artifact downloads need read-only Actions permission")
+    permission_match = re.search(r"(?ms)^permissions:\n((?:^  [^\n]+\n)+)", workflow)
+    permissions = ({line.strip() for line in permission_match.group(1).splitlines()}
+                   if permission_match else set())
+    if permissions != {"contents: read", "actions: read", "pull-requests: read"}:
+        raise ValueError("publication evidence needs only contents, Actions, and pull-request read access")
     if ('name: published-run-admission' not in workflow or
             'steps.actual_published_artifacts.outputs.admission_path' not in workflow):
         raise ValueError("post-publication job admission must retain its full run and attempt evidence")
@@ -361,6 +365,15 @@ class WorkflowContractTests(unittest.TestCase):
         unit_tests = "python3 -m unittest discover -s scripts/release -p 'test_*.py'"
         self.assertEqual(preflight.count(build), 1)
         self.assertLess(preflight.index(build), preflight.index(unit_tests))
+
+    def test_preflight_runs_hyphenated_postpublication_binding_suites(self) -> None:
+        preflight = (ROOT / "scripts/release/preflight.sh").read_text(encoding="utf-8")
+        for command in (
+            "python3 -B scripts/release/test-postpublication-source-binding.py",
+            "python3 -B scripts/release/test-postpublication-run-admission.py",
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(preflight.count(command), 1)
 
     def test_supply_chain_covers_host_and_tool_locked_graphs_at_all_entrypoints(self) -> None:
         entry = "bash scripts/ci/check-supply-chain.sh"

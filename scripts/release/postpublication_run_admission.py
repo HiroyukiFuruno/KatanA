@@ -9,9 +9,18 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+from postpublication_source_binding import (
+    PreMergePullRequestRun,
+    REPOSITORY,
+    WORKFLOW,
+    SourceBinding,
+    bind_workflow_run,
+    parse_utc_timestamp,
+    select_merged_pull_request,
+    validate_version,
+    verify_tag_source,
+)
 
-REPOSITORY = "HiroyukiFuruno/KatanA"
-WORKFLOW = ".github/workflows/build-and-release.yml"
 REQUIRED_JOBS = frozenset((
     "Preflight Check", "Build Linux", "Build macOS", "Build Windows",
     "Smoke macOS (x86_64)", "Smoke macOS (arm64)", "Publish Release",
@@ -32,19 +41,23 @@ def _positive(value: object) -> bool:
     return type(value) is int and value > 0
 
 
-def _validate_run_metadata(run: object, source: str) -> tuple[dict, int, int]:
-    if not isinstance(source, str) or not FULL_COMMIT_PATTERN.fullmatch(source):
-        raise ValueError("full source commit is invalid")
+def _validate_run_metadata(run: object, run_head_sha: str) -> tuple[dict, int, int]:
+    if not isinstance(run_head_sha, str) or not FULL_COMMIT_PATTERN.fullmatch(run_head_sha):
+        raise ValueError("workflow run head commit is invalid")
     if not isinstance(run, dict) or not _positive(run.get("id")) or not _positive(run.get("run_attempt")):
         raise ValueError("run metadata identity is invalid")
-    if (not isinstance(run.get("head_sha"), str) or run.get("head_sha") != source
+    if (not isinstance(run.get("head_sha"), str) or run.get("head_sha") != run_head_sha
             or run.get("path") != WORKFLOW
-            or run.get("event") != "workflow_dispatch" or run.get("status") != "completed"
+            or run.get("event") not in {"workflow_dispatch", "pull_request"}
+            or run.get("status") != "completed"
             or not isinstance(run.get("conclusion"), str)
             or run.get("conclusion") not in {"success", "failure", "cancelled"}):
         raise ValueError("run source, workflow, event, or terminal state does not match")
     repository = run.get("repository")
-    if not isinstance(repository, dict) or repository.get("full_name") != REPOSITORY:
+    head_repository = run.get("head_repository")
+    if (not isinstance(repository, dict) or repository.get("full_name") != REPOSITORY
+            or not isinstance(head_repository, dict)
+            or head_repository.get("full_name") != REPOSITORY):
         raise ValueError("run repository does not match")
     return run, run["id"], run["run_attempt"]
 
@@ -114,10 +127,13 @@ def _optional_job_results(by_name: dict) -> dict:
     return results
 
 
-def verify_run(run: dict, pages: list, source: str) -> dict:
-    run, run_id, attempt = _validate_run_metadata(run, source)
+def verify_run(run: dict, pages: list, source: str, run_head_sha: str | None = None) -> dict:
+    if not isinstance(source, str) or not FULL_COMMIT_PATTERN.fullmatch(source):
+        raise ValueError("full source commit is invalid")
+    expected_head = run_head_sha or source
+    run, run_id, attempt = _validate_run_metadata(run, expected_head)
     jobs = _flatten_job_pages(pages)
-    by_name = _collect_named_jobs(jobs, run_id, attempt, source)
+    by_name = _collect_named_jobs(jobs, run_id, attempt, expected_head)
     _validate_required_jobs(by_name)
     return {
         "run": run,
@@ -157,12 +173,7 @@ def _run_sort_key(run: object, source: str) -> tuple[float, int]:
     created_at = run.get("created_at")
     if (not _positive(run_id) or not _positive(attempt) or not isinstance(created_at, str)):
         raise ValueError("candidate run identity or creation time is invalid")
-    try:
-        parsed = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-    except ValueError as error:
-        raise ValueError("candidate run creation time is invalid") from error
-    if parsed.tzinfo is None:
-        raise ValueError("candidate run creation time has no timezone")
+    parsed = parse_utc_timestamp(created_at, "candidate run creation")
     try:
         timestamp = parsed.timestamp()
     except (OverflowError, OSError, ValueError) as error:
@@ -177,13 +188,75 @@ def _candidate_runs(run_pages: list, source: str) -> list:
         if not isinstance(page_runs, list):
             raise ValueError("workflow run page is invalid")
         for run in page_runs:
-            if not isinstance(run, dict) or run.get("head_sha") != source:
-                raise ValueError("workflow run candidate source is invalid")
+            if not isinstance(run, dict):
+                raise ValueError("workflow run candidate is invalid")
+            if run.get("head_sha") != source:
+                continue
             _run_sort_key(run, source)
             candidates.append(run)
-    if not candidates:
-        raise ValueError("no workflow run exists for the source commit")
     return candidates
+
+
+def _pull_request_numbers(pages: object) -> list[int]:
+    if not isinstance(pages, list):
+        raise ValueError("associated pull request pages are invalid")
+    numbers = set()
+    for page in pages:
+        if not isinstance(page, list):
+            raise ValueError("associated pull request page is invalid")
+        for pull_request in page:
+            if not isinstance(pull_request, dict):
+                raise ValueError("associated pull request record is invalid")
+            number = pull_request.get("number")
+            if not _positive(number):
+                raise ValueError("associated pull request number is invalid")
+            numbers.add(number)
+    return sorted(numbers)
+
+
+def _api_object(endpoint: str) -> dict:
+    try:
+        result = subprocess.run(
+            ["gh", "api", endpoint], check=False, capture_output=True, text=True,
+            timeout=API_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise RuntimeError(f"GitHub API request failed: {error}") from error
+    if result.returncode:
+        raise RuntimeError(f"GitHub API request failed ({result.returncode}): {result.stderr.strip()}")
+    try:
+        value = json.loads(result.stdout)
+    except json.JSONDecodeError as error:
+        raise RuntimeError("GitHub API returned invalid JSON") from error
+    if not isinstance(value, dict):
+        raise RuntimeError("GitHub API returned invalid pull request metadata")
+    return value
+
+
+def _verified_pull_request(source: str, version: str) -> SourceBinding | None:
+    pages = _api_json(f"repos/{REPOSITORY}/commits/{source}/pulls?per_page=100")
+    pull_requests = []
+    for number in _pull_request_numbers(pages):
+        pull_request = _api_object(f"repos/{REPOSITORY}/pulls/{number}")
+        if pull_request.get("number") != number:
+            raise ValueError("associated pull request detail identity differs")
+        if pull_request.get("merge_commit_sha") != source:
+            continue
+        pull_requests.append(pull_request)
+    return select_merged_pull_request(pull_requests, source, version)
+
+
+def _source_binding_record(binding: SourceBinding) -> dict:
+    return {
+        "kind": binding.kind,
+        "product_commit": binding.product_commit,
+        "tag": binding.tag,
+        "run_head_sha": binding.run_head_sha,
+        "head_branch": binding.head_branch,
+        "event": binding.event,
+        "pull_request_number": binding.pull_request_number,
+        "merged_at": binding.merged_at.isoformat() if binding.merged_at else None,
+    }
 
 
 def _write_new_output(output: Path, admitted: dict) -> None:
@@ -193,21 +266,58 @@ def _write_new_output(output: Path, admitted: dict) -> None:
         stream.write(serialized)
 
 
-def admit(source: str, output: Path) -> tuple[int, int, str]:
+def _direct_candidates(source: str, version: str) -> list[tuple[dict, SourceBinding]]:
+    run_pages = _pages(_api_json(
+        f"repos/{REPOSITORY}/actions/workflows/build-and-release.yml/runs?head_sha={source}&per_page=100"
+    ))
+    candidates = []
+    for run in _candidate_runs(run_pages, source):
+        if run.get("event") != "workflow_dispatch":
+            continue
+        candidates.append((run, bind_workflow_run(run, source, version)))
+    return candidates
+
+
+def _pull_request_candidates(source: str, version: str) -> list[tuple[dict, SourceBinding]]:
+    pull_request = _verified_pull_request(source, version)
+    if pull_request is None:
+        return []
+    run_pages = _pages(_api_json(
+        f"repos/{REPOSITORY}/actions/workflows/build-and-release.yml/runs?branch={pull_request.head_branch}&event=pull_request&head_sha={pull_request.run_head_sha}&per_page=100"
+    ))
+    candidates = []
+    for run in _candidate_runs(run_pages, pull_request.run_head_sha):
+        if run.get("event") != "pull_request":
+            continue
+        try:
+            binding = bind_workflow_run(run, source, version, pull_request)
+        except PreMergePullRequestRun:
+            continue
+        candidates.append((run, binding))
+    return candidates
+
+
+def _newest_candidate(candidates: list[tuple[dict, SourceBinding]]) -> tuple[dict, SourceBinding]:
+    if not candidates:
+        raise ValueError("no direct or merged-pull-request workflow run matches the published tag")
+    return max(candidates, key=lambda item: _run_sort_key(item[0], item[1].run_head_sha))
+
+
+def admit(source: str, version: str, output: Path) -> tuple[int, int, str]:
     if not isinstance(output, Path):
         raise ValueError("output path must be a Path")
     if not isinstance(source, str) or not FULL_COMMIT_PATTERN.fullmatch(source):
         raise ValueError("full source commit is invalid")
-    runs_value = _api_json(
-        f"repos/{REPOSITORY}/actions/workflows/build-and-release.yml/runs?head_sha={source}&per_page=100"
-    )
-    candidates = _candidate_runs(_pages(runs_value), source)
-    # 同じ source に複数 run がある場合、古い成功 run への後退を防ぐ。
-    newest = max(candidates, key=lambda run: _run_sort_key(run, source))
+    version = validate_version(version)
+    verify_tag_source(_api_object(f"repos/{REPOSITORY}/commits/{version}"), source)
+    candidates = _direct_candidates(source, version) + _pull_request_candidates(source, version)
+
+    newest, binding = _newest_candidate(candidates)
     jobs_value = _api_json(
         f"repos/{REPOSITORY}/actions/runs/{newest['id']}/attempts/{newest['run_attempt']}/jobs?per_page=100"
     )
-    admitted = verify_run(newest, _pages(jobs_value), source)
+    admitted = verify_run(newest, _pages(jobs_value), source, binding.run_head_sha)
+    admitted["source_binding"] = _source_binding_record(binding)
     _write_new_output(output, admitted)
     return newest["id"], newest["run_attempt"], source
 
@@ -216,6 +326,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repository", required=True)
     parser.add_argument("--source", required=True)
+    parser.add_argument("--version", required=True)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
     if args.repository != REPOSITORY:
@@ -223,7 +334,11 @@ def main() -> int:
     if not FULL_COMMIT_PATTERN.fullmatch(args.source):
         parser.error("--source must be a full lowercase 40-character commit")
     try:
-        run_id, attempt, source = admit(args.source, args.output)
+        validate_version(args.version)
+    except ValueError as error:
+        parser.error(str(error))
+    try:
+        run_id, attempt, source = admit(args.source, args.version, args.output)
     except (RuntimeError, ValueError, OSError) as error:
         print(f"postpublication admission failed: {error}", file=sys.stderr)
         return 1

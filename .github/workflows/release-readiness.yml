@@ -12,6 +12,7 @@ concurrency:
 permissions:
   contents: read
   actions: read
+  pull-requests: read
 
 env:
   CARGO_INCREMENTAL: 0
@@ -78,8 +79,9 @@ jobs:
           python3 -B scripts/release/test-published-git-source.py
           python3 -B scripts/release/test-postpublication-controller-scope.py
           python3 -B scripts/release/test-postpublication-run-admission.py
+          python3 -B scripts/release/test-postpublication-source-binding.py
           work="$(mktemp -d "${RUNNER_TEMP}/katana-post-release.XXXXXX")"
-          selection="$(python3 -B scripts/release/postpublication_run_admission.py --repository HiroyukiFuruno/KatanA --source "$tag_commit" --output "$work/run-admission.json")"
+          selection="$(python3 -B scripts/release/postpublication_run_admission.py --repository HiroyukiFuruno/KatanA --source "$tag_commit" --version v0.22.42 --output "$work/run-admission.json")"
           echo "admission_path=$work/run-admission.json" >> "$GITHUB_OUTPUT"
           read -r build_run build_attempt build_sha <<< "$selection"
           [[ "$build_run" =~ ^[1-9][0-9]*$ && "$build_attempt" =~ ^[1-9][0-9]*$ && "$build_sha" == "$tag_commit" ]] || { echo "Published tag has no verified successful build run" >&2; exit 1; }
