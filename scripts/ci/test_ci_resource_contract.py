@@ -92,7 +92,12 @@ class CiResourceContractTest(unittest.TestCase):
             justfile,
         )
         recipes = (root / "just/tests.just").read_text(encoding="utf-8")
-        linux = recipes.split("check-linux: check-linux-office-worker-contract\n", 1)[1].split("\n\n", 1)[0]
+        match = re.search(r"(?m)^check-linux:([^\n]*)\n", recipes)
+        self.assertIsNotNone(match, "Linux validation recipe must exist")
+        prerequisites = match.group(1).split()
+        self.assertIn("check-linux-office-worker-contract", prerequisites)
+        self.assertIn("check-docker-volume-lifecycle", prerequisites)
+        linux = recipes[match.end():].split("\n\n", 1)[0]
         self.assertIn('-e RUST_TEST_THREADS="{{RUST_TEST_THREADS}}"', linux)
         self.assertIn("cargo test --locked -q --workspace", linux)
         self.assertRegex(current_test_job(), r"(?m)^      RUST_TEST_THREADS: 2$")
