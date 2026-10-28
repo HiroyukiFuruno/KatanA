@@ -130,3 +130,11 @@ KatanAのtab除去と次frameは同期openの完了を待たない。KDVのDocum
 v43専用の工程契約は7件、既存release-flow契約は24件成功。未知version/change/path/modeと実装工程未完了を拒否し、push実行結果・review・CI/merge・公開・後処理をそれぞれ証拠が存在する段階に残す。strictの完了条件は維持する。OpenSpec strict validateと変更文書KML検査が成功した。新HEADの通常push成功はまだ得られていないため8.2は未完了のまま。
 
 Open Issue6件はlive本文と現ソースを照合し、#357/#362は実装済み・対象回帰成功・未公開へ本文を更新した。#343/#338/#339/#372の独立残件は解決済みとせず、Issueと作業台帳へ保持する。
+
+### 並列テストの言語干渉修復
+
+b5257652の通常pushはUI lib 1412成功/1失敗。移動したprovider検査が他テストの言語変更と干渉し、単独成功だけでは不十分だった。失敗は保持し、製品APIや基準を変えず、同じquery/assertを同一実行ファイルのexact子プロセスへ隔離する修正を適用した。子の実行成功markerも必須とし、0 tests成功を拒否する。全体並列lib回帰の再検証中なので8.1を未完了へ戻した。
+
+言語干渉の隔離修正後、同じ通常profile/実workerでUI lib全体を並列再検証し1413成功・0失敗・既存ignored2/fixture filter2を確認した。子判定用の同名環境変数が親にある条件でもexact argvを確認して隔離し、親のlocaleを変更しない。結果: `tmp/v0.22.43-prep/palette-isolation-parallel-lib.log` / exit0。8.1を対象検証完了へ戻し、通常push成功の8.2は未完了を維持する。
+
+共通ProcessServiceを使う最終隔離版でも、実workerを供給した並列UI lib 1413成功/0失敗。Windowsのheadless起動規約をテストでも維持し、ASTが拒否した直Command版は採用しない。最終検証logは `tmp/v0.22.43-prep/palette-isolation-parallel-lib-facade.log` / exit0。
