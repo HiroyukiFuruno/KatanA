@@ -165,7 +165,10 @@ pub enum AppAction {
         group_id: String,
         new_name: String,
     },
-    ClearInlineRename,
+    FinishInlineRename {
+        group_id: String,
+        new_name: Option<String>,
+    },
     RecolorTabGroup {
         group_id: String,
         new_color: String,

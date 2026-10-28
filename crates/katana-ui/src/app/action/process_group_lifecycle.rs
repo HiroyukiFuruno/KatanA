@@ -3,6 +3,9 @@ use crate::shell::*;
 
 impl KatanaApp {
     pub(super) fn handle_action_close_tab_group(&mut self, group_id: String) {
+        if self.state.layout.inline_rename_group.as_deref() == Some(&group_id) {
+            self.state.layout.inline_rename_group = None;
+        }
         let members_to_close: Vec<String> = self
             .state
             .document
@@ -50,6 +53,9 @@ impl KatanaApp {
     }
 
     pub(super) fn handle_action_toggle_collapse_tab_group(&mut self, group_id: String) {
+        if self.state.layout.inline_rename_group.as_deref() == Some(&group_id) {
+            self.state.layout.inline_rename_group = None;
+        }
         let mut collapsed = false;
         let mut group_members = Vec::new();
         if let Some(g) = self

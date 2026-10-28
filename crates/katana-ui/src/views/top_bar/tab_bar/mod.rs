@@ -1,6 +1,7 @@
 pub mod drag;
 pub mod group_header;
 pub mod group_header_popup;
+mod group_header_popup_state;
 pub mod items;
 pub mod nav;
 pub mod strip_renderer;

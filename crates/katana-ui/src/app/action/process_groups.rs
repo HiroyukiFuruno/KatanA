@@ -117,7 +117,27 @@ impl KatanaApp {
             .document
             .tab_groups
             .retain(|g| !g.members.is_empty());
+        self.clear_removed_group_rename();
         self.save_workspace_state();
+    }
+
+    fn clear_removed_group_rename(&mut self) {
+        if self
+            .state
+            .layout
+            .inline_rename_group
+            .as_ref()
+            .is_some_and(|id| {
+                !self
+                    .state
+                    .document
+                    .tab_groups
+                    .iter()
+                    .any(|group| &group.id == id)
+            })
+        {
+            self.state.layout.inline_rename_group = None;
+        }
     }
 
     pub(super) fn handle_action_rename_tab_group(&mut self, group_id: String, new_name: String) {
