@@ -1,3 +1,8 @@
+### 2026-10-28 Windows生成前通知と描画取得待機を区別して修復する
+
+- [x] 正式direct run40628216485を終端failureまで回収。Linux/macOS両archはsuccess、Windows元200msは2→2、Server2022比較は8→8でFAIL、Publish/cleanup skipped。新EXEのhash/ImageLoad/PE/importと生ETLを照合し、長待機32件のうち5件のサイズ処理と26件のDX12取得待機を区別した。全待機をサイズ通知へまとめず、旧RVAや別環境の成功を流用しない。
+- [/] 所有root HWNDの生成時に既存サイズfilterを登録し、App生成後は状態を引き継ぐ。UI thread/タイトル/親windowで対象を限定し、guardとcallbackの所有権を分離する実Win32回帰4件を追加。GPU queue上限1を保つDX12追加待機の既定変更と明示設定保持も検証する。source metadata/厳格Clippy・macOS対象10件・正式AST30/fmtは成功し、通常署名commit `fb3cabb4`へ統合。新7件の実Win32実行と元200ms成功は未確認で、通常push・current review・全gate・全OS公開を続ける。[根拠](evidence/windows-resize-creation-registration-2026-10-28.ja.md)。
+
 ### 2026-10-28 クロス検査のWindows resource生成を補正
 
 - [/] 8cb通常push54589はrc.exe不存在でFAIL、Linux cargo-xwin checkの失敗と本体loader失敗を区別。同じmanifest/icon/versionをnon-Windows/MSVCでは既存LLVMrcで生成し、native/GNUのwinres compilerとfail-fastを維持。公式check-windows35433 actual0、MSVC.res type24/id1の実XML一致、manifest契約2件、正式fmt-check/対象KML成功。source6535a7c1へ通常commit済み。新HEAD通常push/review/Windows実行/公開は継続する。[証跡](evidence/windows-common-controls-activation-2026-10-28.ja.md)。
