@@ -4,33 +4,39 @@ use windows_sys::Win32::Foundation::{HWND, RECT};
 use windows_sys::Win32::UI::Shell::GetWindowSubclass;
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     CreateWindowExW, DestroyWindow, GetClientRect, IsWindow, SendMessageW, WM_DISPLAYCHANGE,
-    WM_DPICHANGED, WM_SETTINGCHANGE, WM_SIZE, WM_STYLECHANGED, WM_THEMECHANGED,
+    WM_DPICHANGED, WM_SETTINGCHANGE, WM_SIZE, WM_STYLECHANGED, WM_THEMECHANGED, WS_CHILD,
     WS_OVERLAPPEDWINDOW,
 };
 
 const WINDOW_WIDTH: i32 = 800;
 const WINDOW_HEIGHT: i32 = 600;
 
-struct NativeWindow(HWND);
+pub(super) struct NativeWindow(pub(super) HWND);
 
 impl NativeWindow {
     fn create() -> Self {
+        Self::create_with_title("KatanA resize regression", null_mut())
+    }
+
+    pub(super) fn create_with_title(title: &str, parent: HWND) -> Self {
         let class: Vec<u16> = "STATIC".encode_utf16().chain(Some(0)).collect();
-        let title: Vec<u16> = "KatanA resize regression"
-            .encode_utf16()
-            .chain(Some(0))
-            .collect();
+        let title: Vec<u16> = title.encode_utf16().chain(Some(0)).collect();
+        let style = if parent.is_null() {
+            WS_OVERLAPPEDWINDOW
+        } else {
+            WS_CHILD
+        };
         let handle = unsafe {
             CreateWindowExW(
                 0,
                 class.as_ptr(),
                 title.as_ptr(),
-                WS_OVERLAPPEDWINDOW,
+                style,
                 0,
                 0,
                 WINDOW_WIDTH,
                 WINDOW_HEIGHT,
-                null_mut(),
+                parent,
                 null_mut(),
                 null_mut(),
                 null(),
@@ -47,13 +53,13 @@ impl Drop for NativeWindow {
     }
 }
 
-fn counts(window: HWND) -> (u64, u64) {
+pub(super) fn counts(window: HWND) -> (u64, u64) {
     let pointer = registered_state(window);
     let state = unsafe { &*(pointer as *const ResizeState) };
     (state.forwarded.get(), state.suppressed.get())
 }
 
-fn registered_state(window: HWND) -> usize {
+pub(super) fn registered_state(window: HWND) -> usize {
     let mut pointer = 0;
     assert_ne!(
         unsafe { GetWindowSubclass(window, Some(window_callback), SUBCLASS_ID, &mut pointer) },
@@ -62,7 +68,7 @@ fn registered_state(window: HWND) -> usize {
     pointer
 }
 
-fn send_size(window: HWND, kind: usize) {
+pub(super) fn send_size(window: HWND, kind: usize) {
     let mut rect = RECT::default();
     assert_ne!(unsafe { GetClientRect(window, &mut rect) }, 0);
     let width = rect.right - rect.left;

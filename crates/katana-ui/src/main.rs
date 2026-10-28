@@ -78,6 +78,9 @@ fn main() -> eframe::Result<()> {
     };
     native_graphics::NativeGraphicsOps::configure_presentation(&mut native_options);
 
+    #[cfg(windows)]
+    let _resize_creation_hook = native_graphics::NativeGraphicsOps::install_resize_creation_hook();
+
     eframe::run_native(
         "KatanA",
         native_options,

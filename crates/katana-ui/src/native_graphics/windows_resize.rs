@@ -11,6 +11,8 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
     WM_STYLECHANGED, WM_THEMECHANGED,
 };
 
+pub(super) mod creation;
+
 const SUBCLASS_ID: usize = 0x4b41_5253;
 const DIMENSION_MASK: u32 = u16::MAX as u32;
 
@@ -34,8 +36,19 @@ impl WindowsResizeOps {
                 "The native window has no Win32 handle",
             ));
         };
-        register(handle.hwnd.get() as HWND)
+        ensure_registered(handle.hwnd.get() as HWND)
     }
+}
+
+fn ensure_registered(window: HWND) -> std::io::Result<()> {
+    let mut existing = 0;
+    /* WHY: 生成時に登録した履歴を保持し、後段で同じ状態を置き換えない。 */
+    if unsafe { GetWindowSubclass(window, Some(window_callback), SUBCLASS_ID, &mut existing) } != 0
+        && existing != 0
+    {
+        return Ok(());
+    }
+    register(window)
 }
 
 fn register(window: HWND) -> std::io::Result<()> {
