@@ -1,0 +1,34 @@
+{
+  "records": [
+    {
+      "capability": "local-asset-preview",
+      "before_sha256": "a64951f2b32d8ea567fc35656e8886d0cff5257c9f5c8e5236a8b68b7d505eee",
+      "after_sha256": "7b60f712229c96554a019a39d5006e8361ce0daf474be4aada59097538c1fd82",
+      "old_entire_file_is_prefix": true,
+      "added_requirements": 1,
+      "added_scenarios": 3
+    },
+    {
+      "capability": "workspace-shell",
+      "before_sha256": "05c0517637822513df8bc1044e2a787afa760e08aec28d7f7effc7be26fd4fa1",
+      "after_sha256": "610763b734a38f5dbf4d02d11c46dee6433bed801294a17c596df2bd78e35ee1",
+      "old_entire_file_is_prefix": true,
+      "added_requirements": 1,
+      "added_scenarios": 2
+    },
+    {
+      "capability": "multi-format-document-preview",
+      "before_sha256": "1527eb7bc873aeacdd0969f9759f7848677ed4f19b8286c178ad77bde1f85cab",
+      "after_sha256": "fa0546a867aa1111fb1f0b6fcc8cdd328c6f6e2fb41b5da85337a4108adf0aef",
+      "old_entire_file_is_prefix": true,
+      "added_requirements": 1,
+      "added_scenarios": 2
+    }
+  ],
+  "existing_local_requirement_bytes": 1222,
+  "existing_local_requirement_sha256": "944e2fdf5ed10de09f6e1a99022489ee1420c6c1cc852571c716e1fd3809111c",
+  "existing_local_requirement_preserved": true,
+  "requirements": 3,
+  "scenarios": 7,
+  "format_change": "remove extra blank lines from newly added separator only; entire old files remain byte prefixes"
+}

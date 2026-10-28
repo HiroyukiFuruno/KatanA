@@ -1,0 +1,61 @@
+{
+  "validation": {
+    "items": [
+      {
+        "id": "v0-22-42-document-fidelity-delivery",
+        "type": "change",
+        "valid": true,
+        "issues": [],
+        "durationMs": 1
+      }
+    ],
+    "summary": {
+      "totals": {
+        "items": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "byType": {
+        "change": {
+          "items": 1,
+          "passed": 1,
+          "failed": 0
+        }
+      }
+    },
+    "version": "1.0"
+  },
+  "status": {
+    "changeName": "v0-22-42-document-fidelity-delivery",
+    "schemaName": "spec-driven",
+    "isComplete": true,
+    "applyRequires": [
+      "tasks"
+    ],
+    "artifacts": [
+      {
+        "id": "proposal",
+        "outputPath": "proposal.md",
+        "status": "done"
+      },
+      {
+        "id": "design",
+        "outputPath": "design.md",
+        "status": "done"
+      },
+      {
+        "id": "specs",
+        "outputPath": "specs/**/*.md",
+        "status": "done"
+      },
+      {
+        "id": "tasks",
+        "outputPath": "tasks.md",
+        "status": "done"
+      }
+    ]
+  },
+  "all_prearchive_boxes_done": true,
+  "archive_executed": false,
+  "boundary": "source3features only; global cleanup and current controller docs PR remain running in root ledger"
+}

@@ -1,0 +1,53 @@
+{
+  "published_source": "8c89a1544e9ac693d5ba388792a843baa55c9363",
+  "controller_commit": "47942653a1af0c8b07ef0bf8b293da429cfdc86f",
+  "controller_only_changes": [
+    ".github/workflows/build-and-release.yml",
+    ".github/workflows/release-readiness.yml",
+    ".github/workflows/test-and-build.yml",
+    "scripts/ci/test_ci_resource_contract.py",
+    "scripts/release/check-published-artifact-identity.py",
+    "scripts/release/document_host_publication.py",
+    "scripts/release/postpublication_controller_scope.py",
+    "scripts/release/postpublication_run_admission.py",
+    "scripts/release/published_git_source.py",
+    "scripts/release/record-published-artifact-download.py",
+    "scripts/release/test-postpublication-controller-scope.py",
+    "scripts/release/test-postpublication-run-admission.py",
+    "scripts/release/test-published-git-source.py",
+    "scripts/release/test-release-flow-contract.py"
+  ],
+  "schema": "katana-postpublication-controller-binding-v1",
+  "public_release": "https://github.com/HiroyukiFuruno/KatanA/releases/tag/v0.22.42",
+  "published_provenance": {
+    "source_commit": "8c89a1544e9ac693d5ba388792a843baa55c9363",
+    "source_tree_sha256": "48ed3efe0edd497b3a09976a61c1ff54d4c82bd57eb194a9a2469e8d8e983777",
+    "cargo_lock_sha256": "18cacf169f8483326c9b9c54742d628763e306cba300f2883d6ea32037507fa9",
+    "published_dependencies": {
+      "katana-document-viewer": {
+        "version": "0.5.12",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635"
+      },
+      "katana-render-runtime": {
+        "version": "0.4.23",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "8e5e0803f343d781dc015d1fe21b052492d67579ba303cf86203f60455852e00"
+      },
+      "katana-ui-core": {
+        "version": "0.4.1",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "f8fd7856249d96c0ce65e68151a327d82511af70a8fbe7416058a1a0ba8e9d5c"
+      }
+    }
+  },
+  "original_download_receipt": "evidence/v0.22.42-public-download-40672472894.json",
+  "fresh_frozen_download_receipt": "evidence/v0.22.42-public-frozen-controller-47942653.json",
+  "job_admission": "evidence/v0.22.42-publication-jobs-40672472894.json",
+  "original_verification_exit": 0,
+  "frozen_verification_exit": 0,
+  "frozen_session": 78200,
+  "all_five_original_and_fresh_asset_ids_sizes_sha256_equal": true,
+  "overall_run_conclusion": "failure",
+  "remaining": "normal push/current review/ReadyCI/docs merge/Issue/spec archive/safe cleanup remain separate"
+}

@@ -1,0 +1,72 @@
+{
+  "schema": "katana-unchanged-input-component-evidence-v1",
+  "original_test_source": "234bc3819e040e203b74d14a0032db6f80323e54",
+  "published_source": "8c89a1544e9ac693d5ba388792a843baa55c9363",
+  "components": [
+    {
+      "path": "crates/katana-core",
+      "original_git_object": "d680afb214e5da3ebeefe046baf79433b07f3a3d",
+      "published_git_object": "d680afb214e5da3ebeefe046baf79433b07f3a3d",
+      "identical": true
+    },
+    {
+      "path": "crates/katana-ui/src/app",
+      "original_git_object": "90ca903349e45b39f36edeace1e8549974030e02",
+      "published_git_object": "90ca903349e45b39f36edeace1e8549974030e02",
+      "identical": true
+    },
+    {
+      "path": "crates/katana-ui/src/shell_ui",
+      "original_git_object": "f585af31daa92c209559a9f2fcfbf6619d48ec60",
+      "published_git_object": "f585af31daa92c209559a9f2fcfbf6619d48ec60",
+      "identical": true
+    },
+    {
+      "path": "crates/katana-ui/src/preview_pane",
+      "original_git_object": "38b567cca805a0f3d1e39913a37f338a59911411",
+      "published_git_object": "38b567cca805a0f3d1e39913a37f338a59911411",
+      "identical": true
+    },
+    {
+      "path": "crates/katana-ui/src/svg_loader",
+      "original_git_object": "206f72644fa68ae1d2295e7246699694abe14918",
+      "published_git_object": "206f72644fa68ae1d2295e7246699694abe14918",
+      "identical": true
+    },
+    {
+      "path": "scripts/screenshot/src",
+      "original_git_object": "8ac9769b3b7bac4c59d4695d04839f03edaa5069",
+      "published_git_object": "8ac9769b3b7bac4c59d4695d04839f03edaa5069",
+      "identical": true
+    },
+    {
+      "path": "crates/katana-ui/src/bin/kdv-office-worker.rs",
+      "original_git_object": "7dc2341d03a714e8605662554a8f067d2009b830",
+      "published_git_object": "7dc2341d03a714e8605662554a8f067d2009b830",
+      "identical": true
+    }
+  ],
+  "office_worker_registry_dependency_closure": {
+    "start": [
+      "katana-document-viewer",
+      "0.5.12"
+    ],
+    "package_count": 626,
+    "all_complete_package_records_identical": true,
+    "contains_egui_wgpu": false
+  },
+  "ui_features_and_bin_declarations_identical": true,
+  "kdv_dependency_declaration_identical": true,
+  "all_lock_record_differences": [
+    [
+      "egui-wgpu",
+      "0.36.2"
+    ],
+    [
+      "katana-ui",
+      "0.22.42"
+    ]
+  ],
+  "original_results": "tmp/oct28-234bc381-targeted-regressions-public-draft.json",
+  "boundary": "Prior6Office inputs/4PDF themes/sample340 capture stay labeled M234 execution. This proves unchanged component and worker dependency inputs, not new packaged UI operation, 95-point score, first-page15s recovery, or a rerun with current binary. Same-source tagM package/native/all5 download proofs are separate."
+}

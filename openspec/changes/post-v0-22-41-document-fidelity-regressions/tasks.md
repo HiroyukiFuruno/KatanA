@@ -1,3 +1,10 @@
+### 2026-10-28 公開完了と限定機能のアーカイブ
+
+- [x] v0.22.42を全OS同時公開。正式source `8c89a1544e9ac693d5ba388792a843baa55c9363`、run40672472894/attempt1のPreflight・3OS build・macOS両CPU native・Publish全7件成功。Windowsは元200ms×10の各回描画増加とqueue上限1を維持して成功した。過去の途中失敗を成功へ変更せず、本節を最新の状態とする。
+- [x] 元検証と公開後controllerの2回で全5公開assetの実byte・checksum・size・本体/worker・producerを照合し一致。17件の製品Issueは実装・自動検証・review/CI・公開反映によりCloseした。[状態と根拠](../../../evidence/v0.22.42-issue-closure-audit.ja.md)。本人QAをClose条件にせず、Office独立95点・PPTX15秒・上流未公開修正を達成したとは記録しない。
+- [x] PNG非同期/revision復旧、Markdown分割背景、loaded PDF/PPTX左右キーの3要件7シナリオだけをmain specへ追記し、旧spec全文を保持。strict validation・完了statusを確認して公式archiveを実行しexit0。[限定archive](../archive/2026-10-28-v0-22-42-document-fidelity-delivery/tasks.md)。このumbrella全体を完了扱いせず、対象外の将来要件はactiveに保持する。
+- [/] 公開後cleanup installerだけの失敗を別Issue #379で修復。公開済み本体や全5assetには変更せず、Git objectによる配布元検証・7必須job admission・固定tool導入・証跡を通常署名commitまで統合した。現HEADの通常push/current review/Ready CI/mergeと安全なbranch/worktree整理を継続する。[責務と検証](../../../evidence/postpublication-source-boundary-2026-10-28.ja.md)。workflow全体の元failureは保持し、公開run全体成功とはしない。
+
 ### 2026-10-28 描画時の実寸でWindows surfaceを同期する
 
 - [x] PR377全CI/review完了→署名valid/tree同一M991cへ通常mergeし、M push CI成功。正式direct40648617381はLinux/macOS両CPU/Server2022比較成功、Windows元smoke3→3FAIL、Publish/cleanup skippedで回収した。新EXE/ImageLoad/IAT/生ETLで初期のSurface再設定待機4件と別stack1件を区別した。

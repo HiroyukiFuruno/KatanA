@@ -1,0 +1,9 @@
+{
+  "change": "v0-22-42-document-fidelity-delivery",
+  "archive_path": "openspec/changes/archive/2026-10-28-v0-22-42-document-fidelity-delivery",
+  "archive_exit": 0,
+  "manual_spec_sync_verified": true,
+  "existing_umbrella_remains_active": true,
+  "global_cleanup_and_postpublication_PR": "pending in root task ledger",
+  "execution_log": "tmp/oct28-scoped-archive-execution.log"
+}

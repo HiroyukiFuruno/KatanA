@@ -43,6 +43,10 @@
 
 admission境界13件も再成功。テスト都合のAPIやfallbackは追加せず、既存のread-only gh呼出しだけを使う。根拠は `tmp/oct28-postpublication-gh-only-red.log`、`tmp/oct28-postpublication-gh-only-green.log`、`tmp/oct28-postpublication-job-transport-tests.log`。
 
+## 追跡先
+
+公開後のGit整理・検証コード修復は [Issue #379](https://github.com/HiroyukiFuruno/KatanA/issues/379) で追跡する。source commitの初期参照#371は配布アプリの終了待ちIssueであり、修正の追跡先を本節と#379へ明示して履歴を訂正する。署名済み履歴は書き換えない。
+
 ## 続行する作業
 
-通常署名source commit b72065b1/47942653を完了した。commit後の厳密controller scopeは成功し、修正版のfresh実取得78200 exit0でも元の全5公開asset ID/size/SHA256・タグM・全producer/本体workerが一致した。通常push hook・current review・Ready後の必須CI、Issue更新、限定3機能のspec sync/archive、単一後処理PRの通常merge、安全なbranch/worktree整理は、root作業台帳で未完として継続する。公開済みtag/assetの再作成やforce更新は行わない。
+通常署名source commit b72065b1/47942653/2f31a2eeを完了した。commit後の厳密controller scopeは成功し、修正版のfresh実取得78200 exit0でも元の全5公開asset ID/size/SHA256・タグM・全producer/本体workerが一致した。17件の製品Issue更新と限定3機能のspec sync/公式archiveは実行・確認済み。通常push hook・current review・Ready後の必須CI、Issue379更新、単一後処理PRの通常merge、安全なbranch/worktree整理は、root作業台帳で未完として継続する。公開済みtag/assetの再作成やforce更新は行わない。
