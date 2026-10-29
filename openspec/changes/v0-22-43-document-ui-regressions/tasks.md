@@ -214,3 +214,13 @@ CI40818285942 attempt1は、3OSの本体・撮影ツール・複数形式38操�
 根拠: dependency-refresh/required-ci-eb60eca/macos-job-clean.log、office-font-safety-coverage-repair.md、font-guard-coverage-fix-review.md。最初のfocused coverage起動はCLIのtest filter構文違いで検査前exit1、公式helpのtest subcommandで修正しsession55463へ再実行。検査前失敗をテスト不合格や成功に数えない。
 
 対象実績: font-guard-coverage-fix/targeted-coverage-test.log/.exit=0、targeted-report.txt、guard-only-report.txt、focused-coverage-summary.json。初回CLI構文エラーのログも保持。独立Highの最終6file差分はP0/P1/P2なし、検査前の結果を先取りしなかった。正式AST/Clippyは通常commit hook、全検査は通常push hookを正本として回収し、同じ重い手動検査を重ねない。
+
+### 2cbc0bd9 normal pushの初回DOCX待機失敗を分離する
+
+normal-push-2cbc0bd9.exitは実1。UI libは1417成功/1失敗/既存ignore2・fixture filter2で、失敗はclose処理へ入る前のDOCX初回frame/idle待ち15秒超過。HTML closeは3ms/idle0だった。check-strict終了を成功と推測した進捗報告は誤りであり、全hookの終了コードで判断する。coverage修復20件の成功とは別に保持する。
+
+- [x] 同じ通常profile・実Office worker・既存test-specific入口のexact testは1成功。その後同条件2threads/skip fixtureのUI lib全体は1418成功・失敗0・既存ignore2/filter2。原失敗の原因は未確定で、上流や容量・並列envのせいと断定しない。
+- [/] private test fixtureのtimeout assertだけに、失敗時のowned active path/frame/idle/preview/worker/KDV snapshotを追加。通常poll・成功条件・15秒/5秒上限・実worker入口は不変で、製品の公開APIや新testportはない。単独成功を全面解消や通常push成功へ代用しない。
+- [ ] 診断差分の通常commit/push・新current review・全CIを回収し、公開・配布物照合・後処理まで継続する。#386の原報告全体を解決済みにはしない。
+
+証跡: docx-frame-exact-standard.log/.exit0、full-ui-standard-diagnostic.log/.exit0、docx-env-global-race-readonly-audit.md、timeout-diagnostic-review.md。独立Highの診断2filesはP0/P1/P2なし。UI lib内worker環境の書換えは未検出、別lockでのHEADLESS変更と今回timeoutの因果は未確定。

@@ -4,6 +4,9 @@ use std::thread;
 use std::time::{Duration, Instant};
 use tempfile::TempDir;
 
+#[path = "harness_diagnostics.rs"]
+mod diagnostics;
+
 const FRAME_TIMEOUT: Duration = Duration::from_secs(15);
 pub(in crate::app::doc_close_latency_tests) const CLOSE_TIMEOUT: Duration = Duration::from_secs(5);
 const VIEWPORT_WIDTH: f32 = 1024.0;
@@ -133,7 +136,8 @@ pub(in crate::app::doc_close_latency_tests) fn await_office_frame(
         }
         assert!(
             Instant::now() < deadline,
-            "{expected} real frame deadline exceeded"
+            "{expected} real frame deadline exceeded: {}",
+            diagnostics::TimeoutDiagnostics::capture(harness)
         );
         thread::yield_now();
     }
