@@ -90,6 +90,8 @@ impl SectionLogicOps {
         let mut current_heading_offset = 0;
         let mut global_task_list_idx = 0;
         let mut global_line_offset = 0;
+        let local_image_loading_context =
+            super::section_local_images::LocalImageLoadingContext::for_document_path(md_file_path);
 
         ui.ctx().data_mut(|d| {
             d.insert_temp(egui::Id::new("katana_preview_search_counter"), 0usize);
@@ -138,6 +140,7 @@ impl SectionLogicOps {
                             path,
                             i,
                             loader,
+                            local_image_loading_context,
                             lines_in_section,
                             global_line_offset,
                             active_editor_line,

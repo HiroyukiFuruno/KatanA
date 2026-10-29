@@ -59,16 +59,7 @@ impl HtmlBrowserSurface {
             crate::widgets::LoadingState::Pending,
             crate::widgets::LoadingLabel::RenderingKind("HTML browser"),
         );
-        ui.scope_builder(
-            egui::UiBuilder::new()
-                .max_rect(rect)
-                .layout(egui::Layout::centered_and_justified(
-                    egui::Direction::TopDown,
-                )),
-            |ui| {
-                crate::widgets::LoadingIndicator::show(ui, &loading);
-            },
-        );
+        crate::widgets::LoadingIndicator::show_in_rect(ui, &loading, rect);
     }
 }
 

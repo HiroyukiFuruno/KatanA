@@ -23,6 +23,8 @@ pub use types::ViewerState;
 #[cfg(test)]
 mod images_failure_tests;
 #[cfg(test)]
+mod images_loading_layout_tests;
+#[cfg(test)]
 mod tests;
 
 pub mod section;

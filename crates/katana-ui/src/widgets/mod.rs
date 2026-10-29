@@ -5,6 +5,8 @@ mod combo_box;
 mod interaction_facade;
 pub mod key_cap;
 mod loading_indicator;
+#[cfg(test)]
+mod loading_indicator_tests;
 pub mod markdown_hooks;
 mod menu_button;
 mod modal;

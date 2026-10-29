@@ -116,9 +116,7 @@ impl CanvasSurface {
                     crate::widgets::LoadingState::Pending,
                     crate::widgets::LoadingLabel::Localized(labels.loading),
                 );
-                ui.centered_and_justified(|ui| {
-                    crate::widgets::LoadingIndicator::show(ui, &loading);
-                });
+                crate::widgets::LoadingIndicator::show_centered(ui, &loading);
             }
             CanvasLoadState::Failed(error) => notices::CanvasNotices::error_ui(ui, error, labels),
             CanvasLoadState::Ready(document) => {

@@ -1,3 +1,4 @@
+use crate::preview_pane::section_local_images::LocalImageLoadingContext;
 use crate::preview_pane::{ImageLogicOps, SectionImageOps, SectionLifecycle, ViewerState};
 use eframe::egui;
 use std::path::Path;
@@ -114,6 +115,7 @@ fn failed_section_image_marks_drawn_and_anchor() {
             &path,
             0,
             &loader,
+            LocalImageLoadingContext::InlineMarkdown,
             1,
             0,
             None,

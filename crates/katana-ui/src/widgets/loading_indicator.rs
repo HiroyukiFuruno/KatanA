@@ -36,76 +36,73 @@ impl LoadingIndicator {
     pub(crate) fn show(ui: &mut egui::Ui, presentation: &LoadingPresentation) -> egui::Response {
         match presentation.state {
             LoadingState::Pending => {
-                /* WHY: 本文フローの高さを保ち、全面表示の中央寄せは呼出側レイアウトに委ねる。 */
-                crate::widgets::AlignCenter::new()
-                    .spacing(ui.spacing().item_spacing.x)
-                    .shrink_to_fit(true)
-                    .left(|ui| ui.spinner())
-                    .left(|ui| ui.label(egui::RichText::new(&presentation.label).weak()))
-                    .show(ui)
+                let bounds = ui.available_rect_before_wrap();
+                Self::show_in_bounds(ui, presentation, bounds, false)
             }
         }
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::{LoadingIndicator, LoadingLabel, LoadingPresentation, LoadingState};
+    pub(crate) fn show_centered(
+        ui: &mut egui::Ui,
+        presentation: &LoadingPresentation,
+    ) -> egui::Response {
+        let bounds = ui.available_rect_before_wrap();
+        Self::show_in_rect(ui, presentation, bounds)
+    }
 
-    const INLINE_VIEWPORT: eframe::egui::Vec2 = eframe::egui::vec2(320.0, 600.0);
-    const MAX_LOADING_ROW_HEIGHT: f32 = 48.0;
-    const MAX_FOLLOWING_BODY_TOP: f32 = 96.0;
+    pub(crate) fn show_in_rect(
+        ui: &mut egui::Ui,
+        presentation: &LoadingPresentation,
+        bounds: egui::Rect,
+    ) -> egui::Response {
+        match presentation.state {
+            LoadingState::Pending => Self::show_in_bounds(ui, presentation, bounds, true),
+        }
+    }
 
-    #[test]
-    fn pending_indicator_uses_content_height_before_following_body() {
-        let context = eframe::egui::Context::default();
-        let input = eframe::egui::RawInput {
-            screen_rect: Some(eframe::egui::Rect::from_min_size(
-                eframe::egui::Pos2::ZERO,
-                INLINE_VIEWPORT,
-            )),
-            ..eframe::egui::RawInput::default()
+    fn show_in_bounds(
+        ui: &mut egui::Ui,
+        presentation: &LoadingPresentation,
+        bounds: egui::Rect,
+        center_vertically: bool,
+    ) -> egui::Response {
+        /* WHY: AlignCenter は全幅行の内容を左端へ置くため、実際の内容幅で中央寄せする。 */
+        let content_rect = Self::content_rect(ui, presentation, bounds, center_vertically);
+        ui.scope_builder(
+            egui::UiBuilder::new()
+                .max_rect(content_rect)
+                .layout(egui::Layout::left_to_right(egui::Align::Center)),
+            |ui| {
+                let spinner = ui.spinner();
+                let label = ui.label(egui::RichText::new(&presentation.label).weak());
+                spinner.union(label)
+            },
+        )
+        .inner
+    }
+
+    fn content_rect(
+        ui: &egui::Ui,
+        presentation: &LoadingPresentation,
+        bounds: egui::Rect,
+        center_vertically: bool,
+    ) -> egui::Rect {
+        let style = ui.style();
+        let spinner_size = style.spacing.interact_size.y;
+        let label_galley = ui.painter().layout_no_wrap(
+            presentation.label.clone(),
+            egui::TextStyle::Body.resolve(style),
+            ui.visuals().weak_text_color(),
+        );
+        let content_width = spinner_size + style.spacing.item_spacing.x + label_galley.size().x;
+        let center_y = if center_vertically {
+            bounds.center().y
+        } else {
+            bounds.min.y + spinner_size / 2.0
         };
-        let presentation =
-            LoadingPresentation::new(LoadingState::Pending, LoadingLabel::Localized("loading"));
-        let mut measured = None;
-
-        let output = context.run_ui(input, |ui| {
-            let loading = LoadingIndicator::show(ui, &presentation);
-            let following_body = ui.label("following body");
-            measured = Some((loading.rect, following_body.rect));
-        });
-        output.drop_without_applying_deltas();
-
-        let (loading_rect, following_body_rect) = measured.expect("real egui layout ran");
-        assert!(
-            loading_rect.height() <= MAX_LOADING_ROW_HEIGHT,
-            "inline loading row consumed {} points in a {} point viewport",
-            loading_rect.height(),
-            INLINE_VIEWPORT.y
-        );
-        assert!(
-            following_body_rect.min.y <= MAX_FOLLOWING_BODY_TOP,
-            "following body was pushed down to y={}",
-            following_body_rect.min.y
-        );
-    }
-
-    #[test]
-    fn rendering_label_resolves_the_document_kind() {
-        let presentation =
-            LoadingPresentation::new(LoadingState::Pending, LoadingLabel::RenderingKind("PNG"));
-        assert_eq!(presentation.state, LoadingState::Pending);
-        assert!(presentation.label.contains("PNG"));
-        assert!(!presentation.label.contains("{kind}"));
-    }
-
-    #[test]
-    fn localized_loading_label_is_preserved() {
-        let label = "\u{753b}\u{50cf}\u{3092}\u{8aad}\u{307f}\u{8fbc}\u{307f}\u{4e2d}\u{2026}";
-        let presentation =
-            LoadingPresentation::new(LoadingState::Pending, LoadingLabel::Localized(label));
-        assert_eq!(presentation.label, label);
-        assert_eq!(presentation.state, LoadingState::Pending);
+        egui::Rect::from_center_size(
+            egui::pos2(bounds.center().x, center_y),
+            egui::vec2(content_width, spinner_size),
+        )
     }
 }

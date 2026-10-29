@@ -1,4 +1,5 @@
 use super::image_raster::{MAX_ZOOM, MIN_ZOOM};
+use super::section_local_images::LocalImageLoadingContext;
 use crate::preview_pane::{ViewerState, ViewerTextureIdentity};
 use eframe::egui::{self, Vec2};
 
@@ -6,16 +7,23 @@ const IMAGE_LOADING_REPAINT_INTERVAL_MS: u64 = 16;
 
 pub use super::types::ImageLogicOps;
 
+mod options;
+pub(crate) use options::LocalImageDisplayOptions;
+
 impl ImageLogicOps {
-    pub(crate) fn show_local_image(
+    pub(crate) fn show_local_image_with_context(
         ui: &mut egui::Ui,
         path: &std::path::Path,
         id: usize,
         loader: &super::local_image_loader::LocalImageLoader,
-        mut viewer_state: Option<&mut ViewerState>,
-        fullscreen_request: Option<&mut Option<usize>>,
+        options: LocalImageDisplayOptions<'_>,
         draw_background: impl FnOnce(&mut egui::Ui, egui::Rect, bool),
     ) -> Option<egui::Rect> {
+        let LocalImageDisplayOptions {
+            loading_context,
+            mut viewer_state,
+            fullscreen_request,
+        } = options;
         let preview_background = super::image_background::ImageBackgroundOps::preview_background(
             ui.ctx(),
             ui.visuals().window_fill(),
@@ -46,7 +54,7 @@ impl ImageLogicOps {
                             crate::widgets::LoadingState::Pending,
                             crate::widgets::LoadingLabel::RenderingKind("image"),
                         );
-                        crate::widgets::LoadingIndicator::show(ui, &loading);
+                        loading_context.show_indicator(ui, &loading);
                     }
                     super::local_image_loader::LocalImageStatus::Failed(error) => {
                         return Some(
@@ -72,7 +80,7 @@ impl ImageLogicOps {
                         crate::widgets::LoadingState::Pending,
                         crate::widgets::LoadingLabel::RenderingKind("image"),
                     );
-                    crate::widgets::LoadingIndicator::show(ui, &loading);
+                    loading_context.show_indicator(ui, &loading);
                     None
                 }
                 super::local_image_loader::LocalTextureStatus::Failed(error) => {
