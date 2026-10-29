@@ -20,7 +20,7 @@ record_target() {
     local name=$1
     local status=$2
     local reason=$3
-    TARGET_RESULTS+=("${name}"$'\t'"${status}"$'\t'"${reason}")
+    TARGET_RESULTS+=("${name}"$'\t'"${status}"$'\t'"${reason}"$'\t'"${4:-}"$'\t'"${5:-}")
     if [[ "$status" == "failed" ]]; then
         FAILURE_COUNT=$((FAILURE_COUNT + 1))
         if [[ "$name" == "winget" ]]; then
@@ -34,6 +34,24 @@ record_target() {
     else
         echo "✅ ${name}: synchronized"
     fi
+}
+
+run_brew_updater() {
+    local target=$1 artifact=$2 sha256=$3 updater=$4
+    local updater_output updater_status http_status
+    if updater_output=$("$updater" "$TAG" "$sha256" "$(basename "$artifact")" 2>&1); then
+        record_target "$target" success updated
+    else
+        updater_status=$?
+        http_status=""
+        # WHY: helperの生出力には機密が混入し得るため、数値の失敗情報だけを残す。
+        if [[ "$updater_output" =~ \(HTTP\ ([1-5][0-9][0-9])\) ]]; then
+            http_status="${BASH_REMATCH[1]}"
+        fi
+        record_target "$target" failed updater_failed "$updater_status" "$http_status"
+        echo "${target} updater diagnostic: exit=${updater_status}, http=${http_status:-unknown}"
+    fi
+    unset updater_output
 }
 
 sync_brew_target() {
@@ -61,11 +79,7 @@ sync_brew_target() {
         record_target "$target" failed checksum_failed
         return
     fi
-    if "$updater" "$TAG" "$sha256" "$(basename "$artifact")" >/dev/null 2>&1; then
-        record_target "$target" success updated
-    else
-        record_target "$target" failed updater_failed
-    fi
+    run_brew_updater "$target" "$artifact" "$sha256" "$updater"
 }
 
 mkdir -p "$ARTIFACTS_DIR"
@@ -116,8 +130,11 @@ result_path = pathlib.Path(sys.argv[1])
 version, tag = sys.argv[2:4]
 targets = []
 for value in sys.argv[4:]:
-    name, status, reason = value.split("\t", 2)
+    name, status, reason, helper_exit, http_status = value.split("\t", 4)
     target = {"name": name, "status": status, "reason": reason}
+    if helper_exit:
+        target["updater_exit_code"] = int(helper_exit)
+        target["http_status"] = int(http_status) if http_status else None
     if reason == "create_ref_permission_denied":
         target["guidance"] = (
             "Check whether the WinGet fork is synchronized and the credential can create refs. "
@@ -142,11 +159,11 @@ import pathlib
 import sys
 
 summary_path = pathlib.Path(sys.argv[1])
-rows = [value.split("\t", 2) for value in sys.argv[2:]]
+rows = [value.split("\t", 4) for value in sys.argv[2:]]
 with summary_path.open("a", encoding="utf-8") as summary:
     summary.write("\n### External registry sync\n\n")
     summary.write("| Target | Result | Detail |\n| --- | --- | --- |\n")
-    for name, status, reason in rows:
+    for name, status, reason, *_diagnostics in rows:
         detail = reason
         if reason == "create_ref_permission_denied":
             detail = (
