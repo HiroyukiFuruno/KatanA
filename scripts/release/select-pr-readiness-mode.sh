@@ -10,6 +10,10 @@ if [[ "$branch" == "release/v0.22.42-public-release-evidence" &&
       "$target_version" == "0.22.42" &&
       ( -z "$requested_mode" || "$requested_mode" == "pr-bootstrap" ) ]]; then
     printf '%s\n' 'post-release-automated'
+elif [[ "$branch" == "release/v0.22.43-public-release-evidence" &&
+      "$target_version" == "0.22.43" &&
+      ( -z "$requested_mode" || "$requested_mode" == "pr-bootstrap" ) ]]; then
+    printf '%s\n' 'post-release-evidence'
 else
     printf '%s\n' "$requested_mode"
 fi
