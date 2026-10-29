@@ -16,12 +16,13 @@ mod local;
 #[derive(Debug, Clone)]
 pub(crate) struct DocumentSurfaceSource {
     pub uri: String,
+    pub owner_path: PathBuf,
     pub format: BinaryDocumentFormat,
     pub mime: String,
     pub revision: String,
     bytes: Vec<u8>,
     /* WHY: bytesとその複製・送信結果が解放された後にだけ読込分の返却待機を解除する。 */
-    _intake_memory: Option<std::sync::Arc<IntakeMemoryLease<'static>>>,
+    _intake_memory: Option<std::sync::Arc<IntakeMemoryLease>>,
 }
 
 impl DocumentSurfaceSource {
@@ -44,6 +45,7 @@ impl DocumentSurfaceSource {
         bytes: Vec<u8>,
     ) -> Result<Self, DocumentFailure> {
         let started_at = std::time::Instant::now();
+        let owner_path = PathBuf::from(uri.clone());
         let path = url::Url::parse(&uri)
             .ok()
             .map(|url| PathBuf::from(url.path()))
@@ -61,6 +63,7 @@ impl DocumentSurfaceSource {
             })?;
         let source = Self {
             uri,
+            owner_path,
             format,
             mime: format.mime().to_owned(),
             revision: revision(&bytes),
@@ -83,6 +86,7 @@ impl DocumentSurfaceSource {
     pub(super) fn descriptor(&self) -> Self {
         Self {
             uri: self.uri.clone(),
+            owner_path: self.owner_path.clone(),
             format: self.format,
             mime: self.mime.clone(),
             revision: self.revision.clone(),
@@ -160,6 +164,7 @@ impl DocumentSurfaceSource {
 impl PartialEq for DocumentSurfaceSource {
     fn eq(&self, other: &Self) -> bool {
         self.uri == other.uri
+            && self.owner_path == other.owner_path
             && self.format == other.format
             && self.mime == other.mime
             && self.revision == other.revision

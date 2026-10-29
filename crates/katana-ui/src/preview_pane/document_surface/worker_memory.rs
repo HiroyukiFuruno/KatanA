@@ -1,27 +1,33 @@
 use std::sync::{
-    Mutex, MutexGuard,
-    atomic::{AtomicUsize, Ordering},
+    Arc, LazyLock, Mutex, MutexGuard,
+    atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering},
 };
 
-pub(super) static DOCUMENT_WORKER_MEMORY: WorkerMemoryState = WorkerMemoryState::new();
+mod allocator;
+mod reclaim;
+
+pub(super) static DOCUMENT_WORKER_MEMORY: LazyLock<Arc<WorkerMemoryState>> =
+    LazyLock::new(|| Arc::new(WorkerMemoryState::new()));
 
 #[derive(Debug)]
 pub(super) struct WorkerMemoryState {
     pub(super) counter: AtomicUsize,
     intakes: AtomicUsize,
     relief_pending: Mutex<bool>,
+    relief_running: AtomicBool,
+    relief_epoch: AtomicU64,
 }
 
 #[derive(Debug)]
-pub(super) struct IntakeMemoryLease<'a> {
-    state: &'a WorkerMemoryState,
+pub(super) struct IntakeMemoryLease {
+    state: Arc<WorkerMemoryState>,
 }
 
-impl Drop for IntakeMemoryLease<'_> {
+impl Drop for IntakeMemoryLease {
     fn drop(&mut self) {
         let mut pending = self.state.pending();
         self.state.intakes.fetch_sub(1, Ordering::AcqRel);
-        self.state.relieve_if_idle(&mut pending);
+        self.state.queue_relief_if_idle(&mut pending);
     }
 }
 
@@ -31,6 +37,8 @@ impl WorkerMemoryState {
             counter: AtomicUsize::new(0),
             intakes: AtomicUsize::new(0),
             relief_pending: Mutex::new(false),
+            relief_running: AtomicBool::new(false),
+            relief_epoch: AtomicU64::new(0),
         }
     }
 
@@ -45,62 +53,46 @@ impl WorkerMemoryState {
         let mut pending = self.pending();
         /* WHY: 新しい文書が始まった場合、以前の最終タブ終了要求を持ち越さない。 */
         *pending = false;
+        self.relief_epoch.fetch_add(1, Ordering::AcqRel);
         self.counter.fetch_add(1, Ordering::AcqRel);
     }
 
-    pub(super) fn retain_intake(&self) -> IntakeMemoryLease<'_> {
+    pub(super) fn retain_intake(self: &Arc<Self>) -> IntakeMemoryLease {
         let _pending = self.pending();
         self.intakes.fetch_add(1, Ordering::AcqRel);
-        IntakeMemoryLease { state: self }
+        IntakeMemoryLease {
+            state: Arc::clone(self),
+        }
     }
 
-    pub(super) fn release(&self) {
+    pub(super) fn release(self: &Arc<Self>) {
         let mut pending = self.pending();
         self.counter.fetch_sub(1, Ordering::AcqRel);
-        self.relieve_if_idle(&mut pending);
+        self.queue_relief_if_idle(&mut pending);
     }
 
-    pub(super) fn request_relief(&self) {
+    pub(super) fn request_relief(self: &Arc<Self>) {
         let mut pending = self.pending();
         *pending = true;
-        self.relieve_if_idle(&mut pending);
+        self.queue_relief_if_idle(&mut pending);
     }
 
     pub(super) fn cancel_relief(&self) {
         /* WHY: HTMLや画像はworker leaseを持たないため、再表示をhost側から通知する。 */
-        *self.pending() = false;
+        let mut pending = self.pending();
+        *pending = false;
+        self.relief_epoch.fetch_add(1, Ordering::AcqRel);
     }
 
-    fn relieve_if_idle(&self, pending: &mut bool) {
-        /* WHY: 所有データの解放後にだけ返却し、返却中の新worker開始も同じmutexで順序化する。 */
-        if *pending
-            && self.counter.load(Ordering::Acquire) == 0
-            && self.intakes.load(Ordering::Acquire) == 0
-        {
-            *pending = false;
-            let released = relieve();
-            super::debug_log::DebugLog::write(
-                "document_memory_relief",
-                format_args!("released_bytes={released}"),
-            );
-        }
+    pub(super) fn cleanup_running(&self) -> bool {
+        self.relief_running.load(Ordering::Acquire)
     }
-}
 
-#[cfg(target_os = "macos")]
-fn relieve() -> usize {
-    use std::ffi::c_void;
-    unsafe extern "C" {
-        fn malloc_zone_pressure_relief(zone: *mut c_void, goal: usize) -> usize;
+    pub(super) fn activity_count(&self) -> usize {
+        /* WHY: worker終了から返却開始への引継ぎ途中をidleと観測させない。 */
+        let _pending = self.pending();
+        self.counter.load(Ordering::Acquire) + usize::from(self.cleanup_running())
     }
-    /* SAFETY: NULLで登録済みzone全体を対象にし、goal 0で最大限の返却候補を要求する。
-     * ポインタを保持せず、呼出し中だけlibmallocの契約に従う。 */
-    unsafe { malloc_zone_pressure_relief(std::ptr::null_mut(), 0) }
-}
-
-#[cfg(not(target_os = "macos"))]
-fn relieve() -> usize {
-    0
 }
 
 #[cfg(test)]
@@ -109,7 +101,7 @@ mod tests {
 
     #[test]
     fn relief_remains_pending_until_last_worker_releases() {
-        let state = WorkerMemoryState::new();
+        let state = Arc::new(WorkerMemoryState::new());
         state.acquire();
         state.acquire();
         state.request_relief();
@@ -123,7 +115,7 @@ mod tests {
 
     #[test]
     fn a_new_worker_cancels_previous_close_request() {
-        let state = WorkerMemoryState::new();
+        let state = Arc::new(WorkerMemoryState::new());
         state.acquire();
         state.request_relief();
         state.acquire();
@@ -135,7 +127,7 @@ mod tests {
 
     #[test]
     fn reopening_a_non_worker_document_cancels_pending_relief() {
-        let state = WorkerMemoryState::new();
+        let state = Arc::new(WorkerMemoryState::new());
         state.acquire();
         state.request_relief();
         assert!(*state.pending());
@@ -150,7 +142,7 @@ mod tests {
 
     #[test]
     fn idle_request_is_consumed_without_waiting_for_a_future_worker() {
-        let state = WorkerMemoryState::new();
+        let state = Arc::new(WorkerMemoryState::new());
         state.request_relief();
         assert!(!*state.pending());
         assert_eq!(state.counter.load(Ordering::Acquire), 0);
@@ -158,7 +150,7 @@ mod tests {
 
     #[test]
     fn intake_payload_defers_relief_without_changing_worker_count() {
-        let state = WorkerMemoryState::new();
+        let state = Arc::new(WorkerMemoryState::new());
         let intake = state.retain_intake();
         state.request_relief();
         assert!(*state.pending());
@@ -174,7 +166,7 @@ mod tests {
     #[test]
     fn both_worker_and_intake_must_release_before_relief() {
         for intake_first in [true, false] {
-            let state = WorkerMemoryState::new();
+            let state = Arc::new(WorkerMemoryState::new());
             let intake = state.retain_intake();
             state.acquire();
             state.request_relief();
@@ -197,7 +189,7 @@ mod tests {
         let live = vec![0x2a_u8; 32];
         let pointer = live.as_ptr();
         let contents = live.clone();
-        let _released = relieve();
+        let _released = allocator::relieve();
         assert_eq!(live.as_ptr(), pointer);
         assert_eq!(live, contents);
     }

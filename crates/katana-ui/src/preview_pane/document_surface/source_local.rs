@@ -47,6 +47,7 @@ impl SourceLocalOps {
         check(cancellation, &canonical, Some(format))?;
         let source = DocumentSurfaceSource {
             uri,
+            owner_path: path.to_path_buf(),
             format,
             mime: format.mime().to_owned(),
             revision,

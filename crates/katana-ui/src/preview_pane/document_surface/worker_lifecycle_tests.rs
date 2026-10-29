@@ -16,7 +16,7 @@ fn worker_lease_remains_live_until_owned_work_has_dropped() {
         drop(work);
     }
 
-    let state = WorkerMemoryState::new();
+    let state = std::sync::Arc::new(WorkerMemoryState::new());
     let counter = &state.counter;
     std::thread::scope(|scope| {
         let lease = DocumentWorkerLease::acquire(&state);
@@ -44,7 +44,7 @@ fn worker_lease_releases_on_worker_panic() {
         panic!("worker failure");
     }
 
-    let state = WorkerMemoryState::new();
+    let state = std::sync::Arc::new(WorkerMemoryState::new());
     let counter = &state.counter;
     std::thread::scope(|scope| {
         let lease = DocumentWorkerLease::acquire(&state);
@@ -67,7 +67,7 @@ fn process_worker_lease_is_observable_without_a_pane() {
 
 #[test]
 fn worker_lease_releases_when_thread_creation_fails() {
-    let state = WorkerMemoryState::new();
+    let state = std::sync::Arc::new(WorkerMemoryState::new());
     let counter = &state.counter;
     std::thread::scope(|scope| {
         let lease = DocumentWorkerLease::acquire(&state);
@@ -100,7 +100,7 @@ fn lifecycle_spawn_observes_worker_while_owned_work_runs() {
 
 #[test]
 fn worker_lease_releases_when_unstarted_closure_is_dropped() {
-    let state = WorkerMemoryState::new();
+    let state = std::sync::Arc::new(WorkerMemoryState::new());
     let counter = &state.counter;
     let lease = DocumentWorkerLease::acquire(&state);
     let worker_inputs = (OwnedWork(counter), lease);
