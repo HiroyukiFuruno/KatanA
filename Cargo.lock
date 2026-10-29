@@ -3828,6 +3828,7 @@ dependencies = [
  "tracing-subscriber",
  "ureq",
  "usvg 0.49.0",
+ "xml",
  "xmltree",
  "zip 9.1.3",
 ]

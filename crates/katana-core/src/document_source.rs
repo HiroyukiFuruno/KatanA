@@ -1,6 +1,10 @@
 use std::path::Path;
 use thiserror::Error;
 
+mod office_font_safety;
+
+pub use office_font_safety::{OfficeFontSafetyError, OfficeFontSafetyPolicy};
+
 const PDF_MAGIC: &[u8] = b"%PDF-";
 const ZIP_LOCAL_MAGIC: &[u8] = &[0x50, 0x4b, 0x03, 0x04];
 const ZIP_EMPTY_MAGIC: &[u8] = &[0x50, 0x4b, 0x05, 0x06];

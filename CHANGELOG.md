@@ -18,6 +18,8 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Tab group naming**: Confirming, cancelling or dismissing a group-name popup releases its input focus, and removing the last group member clears any remaining rename state.
 - **Unavailable document modes**: PDF and Office documents reject unsupported code-only and split modes consistently across menus, shortcuts and commands.
 
+- **Embedded Office font safety**: Reject unsafe embedded-font names before native Word and PowerPoint preview conversion can write outside its font folder.
+
 ### 🔧 System
 
 - Updated compatible dependencies used by the application and screenshot tooling.

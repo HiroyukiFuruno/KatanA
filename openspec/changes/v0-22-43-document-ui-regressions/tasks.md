@@ -186,3 +186,18 @@ Loadingの最終実装は既存の共通AlignCenter(shrink_to_fit)を再利用�
 8.1〜8.3の完了記録はPR389までの実装修正に関する実績であり、今回追加更新のpush/レビュー結果を先取りしない。8.4〜8.6は依存更新を含む最終構成で継続する。両lockの元差分はtmp/v0.22.43-prep/concurrent-lock-update.diffにも保持したが、原本を退避/破棄せず正式履歴へ統合する。
 
 追加依存構成で、通常Office worker入口・同じlocked graphの撮影ツール全55 testsが成功（ignore/filter0、dependency-refresh/screenshot-tests.log / exit0）。KML対象3文書・diff・pr-bootstrap phase検査成功。High独立レビューも依存要求・checksum・Windows向けlocked解決を確認して追加P0/P1/P2なし。これは対象検証結果であり、新HEADの通常push/レビュー/全必須CI/公開を完了扱いしない。
+
+### 実API監査で検出した別件P1 — KatanA392 / KDV71
+
+GHSA-m665-v7pm-7grjのstreaming ZIP APIは調査した親経路で未使用。旧3件の例外へ追加しない。一方、公開KDV0.5.12→office2pdf0.8.1 native DOCX/PPTXで、埋込みフォント名から生成したfilenameをtemp_dir.joinしてfs::writeする別経路を確認した。KDV preflightはZIP entryやrelationshipを検査するが、このXML属性は未検査。既存の書込み可能な親dirと所定font suffixのfileがある場合、専用dir外書込/上書きが可能という静的P1であり、元GHSAと混同しない。XLSXは当該抽出へ到達しない。本人FSへPoCは実行していない。
+
+- [/] core共通のストリーム検査とlocal/remote共通のworker引渡し入口で、危険な埋込みfont名をKDV実行前に拒否する。正常Unicode名/通常文書を維持し、PDF/XLSXへ解析負荷を追加しない。
+- [/] 実ZIP/XMLのcore回帰、local/remote共有入口、encoding/DTD/重複/読取上限を自動検証する。通常commit/push以後の公開工程は8.4〜8.6で継続し、旧21の取消を合格にしない。
+
+xmltreeのDOMへ恣意的なdepth制限や独自XML字句処理を足す案は採用しない。既存lockにあるxml1.4.0を直接参照して既存ストリームparserを再利用するため、workspace/core依存宣言と両lockのcore edgeだけを追加する。新しいpackage/版/featureは増やさず、既存16MiB part上限とparser既定token制限内で扱う。単なるテスト都合の本体APIやtestportは作らない。
+
+KatanA担当Issue: [KatanA392](https://github.com/HiroyukiFuruno/KatanA/issues/392) 。上流handoff: [KDV71](https://github.com/HiroyukiFuruno/katana-document-viewer/issues/71) 。この担当は上流repoを編集しない。PR391をDraftへ戻し、新21CI40811321117/Readiness40811322438は取消終端を回収した（未生成artifact upload失敗を本体不具合扱いしない）。確認済みのKatanA防止を進め、上流待ちへ戻さない。
+
+font guard最終対象検証はcore16/共有UI入口3/撮影全55が成功（font-guard-core-final/ui-final/screenshot-final.log と各exit0）。正式AST再検査成功、全新file200行以下・関数30行以下、fmt/KML/diff成功。High独立review P0/P1なし、P2のPPTX fixture GUIDを修復してfresh全priority0。最初のdeprecated API/UItest shadow/AST style失敗ログは保持し、rule/allow/基準を変更せず修復した。通常push・新current review・全CI・公開は未完了。
+
+共有source周辺27件（読取/取消/サイズ/所有メモリ/差分再読込と新guard）が追加で成功し、既存入口の回帰を維持した。font-guard-source-regressions.log / exit0。今回のcommitは本体の危険font入力防止とその検査・依存edge・公開文書のみをまとめ、本人の両lock更新21b269a2を保持する。
