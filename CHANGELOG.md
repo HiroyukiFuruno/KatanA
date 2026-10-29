@@ -18,6 +18,10 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Tab group naming**: Confirming, cancelling or dismissing a group-name popup releases its input focus, and removing the last group member clears any remaining rename state.
 - **Unavailable document modes**: PDF and Office documents reject unsupported code-only and split modes consistently across menus, shortcuts and commands.
 
+### 🔧 System
+
+- Updated compatible dependencies used by the application and screenshot tooling.
+
 ## [0.22.42] - 2026-10-24 08:45:11 (UTC)
 
 ### 🚀 Features

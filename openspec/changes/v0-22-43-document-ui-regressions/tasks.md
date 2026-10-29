@@ -174,3 +174,15 @@ Loadingの最終実装は既存の共通AlignCenter(shrink_to_fit)を再利用�
 失敗ログ: `tmp/v0.22.43-prep/required-ci-dbe1c08d/job-123176311422-failure.log` と `job-123176311422-E0423.txt`。今回の実装修正に新公開APIや本体制御の緩和を追加しない。
 
 修復後は既存debug target・同じlocked依存・診断OFFの通常Office worker入口で、撮影ツール全55 tests成功（ignore/filter0）。実KatanaApp・一時設定の実egui文字入力でquery更新とPDF pathの禁止コマンド除外も成功。ログ `tmp/v0.22.43-prep/screenshot-palette-ci-fix/all-tests-bash.log` / exit0。最初のscript直実行は非実行bitでexit126だったため、既存のbash入口で再実行した。release profileと全OSは新HEADの必須CIで再検証し、このdebug結果を代用しない。
+
+### 本人の追加依存更新を公開前に統合する
+
+2026-10-29の最新humanが、検証中に変更された両lockfileは本人のjust update由来であり「取りこんで公開」と明示した。v0.22.43はRelease/tagとも未作成（API404）で、旧公開run40806478547はCI gate待ち中に取消、旧Mのpush CI40806478312も取消した。公開済みassetやtagの上書きではない。PR389はmerge済みのまま保持する。
+
+既存worktreeのorigin/master50ffcd07からrelease/v0.22.43-dependency-refreshへ本人差分をそのまま移し、stashもworktreeも作成していない。対象はctutils0.4.6→0.4.7と、撮影用lock内の既存syn/windows-sysの選択更新。KDV/KRRの公開registry固定は変更しない。
+
+- [ ] 本人の両lock更新を精査・対象検証・通常commit/pushし、Draftレビューから新HEAD全必須CI/通常mergeを経てv0.22.43として公開する。旧fd/50ffの合格や取消を新lockの合格へ流用しない。
+
+8.1〜8.3の完了記録はPR389までの実装修正に関する実績であり、今回追加更新のpush/レビュー結果を先取りしない。8.4〜8.6は依存更新を含む最終構成で継続する。両lockの元差分はtmp/v0.22.43-prep/concurrent-lock-update.diffにも保持したが、原本を退避/破棄せず正式履歴へ統合する。
+
+追加依存構成で、通常Office worker入口・同じlocked graphの撮影ツール全55 testsが成功（ignore/filter0、dependency-refresh/screenshot-tests.log / exit0）。KML対象3文書・diff・pr-bootstrap phase検査成功。High独立レビューも依存要求・checksum・Windows向けlocked解決を確認して追加P0/P1/P2なし。これは対象検証結果であり、新HEADの通常push/レビュー/全必須CI/公開を完了扱いしない。
