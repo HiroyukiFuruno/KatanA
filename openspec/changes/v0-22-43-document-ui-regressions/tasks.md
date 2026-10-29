@@ -224,3 +224,17 @@ normal-push-2cbc0bd9.exitは実1。UI libは1417成功/1失敗/既存ignore2・f
 - [ ] 診断差分の通常commit/push・新current review・全CIを回収し、公開・配布物照合・後処理まで継続する。#386の原報告全体を解決済みにはしない。
 
 証跡: docx-frame-exact-standard.log/.exit0、full-ui-standard-diagnostic.log/.exit0、docx-env-global-race-readonly-audit.md、timeout-diagnostic-review.md。独立Highの診断2filesはP0/P1/P2なし。UI lib内worker環境の書換えは未検出、別lockでのHEADLESS変更と今回timeoutの因果は未確定。
+
+## Windows画像フォルダー監視の修復 — #394（2026-10-29）
+
+- [x] 新HEAD4e5c6b8のWindows実CI失敗を回収。`rename_tests.rs:201` の実directory renameがOS5/PermissionDenied、1377PASS/1FAIL。未生成headless artifact upload失敗は二次的な採取失敗として分離。
+- [x] 現Windows PollWatcherがnotify8.2.1→WalkDir/read_dirで一時directory列挙を行うことを一次sourceで確認。固有fixture/無登録loaderの構成を照合し、別fixture同一path競合の証拠は無し。自己scan競合は原因候補で所有handle実測による確定ではない。
+- [x] Windows directory topologyをmetadata存在/typeだけのprivate監視へ修復。画像byte監視の既存ContentWatch・元250ms・既存rename回帰・期限は不変。macOS上で新backend実FS/lifecycle13件とwatcher全51件PASS。Windows実行の合格は次の新HEAD CIで別に確認する。
+- [ ] 対象検証・通常commit/push・新current review/全CI・公開を回収する。旧4Eの失敗や他OS成功を修復後の合格へ流用しない。
+
+Issue: [#394](https://github.com/HiroyukiFuruno/KatanA/issues/394)
+証跡: `tmp/v0.22.43-prep/dependency-refresh/required-ci-4e5c6b8f/windows-job-clean.log` と `windows-inventory/windows-rename-watch-matrix.log`。Windows fixtureのOS5とnative matrixの入出力は保存するが、matrixはRecommendedWatcherの検査であり、現在のPollWatcherの保持handleを証明したものではない。
+
+### Windows修復の対象検証
+
+`windows-directory-watch/target-directory-watch-retry1.exit=0`（13PASS）、`target-watcher.exit=0`（51PASS）、`ast-lint-retry1.exit=0`（正式ASTを含む30PASS）。初回のnotify private method compile errorは公開enumのmatchesへ修復。独立Highの最新差分はP0/P1/P2=0。これらはlocal実入力の対象結果であり、元Windows OS5の実行成功は新CI未確認。

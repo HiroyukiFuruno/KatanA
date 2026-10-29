@@ -13,6 +13,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 ### 🐛 Bug Fixes
 
 - **Closing another tab**: Keep the current document selected when closing a tab to its left, instead of unexpectedly opening a different preview.
+- **Windows image folders**: Monitor folder availability without enumerating its contents, while keeping file-content change detection separate.
 - **Repeated image loading**: Automatic refresh preserves unchanged images instead of discarding their preview repeatedly. Manual reload and real file changes still refresh the image.
 - **Image loading completion**: Background image loading requests a new frame when its result becomes available; a full loading queue remains retryable instead of displaying a permanent failure.
 - **Tab group naming**: Confirming, cancelling or dismissing a group-name popup releases its input focus, and removing the last group member clears any remaining rename state.
