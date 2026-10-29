@@ -5,6 +5,7 @@ from pathlib import Path
 
 from cleanup_intent import REMOTE_DELETE, read_intent
 from cleanup_merge_binding import require_merge_binding
+from release_branch_version import release_branch_version
 from push_ref_updates import PushInputError, parse_push_updates
 from release_cleanup_audit import CleanupRefused, audit_branch, common_directory, git, require_controller
 from release_cleanup_publication import cleanup_destination
@@ -34,17 +35,24 @@ class RemoteCleanupPush:
         if actual != [self.remote_url]:
             raise CleanupRefused("remote cleanup push URL changed")
 
+    def _merge_binding(self, value: dict[str, object]) -> str | None:
+        merge_commit, pull_request = value.get("merge_commit"), value.get("pull_request")
+        if merge_commit is None and pull_request is None:
+            return None
+        version = release_branch_version(value["branch"])
+        if version is None:
+            raise CleanupRefused("remote cleanup merge binding requires a versioned release branch")
+        return require_merge_binding(
+            self.repository, version, merge_commit or value["expected"],
+            value["branch"], value["expected"], merge_commit,
+            int(pull_request) if pull_request is not None else None)
+
     def _audit(self, value: dict[str, object]) -> None:
         if not self.default_ref.startswith("refs/heads/"):
             raise CleanupRefused("remote cleanup default is not a branch")
         default = self.default_ref.removeprefix("refs/heads/")
         require_controller(self.root, self.root, default)
-        merge_commit = value.get("merge_commit")
-        pull_request = value.get("pull_request")
-        merge_commit = require_merge_binding(
-            self.repository, value["branch"].removeprefix("release/v"),
-            merge_commit or value["expected"], value["branch"], value["expected"],
-            merge_commit, int(pull_request) if pull_request is not None else None)
+        merge_commit = self._merge_binding(value)
         record = audit_branch(self.root, default, value["branch"], value["expected"],
                               allow_absent=True, integrated_oid=merge_commit)
         if record["state"] != "eligible":

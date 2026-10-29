@@ -1,0 +1,185 @@
+{
+  "publication": {
+    "kind": "merged_pull_request",
+    "product_commit": "0d139094a39887a7a5657ecdd63f53a6db012fde",
+    "tag": "v0.22.43",
+    "run_head_sha": "95ce239cab09b5c9991af2c7daec507395f42b72",
+    "head_branch": "release/v0.22.43-dependency-refresh",
+    "event": "pull_request",
+    "pull_request_number": 391,
+    "merged_at": "2026-10-29T13:26:21+00:00"
+  },
+  "required_product_jobs": {
+    "Preflight Check": "success",
+    "Build Linux": "success",
+    "Build Windows": "success",
+    "Build macOS": "success",
+    "Smoke macOS (arm64)": "success",
+    "Smoke macOS (x86_64)": "success",
+    "Publish Release": "success"
+  },
+  "optional_job_results": {
+    "Audit and clean published release branches": {
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    "Compare Windows packaged startup (Server 2022)": {
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  },
+  "overall_workflow_conclusion": "failure",
+  "admission_code": "postpublication source-binding suffix repair; not present in published M2",
+  "reviewed_head": "95ce239cab09b5c9991af2c7daec507395f42b72",
+  "reviewed_and_product_tree": "6ad6b3fa9e4d32cbf80cdc402977c78e1f3adc93",
+  "pull_request_ci_run": 40867263464,
+  "pull_request_readiness_run": 40867263477,
+  "native_and_artifact_receipts": {
+    "linux-native-smoke-receipt.json": {
+      "run": 40881935779,
+      "attempt": 1,
+      "job": 123500388689,
+      "source": "0d139094a39887a7a5657ecdd63f53a6db012fde",
+      "artifact_id": 12905347086,
+      "native_packaged_startup": true,
+      "executable_sha256": "d5ea1fb5878457927d1ca122556cf8bd9e271886a7520f04d7036e2cf14430d8",
+      "executable_bytes_match_smoke_log": true,
+      "peak_rss_kib": 195384,
+      "font_bytes": 14824388,
+      "office_workers": 0,
+      "source_log": "linux-build-clean.log",
+      "public_payload_compared": false
+    },
+    "windows-diagnostic-receipt.json": {
+      "run": 40881935779,
+      "attempt": 1,
+      "job": 123500388785,
+      "artifact_id": 12906861006,
+      "diagnostic_archive_digest": "553b383a0131e0c18aa742384c3df44cd7f1384e774b1078fb07e62a276027e3",
+      "completed_heartbeat": "first-frame\nframe=27\n",
+      "native_startup_step": "success",
+      "scope": "packaged startup/UI progress, not original-document acceptance",
+      "public_payload_compared": false
+    },
+    "macos-x86_64-native-smoke-receipt.json": {
+      "run": 40881935779,
+      "attempt": 1,
+      "job_id": 123526819794,
+      "actual_checkout": "0d139094a39887a7a5657ecdd63f53a6db012fde",
+      "mode": "macos-x86_64",
+      "artifact_id": 12907900555,
+      "executable_sha256": "1192167a22afd0b1f2af423b027e5bcab8c280a2236f90d90353c766cfa42111",
+      "peak_rss_kib": 134556,
+      "font_bytes": 27161036,
+      "office_workers": 0,
+      "native_startup_step": "success",
+      "artifact_main_compared": true,
+      "source_log": "macos-x86_64-smoke-clean.log"
+    },
+    "macos-arm64-native-smoke-receipt.json": {
+      "run": 40881935779,
+      "attempt": 1,
+      "job_id": 123526819765,
+      "actual_checkout": "0d139094a39887a7a5657ecdd63f53a6db012fde",
+      "mode": "macos-arm64",
+      "artifact_id": 12907900555,
+      "executable_sha256": "1192167a22afd0b1f2af423b027e5bcab8c280a2236f90d90353c766cfa42111",
+      "peak_rss_kib": 161936,
+      "font_bytes": 27161036,
+      "office_workers": 0,
+      "native_startup_step": "success",
+      "artifact_main_compared": true,
+      "source_log": "macos-arm64-smoke-clean.log"
+    },
+    "linux-artifact-receipt.json": {
+      "run": 40881935779,
+      "attempt": 1,
+      "artifact_id": 12905347086,
+      "artifact_zip_sha256": "250de8e97048a69821c1ffee38a90123aee161433f1486979dcf157469194e67",
+      "matches_api_digest": true,
+      "upload_log": "linux-build-clean.log",
+      "payload": {
+        "name": "KatanA-linux-x86_64.tar.gz",
+        "size": 121004330,
+        "sha256": "7e3e7e169c50ebfefd85084d6168a251603a93301f1f6d4fed0b1e239a273435"
+      },
+      "public_payload_compared": false
+    },
+    "windows-artifact-receipt.json": {
+      "run": 40881935779,
+      "attempt": 1,
+      "artifact_id": 12905413777,
+      "artifact_zip_sha256": "e5899d5cb67e9bb2b14399934e82a9bcd14f963ac2d395b7f1b6b0c94ba186e5",
+      "api_digest_matches": true,
+      "payloads": [
+        {
+          "name": "KatanA-windows-x86_64.msi",
+          "size": 109121536,
+          "sha256": "78881d33e9f43e2260c2cb5b1c711aa2670be7bd8167ed214906937d79e42263"
+        },
+        {
+          "name": "KatanA-windows-x86_64.zip",
+          "size": 105801417,
+          "sha256": "62671109f07e0101d828020f27ac5eb9ff79d287173a6630e0536cd3861144a0"
+        }
+      ],
+      "executable_sha256": "bee67c4d7f685b988cf31d2218f37509bf30426fc0bcc6888cc902429799e2fe",
+      "matches_native_smoke_executable": true,
+      "observed_smoke_frame": 23,
+      "public_payload_compared": false
+    },
+    "macos-artifact-receipt.json": {
+      "run": 40881935779,
+      "attempt": 1,
+      "artifact_id": 12907900555,
+      "artifact_zip_sha256": "4e257e8ed459a4b610362bae026d4e92beb2a9b7a7174ace5d97ce924778cee8",
+      "api_digest_matches": true,
+      "payloads": [
+        {
+          "name": "KatanA-Desktop-0.22.43.dmg",
+          "size": 223000708,
+          "sha256": "9ae35067c3cb423656951a9ddcfb087822dfc3319f22886e85b3517640e400ed"
+        },
+        {
+          "name": "KatanA-macOS.zip",
+          "size": 223298556,
+          "sha256": "5b45e6f61ab98c9ead6f26e9ea774f17716b4011253229126aea38eaa6942560"
+        }
+      ],
+      "executable_sha256": "1192167a22afd0b1f2af423b027e5bcab8c280a2236f90d90353c766cfa42111",
+      "matches_native_x86_64_smoke_executable": true,
+      "arm64_native_smoke_pending": false,
+      "public_payload_compared": false,
+      "matches_native_arm64_smoke_executable": true
+    },
+    "linux-checkout-receipt.json": {
+      "run": 40881935779,
+      "attempt": 1,
+      "job_id": 123500388689,
+      "actual_checkout": "0d139094a39887a7a5657ecdd63f53a6db012fde",
+      "source_log": "linux-build-clean.log",
+      "actual_artifact_id": 12905347086,
+      "product_publication_complete": false
+    },
+    "windows-checkout-receipt.json": {
+      "run": 40881935779,
+      "attempt": 1,
+      "job_id": 123500388785,
+      "actual_checkout": "0d139094a39887a7a5657ecdd63f53a6db012fde",
+      "source_log": "windows-build-clean.log",
+      "actual_artifact_id": 12905413777,
+      "public_payload_compared": false,
+      "inspection_note": "Initial read-only parser matched git rather than quoted Windows git.exe; corrected against explicit log command and exact SHA result."
+    },
+    "macos-checkout-receipt.json": {
+      "run": 40881935779,
+      "attempt": 1,
+      "job_id": 123500388802,
+      "actual_checkout": "0d139094a39887a7a5657ecdd63f53a6db012fde",
+      "source_log": "macos-build-clean.log",
+      "actual_artifact_id": 12907900555,
+      "native_smoke_pending": true,
+      "public_payload_compared": false
+    }
+  }
+}

@@ -1,0 +1,258 @@
+{
+  "original_release_attempt_result": {
+    "version": "0.22.43",
+    "tag": "v0.22.43",
+    "targets": [
+      {
+        "name": "homebrew",
+        "status": "failed",
+        "reason": "updater_failed"
+      },
+      {
+        "name": "linuxbrew",
+        "status": "failed",
+        "reason": "updater_failed"
+      },
+      {
+        "name": "winget",
+        "status": "success",
+        "reason": "submission_completed"
+      }
+    ]
+  },
+  "homebrew_linuxbrew_recovery": {
+    "version": "0.22.43",
+    "repository": "HiroyukiFuruno/homebrew-katana",
+    "observed_at": "2026-10-29T15:46:43.437Z",
+    "publication_source": "0d139094a39887a7a5657ecdd63f53a6db012fde",
+    "release_run": 40881935779,
+    "pr": "https://github.com/HiroyukiFuruno/homebrew-katana/pull/7",
+    "reviewed_head": "6e02ef9122b207c824beabb467d958ab2b6b4805",
+    "merge_sha": "edb377bcd697faf988c92e308f14340defe1f41c",
+    "merged_at": "2026-10-29T15:40:03Z",
+    "master_api_before": "edb377bcd697faf988c92e308f14340defe1f41c",
+    "master_api_after": "edb377bcd697faf988c92e308f14340defe1f41c",
+    "review_timeline": {
+      "draft_receipt": [
+        {
+          "url": "https://github.com/HiroyukiFuruno/homebrew-katana/pull/7#issuecomment-6500950331",
+          "created_at": "2026-10-29T15:29:24Z",
+          "updated_at": "2026-10-29T15:29:24Z",
+          "body": "<!-- codex-review-receipt:v1 -->\n\nCodex Review: Didn't find any major issues. :tada:\n\n**Reviewed commit:** `6e02ef9122`\n\n<details> <summary>ℹ️ About Codex in GitHub</summary>\n<br/>\n\n[Your team has set up Codex to review pull requests in this repo](https://chatgpt.com/codex/cloud/settings/general). Reviews are triggered when you\n- Open a pull request for review\n- Mark a draft as ready\n- Comment \"@codex review\".\n\nIf Codex has suggestions, it will comment; otherwise it will react with 👍.\n\n\n\n\nCodex can also answer questions or update the PR. Try commenting \"@codex address that feedback\".\n            \n</details>",
+          "user": "chatgpt-codex-connector[bot]"
+        }
+      ],
+      "independent_high": [
+        {
+          "url": "https://github.com/HiroyukiFuruno/homebrew-katana/pull/7#issuecomment-6501201032",
+          "created_at": "2026-10-29T15:38:57Z",
+          "updated_at": "2026-10-29T15:38:57Z",
+          "body": "HEAD `6e02ef9122b207c824beabb467d958ab2b6b4805` を独立レビューしました。P0/P1/P2なし。実公開v0.22.43のDMG/Linux tar URL・SHA256と4定義を照合し、旧versioned0.22.42の不変、Cask/Formula意味の維持、Ruby構文4/実Cask2/実Formula2/生成器4byte一致の成功ログを確認しました。\n\nCodexの同HEAD completed/no findings、REST全ページとGraphQL全thread（未解決0）を再取得済みです。追加の任意style不合格6件はv42baseline同一でIssue #6に分離され、今回の合格とは記していません。CI未設定をCI成功と扱わず、既存の必須条件は変更しません。\n",
+          "user": "HiroyukiFuruno"
+        }
+      ],
+      "ready_auto_review": {
+        "state": {
+          "code_review": {
+            "commit_sha": "6e02ef9122b207c824beabb467d958ab2b6b4805",
+            "has_any_findings": false,
+            "has_unresolved_findings": false,
+            "status": "completed"
+          },
+          "security_review": {
+            "commit_sha": null,
+            "has_any_findings": null,
+            "has_unresolved_findings": null,
+            "status": null
+          }
+        },
+        "updated_at": "2026-10-29T15:40:02Z",
+        "url": "https://github.com/HiroyukiFuruno/homebrew-katana/pull/7#issuecomment-6500916676",
+        "completion": "2026-10-29T15:40:01.829853Z",
+        "trigger": "Draft marked ready"
+      },
+      "review_threads": []
+    },
+    "issue5": {
+      "url": "https://github.com/HiroyukiFuruno/homebrew-katana/issues/5",
+      "state": "closed",
+      "reason": "completed",
+      "closed_at": "2026-10-29T15:40:05Z",
+      "updated_at": "2026-10-29T15:46:05Z",
+      "note": "Auto-closed by merge, then post-merge public-source verification appended."
+    },
+    "style_followup": {
+      "url": "https://github.com/HiroyukiFuruno/homebrew-katana/issues/6",
+      "state": "open",
+      "status": "existing optional brew style six offenses remain failed, baseline-identical"
+    },
+    "checks": {
+      "ruby_syntax": {
+        "files": 4,
+        "exit": 0
+      },
+      "real_cask_dsl": {
+        "files": 2,
+        "exit": 0
+      },
+      "real_formula_read": {
+        "files": 2,
+        "exit": 0
+      },
+      "install_or_app_actions": false,
+      "original_sync_receipt_rewritten": false,
+      "credential_cause": "unknown"
+    },
+    "files": [
+      {
+        "path": "Casks/katana-desktop.rb",
+        "api_url": "https://api.github.com/repos/HiroyukiFuruno/homebrew-katana/contents/Casks/katana-desktop.rb?ref=master",
+        "version": "0.22.43",
+        "asset": "KatanA-Desktop-0.22.43.dmg",
+        "asset_sha256": "9ae35067c3cb423656951a9ddcfb087822dfc3319f22886e85b3517640e400ed",
+        "source_sha256": "0bd4159c3600d53961762e80650b3e09453c91b6e0ecd2a2ed56036b71585469",
+        "git_blob_sha1": "6154e09ecb6560b74f3d493504133b90e44582dc",
+        "release_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.43/KatanA-Desktop-0.22.43.dmg"
+      },
+      {
+        "path": "Casks/katana-desktop@0.22.43.rb",
+        "api_url": "https://api.github.com/repos/HiroyukiFuruno/homebrew-katana/contents/Casks/katana-desktop@0.22.43.rb?ref=master",
+        "version": "0.22.43",
+        "asset": "KatanA-Desktop-0.22.43.dmg",
+        "asset_sha256": "9ae35067c3cb423656951a9ddcfb087822dfc3319f22886e85b3517640e400ed",
+        "source_sha256": "f79476eab739f6501287523041d512b8d24f49fb9b560caa7fdc233112b19cf9",
+        "git_blob_sha1": "7153227f1b21d8d9b4c7391dababff7bd3e8a2b6",
+        "release_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.43/KatanA-Desktop-0.22.43.dmg"
+      },
+      {
+        "path": "Formula/katana-desktop.rb",
+        "api_url": "https://api.github.com/repos/HiroyukiFuruno/homebrew-katana/contents/Formula/katana-desktop.rb?ref=master",
+        "version": "0.22.43",
+        "asset": "KatanA-linux-x86_64.tar.gz",
+        "asset_sha256": "7e3e7e169c50ebfefd85084d6168a251603a93301f1f6d4fed0b1e239a273435",
+        "source_sha256": "9e04f320ed2f442a8c6a9497f54a35073d45dfa541add089c15ac9e5eaefb4a9",
+        "git_blob_sha1": "f4c85b444a032c126158c195811e289dc3c9230b",
+        "release_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.43/KatanA-linux-x86_64.tar.gz"
+      },
+      {
+        "path": "Formula/katana-desktop@0.22.43.rb",
+        "api_url": "https://api.github.com/repos/HiroyukiFuruno/homebrew-katana/contents/Formula/katana-desktop@0.22.43.rb?ref=master",
+        "version": "0.22.43",
+        "asset": "KatanA-linux-x86_64.tar.gz",
+        "asset_sha256": "7e3e7e169c50ebfefd85084d6168a251603a93301f1f6d4fed0b1e239a273435",
+        "source_sha256": "3d7db6083215e3bcf3d8bd6ed5a79c8962bd795d4d02abcd4fe595277066452f",
+        "git_blob_sha1": "649a46343b1fcf2f1e4e8c11a4be2e492751a9fe",
+        "release_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.43/KatanA-linux-x86_64.tar.gz"
+      }
+    ],
+    "records_relocation": {
+      "from": "/Users/hiroyuki_furuno/works/private/homebrew-katana/tmp/v0.22.43-registry-recovery",
+      "to": "/Users/hiroyuki_furuno/works/private/katana/tmp/v0.22.43-prep/homebrew-tap-recovery-records",
+      "status": "moved",
+      "map": "/Users/hiroyuki_furuno/works/private/katana/tmp/v0.22.43-prep/homebrew-tap-recovery-records/relocation-map.json",
+      "note": "Old absolute log references in historical artifacts map by this directory prefix; source records preserved."
+    },
+    "validation_log": "/Users/hiroyuki_furuno/works/private/katana/tmp/v0.22.43-prep/homebrew-cask-validation.log",
+    "cleanup": {
+      "status": "complete",
+      "verified_at": "2026-10-29T15:48:02.996471+00:00",
+      "local_branch_deleted": "release/v0.22.43-registry-recovery",
+      "remote_deletion_performed": false,
+      "remote_recovery_branch_present": true,
+      "worktree_count": 1,
+      "stash_count": 0,
+      "master_clean": true,
+      "state": {
+        "head": "edb377bcd697faf988c92e308f14340defe1f41c",
+        "branch": "master",
+        "status": "",
+        "stash": "",
+        "worktree": "worktree /Users/hiroyuki_furuno/works/private/homebrew-katana\nHEAD edb377bcd697faf988c92e308f14340defe1f41c\nbranch refs/heads/master",
+        "local_branches": "master edb377bcd697faf988c92e308f14340defe1f41c",
+        "ahead_behind": "0\t0",
+        "remote_heads": "edb377bcd697faf988c92e308f14340defe1f41c\trefs/heads/master\n6e02ef9122b207c824beabb467d958ab2b6b4805\trefs/heads/release/v0.22.43-registry-recovery"
+      },
+      "log": "/Users/hiroyuki_furuno/works/private/katana/tmp/v0.22.43-prep/homebrew-tap-recovery-records/cleanup-final.log"
+    },
+    "validation_results": [
+      {
+        "kind": "ruby-syntax",
+        "file": "Casks/katana-desktop.rb",
+        "exit": 0,
+        "source_sha256": "0bd4159c3600d53961762e80650b3e09453c91b6e0ecd2a2ed56036b71585469"
+      },
+      {
+        "kind": "ruby-syntax",
+        "file": "Casks/katana-desktop@0.22.43.rb",
+        "exit": 0,
+        "source_sha256": "f79476eab739f6501287523041d512b8d24f49fb9b560caa7fdc233112b19cf9"
+      },
+      {
+        "kind": "ruby-syntax",
+        "file": "Formula/katana-desktop.rb",
+        "exit": 0,
+        "source_sha256": "9e04f320ed2f442a8c6a9497f54a35073d45dfa541add089c15ac9e5eaefb4a9"
+      },
+      {
+        "kind": "ruby-syntax",
+        "file": "Formula/katana-desktop@0.22.43.rb",
+        "exit": 0,
+        "source_sha256": "3d7db6083215e3bcf3d8bd6ed5a79c8962bd795d4d02abcd4fe595277066452f"
+      },
+      {
+        "kind": "homebrew-real-dsl",
+        "casks": 2,
+        "formulae": 2,
+        "exit": 0
+      }
+    ]
+  },
+  "winget_latest_observation": {
+    "observed_at": "2026-10-29T16:10:05.028757+00:00",
+    "source": "GitHub API via gh CLI, read-only; current PR and checks fetched during this task",
+    "release_submission_receipt": "Release 40881935779 attempt 1 external-registry-sync.json: winget status success, reason submission_completed",
+    "package_identifier": "HiroyukiFuruno.katana-desktop",
+    "version": "0.22.43",
+    "repository": "microsoft/winget-pkgs",
+    "pull_request": {
+      "number": 464904,
+      "url": "https://github.com/microsoft/winget-pkgs/pull/464904",
+      "state": "OPEN",
+      "review_decision": "REVIEW_REQUIRED",
+      "head_sha": "0903cf99509f3210121cc48d85641dd0fd400097",
+      "head_branch": "HiroyukiFuruno.katana-desktop-0.22.43-38B532F6041446E5B2AFFC7940FE45C8",
+      "base_branch": "master",
+      "updated_at": "2026-10-29T15:14:05Z",
+      "files_added": [
+        "manifests/h/HiroyukiFuruno/katana-desktop/0.22.43/HiroyukiFuruno.katana-desktop.installer.yaml",
+        "manifests/h/HiroyukiFuruno/katana-desktop/0.22.43/HiroyukiFuruno.katana-desktop.locale.en-US.yaml",
+        "manifests/h/HiroyukiFuruno/katana-desktop/0.22.43/HiroyukiFuruno.katana-desktop.yaml"
+      ]
+    },
+    "checks": {
+      "01. Pull Request Validation": "SUCCESS",
+      "02. Manifest Validation": "SUCCESS",
+      "03. URLs Validation": "SUCCESS",
+      "04. URL Domain Validation": "SUCCESS",
+      "05. Manifest Policy Validation": "SUCCESS",
+      "06. Catalog Content Verification": "SUCCESS",
+      "07. Installers Scan": "SUCCESS",
+      "08. Installation Validation": "IN_PROGRESS",
+      "09. Installer Metadata Validation": "QUEUED",
+      "10. Validation Completed": "QUEUED",
+      "license/cla": "SUCCESS"
+    },
+    "catalog": {
+      "version_path": "manifests/h/HiroyukiFuruno/katana-desktop/0.22.43",
+      "version_files_present_on_master": null,
+      "latest_read": "GET .../contents/manifests/h/HiroyukiFuruno/katana-desktop/0.22.43?ref=master returned HTTP 429; previous observed GET returned 404 on 2026-10-29",
+      "manifest_files_present_in_pull_request": true
+    },
+    "interpretation": "Submission was accepted and PR checks are partly successful, but PR remains open and review is required. This is not a merge or catalog publication; current master catalog path could not be freshly queried due HTTP 429."
+  },
+  "ci_credential_diagnostic": {
+    "state": "implementation_committed_actual_ci_probe_pending_default_branch_merge",
+    "issue": "https://github.com/HiroyukiFuruno/KatanA/issues/395",
+    "cause": "original helper exit output discarded; credential expiry is not established"
+  }
+}

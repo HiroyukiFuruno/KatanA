@@ -1,0 +1,25 @@
+Published tap master API readback: merge edb377bcd697faf988c92e308f14340defe1f41c
+COMMAND ['brew', 'ruby', '--', '-c', 'tmp/v0.22.43-registry-recovery/published-api/Casks/katana-desktop.rb']
+EXIT 0
+Syntax OK
+
+COMMAND ['brew', 'ruby', '--', '-c', 'tmp/v0.22.43-registry-recovery/published-api/Casks/katana-desktop@0.22.43.rb']
+EXIT 0
+Syntax OK
+
+COMMAND ['brew', 'ruby', '--', '-c', 'tmp/v0.22.43-registry-recovery/published-api/Formula/katana-desktop.rb']
+EXIT 0
+Syntax OK
+
+COMMAND ['brew', 'ruby', '--', '-c', 'tmp/v0.22.43-registry-recovery/published-api/Formula/katana-desktop@0.22.43.rb']
+EXIT 0
+Syntax OK
+
+COMMAND brew ruby tmp/v0.22.43-registry-recovery/published-validate.rb
+EXIT 0
+{"type":"cask","token":"katana-desktop","version":"0.22.43","url":"https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.43/KatanA-Desktop-0.22.43.dmg","sha256":"9ae35067c3cb423656951a9ddcfb087822dfc3319f22886e85b3517640e400ed","artifacts":["Cask::Artifact::App","Cask::Artifact::PostflightSteps","Cask::Artifact::Zap"]}
+{"type":"cask","token":"katana-desktop@0.22.43","version":"0.22.43","url":"https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.43/KatanA-Desktop-0.22.43.dmg","sha256":"9ae35067c3cb423656951a9ddcfb087822dfc3319f22886e85b3517640e400ed","artifacts":["Cask::Artifact::App","Cask::Artifact::PostflightSteps","Cask::Artifact::Zap"]}
+{"type":"formula","name":"katana-desktop","version":"0.22.43","url":"https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.43/KatanA-linux-x86_64.tar.gz","sha256":"7e3e7e169c50ebfefd85084d6168a251603a93301f1f6d4fed0b1e239a273435","requirements":["LinuxRequirement"]}
+{"type":"formula","name":"katana-desktop@0.22.43","version":"0.22.43","url":"https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.43/KatanA-linux-x86_64.tar.gz","sha256":"7e3e7e169c50ebfefd85084d6168a251603a93301f1f6d4fed0b1e239a273435","requirements":["LinuxRequirement"]}
+
+No install, xattr, app or worker execution.

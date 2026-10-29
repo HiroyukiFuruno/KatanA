@@ -170,6 +170,14 @@ else
     fi
 fi
 
+# WHY: v43の公開後記録だけを公開sourceと実在するtaskfileへ結び付ける。
+if [[ "$CURRENT_BRANCH" == "release/v0.22.43-public-release-evidence" &&
+      "$TARGET_VERSION" == "0.22.43" && "$TASK_GATE_MODE" == "post-release-evidence" ]]; then
+    python3 -B scripts/release/check-v043-postpublication-scope.py \
+        --root "$PWD" --branch "$CURRENT_BRANCH" --version "$TARGET_VERSION" \
+        --repository "${KATANA_RELEASE_REPO:-HiroyukiFuruno/KatanA}"
+fi
+
 # 6. Branch naming vs Target Version for Release branches
 if [[ "$CURRENT_BRANCH" =~ ^release/ ]]; then
     if ! BRANCH_VERSION=$(bash "$RELEASE_BRANCH_VERSION_SCRIPT" "$CURRENT_BRANCH" 2>/dev/null); then

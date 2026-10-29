@@ -6,6 +6,10 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
+
+import cleanup_target
+from cleanup_target import resolve_target
 
 from cleanup_intent import write_intent
 from cleanup_remote_push import RemoteCleanupPush
@@ -102,6 +106,54 @@ class RemotePushBoundaryTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2, result.stderr)
         self.assertIn(b"remote cleanup requires a native deletion", result.stderr)
 
+
+    def publication_intent(self, branch):
+        git(self.root, "branch", branch)
+        private = self.root.parent / "publication-private"
+        private.mkdir(mode=0o700)
+        path, digest = write_intent(private, self.root, branch, self.oid,
+                                    operation="remote-delete", repository=REPOSITORY,
+                                    merge_commit=self.oid, pull_request="391")
+        payload = f"(delete) {'0' * len(self.oid)} refs/heads/{branch} {self.oid}\n".encode()
+        return path, digest, payload
+
+    def publication_metadata(self, branch):
+        return {"number": 391, "state": "closed", "merged_at": "2026-10-29T13:26:21Z",
+                "merge_commit_sha": self.oid,
+                "head": {"ref": branch, "sha": self.oid, "repo": {"full_name": REPOSITORY}},
+                "base": {"ref": "master", "repo": {"full_name": REPOSITORY}}}
+
+    def test_suffix_remote_reaudit_preserves_bare_version_and_does_not_delete(self):
+        branch = "release/v0.22.43-dependency-refresh"
+        path, digest, payload = self.publication_intent(branch)
+        repository = {"full_name": REPOSITORY, "private": False,
+                      "visibility": "public", "default_branch": "master"}
+        records = [repository, self.publication_metadata(branch)]
+        with patch.object(cleanup_target, "_gh_json", side_effect=records):
+            with patch("cleanup_merge_binding.resolve_target", wraps=resolve_target) as binding:
+                self.request.verify(payload, path, digest)
+        self.assertEqual(binding.call_args.args, (REPOSITORY, "0.22.43", self.oid, 391))
+        self.assertEqual(git(self.root, "rev-parse", "refs/heads/" + branch).decode().strip(), self.oid)
+        self.assertEqual(git(self.root, "rev-parse", "HEAD").decode().strip(), self.oid)
+
+    def test_merge_bound_nonversion_branch_is_rejected_before_github_lookup(self):
+        branch = "release/invalid-version"
+        path, digest, payload = self.publication_intent(branch)
+        with patch.object(cleanup_target, "_gh_json", side_effect=AssertionError("unexpected API lookup")):
+            with self.assertRaises(CleanupRefused):
+                self.request.verify(payload, path, digest)
+        self.assertEqual(git(self.root, "rev-parse", "refs/heads/" + branch).decode().strip(), self.oid)
+
+    def test_suffix_remote_reaudit_refuses_server_merge_mismatch(self):
+        branch = "release/v0.22.43-dependency-refresh"
+        path, digest, payload = self.publication_intent(branch)
+        repository = {"full_name": REPOSITORY, "private": False,
+                      "visibility": "public", "default_branch": "master"}
+        metadata = self.publication_metadata(branch) | {"merge_commit_sha": "a" * len(self.oid)}
+        with patch.object(cleanup_target, "_gh_json", side_effect=[repository, metadata]):
+            with self.assertRaises(CleanupRefused):
+                self.request.verify(payload, path, digest)
+        self.assertEqual(git(self.root, "rev-parse", "refs/heads/" + branch).decode().strip(), self.oid)
 
 if __name__ == "__main__":
     unittest.main()

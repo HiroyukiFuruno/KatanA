@@ -46,8 +46,8 @@
 
 ## Definition of Done
 
-- [ ] 対象不具合を実装・実経路の自動回帰で確認し、未解決を解決扱いしない。
-- [ ] `/openspec-delivery` の自己レビュー・通常commit/push・Draft review・指摘対応/reply/resolve・Ready・必須CI・通常mergeを実行し、Actions公開、全5asset/checksumと配布検証、Issue更新、OpenSpec archive、安全な後処理まで証拠を残す。
+- [x] 対象不具合を実装・実経路の自動回帰で確認し、未解決を解決扱いしない。
+- [x] `/openspec-delivery` の自己レビュー・通常commit/push・Draft review・指摘対応/reply/resolve・Ready・必須CI・通常mergeを実行し、Actions公開、全5asset/checksumと配布検証、Issue更新、OpenSpec archive、安全な後処理まで証拠を残す。
 
 本人の実機確認とTerms承認はClose条件に含めない。上流repositoryは編集せずIssueへ切り分ける。独立した実装・検証を上流や本人の返答待ちで止めない。
 
@@ -103,9 +103,9 @@
 - [x] 8.1 自己レビュー、変更範囲のfmt/lint/回帰、文書検査、依存関係調査・更新を完了する。品質条件は下げない。
 - [x] 8.2 関心別の署名付き通常commit、通常push hook一回の結果を回収し、失敗を修正する。重い同検査を直前に重複実行しない。
 - [x] 8.3 Draft PRで自己・独立・Codex reviewを全ページ取得し、P0/P1修復・各thread reply/resolve・fresh確認を完了する。Readyへの昇格は次の8.4で行う。
-- [ ] 8.4 レビュー完了後にReadyへ昇格し、新HEADの全OS/build/test/lint/coverage/security/packaging/host受入の必須CIを確認し、通常mergeする。元のRSS cold 196608KiB/steady 65536KiBと独立したphysical-footprint予算、KatanA所有資源の解放・通常終了の既存自動検査を維持する。KDV #70へ切り分けた同期open中のworker終了未達は明記し、解消済みとはしない。旧HEADの合格を流用しない。
-- [ ] 8.5 GitHub Actionsの公開と全5asset/checksum・配布検証・外部配布同期の実結果を回収する。
-- [ ] 8.6 Issue状態更新・OpenSpec archive・branch/worktree/stashの安全な後処理を完了する。リモートbranchは明示指示なしに削除しない。
+- [x] 8.4 レビュー完了後にReadyへ昇格し、新HEADの全OS/build/test/lint/coverage/security/packaging/host受入の必須CIを確認し、通常mergeする。元のRSS cold 196608KiB/steady 65536KiBと独立したphysical-footprint予算、KatanA所有資源の解放・通常終了の既存自動検査を維持する。KDV #70へ切り分けた同期open中のworker終了未達は明記し、解消済みとはしない。旧HEADの合格を流用しない。
+- [x] 8.5 GitHub Actionsの公開と全5asset/checksum・配布検証・外部配布同期の実結果を回収する。
+- [x] 8.6 Issue状態更新・OpenSpec archive・branch/worktree/stashの安全な後処理を完了する。リモートbranchは明示指示なしに削除しない。
 
 ## 最新の実装・検証証跡（2026-10-29）
 
@@ -181,7 +181,7 @@ Loadingの最終実装は既存の共通AlignCenter(shrink_to_fit)を再利用�
 
 既存worktreeのorigin/master50ffcd07からrelease/v0.22.43-dependency-refreshへ本人差分をそのまま移し、stashもworktreeも作成していない。対象はctutils0.4.6→0.4.7と、撮影用lock内の既存syn/windows-sysの選択更新。KDV/KRRの公開registry固定は変更しない。
 
-- [ ] 本人の両lock更新を精査・対象検証・通常commit/pushし、Draftレビューから新HEAD全必須CI/通常mergeを経てv0.22.43として公開する。旧fd/50ffの合格や取消を新lockの合格へ流用しない。
+- [x] 本人の両lock更新を精査・対象検証・通常commit/pushし、Draftレビューから新HEAD全必須CI/通常mergeを経てv0.22.43として公開する。旧fd/50ffの合格や取消を新lockの合格へ流用しない。
 
 8.1〜8.3の完了記録はPR389までの実装修正に関する実績であり、今回追加更新のpush/レビュー結果を先取りしない。8.4〜8.6は依存更新を含む最終構成で継続する。両lockの元差分はtmp/v0.22.43-prep/concurrent-lock-update.diffにも保持したが、原本を退避/破棄せず正式履歴へ統合する。
 
@@ -209,7 +209,7 @@ CI40818285942 attempt1は、3OSの本体・撮影ツール・複数形式38操�
 - [/] xml1.4がnamespace解決後に拒否する重複属性と、同じ不変bytesのZIP metadata作成前に検証済みのCDFH署名について、到達不能な再検査だけを整理。実malformed入力を元parserと共有入口が拒否する回帰を保持・追加する。
 - [/] 異なるCP437/UTF8 raw名から同じdecoded名への衝突と、実ZIPentryの読込上限ちょうど/1byte超の境界を恒久回帰へ追加。商用上限や公開API・testportは変更しない。旧16件を維持して計20件の対象coverageが成功（失敗0/ignore0）。Office保護の商用6ファイルに既存coverage.shと同一の判定式を適用し、意味のある未実行行0を確認した。全体CIの代替にはしない。
 - [x] 修復後の対象20件・商用6ファイルのfocused coverageを回収し、意味のある未実行行0を確認する。判定式の変更や追加除外はない。
-- [ ] 正式AST・通常commit/push・新current reviewと全必須CIを回収し、公開から後処理まで継続する。旧eb60の失敗や他OS成功を新HEADの合格に流用しない。
+- [x] 正式AST・通常commit/push・新current reviewと全必須CIを回収し、公開から後処理まで継続する。旧eb60の失敗や他OS成功を新HEADの合格に流用しない。
 
 根拠: dependency-refresh/required-ci-eb60eca/macos-job-clean.log、office-font-safety-coverage-repair.md、font-guard-coverage-fix-review.md。最初のfocused coverage起動はCLIのtest filter構文違いで検査前exit1、公式helpのtest subcommandで修正しsession55463へ再実行。検査前失敗をテスト不合格や成功に数えない。
 
@@ -221,7 +221,7 @@ normal-push-2cbc0bd9.exitは実1。UI libは1417成功/1失敗/既存ignore2・f
 
 - [x] 同じ通常profile・実Office worker・既存test-specific入口のexact testは1成功。その後同条件2threads/skip fixtureのUI lib全体は1418成功・失敗0・既存ignore2/filter2。原失敗の原因は未確定で、上流や容量・並列envのせいと断定しない。
 - [/] private test fixtureのtimeout assertだけに、失敗時のowned active path/frame/idle/preview/worker/KDV snapshotを追加。通常poll・成功条件・15秒/5秒上限・実worker入口は不変で、製品の公開APIや新testportはない。単独成功を全面解消や通常push成功へ代用しない。
-- [ ] 診断差分の通常commit/push・新current review・全CIを回収し、公開・配布物照合・後処理まで継続する。#386の原報告全体を解決済みにはしない。
+- [x] 診断差分の通常commit/push・新current review・全CIを回収し、公開・配布物照合・後処理まで継続する。#386の原報告全体を解決済みにはしない。
 
 証跡: docx-frame-exact-standard.log/.exit0、full-ui-standard-diagnostic.log/.exit0、docx-env-global-race-readonly-audit.md、timeout-diagnostic-review.md。独立Highの診断2filesはP0/P1/P2なし。UI lib内worker環境の書換えは未検出、別lockでのHEADLESS変更と今回timeoutの因果は未確定。
 
@@ -230,7 +230,7 @@ normal-push-2cbc0bd9.exitは実1。UI libは1417成功/1失敗/既存ignore2・f
 - [x] 新HEAD4e5c6b8のWindows実CI失敗を回収。`rename_tests.rs:201` の実directory renameがOS5/PermissionDenied、1377PASS/1FAIL。未生成headless artifact upload失敗は二次的な採取失敗として分離。
 - [x] 現Windows PollWatcherがnotify8.2.1→WalkDir/read_dirで一時directory列挙を行うことを一次sourceで確認。固有fixture/無登録loaderの構成を照合し、別fixture同一path競合の証拠は無し。自己scan競合は原因候補で所有handle実測による確定ではない。
 - [x] Windows directory topologyをmetadata存在/typeだけのprivate監視へ修復。画像byte監視の既存ContentWatch・元250ms・既存rename回帰・期限は不変。macOS上で新backend実FS/lifecycle13件とwatcher全51件PASS。Windows実行の合格は次の新HEAD CIで別に確認する。
-- [ ] 対象検証・通常commit/push・新current review/全CI・公開を回収する。旧4Eの失敗や他OS成功を修復後の合格へ流用しない。
+- [x] 対象検証・通常commit/push・新current review/全CI・公開を回収する。旧4Eの失敗や他OS成功を修復後の合格へ流用しない。
 
 Issue: [#394](https://github.com/HiroyukiFuruno/KatanA/issues/394)
 証跡: `tmp/v0.22.43-prep/dependency-refresh/required-ci-4e5c6b8f/windows-job-clean.log` と `windows-inventory/windows-rename-watch-matrix.log`。Windows fixtureのOS5とnative matrixの入出力は保存するが、matrixはRecommendedWatcherの検査であり、現在のPollWatcherの保持handleを証明したものではない。
@@ -242,3 +242,30 @@ Issue: [#394](https://github.com/HiroyukiFuruno/KatanA/issues/394)
 ### #387 下部画像controlsの実pointer検証
 
 通常/全画面の小viewportで実描画したcontrol位置へpointer移動・press/releaseを送り、zoom 1.5→1.75→1.5とreset（zoom1/pan0）、画像との交差面積0・上下順序を同時に確認する2回帰を追加。既存を含むcontroller9件は `windows-directory-watch/target-controller-final.exit=0`。言語の並列変更へ依存するlabel snapshotを使わず、新testport/Mock/製品挙動変更は無し。独立Highの最新diffはP0/P1/P2=0、正式AST再検査も成功。公開/新HEAD全CIは引き続き8.4〜8.6で確認する。
+
+### 最新95ce構成の正式レビュー・CI・マージ実績
+
+本人の両lock更新は21b269a2へ統合し、Office入力保護eb60eca7/coverage修復2cbc0bd9/失敗時診断4e5c6b8f/Windows監視498c90e0/画像下部実pointer95ce239cを含む最終HEAD `95ce239cab09b5c9991af2c7daec507395f42b72` の通常push hookはexit0。PR391の同HEAD CI40867263464 attempt1は全8job成功、Readiness40867263477も成功。正式Mac coverageのstrict document surface100%/意味のある未実行0、元Windows rename回帰と新metadata13件・実pointer2件も成功した。
+
+Codex再依頼6497843555の結果は2026-10-29T13:24:05Zに同HEADでcompleted・findingsなし。REST全ページ/GraphQL threadを再取得し未解決0を確認後、PR391を通常mergeした。merge commitは `0d139094a39887a7a5657ecdd63f53a6db012fde`（GitHub Verified）で、95ceとtree同一だがcommit SHAは別。Release40881935779 attempt1とM2 push CI40881934397は実行中であり、公開完了・配布受入とは区別する。push CIのPR限定coverage/headless/lint/security skipを成功へ読み替えない。
+
+公開後記録は同じ既存worktreeの `release/v0.22.43-public-release-evidence` で準備する。canonical5仕様へ既存要件を保持して追加要件を同期、仕様検査41件成功・対象change strict検査成功。実公開前に8.5/8.6や公開を含む追加lock項目を完了へ書換えない。
+
+公開証跡の対象補正: 上の旧時点の「新v43の3manifest」予定記述は、現workflowの実条件（identity3manifestはv0.22.42だけ）と一致しない。v43で未生成のmanifestを成功扱いしたり新規必須化せず、実Releaseの元run/attempt・3OS checkout M2・同run5payloadと公開5assetのbyte/checksum照合・全6署名出自・既存native起動検査で同じ公開元照合の目的を検証する。v42のmanifest/source/asset freezeは変更しない。
+
+正式配布検査: Release40881935779 attempt1の3OS build/package/既存asset契約が成功。Linux job123500388689、Windows123500388785、macOS123500388802は全て実checkout M2。Linux/WindowsとmacOS x86_64/arm64のclean-runner継続UI起動検査も成功し、取得した同run artifact内mainと実起動mainのhashを照合した。元Windows200ms条件・RSS/フォント/worker条件を維持。公開ジョブは後続工程であり、公開asset照合はまだ8.5へ残す。
+
+
+## 2026-10-30 公開後の実結果
+
+v0.22.43は2026-10-29T15:09:16Z公開、source M2=0d139094a39887a7a5657ecdd63f53a6db012fde。本人の両lock更新を含む。PR391 H95と同treeを確認し、H95のCI40867263464全8jobs/Readiness40867263477・最新全review未解決0後通常merge。Release40881935779 attempt1の必須product7jobsは成功、実5payload/checksum/既存archive契約/全6SLSAのsource・run・attemptを照合、4native環境の起動検査も成功。詳細はevidence/releases/v0.22.43/publication.mdと付属JSON/log。
+
+workflow全体はcleanup selectorがsuffix branchを拒否してfailure。削除実行前の拒否であり、公開・製品7jobs成功と全workflow成功を混同しない。既存remote3headsは不在確認、不要local3branchesはM2への包含確認後通常削除、soleWT/master未編集/stash0。現在の記録branchは後処理PRに必要なため保持する。
+
+初回Homebrew/Linuxbrew同期failedは保存。その後tapPR7 normalmergeedb377bcd697faf988c92e308f14340defe1f41c→master実4metadata/Ruby/Cask/Formula評価成功で復旧。WinGet提出とcatalog採用はexternal-registry-sync.jsonの実観測へ分離する。CIcredential詳細の安全な採取は独立Issue395へ分離し本人認証をClose/公開条件へ含めない。
+
+#385の原PNG約30秒/Missing全原因、#386の同期open中worker終了/KDV70は未解決を含み、ReleaseのKnown limitationsへ明記した。未達や本人QAを本changeの完了と偽らず、確認済みKatanA変更の実装・自動検証・公開をここで記録する。
+
+## 2026-10-30 archive実績
+
+Issue357/376/381/382/383/384/387/392/394は実装・対象検証・H95全必須CI・M2公開照合に基づきClosed。ボード388のcomment6502005467に公開済み/未解決385・386/後続362・395を区別した。canonical5仕様へ同期、実changeを本日付archiveへ移動。旧local3branchは通常削除済みでstash0/soleWT/master未編集。現在の公開後証跡branchはこの記録の正式統合に必要なため保持し、本changeの製品再公開を要求する条件へ拡大しない。後処理PRとCI診断の結果・最終localbranch整理は作業台帳で引き続き追跡する。

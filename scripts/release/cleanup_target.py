@@ -7,19 +7,22 @@ from urllib.parse import quote
 
 from github_publication import MAX_RESPONSE_BYTES, _gh_json, check_repository
 from push_repository_context import remote_repository
+from release_branch_version import release_branch_version
 from release_cleanup_audit import CANONICAL_OID, CleanupRefused
 
 LOOKUP_SECONDS = 30
 MAX_ASSOCIATED_PRS = 1000
 
 
-def _candidate(value: object, repository: str, default: str, branch: str) -> dict | None:
+def _candidate(value: object, repository: str, default: str, version: str) -> dict | None:
     if not isinstance(value, dict):
         raise CleanupRefused("cleanup PR metadata is not an object")
     head, base = value.get("head"), value.get("base")
     if not isinstance(head, dict) or not isinstance(base, dict):
         raise CleanupRefused("cleanup PR head/base metadata is missing")
-    if head.get("ref") != branch or base.get("ref") != default or value.get("state") != "closed":
+    branch = head.get("ref")
+    branch_version = release_branch_version(branch)
+    if branch_version is None or branch_version != version or base.get("ref") != default or value.get("state") != "closed":
         return None
     merged = value.get("merged_at")
     if not isinstance(merged, str) or not merged.strip():
@@ -39,8 +42,7 @@ def _candidate(value: object, repository: str, default: str, branch: str) -> dic
 def select_target(values: list, repository: str, default: str, version: str) -> dict:
     if len(values) > MAX_ASSOCIATED_PRS:
         raise CleanupRefused("cleanup PR candidate limit exceeded")
-    branch = "release/v" + version
-    selected = [_candidate(value, repository, default, branch) for value in values]
+    selected = [_candidate(value, repository, default, version) for value in values]
     matches = [value for value in selected if value is not None]
     if len(matches) != 1:
         raise CleanupRefused("cleanup requires exactly one merged release PR")
