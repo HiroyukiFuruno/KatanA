@@ -1,4 +1,4 @@
-use katana_core::document_source::BinaryDocumentFormat;
+use katana_core::document_source::{BinaryDocumentFormat, OfficeFontSafetyPolicy};
 use katana_document_viewer::{
     BinaryDocumentSource, OfficeDocumentFormat, OfficeDocumentSource, ViewerSource,
     ViewerSourceIdentity,
@@ -111,6 +111,7 @@ impl DocumentSurfaceSource {
     pub(super) fn take_viewer_source(&mut self) -> Result<ViewerSource, DocumentFailure> {
         let identity = ViewerSourceIdentity::new(self.uri.clone(), self.revision.clone());
         let bytes = self.take_bytes()?;
+        self.validate_embedded_font_metadata(&bytes)?;
         Ok(match self.format {
             BinaryDocumentFormat::Pdf => ViewerSource::Pdf(BinaryDocumentSource::new(
                 identity,
@@ -126,6 +127,18 @@ impl DocumentSurfaceSource {
             BinaryDocumentFormat::Pptx => {
                 self.office_source(identity, bytes, OfficeDocumentFormat::Pptx)
             }
+        })
+    }
+
+    fn validate_embedded_font_metadata(&self, bytes: &[u8]) -> Result<(), DocumentFailure> {
+        /* WHY: local/remote共通のworker引渡し前に、出力先を変え得るフォント名を拒否する。 */
+        OfficeFontSafetyPolicy::validate(self.format, bytes).map_err(|error| {
+            DocumentFailure::source_intake(
+                "validate_embedded_fonts",
+                self.uri.clone(),
+                Some(self.format),
+                error.to_string(),
+            )
         })
     }
 
@@ -158,3 +171,7 @@ impl Eq for DocumentSurfaceSource {}
 #[cfg(test)]
 #[path = "source_memory_tests.rs"]
 mod memory_tests;
+
+#[cfg(test)]
+#[path = "source_font_safety_tests.rs"]
+mod font_safety_tests;

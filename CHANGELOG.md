@@ -13,10 +13,17 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 ### 🐛 Bug Fixes
 
 - **Closing another tab**: Keep the current document selected when closing a tab to its left, instead of unexpectedly opening a different preview.
+- **Windows image folders**: Monitor folder availability without enumerating its contents, while keeping file-content change detection separate.
 - **Repeated image loading**: Automatic refresh preserves unchanged images instead of discarding their preview repeatedly. Manual reload and real file changes still refresh the image.
 - **Image loading completion**: Background image loading requests a new frame when its result becomes available; a full loading queue remains retryable instead of displaying a permanent failure.
 - **Tab group naming**: Confirming, cancelling or dismissing a group-name popup releases its input focus, and removing the last group member clears any remaining rename state.
 - **Unavailable document modes**: PDF and Office documents reject unsupported code-only and split modes consistently across menus, shortcuts and commands.
+
+- **Embedded Office font safety**: Reject unsafe embedded-font names before native Word and PowerPoint preview conversion can write outside its font folder.
+
+### 🔧 System
+
+- Updated compatible dependencies used by the application and screenshot tooling.
 
 ## [0.22.42] - 2026-10-24 08:45:11 (UTC)
 

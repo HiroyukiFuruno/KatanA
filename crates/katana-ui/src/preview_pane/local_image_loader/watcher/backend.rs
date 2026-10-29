@@ -1,18 +1,19 @@
-use notify::{Config, Event};
+use notify::{Config, Event, Watcher};
 
-#[cfg(windows)]
-use notify::PollWatcher;
+#[cfg(any(windows, test))]
+mod directory_watch;
+
 #[cfg(not(windows))]
-use notify::{RecommendedWatcher, Watcher};
-#[cfg(windows)]
+use notify::RecommendedWatcher;
+#[cfg(any(windows, test))]
 use std::time::Duration;
 
 #[cfg(windows)]
-pub(super) type ImageWatcher = PollWatcher;
+pub(super) type ImageWatcher = directory_watch::DirectoryWatcher;
 #[cfg(not(windows))]
 pub(super) type ImageWatcher = RecommendedWatcher;
 
-#[cfg(windows)]
+#[cfg(any(windows, test))]
 const WINDOWS_IMAGE_POLL_INTERVAL: Duration = Duration::from_millis(250);
 
 pub(super) struct Backend;
@@ -25,7 +26,7 @@ impl Backend {
         #[cfg(windows)]
         {
             let mut handler = handler;
-            /* WHY: Windowsの監視handleがdirectory renameを拒否するため、保持handleのないpollingを使う。 */
+            /* WHY: directory列挙とrenameの競合を避け、存在とtypeだけを監視する。 */
             ImageWatcher::new(
                 move |event| handler(Self::normalize_loss(event)),
                 Config::default().with_poll_interval(WINDOWS_IMAGE_POLL_INTERVAL),

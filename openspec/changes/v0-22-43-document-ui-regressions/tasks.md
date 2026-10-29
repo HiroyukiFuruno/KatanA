@@ -174,3 +174,71 @@ Loadingの最終実装は既存の共通AlignCenter(shrink_to_fit)を再利用�
 失敗ログ: `tmp/v0.22.43-prep/required-ci-dbe1c08d/job-123176311422-failure.log` と `job-123176311422-E0423.txt`。今回の実装修正に新公開APIや本体制御の緩和を追加しない。
 
 修復後は既存debug target・同じlocked依存・診断OFFの通常Office worker入口で、撮影ツール全55 tests成功（ignore/filter0）。実KatanaApp・一時設定の実egui文字入力でquery更新とPDF pathの禁止コマンド除外も成功。ログ `tmp/v0.22.43-prep/screenshot-palette-ci-fix/all-tests-bash.log` / exit0。最初のscript直実行は非実行bitでexit126だったため、既存のbash入口で再実行した。release profileと全OSは新HEADの必須CIで再検証し、このdebug結果を代用しない。
+
+### 本人の追加依存更新を公開前に統合する
+
+2026-10-29の最新humanが、検証中に変更された両lockfileは本人のjust update由来であり「取りこんで公開」と明示した。v0.22.43はRelease/tagとも未作成（API404）で、旧公開run40806478547はCI gate待ち中に取消、旧Mのpush CI40806478312も取消した。公開済みassetやtagの上書きではない。PR389はmerge済みのまま保持する。
+
+既存worktreeのorigin/master50ffcd07からrelease/v0.22.43-dependency-refreshへ本人差分をそのまま移し、stashもworktreeも作成していない。対象はctutils0.4.6→0.4.7と、撮影用lock内の既存syn/windows-sysの選択更新。KDV/KRRの公開registry固定は変更しない。
+
+- [ ] 本人の両lock更新を精査・対象検証・通常commit/pushし、Draftレビューから新HEAD全必須CI/通常mergeを経てv0.22.43として公開する。旧fd/50ffの合格や取消を新lockの合格へ流用しない。
+
+8.1〜8.3の完了記録はPR389までの実装修正に関する実績であり、今回追加更新のpush/レビュー結果を先取りしない。8.4〜8.6は依存更新を含む最終構成で継続する。両lockの元差分はtmp/v0.22.43-prep/concurrent-lock-update.diffにも保持したが、原本を退避/破棄せず正式履歴へ統合する。
+
+追加依存構成で、通常Office worker入口・同じlocked graphの撮影ツール全55 testsが成功（ignore/filter0、dependency-refresh/screenshot-tests.log / exit0）。KML対象3文書・diff・pr-bootstrap phase検査成功。High独立レビューも依存要求・checksum・Windows向けlocked解決を確認して追加P0/P1/P2なし。これは対象検証結果であり、新HEADの通常push/レビュー/全必須CI/公開を完了扱いしない。
+
+### 実API監査で検出した別件P1 — KatanA392 / KDV71
+
+GHSA-m665-v7pm-7grjのstreaming ZIP APIは調査した親経路で未使用。旧3件の例外へ追加しない。一方、公開KDV0.5.12→office2pdf0.8.1 native DOCX/PPTXで、埋込みフォント名から生成したfilenameをtemp_dir.joinしてfs::writeする別経路を確認した。KDV preflightはZIP entryやrelationshipを検査するが、このXML属性は未検査。既存の書込み可能な親dirと所定font suffixのfileがある場合、専用dir外書込/上書きが可能という静的P1であり、元GHSAと混同しない。XLSXは当該抽出へ到達しない。本人FSへPoCは実行していない。
+
+- [/] core共通のストリーム検査とlocal/remote共通のworker引渡し入口で、危険な埋込みfont名をKDV実行前に拒否する。正常Unicode名/通常文書を維持し、PDF/XLSXへ解析負荷を追加しない。
+- [/] 実ZIP/XMLのcore回帰、local/remote共有入口、encoding/DTD/重複/読取上限を自動検証する。通常commit/push以後の公開工程は8.4〜8.6で継続し、旧21の取消を合格にしない。
+
+xmltreeのDOMへ恣意的なdepth制限や独自XML字句処理を足す案は採用しない。既存lockにあるxml1.4.0を直接参照して既存ストリームparserを再利用するため、workspace/core依存宣言と両lockのcore edgeだけを追加する。新しいpackage/版/featureは増やさず、既存16MiB part上限とparser既定token制限内で扱う。単なるテスト都合の本体APIやtestportは作らない。
+
+KatanA担当Issue: [KatanA392](https://github.com/HiroyukiFuruno/KatanA/issues/392) 。上流handoff: [KDV71](https://github.com/HiroyukiFuruno/katana-document-viewer/issues/71) 。この担当は上流repoを編集しない。PR391をDraftへ戻し、新21CI40811321117/Readiness40811322438は取消終端を回収した（未生成artifact upload失敗を本体不具合扱いしない）。確認済みのKatanA防止を進め、上流待ちへ戻さない。
+
+font guard最終対象検証はcore16/共有UI入口3/撮影全55が成功（font-guard-core-final/ui-final/screenshot-final.log と各exit0）。正式AST再検査成功、全新file200行以下・関数30行以下、fmt/KML/diff成功。High独立review P0/P1なし、P2のPPTX fixture GUIDを修復してfresh全priority0。最初のdeprecated API/UItest shadow/AST style失敗ログは保持し、rule/allow/基準を変更せず修復した。通常push・新current review・全CI・公開は未完了。
+
+共有source周辺27件（読取/取消/サイズ/所有メモリ/差分再読込と新guard）が追加で成功し、既存入口の回帰を維持した。font-guard-source-regressions.log / exit0。今回のcommitは本体の危険font入力防止とその検査・依存edge・公開文書のみをまとめ、本人の両lock更新21b269a2を保持する。
+
+### eb60eca 新CIのcoverage不足を修復する
+
+CI40818285942 attempt1は、3OSの本体・撮影ツール・複数形式38操作、Lint、供給網、CodeQLが成功した。一方Mac coverageは全test成功後、Office保護の意味のある未実行10行で失敗。Readiness40818286038は成功だが、これを全CI成功や公開へ代用しない。PR391をDraftへ戻し、基準・除外・上限を維持して修復する。
+
+- [/] xml1.4がnamespace解決後に拒否する重複属性と、同じ不変bytesのZIP metadata作成前に検証済みのCDFH署名について、到達不能な再検査だけを整理。実malformed入力を元parserと共有入口が拒否する回帰を保持・追加する。
+- [/] 異なるCP437/UTF8 raw名から同じdecoded名への衝突と、実ZIPentryの読込上限ちょうど/1byte超の境界を恒久回帰へ追加。商用上限や公開API・testportは変更しない。旧16件を維持して計20件の対象coverageが成功（失敗0/ignore0）。Office保護の商用6ファイルに既存coverage.shと同一の判定式を適用し、意味のある未実行行0を確認した。全体CIの代替にはしない。
+- [x] 修復後の対象20件・商用6ファイルのfocused coverageを回収し、意味のある未実行行0を確認する。判定式の変更や追加除外はない。
+- [ ] 正式AST・通常commit/push・新current reviewと全必須CIを回収し、公開から後処理まで継続する。旧eb60の失敗や他OS成功を新HEADの合格に流用しない。
+
+根拠: dependency-refresh/required-ci-eb60eca/macos-job-clean.log、office-font-safety-coverage-repair.md、font-guard-coverage-fix-review.md。最初のfocused coverage起動はCLIのtest filter構文違いで検査前exit1、公式helpのtest subcommandで修正しsession55463へ再実行。検査前失敗をテスト不合格や成功に数えない。
+
+対象実績: font-guard-coverage-fix/targeted-coverage-test.log/.exit=0、targeted-report.txt、guard-only-report.txt、focused-coverage-summary.json。初回CLI構文エラーのログも保持。独立Highの最終6file差分はP0/P1/P2なし、検査前の結果を先取りしなかった。正式AST/Clippyは通常commit hook、全検査は通常push hookを正本として回収し、同じ重い手動検査を重ねない。
+
+### 2cbc0bd9 normal pushの初回DOCX待機失敗を分離する
+
+normal-push-2cbc0bd9.exitは実1。UI libは1417成功/1失敗/既存ignore2・fixture filter2で、失敗はclose処理へ入る前のDOCX初回frame/idle待ち15秒超過。HTML closeは3ms/idle0だった。check-strict終了を成功と推測した進捗報告は誤りであり、全hookの終了コードで判断する。coverage修復20件の成功とは別に保持する。
+
+- [x] 同じ通常profile・実Office worker・既存test-specific入口のexact testは1成功。その後同条件2threads/skip fixtureのUI lib全体は1418成功・失敗0・既存ignore2/filter2。原失敗の原因は未確定で、上流や容量・並列envのせいと断定しない。
+- [/] private test fixtureのtimeout assertだけに、失敗時のowned active path/frame/idle/preview/worker/KDV snapshotを追加。通常poll・成功条件・15秒/5秒上限・実worker入口は不変で、製品の公開APIや新testportはない。単独成功を全面解消や通常push成功へ代用しない。
+- [ ] 診断差分の通常commit/push・新current review・全CIを回収し、公開・配布物照合・後処理まで継続する。#386の原報告全体を解決済みにはしない。
+
+証跡: docx-frame-exact-standard.log/.exit0、full-ui-standard-diagnostic.log/.exit0、docx-env-global-race-readonly-audit.md、timeout-diagnostic-review.md。独立Highの診断2filesはP0/P1/P2なし。UI lib内worker環境の書換えは未検出、別lockでのHEADLESS変更と今回timeoutの因果は未確定。
+
+## Windows画像フォルダー監視の修復 — #394（2026-10-29）
+
+- [x] 新HEAD4e5c6b8のWindows実CI失敗を回収。`rename_tests.rs:201` の実directory renameがOS5/PermissionDenied、1377PASS/1FAIL。未生成headless artifact upload失敗は二次的な採取失敗として分離。
+- [x] 現Windows PollWatcherがnotify8.2.1→WalkDir/read_dirで一時directory列挙を行うことを一次sourceで確認。固有fixture/無登録loaderの構成を照合し、別fixture同一path競合の証拠は無し。自己scan競合は原因候補で所有handle実測による確定ではない。
+- [x] Windows directory topologyをmetadata存在/typeだけのprivate監視へ修復。画像byte監視の既存ContentWatch・元250ms・既存rename回帰・期限は不変。macOS上で新backend実FS/lifecycle13件とwatcher全51件PASS。Windows実行の合格は次の新HEAD CIで別に確認する。
+- [ ] 対象検証・通常commit/push・新current review/全CI・公開を回収する。旧4Eの失敗や他OS成功を修復後の合格へ流用しない。
+
+Issue: [#394](https://github.com/HiroyukiFuruno/KatanA/issues/394)
+証跡: `tmp/v0.22.43-prep/dependency-refresh/required-ci-4e5c6b8f/windows-job-clean.log` と `windows-inventory/windows-rename-watch-matrix.log`。Windows fixtureのOS5とnative matrixの入出力は保存するが、matrixはRecommendedWatcherの検査であり、現在のPollWatcherの保持handleを証明したものではない。
+
+### Windows修復の対象検証
+
+`windows-directory-watch/target-directory-watch-retry1.exit=0`（13PASS）、`target-watcher.exit=0`（51PASS）、`ast-lint-retry1.exit=0`（正式ASTを含む30PASS）。初回のnotify private method compile errorは公開enumのmatchesへ修復。独立Highの最新差分はP0/P1/P2=0。これらはlocal実入力の対象結果であり、元Windows OS5の実行成功は新CI未確認。
+
+### #387 下部画像controlsの実pointer検証
+
+通常/全画面の小viewportで実描画したcontrol位置へpointer移動・press/releaseを送り、zoom 1.5→1.75→1.5とreset（zoom1/pan0）、画像との交差面積0・上下順序を同時に確認する2回帰を追加。既存を含むcontroller9件は `windows-directory-watch/target-controller-final.exit=0`。言語の並列変更へ依存するlabel snapshotを使わず、新testport/Mock/製品挙動変更は無し。独立Highの最新diffはP0/P1/P2=0、正式AST再検査も成功。公開/新HEAD全CIは引き続き8.4〜8.6で確認する。
