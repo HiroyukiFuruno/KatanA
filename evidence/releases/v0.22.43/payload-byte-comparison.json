@@ -1,0 +1,55 @@
+{
+  "release_url": "https://github.com/HiroyukiFuruno/KatanA/releases/tag/v0.22.43",
+  "run": 40881935779,
+  "attempt": 1,
+  "source": "0d139094a39887a7a5657ecdd63f53a6db012fde",
+  "assets": [
+    {
+      "name": "checksums.txt",
+      "public_asset_id": 688934144,
+      "size": 453,
+      "sha256": "71198079fee888e3947c6b21fdc905cd4015e77cf661245fa904c40e1df3fa24",
+      "api_digest": "sha256:71198079fee888e3947c6b21fdc905cd4015e77cf661245fa904c40e1df3fa24"
+    },
+    {
+      "name": "KatanA-Desktop-0.22.43.dmg",
+      "public_asset_id": 688934140,
+      "size": 223000708,
+      "sha256": "9ae35067c3cb423656951a9ddcfb087822dfc3319f22886e85b3517640e400ed",
+      "api_digest": "sha256:9ae35067c3cb423656951a9ddcfb087822dfc3319f22886e85b3517640e400ed",
+      "same_run_payload_bytes_equal": true
+    },
+    {
+      "name": "KatanA-linux-x86_64.tar.gz",
+      "public_asset_id": 688934141,
+      "size": 121004330,
+      "sha256": "7e3e7e169c50ebfefd85084d6168a251603a93301f1f6d4fed0b1e239a273435",
+      "api_digest": "sha256:7e3e7e169c50ebfefd85084d6168a251603a93301f1f6d4fed0b1e239a273435",
+      "same_run_payload_bytes_equal": true
+    },
+    {
+      "name": "KatanA-macOS.zip",
+      "public_asset_id": 688934133,
+      "size": 223298556,
+      "sha256": "5b45e6f61ab98c9ead6f26e9ea774f17716b4011253229126aea38eaa6942560",
+      "api_digest": "sha256:5b45e6f61ab98c9ead6f26e9ea774f17716b4011253229126aea38eaa6942560",
+      "same_run_payload_bytes_equal": true
+    },
+    {
+      "name": "KatanA-windows-x86_64.msi",
+      "public_asset_id": 688934134,
+      "size": 109121536,
+      "sha256": "78881d33e9f43e2260c2cb5b1c711aa2670be7bd8167ed214906937d79e42263",
+      "api_digest": "sha256:78881d33e9f43e2260c2cb5b1c711aa2670be7bd8167ed214906937d79e42263",
+      "same_run_payload_bytes_equal": true
+    },
+    {
+      "name": "KatanA-windows-x86_64.zip",
+      "public_asset_id": 688934190,
+      "size": 105801417,
+      "sha256": "62671109f07e0101d828020f27ac5eb9ff79d287173a6630e0536cd3861144a0",
+      "api_digest": "sha256:62671109f07e0101d828020f27ac5eb9ff79d287173a6630e0536cd3861144a0",
+      "same_run_payload_bytes_equal": true
+    }
+  ]
+}

@@ -31,3 +31,18 @@ KatanA SHALL separate close-action response from background teardown, preserve e
 
 - **WHEN** a loaded HTML, DOCX, XLSX or PPTX tab is closed
 - **THEN** the remaining interface can progress and teardown reaches the existing idle/resource and memory conditions without weakening them
+
+### Requirement: Office embedded font names are checked before conversion
+
+KatanA SHALL apply the same bounded DOCX/PPTX embedded-font validation at local and remote source intake before handing bytes to the document worker. Embedded font names containing path separators, colon or NUL, ambiguous archive names and malformed XML SHALL be rejected without writing extracted fonts. Normal Unicode names SHALL remain accepted. Existing source and metadata size limits SHALL be preserved.
+
+#### Scenario: Unsafe embedded font name from local or remote input
+
+- **WHEN** a DOCX or PPTX contains a known embedded-font marker and an unsafe font name, including encoded XML attribute forms
+- **THEN** the shared source intake reports a validation error before conversion and the document worker does not receive those bytes
+
+#### Scenario: Normal input and other document formats
+
+- **WHEN** a normal Unicode font name or an ordinary Office document is opened
+- **THEN** the shared validation accepts it within the existing limits
+- **AND** PDF and XLSX do not execute the DOCX/PPTX font parser, while their existing format checks remain in effect

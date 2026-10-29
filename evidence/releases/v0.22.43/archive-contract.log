@@ -1,0 +1,18 @@
+## macos
+OK: KatanA Desktop.app/Contents/MacOS/KatanA: arm64,x86_64 minos=13.0.0
+OK: KatanA Desktop.app/Contents/MacOS/kdv-office-worker: arm64,x86_64 minos=13.0.0
+OK: macOS zip contract satisfied (tmp/v0.22.43-prep/postpublish-v0.22.43-40881935779/release/KatanA-macOS.zip)
+
+exit=0
+## linux
+OK: KatanA: x86_64
+OK: kdv-office-worker: x86_64
+OK: Linux tar.gz contract satisfied (tmp/v0.22.43-prep/postpublish-v0.22.43-40881935779/release/KatanA-linux-x86_64.tar.gz)
+
+exit=0
+## windows
+OK: KatanA.exe: x86_64
+OK: kdv-office-worker.exe: x86_64
+OK: Windows zip contract satisfied (tmp/v0.22.43-prep/postpublish-v0.22.43-40881935779/release/KatanA-windows-x86_64.zip)
+
+exit=0
