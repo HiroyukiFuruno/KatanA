@@ -164,3 +164,13 @@ Loadingの最終実装は既存の共通AlignCenter(shrink_to_fit)を再利用�
 実装修正を含む通常pushは `normal-push-3bb1ad10.log` / exit0、remote同期0/0。GitHub上で20commit全てVerified。Codexのcurrent commit3bb1ad10の機械receiptはstatus=completed/has_any_findings=false/has_unresolved_findings=false。全REST頁とGraphQL全connection/nestedコメントを回収し、2つのP2に個別reply/resolve後、未解決thread0をfresh確認した。High独立レビューの最終deltaもP0/P1/P2追加なし。
 
 この台帳確定では実装・自動検証条件を変えない。8.3は実施済みDraftレビューと指摘解決の記録、まだ未実施のReady操作と新HEAD必須CI/mergeは8.4へ分け、将来イベントを完了扱いにしない。台帳のみの最終commit/push/自己レビュー後にReadyへ進み、現HEADの全必須CIを実施する。3bb1ad10の旧CIを新HEADへ流用しない。
+
+### Ready CIで検出した撮影ツールの追従漏れ
+
+新HEAD dbe1c08dのCI run40791121094、Linux job123176311422で `Test screenshot harness contracts` がE0423で失敗。`scripts/screenshot/src/executor_harness.rs:2352` に旧unit struct `AppCommandProvider` の生成が残っていた。未生成のheadless evidence upload失敗はこのコンパイル失敗に続くもので、本体文書の操作不合格と混同しない。旧成功やskipを代用せず、実ツールの修正・対象回帰・通常push・新レビューと新HEAD必須CIを行う。
+
+- [/] 撮影側の重複provider検索を削除し、本体パレットへの実入力で検索・文書別制御を保つ。実UI回帰と撮影ツール全契約を回収する。
+
+失敗ログ: `tmp/v0.22.43-prep/required-ci-dbe1c08d/job-123176311422-failure.log` と `job-123176311422-E0423.txt`。今回の実装修正に新公開APIや本体制御の緩和を追加しない。
+
+修復後は既存debug target・同じlocked依存・診断OFFの通常Office worker入口で、撮影ツール全55 tests成功（ignore/filter0）。実KatanaApp・一時設定の実egui文字入力でquery更新とPDF pathの禁止コマンド除外も成功。ログ `tmp/v0.22.43-prep/screenshot-palette-ci-fix/all-tests-bash.log` / exit0。最初のscript直実行は非実行bitでexit126だったため、既存のbash入口で再実行した。release profileと全OSは新HEADの必須CIで再検証し、このdebug結果を代用しない。

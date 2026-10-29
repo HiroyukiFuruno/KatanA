@@ -14,12 +14,7 @@ use katana_core::workspace::TreeEntry;
 use katana_platform::theme::{ThemeMode, ThemePreset};
 use katana_ui::app_state::{AppAction, AppState, SettingsSection, SettingsTab};
 use katana_ui::shell::KatanaApp;
-use katana_ui::state::command_palette::{
-    CommandPaletteExecutePayload, CommandPaletteProvider, CommandPaletteResult,
-};
-use katana_ui::state::command_palette_providers::{
-    AppCommandProvider, MarkdownContentProvider, WorkspaceFileProvider,
-};
+use katana_ui::state::command_palette::{CommandPaletteExecutePayload, CommandPaletteResult};
 use std::collections::HashMap;
 use std::path::{Component, Path, PathBuf};
 use std::time::{Duration, Instant};
@@ -2313,15 +2308,12 @@ fn run_command_palette(
     harness.state_mut().trigger_action(open_action);
     step_for_seconds(harness, recording.as_deref_mut(), 0.25)?;
 
-    let prefix = if katana_mode { ">" } else { "" };
-    let mut typed = String::from(prefix);
+    /* WHY: 本体と同じ入力経路で検索し、文書別制御を撮影側へ重複実装しない。 */
     for ch in query.chars() {
-        typed.push(ch);
-        {
-            let app = harness.state_mut().app_state_mut();
-            app.command_palette.current_query = typed.clone();
-        }
-        refresh_command_palette_results(harness);
+        harness
+            .input_mut()
+            .events
+            .push(egui::Event::Text(ch.to_string()));
         step_for_seconds(harness, recording.as_deref_mut(), keystroke_delay_seconds)?;
     }
 
@@ -2345,40 +2337,6 @@ fn run_command_palette(
     }
 
     Ok(())
-}
-
-fn refresh_command_palette_results(harness: &mut Harness<'_, KatanaApp>) {
-    let providers: Vec<Box<dyn CommandPaletteProvider>> = vec![
-        Box::new(AppCommandProvider),
-        Box::new(WorkspaceFileProvider),
-        Box::new(MarkdownContentProvider),
-    ];
-    let app = harness.state_mut().app_state_mut();
-    let is_action_mode = app.command_palette.current_query.starts_with('>');
-    let actual_query = if is_action_mode {
-        app.command_palette.current_query[1..]
-            .trim_start()
-            .to_string()
-    } else {
-        app.command_palette.current_query.clone()
-    };
-    let workspace = app.workspace.data.as_ref();
-    let mut gathered = Vec::new();
-    for provider in providers {
-        if is_action_mode && provider.name() != "Commands" {
-            continue;
-        }
-        if !is_action_mode && provider.name() == "Commands" {
-            continue;
-        }
-        gathered.extend(provider.search(&actual_query, workspace, None));
-    }
-    gathered.sort_by(|a, b| {
-        b.score
-            .partial_cmp(&a.score)
-            .unwrap_or(std::cmp::Ordering::Equal)
-    });
-    app.command_palette.update_results(gathered);
 }
 
 fn execute_palette_result(harness: &mut Harness<'_, KatanaApp>, result: &CommandPaletteResult) {
