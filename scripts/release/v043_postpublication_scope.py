@@ -54,6 +54,15 @@ CONTROLLERS = frozenset({
     "scripts/release/check-v043-postpublication-scope.py",
     "scripts/release/test_v043_postpublication_scope.py",
     "scripts/release/test_v043_postpublication_scope_git.py",
+    "scripts/release/cleanup_target.py",
+    "scripts/release/cleanup_remote_push.py",
+    "scripts/release/test_cleanup_target.py",
+    "scripts/release/test_cleanup_remote_push.py",
+    "scripts/release/sync-external.sh",
+    "scripts/release/test_sync_external_diagnostics.py",
+    "scripts/release/probe_registry_credential.py",
+    "scripts/release/test_probe_registry_credential.py",
+    ".github/workflows/registry-credential-diagnostics.yml",
 })
 TASK_PATTERN = re.compile(r"(?m)^\s*-\s*\[([^\]])\]\s+(\d+\.\d+)\b")
 
