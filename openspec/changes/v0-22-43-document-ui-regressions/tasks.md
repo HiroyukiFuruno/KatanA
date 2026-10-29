@@ -238,3 +238,7 @@ Issue: [#394](https://github.com/HiroyukiFuruno/KatanA/issues/394)
 ### Windows修復の対象検証
 
 `windows-directory-watch/target-directory-watch-retry1.exit=0`（13PASS）、`target-watcher.exit=0`（51PASS）、`ast-lint-retry1.exit=0`（正式ASTを含む30PASS）。初回のnotify private method compile errorは公開enumのmatchesへ修復。独立Highの最新差分はP0/P1/P2=0。これらはlocal実入力の対象結果であり、元Windows OS5の実行成功は新CI未確認。
+
+### #387 下部画像controlsの実pointer検証
+
+通常/全画面の小viewportで実描画したcontrol位置へpointer移動・press/releaseを送り、zoom 1.5→1.75→1.5とreset（zoom1/pan0）、画像との交差面積0・上下順序を同時に確認する2回帰を追加。既存を含むcontroller9件は `windows-directory-watch/target-controller-final.exit=0`。言語の並列変更へ依存するlabel snapshotを使わず、新testport/Mock/製品挙動変更は無し。独立Highの最新diffはP0/P1/P2=0、正式AST再検査も成功。公開/新HEAD全CIは引き続き8.4〜8.6で確認する。

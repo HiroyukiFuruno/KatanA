@@ -297,3 +297,6 @@ mod tests {
         assert!(clicked.load(Ordering::Relaxed));
     }
 }
+
+#[cfg(test)]
+mod interaction_tests;
