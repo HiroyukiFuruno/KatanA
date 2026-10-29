@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import re
 
+from release_branch_version import release_branch_version
+
 REPOSITORY = "HiroyukiFuruno/KatanA"
 WORKFLOW = ".github/workflows/build-and-release.yml"
 VERSION_PATTERN = re.compile(r"v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\Z")
@@ -91,7 +93,8 @@ def bind_merged_pull_request(pull_request: object, product_commit: str,
         raise ValueError("pull request base or head metadata is missing")
     _same_repository(base.get("repo"), "pull request base")
     _same_repository(head.get("repo"), "pull request head")
-    if base.get("ref") != "master" or head.get("ref") != f"release/{version}":
+    if (base.get("ref") != "master"
+            or release_branch_version(head.get("ref")) != version.removeprefix("v")):
         raise ValueError("pull request branches do not match the published release")
     head_sha = _full_commit(head.get("sha"), "pull request head")
     return SourceBinding("merged_pull_request", product_commit, version, head_sha,
@@ -141,7 +144,7 @@ def _bind_pull_request_run(run: dict, product_commit: str, version: str, head_sh
     if (pull_request.kind != "merged_pull_request"
             or pull_request.product_commit != product_commit
             or pull_request.tag != version
-            or pull_request.head_branch != f"release/{version}"):
+            or release_branch_version(pull_request.head_branch) != version.removeprefix("v")):
         raise ValueError("verified pull request binding does not match release source")
     if (run.get("event") != "pull_request"
             or run.get("head_branch") != pull_request.head_branch

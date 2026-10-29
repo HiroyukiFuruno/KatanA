@@ -1,24 +1,17 @@
 """Resolve a unique merged release PR without equating tag SHA and branch tip."""
 
 import json
-import re
 import subprocess
 import time
 from urllib.parse import quote
 
 from github_publication import MAX_RESPONSE_BYTES, _gh_json, check_repository
 from push_repository_context import remote_repository
+from release_branch_version import release_branch_version
 from release_cleanup_audit import CANONICAL_OID, CleanupRefused
 
 LOOKUP_SECONDS = 30
 MAX_ASSOCIATED_PRS = 1000
-RELEASE_BRANCH = re.compile(r"release/v([0-9]+\.[0-9]+\.[0-9]+)(-[A-Za-z0-9][A-Za-z0-9._-]*)?")
-
-
-def release_branch_version(branch: object) -> str | None:
-    # WHY: 既存のbranch parserと同じ完全一致grammarでsuffixを版数から分離する。
-    match = RELEASE_BRANCH.fullmatch(branch) if isinstance(branch, str) else None
-    return match[1] if match is not None else None
 
 
 def _candidate(value: object, repository: str, default: str, version: str) -> dict | None:

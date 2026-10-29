@@ -5,7 +5,7 @@ from pathlib import Path
 
 from cleanup_intent import REMOTE_DELETE, read_intent
 from cleanup_merge_binding import require_merge_binding
-from cleanup_target import release_branch_version
+from release_branch_version import release_branch_version
 from push_ref_updates import PushInputError, parse_push_updates
 from release_cleanup_audit import CleanupRefused, audit_branch, common_directory, git, require_controller
 from release_cleanup_publication import cleanup_destination
