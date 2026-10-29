@@ -44,7 +44,7 @@
 ## 4. 全報告の照合
 
 - [x] 4.1 B01〜B11の画像欠落/反復loading/メニュー/mode/slideshow/group/close/fullscreenと分割背景の実装・自動回帰を照合する。
-- [ ] 4.2 公開済み限定修正・今回修正・未解決・上流handoffをIssue/boardへ証拠とともに反映する。
+- [x] 4.2 公開済み限定修正・今回修正・未解決・上流handoffをIssue/boardへ証拠とともに反映する。
 
 ## 5. Final Verification & Release Work
 
@@ -63,8 +63,18 @@ OpenSpecはリポジトリの`./scripts/openspec`を使用する。既存品質�
 
 - 画像参照分類: 旧実装3件失敗→修正後3件成功。`tmp/v0.22.44-prep/image-reference-{red,green}.log`。PNG30秒待ち全体の原因確定とは区別する。
 - 共有Loading: 5件、実callerのstandalone/inline配置1件成功。`loading-widget-final.log`、`loading-caller-final.log`。
-- 左右キー: `keyboard-final.log`で6件成功。正式ASTで検出した規約違反は修正後に全30件成功。
+- 左右キー: `keyboard-final.log`で7件成功（読込中に旧フォーカスが失効する回帰を含む）。正式ASTで検出した規約違反は修正後に全30件成功。
 - Memory: `worker-memory-tests.log`で12件成功。HTML surface32件成功。初期化直後の実HTML終了回帰を含め33件成功。実HTML/Officeのclose検査も元5秒条件で成功。
 - 正式AST: 初回21件成功/2件失敗→規約準拠で修正後、全30件成功。ゲート変更なし。
 
 - v0.22.44表記と両lock更新後の対象検査: Loading5件、実caller1件、画像参照分類3件成功。最終pushゲート・公開は別工程。
+
+## 2026-10-30 現在の統合結果
+
+- 関心別通常コミット: 画像選択 `aa49cf80`、メモリ返却 `cdffd3c3`、Loading `22be2e03`、初期化取消 `4522382d`、HTML終了 `1578a616`、ページ操作 `ca0f4c9c`、全テーマ背景回帰 `4a2ee3ba`、Explorer混在回帰 `527efbea`。全て通常hookを通過。
+- 公開fixtureのPPTX/HTML読込中に、実ExplorerのPNG行クリックから描画・10フレーム維持・表示完了後closeまで成功。原本HTMLと104907Bの原本PNGを使った組合せでも約149ms/157msで描画した。大型原本PPTXを含む全条件の解消を意味しない。
+- 大型原本PPTXの読込途中closeは、KDVの`DocumentSession::open`から復帰せず5秒idle未達。KatanA側ではnative open直前/復帰後の取消確認と不要な初回描画抑止を追加。既に実行中の上流呼出しを中断するAPIはなく、[KDV #72](https://github.com/HiroyukiFuruno/katana-document-viewer/issues/72)へ証跡を引き渡した。
+- 元の表示完了後close5秒とメモリ予算は変更しない。原本の失敗診断は`tmp/v0.22.44-prep/original-explorer-diagnostic-source/`へ保持し、公開fixtureの成功へ置換しない。
+- 最終ソースで文書close/Explorerの実worker検査3件成功（`final-document-close-and-explorer.log`）。通常push・Draft review・Ready CI・公開は未完了。
+
+- board #388を最新commit・対象結果・KDV #72境界・token認証済みへ更新済み。実worker/出力/コマンド順序6件も成功。初回環境指定漏れの失敗は保持し、正式worker入口の再実行結果と区別する。
