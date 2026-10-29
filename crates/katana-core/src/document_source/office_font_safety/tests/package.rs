@@ -1,6 +1,34 @@
 use super::fixtures::FontFixture;
 use crate::document_source::{BinaryDocumentFormat, OfficeFontSafetyError, OfficeFontSafetyPolicy};
 use katana_document_viewer::OfficePreflightLimits;
+use std::io::Cursor;
+
+#[test]
+fn rejects_distinct_cp437_and_utf8_entries_with_the_same_decoded_name() {
+    let bytes = FontFixture::decoded_name_collision();
+    let archive = zip::ZipArchive::new(Cursor::new(&bytes)).unwrap();
+    assert!(!archive.has_duplicate_names());
+    assert_eq!(
+        OfficeFontSafetyPolicy::validate(BinaryDocumentFormat::Docx, &bytes),
+        Err(OfficeFontSafetyError::InvalidArchive(
+            "ambiguous entry names".to_owned()
+        ))
+    );
+}
+
+#[test]
+fn malformed_central_signature_is_rejected_before_metadata_is_exposed() {
+    let mut bytes = FontFixture::package(&[("word/fontTable.xml", b"<fonts/>")]);
+    let central = zip::ZipArchive::new(Cursor::new(&bytes))
+        .unwrap()
+        .central_directory_start();
+    bytes[central as usize] = b'!';
+    assert!(zip::ZipArchive::new(Cursor::new(&bytes)).is_err());
+    assert!(matches!(
+        OfficeFontSafetyPolicy::validate(BinaryDocumentFormat::Docx, &bytes),
+        Err(OfficeFontSafetyError::InvalidArchive(_))
+    ));
+}
 
 #[test]
 fn pdf_and_xlsx_never_parse_empty_invalid_or_hostile_bytes() {

@@ -1,5 +1,4 @@
 use super::OfficeFontSafetyError;
-use super::attributes::FontAttributes;
 use std::io::{Read, Take};
 use xml::reader::{EventReader, ParserConfig, XmlEvent};
 
@@ -48,9 +47,7 @@ impl FontXml {
                 "DTD is not allowed in Office font metadata",
             ));
         }
-        if let XmlEvent::StartElement { attributes, .. } = &event {
-            FontAttributes::validate(part, attributes)?;
-        }
+        /* WHY: 重複属性はxml parserがnamespace解決後、StartElementを返す前に拒否する。 */
         Ok(event)
     }
 }

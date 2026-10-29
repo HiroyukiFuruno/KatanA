@@ -3,6 +3,9 @@ use std::io::{Cursor, Write};
 use zip::write::{FullFileOptions, SimpleFileOptions};
 
 const KEY: &str = "{7B19B49C-2336-4F82-AAD2-5D2BAE389560}";
+const LOCAL_HEADER_BYTES: usize = 30;
+const CENTRAL_HEADER_BYTES: usize = 46;
+const CP437_E_ACUTE: u8 = 0x82;
 
 pub(super) struct FontFixture;
 
@@ -93,6 +96,25 @@ impl FontFixture {
         writer.start_file(raw, options).unwrap();
         writer.write_all(b"<fonts/>").unwrap();
         writer.finish().unwrap().into_inner()
+    }
+
+    pub(super) fn decoded_name_collision() -> Vec<u8> {
+        let mut bytes = Self::package(&[
+            ("word/fontTable.xml", b"<fonts/>"),
+            ("x", b"legacy"),
+            ("\u{e9}", b"unicode"),
+        ]);
+        let (local, central) = {
+            let mut archive = zip::ZipArchive::new(Cursor::new(&bytes)).unwrap();
+            let entry = archive.by_name("x").unwrap();
+            (
+                entry.header_start() as usize,
+                entry.central_header_start() as usize,
+            )
+        };
+        bytes[local + LOCAL_HEADER_BYTES] = CP437_E_ACUTE;
+        bytes[central + CENTRAL_HEADER_BYTES] = CP437_E_ACUTE;
+        bytes
     }
 
     fn crc32(bytes: &[u8]) -> u32 {

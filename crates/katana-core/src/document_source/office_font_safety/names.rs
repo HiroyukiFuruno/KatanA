@@ -4,7 +4,6 @@ use std::io::Cursor;
 use zip::ZipArchive;
 
 const CENTRAL_HEADER_BYTES: usize = 46;
-const CENTRAL_HEADER_SIGNATURE: &[u8] = b"PK\x01\x02";
 const NAME_LENGTH_LOW_OFFSET: usize = 28;
 const NAME_LENGTH_HIGH_OFFSET: usize = 29;
 
@@ -57,9 +56,7 @@ impl ArchiveNames {
         let header = bytes
             .get(start..start.saturating_add(CENTRAL_HEADER_BYTES))
             .ok_or_else(|| OfficeFontSafetyError::archive("truncated central header"))?;
-        if &header[..CENTRAL_HEADER_SIGNATURE.len()] != CENTRAL_HEADER_SIGNATURE {
-            return Err(OfficeFontSafetyError::archive("invalid central header"));
-        }
+        /* WHY: 同じ不変bytesから作ったZIP metadataのCDFH署名は既存parserが検証済み。 */
         let length = usize::from(u16::from_le_bytes([
             header[NAME_LENGTH_LOW_OFFSET],
             header[NAME_LENGTH_HIGH_OFFSET],

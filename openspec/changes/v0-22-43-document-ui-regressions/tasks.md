@@ -201,3 +201,16 @@ KatanA担当Issue: [KatanA392](https://github.com/HiroyukiFuruno/KatanA/issues/3
 font guard最終対象検証はcore16/共有UI入口3/撮影全55が成功（font-guard-core-final/ui-final/screenshot-final.log と各exit0）。正式AST再検査成功、全新file200行以下・関数30行以下、fmt/KML/diff成功。High独立review P0/P1なし、P2のPPTX fixture GUIDを修復してfresh全priority0。最初のdeprecated API/UItest shadow/AST style失敗ログは保持し、rule/allow/基準を変更せず修復した。通常push・新current review・全CI・公開は未完了。
 
 共有source周辺27件（読取/取消/サイズ/所有メモリ/差分再読込と新guard）が追加で成功し、既存入口の回帰を維持した。font-guard-source-regressions.log / exit0。今回のcommitは本体の危険font入力防止とその検査・依存edge・公開文書のみをまとめ、本人の両lock更新21b269a2を保持する。
+
+### eb60eca 新CIのcoverage不足を修復する
+
+CI40818285942 attempt1は、3OSの本体・撮影ツール・複数形式38操作、Lint、供給網、CodeQLが成功した。一方Mac coverageは全test成功後、Office保護の意味のある未実行10行で失敗。Readiness40818286038は成功だが、これを全CI成功や公開へ代用しない。PR391をDraftへ戻し、基準・除外・上限を維持して修復する。
+
+- [/] xml1.4がnamespace解決後に拒否する重複属性と、同じ不変bytesのZIP metadata作成前に検証済みのCDFH署名について、到達不能な再検査だけを整理。実malformed入力を元parserと共有入口が拒否する回帰を保持・追加する。
+- [/] 異なるCP437/UTF8 raw名から同じdecoded名への衝突と、実ZIPentryの読込上限ちょうど/1byte超の境界を恒久回帰へ追加。商用上限や公開API・testportは変更しない。旧16件を維持して計20件の対象coverageが成功（失敗0/ignore0）。Office保護の商用6ファイルに既存coverage.shと同一の判定式を適用し、意味のある未実行行0を確認した。全体CIの代替にはしない。
+- [x] 修復後の対象20件・商用6ファイルのfocused coverageを回収し、意味のある未実行行0を確認する。判定式の変更や追加除外はない。
+- [ ] 正式AST・通常commit/push・新current reviewと全必須CIを回収し、公開から後処理まで継続する。旧eb60の失敗や他OS成功を新HEADの合格に流用しない。
+
+根拠: dependency-refresh/required-ci-eb60eca/macos-job-clean.log、office-font-safety-coverage-repair.md、font-guard-coverage-fix-review.md。最初のfocused coverage起動はCLIのtest filter構文違いで検査前exit1、公式helpのtest subcommandで修正しsession55463へ再実行。検査前失敗をテスト不合格や成功に数えない。
+
+対象実績: font-guard-coverage-fix/targeted-coverage-test.log/.exit=0、targeted-report.txt、guard-only-report.txt、focused-coverage-summary.json。初回CLI構文エラーのログも保持。独立Highの最終6file差分はP0/P1/P2なし、検査前の結果を先取りしなかった。正式AST/Clippyは通常commit hook、全検査は通常push hookを正本として回収し、同じ重い手動検査を重ねない。

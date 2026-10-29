@@ -1,5 +1,38 @@
+use super::super::xml::FontXml;
 use super::fixtures::FontFixture;
 use crate::document_source::{BinaryDocumentFormat, OfficeFontSafetyError, OfficeFontSafetyPolicy};
+use std::io::Cursor;
+
+#[test]
+fn parser_rejects_namespace_aliases_of_the_same_attribute_before_emitting_a_start() {
+    let xml = br#"<r xmlns:a="urn:same" xmlns:b="urn:same" a:name="Safe" b:name="../unsafe"/>"#;
+    let bytes = FontFixture::with_metadata(BinaryDocumentFormat::Docx, xml);
+    assert!(matches!(
+        OfficeFontSafetyPolicy::validate(BinaryDocumentFormat::Docx, &bytes),
+        Err(OfficeFontSafetyError::InvalidMetadata { reason, .. }) if reason.contains("redefined")
+    ));
+}
+
+#[test]
+fn zip_xml_stream_accepts_the_exact_byte_limit_and_rejects_one_byte_more() {
+    let part = FontFixture::part(BinaryDocumentFormat::Docx);
+    let xml = b"<fonts/> ";
+    let bytes = FontFixture::with_metadata(BinaryDocumentFormat::Docx, xml);
+    for limit in [xml.len() as u64, xml.len() as u64 - 1] {
+        let mut archive = zip::ZipArchive::new(Cursor::new(&bytes)).unwrap();
+        let entry = archive.by_name(part).unwrap();
+        let result = FontXml::visit(entry, part, limit, |_| Ok(()));
+        let expected = if limit == xml.len() as u64 {
+            Ok(())
+        } else {
+            Err(OfficeFontSafetyError::InvalidMetadata {
+                part,
+                reason: "XML byte limit exceeded".to_owned(),
+            })
+        };
+        assert_eq!(result, expected);
+    }
+}
 
 #[test]
 fn supports_both_utf16_orders_and_rejects_encoded_unsafe_names() {
