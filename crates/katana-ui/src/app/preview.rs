@@ -1,5 +1,6 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
+pub(crate) mod keyboard_focus;
 mod render;
 mod source;
 

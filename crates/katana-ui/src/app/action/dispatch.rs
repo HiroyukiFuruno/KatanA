@@ -5,6 +5,13 @@ use crate::shell::*;
 impl KatanaApp {
     #[allow(clippy::too_many_lines)]
     pub(super) fn dispatch_action(&mut self, ctx: &egui::Context, action: AppAction) {
+        let selected_document =
+            crate::app::preview::keyboard_focus::PageNavigationFocusOps::selection_path(&action);
+        let opens_file = matches!(
+            &action,
+            AppAction::PickOpenFileInCurrentWorkspace | AppAction::PickOpenFileInNewWorkspace
+        );
+        let previous_active_path = self.state.active_path();
         match &action {
             AppAction::ShowMetaInfo(_)
                 if !crate::views::panels::preview::PreviewMenuAvailability::for_app(
@@ -150,6 +157,14 @@ impl KatanaApp {
             }
             other => self.dispatch_secondary(ctx, other),
         }
+        crate::app::preview::keyboard_focus::PageNavigationFocusOps::finish_action(
+            ctx,
+            selected_document,
+            opens_file,
+            previous_active_path,
+            self.state.active_path(),
+            self.pending_workspace_file_open.as_deref(),
+        );
     }
 
     fn handle_action_close_workspace(&mut self) {

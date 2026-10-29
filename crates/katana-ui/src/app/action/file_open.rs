@@ -1,6 +1,6 @@
 use crate::app::DocumentOps;
 use crate::app::WorkspaceOps;
-use crate::app_state::{AppAction, StatusType};
+use crate::app_state::StatusType;
 use crate::shell::KatanaApp;
 use std::path::{Path, PathBuf};
 
@@ -153,43 +153,6 @@ impl FileOpenOps {
             &[("error", error.as_str())],
         );
         app.state.layout.status_message = Some((message, StatusType::Warning));
-    }
-}
-
-impl KatanaApp {
-    pub(super) fn handle_action_pick_open_file(&mut self, action: AppAction) {
-        if crate::shell_ui::ShellUiOps::is_headless() {
-            self.pending_dialog_action = Some(action);
-            self.file_dialog.pick_file();
-            return;
-        }
-        let result = crate::shell_ui::ShellUiOps::open_file_dialog_result(
-            &FileOpenOps::dialog_extensions(self),
-        );
-        self.handle_pick_open_file_result(result, action);
-    }
-
-    pub(crate) fn handle_pick_open_file_result(
-        &mut self,
-        result: crate::shell_ui::NativeDialogResult<PathBuf>,
-        action: AppAction,
-    ) {
-        match result {
-            crate::shell_ui::NativeDialogResult::Picked(path) => match action {
-                AppAction::PickOpenFileInNewWorkspace => {
-                    FileOpenOps::open_as_temporary_workspace(self, path);
-                }
-                AppAction::PickOpenFileInCurrentWorkspace => {
-                    FileOpenOps::open_in_current_workspace(self, path);
-                }
-                _ => {}
-            },
-            crate::shell_ui::NativeDialogResult::Cancelled => {}
-            crate::shell_ui::NativeDialogResult::Unavailable => {
-                self.pending_dialog_action = Some(action);
-                self.file_dialog.pick_file();
-            }
-        }
     }
 }
 

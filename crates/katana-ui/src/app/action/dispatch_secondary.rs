@@ -9,7 +9,7 @@ impl KatanaApp {
         }
         match action {
             AppAction::PickOpenFileInCurrentWorkspace | AppAction::PickOpenFileInNewWorkspace => {
-                self.handle_action_pick_open_file(action);
+                self.handle_action_pick_open_file(ctx, action);
             }
             AppAction::OpenFileInCurrentWorkspace(p) => {
                 crate::app::action::FileOpenOps::open_in_current_workspace(self, p);
