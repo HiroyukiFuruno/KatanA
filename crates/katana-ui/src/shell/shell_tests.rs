@@ -10,6 +10,7 @@ mod tests {
     use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
     use std::path::PathBuf;
     use std::sync::Mutex;
+    use std::time::{Duration, Instant};
     use tempfile::TempDir;
 
     static HEADLESS_ENV_LOCK: Mutex<()> = Mutex::new(());
@@ -56,6 +57,97 @@ mod tests {
                 break;
             }
             std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+    }
+
+    fn image_pipeline_snapshot(
+        app: &KatanaApp,
+        image_path: &std::path::Path,
+    ) -> (u64, u64, u64, u64) {
+        let pane = app
+            .tab_previews
+            .iter()
+            .find(|tab| tab.path == image_path)
+            .expect("image preview tab");
+        let document_revision = app
+            .state
+            .document
+            .open_documents
+            .iter()
+            .find(|document| document.path == image_path)
+            .expect("image document")
+            .revision;
+        (
+            pane.pane.session_generation,
+            pane.hash,
+            document_revision,
+            pane.pane.local_image_loader.path_revision(image_path),
+        )
+    }
+
+    fn paint_loaded_local_image(
+        app: &mut KatanaApp,
+        context: &egui::Context,
+        path: &std::path::Path,
+    ) -> Option<egui::TextureId> {
+        let pane = &mut app
+            .tab_previews
+            .iter_mut()
+            .find(|tab| tab.path == path)
+            .expect("image preview tab")
+            .pane;
+        if pane.viewer_states.is_empty() {
+            pane.viewer_states
+                .push(crate::preview_pane::ViewerState::default());
+        }
+        pane.local_image_loader.poll(context.cumulative_frame_nr());
+        let raw_input = egui::RawInput {
+            max_texture_side: Some(8192),
+            screen_rect: Some(egui::Rect::from_min_size(
+                egui::Pos2::ZERO,
+                egui::vec2(640.0, 480.0),
+            )),
+            ..Default::default()
+        };
+        let mut output = context.run_ui(raw_input, |ui| {
+            let _ = crate::preview_pane::ImageLogicOps::show_local_image(
+                ui,
+                path,
+                0,
+                &pane.local_image_loader,
+                Some(&mut pane.viewer_states[0]),
+                None,
+                |_, _, _| {},
+            );
+        });
+        output.textures_delta.clear();
+        pane.viewer_states[0]
+            .texture
+            .as_ref()
+            .map(egui::TextureHandle::id)
+    }
+
+    fn wait_for_local_image_texture(
+        app: &mut KatanaApp,
+        context: &egui::Context,
+        path: &std::path::Path,
+        repaint_rx: &std::sync::mpsc::Receiver<(Instant, Duration)>,
+    ) -> egui::TextureId {
+        let deadline = Instant::now() + Duration::from_secs(5);
+        loop {
+            if let Some(texture) = paint_loaded_local_image(app, context, path) {
+                return texture;
+            }
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            assert!(!remaining.is_zero(), "local image did not become ready");
+            let (requested_at, delay) = repaint_rx
+                .recv_timeout(remaining)
+                .expect("wait for image repaint callback");
+            let scheduled_at = requested_at + delay;
+            let wait = scheduled_at.saturating_duration_since(Instant::now());
+            if !wait.is_zero() {
+                std::thread::sleep(wait);
+            }
         }
     }
 
@@ -149,6 +241,86 @@ mod tests {
         let mut app = make_app();
         app.handle_select_document(PathBuf::from("/nonexistent/file.md"), true);
         assert!(app.state.layout.status_message.is_some());
+    }
+
+    #[test]
+    fn automatic_image_refresh_preserves_ready_texture_and_watcher_reload() {
+        let _headless_lock = HEADLESS_ENV_LOCK.lock().expect("headless env lock");
+        let _headless = HeadlessEnvGuard::new();
+        let _render_lock = crate::test_render_env::RenderEnvLock::lock();
+        let directory = tempfile::tempdir().expect("PNG copy directory");
+        let image_path = directory.path().join("original.png");
+        image::RgbaImage::from_pixel(64, 64, image::Rgba([181, 46, 93, 255]))
+            .save(&image_path)
+            .expect("write disposable PNG fixture");
+
+        let mut app = make_app();
+        let context = egui::Context::default();
+        let (repaint_tx, repaint_rx) = std::sync::mpsc::channel();
+        context.set_request_repaint_callback(move |info| {
+            let _ = repaint_tx.send((Instant::now(), info.delay));
+        });
+        app.handle_select_document(image_path.clone(), true);
+        let ready_texture =
+            wait_for_local_image_texture(&mut app, &context, &image_path, &repaint_rx);
+        let ready_snapshot = image_pipeline_snapshot(&app, &image_path);
+
+        app.process_action(
+            &context,
+            crate::app_state::AppAction::RefreshDocument { is_manual: false },
+        );
+        let automatic_snapshot = image_pipeline_snapshot(&app, &image_path);
+        assert_eq!(
+            automatic_snapshot, ready_snapshot,
+            "automatic refresh of unchanged image must preserve its preview session and cache"
+        );
+        assert_eq!(
+            paint_loaded_local_image(&mut app, &context, &image_path),
+            Some(ready_texture),
+            "automatic refresh must retain the unchanged image texture"
+        );
+
+        app.process_action(
+            &context,
+            crate::app_state::AppAction::RefreshDocument { is_manual: true },
+        );
+        let manual_snapshot = image_pipeline_snapshot(&app, &image_path);
+        assert_ne!(
+            manual_snapshot.0, automatic_snapshot.0,
+            "manual refresh must still create a fresh preview session"
+        );
+        let manual_texture =
+            wait_for_local_image_texture(&mut app, &context, &image_path, &repaint_rx);
+
+        let revision_before_change = manual_snapshot.3;
+        let changed_path = directory.path().join("replacement.png");
+        image::RgbaImage::from_pixel(8, 8, image::Rgba([23, 145, 219, 255]))
+            .save(&changed_path)
+            .expect("write replacement PNG in disposable directory");
+        std::fs::rename(&changed_path, &image_path).expect("atomically replace disposable PNG");
+        let change_deadline = Instant::now() + Duration::from_secs(5);
+        loop {
+            let remaining = change_deadline.saturating_duration_since(Instant::now());
+            assert!(
+                !remaining.is_zero(),
+                "watcher did not reload the changed PNG"
+            );
+            let (requested_at, delay) = repaint_rx
+                .recv_timeout(remaining)
+                .expect("wait for watcher repaint callback");
+            let scheduled_at = requested_at + delay;
+            let wait = scheduled_at.saturating_duration_since(Instant::now());
+            if !wait.is_zero() {
+                std::thread::sleep(wait);
+            }
+            let changed_texture = paint_loaded_local_image(&mut app, &context, &image_path);
+            let changed_snapshot = image_pipeline_snapshot(&app, &image_path);
+            if changed_snapshot.3 > revision_before_change
+                && changed_texture.is_some_and(|texture| texture != manual_texture)
+            {
+                break;
+            }
+        }
     }
 
     #[test]

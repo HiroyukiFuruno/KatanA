@@ -37,6 +37,8 @@ bash scripts/release/check-git-capability.sh
 # 1. Release flow ownership contract
 info "1/14 Verifying release flow ownership contract..."
 python3 scripts/release/test-release-flow-contract.py
+python3 -B scripts/release/test-postpublication-source-binding.py
+python3 -B scripts/release/test-postpublication-run-admission.py
 python3 scripts/release/test-windows-registry-cache-contract.py
 python3 scripts/release/test-commit-issue-reference.py
 python3 scripts/release/test-issue-reference-live.py
@@ -190,6 +192,15 @@ for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
                     "$TASK_GATE_MODE" == "post-release-evidence" ]]; then
                 # v0.22.41 has no deferred task: all release modes enforce strict completion.
                 TASK_GATE_ARGS=()
+            elif [[ "$VERSION" == "0.22.43" && \
+                "$CHANGE_NAME" == "v0-22-43-document-ui-regressions" ]]; then
+                if ! python3 scripts/release/check-openspec-task-phase.py \
+                    "$VERSION" "$CHANGE_NAME" "$TASK_GATE_MODE" "$CHANGE_DIR/tasks.md"; then
+                    error "OpenSpec change '$CHANGE_NAME' failed its exact $TASK_GATE_MODE phase gate."
+                    exit 1
+                fi
+                success "OpenSpec change '$CHANGE_NAME' satisfies the $TASK_GATE_MODE phase gate."
+                continue
             elif [[ "$TASK_GATE_MODE" != "strict" ]]; then
                 error "Unsupported OpenSpec task gate mode: $TASK_GATE_MODE"
                 exit 2

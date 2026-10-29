@@ -7,6 +7,7 @@ mod closed_preview_memory;
 mod demo_bundle;
 mod dispatch;
 mod dispatch_panels;
+mod dispatch_preview_operation;
 mod dispatch_secondary;
 mod dispatch_tertiary;
 mod file_open;
@@ -20,6 +21,7 @@ mod process_diagnostics;
 #[cfg(test)]
 mod process_diagnostics_tests;
 mod process_document;
+mod process_fs_nodes;
 mod process_group_lifecycle;
 mod process_groups;
 mod process_helpers;

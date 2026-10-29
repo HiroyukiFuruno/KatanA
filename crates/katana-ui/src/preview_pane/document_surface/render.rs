@@ -88,8 +88,12 @@ impl DocumentSurface {
             return;
         }
         let Some(frame) = self.frame.take() else {
+            let loading = crate::widgets::LoadingPresentation::new(
+                crate::widgets::LoadingState::Pending,
+                crate::widgets::LoadingLabel::RenderingKind(self.source.format.extension()),
+            );
             ui.centered_and_justified(|ui| {
-                ui.spinner();
+                crate::widgets::LoadingIndicator::show(ui, &loading);
             });
             return;
         };

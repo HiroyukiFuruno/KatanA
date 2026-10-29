@@ -152,19 +152,11 @@ pub(super) fn show_section(
         RenderedSection::Pending {
             kind, source_lines, ..
         } => {
-            let res = crate::widgets::AlignCenter::new()
-                .shrink_to_fit(true)
-                .content(|ui| {
-                    ui.spinner();
-                    ui.label(
-                        egui::RichText::new(crate::i18n::I18nOps::tf(
-                            &crate::i18n::I18nOps::get().preview.rendering,
-                            &[("kind", kind.as_str())],
-                        ))
-                        .weak(),
-                    );
-                })
-                .show(ui);
+            let loading = crate::widgets::LoadingPresentation::new(
+                crate::widgets::LoadingState::Pending,
+                crate::widgets::LoadingLabel::RenderingKind(kind.as_str()),
+            );
+            let res = crate::widgets::LoadingIndicator::show(ui, &loading);
             if let Some(anchors) = block_anchors {
                 anchors.push((
                     global_line_offset..global_line_offset + source_lines,

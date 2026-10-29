@@ -25,6 +25,37 @@ impl Work {
         })
     }
 
+    fn publish_result(self, image: Result<egui::ColorImage, String>) {
+        let owner = self.owner.clone();
+        if self
+            .result_tx
+            .send(ResultMessage {
+                key: self.key,
+                generation: self.generation,
+                revision: self.revision,
+                image,
+            })
+            .is_ok()
+        {
+            Self::request_repaint(&owner);
+        }
+    }
+
+    fn request_repaint(owner: &Weak<Inner>) {
+        let Some(owner) = owner.upgrade() else {
+            return;
+        };
+        let context = owner
+            .repaint_context
+            .lock()
+            .ok()
+            .and_then(|context| context.clone());
+        if let Some(context) = context {
+            /* WHY: poll_rendersが結果を回収する次のframeをdecode完了時に要求する。 */
+            context.request_repaint();
+        }
+    }
+
     fn run(self) {
         let cancellation = ReadCancellation::new(|| self.is_cancelled());
         if cancellation.check().is_err() {
@@ -38,12 +69,7 @@ impl Work {
         if cancellation.check().is_err() {
             return;
         }
-        let _ = self.result_tx.send(ResultMessage {
-            key: self.key,
-            generation: self.generation,
-            revision: self.revision,
-            image,
-        });
+        self.publish_result(image);
     }
 }
 

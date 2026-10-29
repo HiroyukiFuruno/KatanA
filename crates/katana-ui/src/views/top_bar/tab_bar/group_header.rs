@@ -17,12 +17,16 @@ pub(crate) struct GroupHeader<'a> {
     pub inline_rename_group: Option<&'a String>,
 }
 
+#[cfg(test)]
+#[path = "group_header_tests.rs"]
+mod tests;
+
 impl<'a> GroupHeader<'a> {
     #[allow(deprecated)]
     pub fn show(self, ui: &mut egui::Ui, tab_action: &mut Option<AppAction>) {
         let base_color = egui::Color32::from_hex(&self.g.color_hex)
             .unwrap_or(ui.visuals().widgets.active.bg_fill);
-        let frame_fill = self.header_fill(ui, base_color);
+        let frame_fill = self.header_fill(base_color);
         let group_resp = self.render_frame(ui, base_color, frame_fill);
 
         if group_resp.clicked() {
@@ -35,7 +39,7 @@ impl<'a> GroupHeader<'a> {
         self.handle_popup(ui, tab_action, &group_resp);
     }
 
-    fn header_fill(&self, _ui: &egui::Ui, base: egui::Color32) -> egui::Color32 {
+    fn header_fill(&self, base: egui::Color32) -> egui::Color32 {
         let alpha = if self.g.collapsed {
             GROUP_HEADER_COLLAPSED_ALPHA
         } else {
@@ -97,47 +101,75 @@ impl<'a> GroupHeader<'a> {
         tab_action: &mut Option<AppAction>,
         group_resp: &egui::Response,
     ) {
-        let popup_id = egui::Id::new("group_popup").with(&self.g.id);
+        let state = super::group_header_popup::GroupHeaderPopupState::new(&self.g.id);
+        self.open_inline_rename_once(ui, state);
+        self.show_popup(state, tab_action, group_resp);
+        self.cancel_closed_inline_rename(ui, state, tab_action);
+        self.clear_closed_popup_editor_state(ui, state);
+    }
+
+    fn open_inline_rename_once(
+        &self,
+        ui: &egui::Ui,
+        state: super::group_header_popup::GroupHeaderPopupState,
+    ) {
         if self.inline_rename_group == Some(&self.g.id) && self.g.name != "demo" {
-            egui::Popup::open_id(ui.ctx(), popup_id);
-            *tab_action = Some(AppAction::ClearInlineRename);
+            state.open_inline_once(ui.ctx());
         }
+    }
+
+    fn show_popup(
+        &self,
+        state: super::group_header_popup::GroupHeaderPopupState,
+        tab_action: &mut Option<AppAction>,
+        group_response: &egui::Response,
+    ) {
         let rename = self.inline_rename_group;
-        let popup_resp = egui::Popup::from_response(group_resp)
-            .id(popup_id)
-            .close_behavior(egui::PopupCloseBehavior::IgnoreClicks)
+        let _popup_response = egui::Popup::from_response(group_response)
+            .id(state.popup_id)
+            .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
             .show(|ui| {
                 super::group_header_popup::GroupHeaderPopup {
                     g: self.g,
                     inline_rename_group: rename,
                     tab_action,
-                    popup_id,
+                    popup_id: state.popup_id,
                 }
                 .show(ui)
-            })
-            .map(|response| response.response.rect);
-        self.close_popup_on_outside_click(ui, popup_id, group_resp, popup_resp);
+            });
     }
 
-    fn close_popup_on_outside_click(
+    fn cancel_closed_inline_rename(
         &self,
-        ui: &mut egui::Ui,
-        popup_id: egui::Id,
-        group_resp: &egui::Response,
-        popup_resp: Option<egui::Rect>,
+        ui: &egui::Ui,
+        state: super::group_header_popup::GroupHeaderPopupState,
+        tab_action: &mut Option<AppAction>,
     ) {
-        let is_open = egui::Popup::is_id_open(ui.ctx(), popup_id);
-        let primary_pressed = ui.input(|i| i.pointer.any_pressed() && i.pointer.primary_pressed());
-        if !is_open || !primary_pressed {
+        let was_inline_rename = self.inline_rename_group == Some(&self.g.id);
+        if was_inline_rename
+            && state.inline_was_opened(ui.ctx())
+            && !egui::Popup::is_id_open(ui.ctx(), state.popup_id)
+            && tab_action.is_none()
+        {
+            *tab_action = Some(AppAction::FinishInlineRename {
+                group_id: self.g.id.clone(),
+                new_name: None,
+            });
+        }
+    }
+
+    fn clear_closed_popup_editor_state(
+        &self,
+        ui: &egui::Ui,
+        state: super::group_header_popup::GroupHeaderPopupState,
+    ) {
+        if egui::Popup::is_id_open(ui.ctx(), state.popup_id) {
             return;
         }
-        let Some(pos) = ui.input(|i| i.pointer.interact_pos()) else {
-            return;
-        };
-        let outside_popup = popup_resp.is_none_or(|r| !r.contains(pos));
-        let outside_header = !group_resp.rect.contains(pos);
-        if outside_popup && outside_header {
-            egui::Popup::close_id(ui.ctx(), popup_id);
+        let is_inline_rename = self.inline_rename_group == Some(&self.g.id);
+        state.clear_editor_state(ui.ctx());
+        if !is_inline_rename {
+            state.clear_open_marker(ui.ctx());
         }
     }
 }

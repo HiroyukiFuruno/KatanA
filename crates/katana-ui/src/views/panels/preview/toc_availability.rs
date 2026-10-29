@@ -1,186 +1,104 @@
-pub(crate) struct TocAvailability;
+use crate::app_state::{AppAction, AppState, DocumentOperationRuntimeSnapshot, ViewMode};
+use crate::shell::KatanaApp;
 
-#[derive(Clone, Copy)]
-pub(crate) enum PreviewMenu {
-    Toc,
-    Export,
-    Story,
-    Tools,
-    Slideshow,
-}
+pub(crate) use super::document_operation_settings::{
+    DocumentOperation, DocumentOperationSettings, PreviewMenu,
+};
 
 pub(crate) struct PreviewMenuAvailability;
 
 impl PreviewMenuAvailability {
-    pub(crate) fn for_app(app: &crate::shell::KatanaApp, menu: PreviewMenu) -> bool {
-        let path = app
-            .state
-            .active_document()
-            .map(|document| document.path.as_path());
-        if !Self::for_path(path, menu) {
-            return false;
-        }
-        let is_pptx = path.is_some_and(|path| {
-            matches!(
-                katana_core::document_source::BinaryDocumentFormat::from_path(path),
-                Some(katana_core::document_source::BinaryDocumentFormat::Pptx)
-            )
-        });
-        if !matches!(menu, PreviewMenu::Slideshow) || !is_pptx {
-            return true;
-        }
-        app.tab_previews.iter().any(|preview| {
-            Some(preview.path.as_path()) == path && preview.pane.pptx_slideshow_available()
-        })
+    pub(crate) fn settings_for_app(app: &mut KatanaApp) -> DocumentOperationSettings {
+        app.refresh_document_operation_runtime();
+        Self::settings_for_state(&app.state)
     }
 
-    pub(crate) fn for_path(path: Option<&std::path::Path>, menu: PreviewMenu) -> bool {
-        let Some(path) = path else {
-            return !matches!(menu, PreviewMenu::Slideshow);
+    pub(crate) fn settings_for_state(state: &AppState) -> DocumentOperationSettings {
+        let Some(document) = state.active_document() else {
+            return DocumentOperationSettings::evaluate(None, Some(false));
         };
-        if katana_core::workspace::TreeEntry::path_is_canvas(path) {
-            return false;
-        }
-        let is_office = matches!(
-            katana_core::document_source::BinaryDocumentFormat::from_path(path),
-            Some(
-                katana_core::document_source::BinaryDocumentFormat::Docx
-                    | katana_core::document_source::BinaryDocumentFormat::Xlsx
-                    | katana_core::document_source::BinaryDocumentFormat::Pptx
-            )
-        );
-        let is_html = path
-            .extension()
-            .and_then(std::ffi::OsStr::to_str)
-            .is_some_and(|extension| {
-                extension.eq_ignore_ascii_case("html") || extension.eq_ignore_ascii_case("htm")
-            });
-        let format = katana_core::document_source::BinaryDocumentFormat::from_path(path);
-        let is_image = katana_core::workspace::TreeEntry::path_is_image(path);
-        match menu {
-            PreviewMenu::Toc => !is_office && !is_html && !is_image,
-            PreviewMenu::Tools => !is_office && !is_html && !is_image,
-            PreviewMenu::Export | PreviewMenu::Story => {
-                !is_office && !is_html && !is_image && format.is_none()
-            }
-            PreviewMenu::Slideshow => {
-                !is_office && !is_html && !is_image && format.is_none()
-                    || matches!(
-                        format,
-                        Some(katana_core::document_source::BinaryDocumentFormat::Pptx)
-                    )
-            }
-        }
+        let runtime = &state.document_operation_runtime;
+        let current = runtime.active_document_path.as_deref() == Some(document.path.as_path())
+            && runtime.active_document_revision == Some(document.revision)
+            && runtime.active_doc_idx == state.document.active_doc_idx
+            && runtime.preview_generation.is_some();
+        DocumentOperationSettings::evaluate(
+            Some(document.path.as_path()),
+            Some(current && runtime.pptx_slideshow_ready),
+        )
+    }
+
+    pub(crate) fn for_app(app: &mut KatanaApp, menu: PreviewMenu) -> bool {
+        Self::settings_for_app(app).allows(DocumentOperation::PreviewMenu(menu))
+    }
+
+    pub(crate) fn for_state(state: &AppState, menu: PreviewMenu) -> bool {
+        Self::settings_for_state(state).allows(DocumentOperation::PreviewMenu(menu))
+    }
+
+    pub(crate) fn for_view_mode(state: &AppState, mode: ViewMode) -> bool {
+        Self::settings_for_state(state).allows(DocumentOperation::ViewMode(mode))
+    }
+
+    pub(crate) fn for_action(state: &AppState, action: &AppAction) -> Option<bool> {
+        Self::settings_for_state(state).allows_action(action, state.active_view_mode())
+    }
+
+    #[cfg(test)]
+    pub(crate) fn for_path(path: Option<&std::path::Path>, menu: PreviewMenu) -> bool {
+        DocumentOperationSettings::evaluate(path, None).allows(DocumentOperation::PreviewMenu(menu))
     }
 }
 
-impl TocAvailability {
-    pub(crate) fn for_path(path: Option<&std::path::Path>) -> bool {
-        PreviewMenuAvailability::for_path(path, PreviewMenu::Toc)
+fn same_runtime_identity(
+    left: &DocumentOperationRuntimeSnapshot,
+    right: &DocumentOperationRuntimeSnapshot,
+) -> bool {
+    left.active_document_path == right.active_document_path
+        && left.active_document_revision == right.active_document_revision
+        && left.active_doc_idx == right.active_doc_idx
+        && left.preview_generation == right.preview_generation
+        && left.pptx_slideshow_ready == right.pptx_slideshow_ready
+}
+
+impl KatanaApp {
+    pub(crate) fn refresh_document_operation_runtime(&mut self) {
+        let mut next = self.document_operation_runtime_snapshot();
+        let previous = &self.state.document_operation_runtime;
+        next.epoch = if same_runtime_identity(previous, &next) {
+            previous.epoch
+        } else {
+            previous.epoch.saturating_add(1)
+        };
+        self.state.document_operation_runtime = next;
+    }
+
+    fn document_operation_runtime_snapshot(&self) -> DocumentOperationRuntimeSnapshot {
+        let Some((active_doc_idx, path, revision)) = self.state.active_document().map(|document| {
+            (
+                self.state.document.active_doc_idx,
+                document.path.clone(),
+                document.revision,
+            )
+        }) else {
+            return DocumentOperationRuntimeSnapshot::default();
+        };
+        let preview = self
+            .tab_previews
+            .iter()
+            .find(|preview| preview.path == path);
+        DocumentOperationRuntimeSnapshot {
+            active_document_path: Some(path),
+            active_document_revision: Some(revision),
+            active_doc_idx,
+            preview_generation: preview.map(|preview| preview.pane.session_generation),
+            pptx_slideshow_ready: preview
+                .is_some_and(|preview| preview.pane.pptx_slideshow_available()),
+            epoch: self.state.document_operation_runtime.epoch,
+        }
     }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{PreviewMenu, PreviewMenuAvailability, TocAvailability};
-
-    #[test]
-    fn office_documents_disable_table_of_contents() {
-        for path in ["report.docx", "book.xlsx", "deck.pptx"] {
-            assert!(!TocAvailability::for_path(Some(std::path::Path::new(path))));
-        }
-    }
-
-    #[test]
-    fn pdf_and_markdown_keep_table_of_contents_available() {
-        assert!(TocAvailability::for_path(Some(std::path::Path::new(
-            "manual.pdf"
-        ))));
-        assert!(TocAvailability::for_path(Some(std::path::Path::new(
-            "readme.md"
-        ))));
-    }
-
-    #[test]
-    fn pdf_keeps_view_tools_without_markdown_only_menus() {
-        let path = std::path::Path::new("manual.pdf");
-        assert!(PreviewMenuAvailability::for_path(
-            Some(path),
-            PreviewMenu::Tools
-        ));
-        for menu in [
-            PreviewMenu::Export,
-            PreviewMenu::Story,
-            PreviewMenu::Slideshow,
-        ] {
-            assert!(!PreviewMenuAvailability::for_path(Some(path), menu));
-        }
-    }
-
-    #[test]
-    fn html_and_non_pptx_office_disable_all_preview_menus() {
-        for path in ["report.html", "REPORT.HTM", "report.docx", "book.xlsx"] {
-            for menu in [
-                PreviewMenu::Toc,
-                PreviewMenu::Export,
-                PreviewMenu::Story,
-                PreviewMenu::Tools,
-                PreviewMenu::Slideshow,
-            ] {
-                assert!(!PreviewMenuAvailability::for_path(
-                    Some(std::path::Path::new(path)),
-                    menu
-                ));
-            }
-        }
-    }
-
-    #[test]
-    fn pptx_enables_only_slideshow() {
-        let path = std::path::Path::new("deck.pptx");
-        assert!(PreviewMenuAvailability::for_path(
-            Some(path),
-            PreviewMenu::Slideshow
-        ));
-        for menu in [
-            PreviewMenu::Toc,
-            PreviewMenu::Export,
-            PreviewMenu::Story,
-            PreviewMenu::Tools,
-        ] {
-            assert!(!PreviewMenuAvailability::for_path(Some(path), menu));
-        }
-    }
-
-    #[test]
-    fn images_disable_document_menus() {
-        let path = std::path::Path::new("photo.png");
-        for menu in [
-            PreviewMenu::Toc,
-            PreviewMenu::Export,
-            PreviewMenu::Story,
-            PreviewMenu::Tools,
-            PreviewMenu::Slideshow,
-        ] {
-            assert!(!PreviewMenuAvailability::for_path(Some(path), menu));
-        }
-    }
-
-    #[test]
-    fn canvas_uses_its_own_reading_controls_not_markdown_document_menus() {
-        for name in ["graph.canvas", "GRAPH.CANVAS"] {
-            for menu in [
-                PreviewMenu::Toc,
-                PreviewMenu::Export,
-                PreviewMenu::Story,
-                PreviewMenu::Tools,
-                PreviewMenu::Slideshow,
-            ] {
-                assert!(!PreviewMenuAvailability::for_path(
-                    Some(std::path::Path::new(name)),
-                    menu,
-                ));
-            }
-        }
-    }
-}
+#[path = "toc_availability_tests.rs"]
+mod tests;

@@ -23,6 +23,19 @@ fi
 
 VERSION_NUM="${VERSION#v}"
 
+if ! python3 - "$SHA256" <<'PY'
+import re
+import sys
+
+digest = sys.argv[1]
+if re.fullmatch(r"[0-9a-fA-F]{64}", digest) is None or int(digest, 16) == 0:
+    print("Error: A nonzero 64-character SHA256 is required.", file=sys.stderr)
+    raise SystemExit(1)
+PY
+then
+    exit 1
+fi
+
 # Token Selection
 TOKEN="${HOMEBREW_KATANA_GIT_TOKEN:-${HOMEBREW_TAP_TOKEN:-}}"
 if [[ -z "$TOKEN" ]]; then
@@ -43,7 +56,7 @@ function upload_cask() {
     CASK_CONTENT+="  sha256 \"${SHA256}\"\n\n"
     CASK_CONTENT+="  url \"https://github.com/HiroyukiFuruno/KatanA/releases/download/${VERSION}/${DMG_NAME}\"\n"
     CASK_CONTENT+="  name \"KatanA Desktop\"\n"
-    CASK_CONTENT+="  desc \"Lightweight Markdown viewer with live preview, Mermaid diagrams, and syntax highlighting\"\n"
+    CASK_CONTENT+="  desc \"Markdown viewer with live preview, Mermaid diagrams and syntax highlighting\"\n"
     CASK_CONTENT+="  homepage \"https://github.com/HiroyukiFuruno/KatanA\"\n\n"
     
     if [[ "$IS_VERSIONED" == "0" ]]; then
@@ -53,16 +66,15 @@ function upload_cask() {
         CASK_CONTENT+="  end\n\n"
     fi
 
-    CASK_CONTENT+="  depends_on macos: \">= :ventura\"\n\n"
+    CASK_CONTENT+="  depends_on macos: :ventura\n\n"
     CASK_CONTENT+="  app \"KatanA Desktop.app\"\n\n"
     CASK_CONTENT+="  # Remove quarantine attribute (required for ad-hoc signed apps without Apple notarization)\n"
-    CASK_CONTENT+="  postflight do\n"
-    CASK_CONTENT+="    system_command \"/usr/bin/xattr\",\n"
-    CASK_CONTENT+="                   args: [\"-cr\", \"#{appdir}/KatanA Desktop.app\"]\n"
+    CASK_CONTENT+="  postflight_steps do\n"
+    CASK_CONTENT+="    run \"/usr/bin/xattr\", args: [\"-cr\", \"{{appdir}}/KatanA Desktop.app\"]\n"
     CASK_CONTENT+="  end\n\n"
     CASK_CONTENT+="  zap trash: [\n"
-    CASK_CONTENT+="    \"~/Library/Preferences/com.katana.desktop.plist\",\n"
     CASK_CONTENT+="    \"~/Library/Caches/com.katana.desktop\",\n"
+    CASK_CONTENT+="    \"~/Library/Preferences/com.katana.desktop.plist\",\n"
     CASK_CONTENT+="  ]\n"
     CASK_CONTENT+="end\n"
 

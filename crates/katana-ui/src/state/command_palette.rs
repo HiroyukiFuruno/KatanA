@@ -99,6 +99,7 @@ pub struct CommandPaletteState {
     pub selected_index: usize,
     pub results: Vec<CommandPaletteResult>,
     pub request_cursor_eof: bool,
+    pub last_operation_context: Option<(u64, crate::state::document::ViewMode)>,
 }
 
 impl CommandPaletteState {
@@ -109,6 +110,7 @@ impl CommandPaletteState {
             selected_index: 0,
             results: Vec::new(),
             request_cursor_eof: false,
+            last_operation_context: None,
         }
     }
 

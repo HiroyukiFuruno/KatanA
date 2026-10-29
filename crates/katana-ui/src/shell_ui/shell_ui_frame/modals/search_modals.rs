@@ -7,8 +7,20 @@ use eframe::egui;
 impl KatanaApp {
     pub(crate) fn show_search_and_palette_modals(&mut self, ctx: &egui::Context) {
         if self.state.command_palette.is_open {
+            self.refresh_document_operation_runtime();
+            let operation_settings =
+                crate::views::panels::preview::PreviewMenuAvailability::settings_for_state(
+                    &self.state,
+                );
+            let current_mode = self.state.active_view_mode();
+            let operation_epoch = self.state.document_operation_runtime.epoch;
             let providers: Vec<Box<dyn crate::state::command_palette::CommandPaletteProvider>> = vec![
-                Box::new(crate::state::command_palette_providers::AppCommandProvider),
+                Box::new(
+                    crate::state::command_palette_providers::AppCommandProvider {
+                        operation_settings,
+                        current_mode,
+                    },
+                ),
                 Box::new(crate::state::command_palette_providers::WorkspaceFileProvider),
                 Box::new(crate::state::command_palette_providers::MarkdownContentProvider),
             ];
@@ -18,6 +30,7 @@ impl KatanaApp {
                 &mut self.pending_action,
                 &providers,
             )
+            .with_operation_context((operation_epoch, current_mode))
             .show(ctx);
         }
 

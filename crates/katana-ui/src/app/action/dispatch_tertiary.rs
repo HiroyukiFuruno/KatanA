@@ -96,13 +96,23 @@ impl KatanaApp {
             AppAction::RenameTabGroup { group_id, new_name } => {
                 self.handle_action_rename_tab_group(group_id, new_name)
             }
-            AppAction::ClearInlineRename => self.state.layout.inline_rename_group = None,
+            AppAction::FinishInlineRename { group_id, new_name } => {
+                if let Some(new_name) = new_name {
+                    self.handle_action_rename_tab_group(group_id.clone(), new_name);
+                }
+                if self.state.layout.inline_rename_group.as_deref() == Some(&group_id) {
+                    self.state.layout.inline_rename_group = None;
+                }
+            }
             AppAction::RecolorTabGroup {
                 group_id,
                 new_color,
             } => self.handle_action_recolor_tab_group(group_id, new_color),
             AppAction::CloseTabGroup(group_id) => self.handle_action_close_tab_group(group_id),
             AppAction::UngroupTabGroup(group_id) => {
+                if self.state.layout.inline_rename_group.as_deref() == Some(&group_id) {
+                    self.state.layout.inline_rename_group = None;
+                }
                 self.state.document.tab_groups.retain(|g| g.id != group_id);
                 self.save_workspace_state();
             }

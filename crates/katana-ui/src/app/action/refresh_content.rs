@@ -156,7 +156,7 @@ impl KatanaApp {
         }
         if let Some((src, concurrency)) = ImageDocumentOps::refresh_payload(&self.state, idx, &path)
         {
-            self.full_refresh_preview(&path, &src, true, concurrency);
+            self.full_refresh_preview(&path, &src, is_manual, concurrency);
             return;
         }
         if katana_core::workspace::TreeEntry::path_is_canvas(&path) {

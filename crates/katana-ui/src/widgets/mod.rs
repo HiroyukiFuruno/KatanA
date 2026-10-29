@@ -4,6 +4,7 @@ mod color_picker;
 mod combo_box;
 mod interaction_facade;
 pub mod key_cap;
+mod loading_indicator;
 pub mod markdown_hooks;
 mod menu_button;
 mod modal;
@@ -17,6 +18,9 @@ pub use align_center::AlignCenter;
 pub use color_picker::{InlineColorPicker, LabeledColorPicker};
 pub use combo_box::StyledComboBox;
 pub use interaction_facade::InteractionFacade;
+pub(crate) use loading_indicator::{
+    LoadingIndicator, LoadingLabel, LoadingPresentation, LoadingState,
+};
 pub use markdown_hooks::MarkdownHooksOps;
 pub use menu_button::MenuButtonOps;
 pub use modal::{Modal, ModalWindowButton, ModalWindowControls};

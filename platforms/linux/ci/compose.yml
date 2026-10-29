@@ -17,4 +17,10 @@ services:
 
 volumes:
   katana-linux-target:
+    labels:
+      io.katana.owner: "HiroyukiFuruno/KatanA"
+      io.katana.purpose: ci-cache
   cargo-registry:
+    labels:
+      io.katana.owner: "HiroyukiFuruno/KatanA"
+      io.katana.purpose: shared-ci-cache

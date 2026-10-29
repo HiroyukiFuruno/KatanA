@@ -2,10 +2,12 @@
 """Verify that local and release gates have one owner each."""
 
 from pathlib import Path
+import base64
 import json
 import os
 import re
 import shutil
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -103,7 +105,8 @@ def verify_post_publication_artifact_route(workflow: str) -> None:
     required = (
         "if: github.head_ref == 'release/v0.22.42-public-release-evidence'",
         "repos/HiroyukiFuruno/KatanA/commits/v0.22.42",
-        'scripts/release/postpublication_run_admission.py --repository HiroyukiFuruno/KatanA --source "$tag_commit" --output "$work/run-admission.json"',
+        'scripts/release/postpublication_run_admission.py --repository HiroyukiFuruno/KatanA --source "$tag_commit" --version v0.22.42 --output "$work/run-admission.json"',
+        "python3 -B scripts/release/test-postpublication-source-binding.py",
         "python3 -B scripts/release/test-published-git-source.py",
         "python3 -B scripts/release/test-postpublication-controller-scope.py",
         "python3 -B scripts/release/test-postpublication-run-admission.py",
@@ -115,10 +118,13 @@ def verify_post_publication_artifact_route(workflow: str) -> None:
         '--assets "$work/assets"',
         '--build-manifests "$work/manifests"',
     )
-    if any(marker not in body for marker in required):
+    if any(marker not in body for marker in required) or "--version v0.22.42" not in body:
         raise ValueError("post-release artifacts must bind the actual tag, build run, and all five payloads")
-    if "  actions: read\n" not in workflow:
-        raise ValueError("cross-run artifact downloads need read-only Actions permission")
+    permission_match = re.search(r"(?ms)^permissions:\n((?:^  [^\n]+\n)+)", workflow)
+    permissions = ({line.strip() for line in permission_match.group(1).splitlines()}
+                   if permission_match else set())
+    if permissions != {"contents: read", "actions: read", "pull-requests: read"}:
+        raise ValueError("publication evidence needs only contents, Actions, and pull-request read access")
     if ('name: published-run-admission' not in workflow or
             'steps.actual_published_artifacts.outputs.admission_path' not in workflow):
         raise ValueError("post-publication job admission must retain its full run and attempt evidence")
@@ -127,6 +133,98 @@ def verify_post_publication_artifact_route(workflow: str) -> None:
 
 
 class WorkflowContractTests(unittest.TestCase):
+    def test_homebrew_cask_generator_emits_current_declarative_dsl(self) -> None:
+        updater_source = ROOT / "scripts/release/update-homebrew.sh"
+        with tempfile.TemporaryDirectory(prefix="katana-homebrew-generator-") as temporary:
+            root = Path(temporary)
+            fake_bin = root / "bin"
+            fake_bin.mkdir()
+            captures = root / "requests.jsonl"
+            curl = fake_bin / "curl"
+            curl.write_text(
+                "#!/usr/bin/env python3\n"
+                "import json, os, sys\n"
+                "args = sys.argv[1:]\n"
+                "if '-X' in args and args[args.index('-X') + 1] == 'PUT':\n"
+                " payload = json.loads(args[args.index('-d') + 1])\n"
+                " with open(os.environ['CASK_REQUESTS'], 'a', encoding='utf-8') as out:\n"
+                "  out.write(json.dumps(payload) + '\\n')\n"
+                " print(json.dumps({'content': {'html_url': 'https://example.invalid/cask'}}) + '\\n200')\n"
+                "else:\n"
+                " print(json.dumps({'sha': 'fixture-current-sha'}))\n",
+                encoding="utf-8",
+            )
+            curl.chmod(0o700)
+            python = fake_bin / "python3"
+            python.write_text("#!/bin/sh\nexec " + shlex.quote(sys.executable) + ' "$@"\n')
+            python.chmod(0o700)
+            environment = {
+                "PATH": os.pathsep.join((str(fake_bin), "/usr/bin", "/bin")),
+                "HOME": str(root),
+                "ZDOTDIR": str(root),
+                "EXPECTED_CURL": str(curl),
+                "HOMEBREW_KATANA_GIT_TOKEN": "fixture-token",
+                "CASK_REQUESTS": str(captures),
+            }
+            probe = subprocess.run(
+                ["/bin/zsh", "-df", "-c",
+                 '[[ "$(command -v curl)" = "$EXPECTED_CURL" && "$HOMEBREW_KATANA_GIT_TOKEN" = "fixture-token" ]]'],
+                cwd=root, env=environment, capture_output=True, check=False, timeout=10,
+            )
+            self.assertEqual(probe.returncode, 0, "Generator fixture environment is not isolated")
+            result = subprocess.run(
+                ["/bin/zsh", "-df", str(updater_source), "v0.22.43", "ab" * 32, "KatanA-Desktop-0.22.43.dmg"],
+                cwd=root,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=15,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertTrue(captures.is_file(), result.stdout + result.stderr)
+            payloads = [json.loads(line) for line in captures.read_text(encoding="utf-8").splitlines()]
+            self.assertEqual(len(payloads), 2)
+            rendered = [base64.b64decode(item["content"]).decode("utf-8") for item in payloads]
+            expected_step = (
+                'postflight_steps do\n'
+                '    run "/usr/bin/xattr", args: ["-cr", "{{appdir}}/KatanA Desktop.app"]\n'
+                '  end'
+            )
+            for cask in rendered:
+                self.assertIn("depends_on macos: :ventura", cask)
+                self.assertIn(expected_step, cask)
+                self.assertNotIn('depends_on macos: ">= :ventura"', cask)
+                self.assertNotIn("postflight do", cask)
+                self.assertNotIn("system_command", cask)
+                description = re.search(r'^  desc "([^"]+)"', cask, re.MULTILINE).group(1)
+                self.assertLessEqual(len(description), 80)
+                zap_paths = re.findall(r'^    "(~/Library/[^\"]+)",', cask, re.MULTILINE)
+                self.assertEqual(zap_paths, sorted(zap_paths))
+                self.assertIn("https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.43/KatanA-Desktop-0.22.43.dmg", cask)
+
+    def test_homebrew_generator_rejects_placeholder_digest_before_network_or_auth(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="katana-homebrew-invalid-digest-") as temporary:
+            root = Path(temporary)
+            environment = {"PATH": "/usr/bin:/bin", "HOME": str(root), "ZDOTDIR": str(root)}
+            for digest in ("0" * 64, "invalid", "a" * 63):
+                with self.subTest(digest=digest):
+                    result = subprocess.run(
+                        ["/bin/zsh", "-df", str(ROOT / "scripts/release/update-homebrew.sh"),
+                         "v0.22.43", digest, "KatanA-Desktop-0.22.43.dmg"],
+                        cwd=root, env=environment, capture_output=True, text=True, timeout=15,
+                    )
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("SHA256", result.stderr)
+                    self.assertNotIn("Fetching", result.stdout)
+
+    def test_external_registry_failures_are_detected_without_blocking_product_release(self) -> None:
+        result = subprocess.run(
+            [sys.executable, "-B", str(ROOT / "scripts/release/test-sync-external.py")],
+            cwd=ROOT, capture_output=True, text=True, timeout=60,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def run_check_pr_ready_fixture(self, branch: str, cargo_version: str) -> subprocess.CompletedProcess[str]:
         # hook由来のGit環境や個人設定を隔離し、fixtureの操作が実作業repoへ向かないようにする。
         environment = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
@@ -267,6 +365,15 @@ class WorkflowContractTests(unittest.TestCase):
         unit_tests = "python3 -m unittest discover -s scripts/release -p 'test_*.py'"
         self.assertEqual(preflight.count(build), 1)
         self.assertLess(preflight.index(build), preflight.index(unit_tests))
+
+    def test_preflight_runs_hyphenated_postpublication_binding_suites(self) -> None:
+        preflight = (ROOT / "scripts/release/preflight.sh").read_text(encoding="utf-8")
+        for command in (
+            "python3 -B scripts/release/test-postpublication-source-binding.py",
+            "python3 -B scripts/release/test-postpublication-run-admission.py",
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(preflight.count(command), 1)
 
     def test_supply_chain_covers_host_and_tool_locked_graphs_at_all_entrypoints(self) -> None:
         entry = "bash scripts/ci/check-supply-chain.sh"

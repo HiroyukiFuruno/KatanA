@@ -48,3 +48,15 @@ lint-impacted:
 # Full verification (fmt + clippy + fixture IT + 100% coverage; ast-lint runs inside coverage)
 check-full: test-cargo-sweep-contract test-ci-resource-contract fmt-check lint test-integration coverage check-platforms supply-chain
     @echo "✅ All checks passed"
+
+# 所有ラベルのあるDocker資源の保持状態と参照を確認する（削除しない）。
+docker-volumes-preview:
+    {{RTK_CMD}}python3 -B scripts/docker/volume-lifecycle.py preview
+
+# 証跡保存済みで保持期間を過ぎた一回分だけを回収する。
+docker-volume-delete-ui-run run_id:
+    {{RTK_CMD}}python3 -B scripts/docker/volume-lifecycle.py delete-ui-run {{quote(run_id)}}
+
+# 未参照の所有CIキャッシュ一つを、名前の再入力後に削除する。
+docker-volume-delete-cache volume:
+    {{RTK_CMD}}python3 -B scripts/docker/volume-lifecycle.py delete-cache {{quote(volume)}}

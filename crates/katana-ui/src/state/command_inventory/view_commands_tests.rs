@@ -47,8 +47,8 @@ fn registered_view_tools_commands_are_unavailable_for_office_and_html_documents(
 }
 
 #[test]
-fn registered_view_tools_commands_remain_available_for_pdf_and_markdown_documents() {
-    for path in ["report.pdf", "readme.md"] {
+fn registered_view_tools_commands_remain_available_for_markdown_documents() {
+    for path in ["readme.md"] {
         let state = state_with_active_path(path);
         for id in ["view.toggle_split_mode", "view.toggle_code_preview"] {
             assert!(
@@ -57,4 +57,13 @@ fn registered_view_tools_commands_remain_available_for_pdf_and_markdown_document
             );
         }
     }
+}
+
+#[test]
+fn code_preview_command_remains_available_as_recovery_from_code_only_mode() {
+    let mut state = state_with_active_path("report.docx");
+    state.set_active_view_mode(crate::app_state::ViewMode::CodeOnly);
+    assert!((view_command("view.toggle_code_preview").is_available)(
+        &state
+    ));
 }

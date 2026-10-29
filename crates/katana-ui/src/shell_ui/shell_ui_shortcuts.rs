@@ -6,6 +6,7 @@ use eframe::egui;
 
 impl KatanaApp {
     pub(super) fn handle_shortcuts(&mut self, ctx: &egui::Context) {
+        self.refresh_document_operation_runtime();
         let active_context = ShortcutContextResolver::resolve(&self.state, ctx);
 
         /* WHY: During shortcut recording the user is intentionally pressing

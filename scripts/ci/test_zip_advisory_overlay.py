@@ -74,33 +74,51 @@ class ZipOverlayTests(unittest.TestCase):
             MODULE.validate_metadata(metadata("0.6.7"))
 
     def test_exact_current_direct_zip_edge_is_accepted(self):
-        for version in ("9.0.5", "9.1.2"):
-            with self.subTest(version=version):
-                MODULE.validate_metadata(direct_workspace_zip_metadata(zip_version=version))
+        for fixture in (
+            direct_workspace_zip_metadata(zip_version="9.0.5", parent_version="0.22.42"),
+            direct_workspace_zip_metadata(zip_version="9.1.2", parent_version="0.22.42"),
+            direct_workspace_zip_metadata(zip_version="9.1.3", parent_version="0.22.43"),
+        ):
+            with self.subTest(packages=fixture["packages"]):
+                MODULE.validate_metadata(fixture)
 
     def test_unapproved_direct_zip_version_or_parent_is_rejected(self):
-        for fixture in (direct_workspace_zip_metadata(zip_version="9.1.3"),
-                        direct_workspace_zip_metadata(parent="other-root")):
-            with self.subTest(fixture=fixture["packages"]):
+        for fixture in (
+            direct_workspace_zip_metadata(zip_version="9.1.3", parent_version="0.22.42"),
+            direct_workspace_zip_metadata(zip_version="9.1.4", parent_version="0.22.43"),
+            direct_workspace_zip_metadata(zip_version="9.1.3", parent_version="0.22.44"),
+            direct_workspace_zip_metadata(
+                zip_version="9.1.3", parent="other-root", parent_version="0.22.43"
+            ),
+        ):
+            with self.subTest(packages=fixture["packages"]):
                 with self.assertRaises(ValueError):
                     MODULE.validate_metadata(fixture)
 
     def test_safe_direct_zip_edge_requires_local_manifest_and_reachable_route(self):
-        git_parent = direct_workspace_zip_metadata()
-        next(package for package in git_parent["packages"] if package["name"] == "katana-core")["source"] = (
-            "git+https://example.invalid/katana-core")
-        other_path = direct_workspace_zip_metadata()
-        next(package for package in other_path["packages"] if package["name"] == "katana-core")["manifest_path"] = (
-            "/workspace/fork/crates/katana-core/Cargo.toml")
-        orphaned = direct_workspace_zip_metadata()
-        root_id = next(package["id"] for package in orphaned["packages"]
-                       if package["name"] == "katana-screenshot")
-        next(node for node in orphaned["resolve"]["nodes"]
-             if node["id"] == root_id)["deps"] = []
-        for fixture in (git_parent, other_path, orphaned):
-            with self.subTest(fixture=fixture["packages"]):
-                with self.assertRaises(ValueError):
-                    MODULE.validate_metadata(fixture)
+        for approved in (
+            {"zip_version": "9.1.2", "parent_version": "0.22.42"},
+            {"zip_version": "9.1.3", "parent_version": "0.22.43"},
+        ):
+            with self.subTest(approved=approved):
+                git_parent = direct_workspace_zip_metadata(**approved)
+                next(package for package in git_parent["packages"] if package["name"] == "katana-core")["source"] = (
+                    "git+https://example.invalid/katana-core")
+                wrong_zip_source = direct_workspace_zip_metadata(**approved)
+                next(package for package in wrong_zip_source["packages"] if package["name"] == "zip")["source"] = (
+                    "git+https://example.invalid/zip")
+                other_path = direct_workspace_zip_metadata(**approved)
+                next(package for package in other_path["packages"] if package["name"] == "katana-core")["manifest_path"] = (
+                    "/workspace/fork/crates/katana-core/Cargo.toml")
+                orphaned = direct_workspace_zip_metadata(**approved)
+                root_id = next(package["id"] for package in orphaned["packages"]
+                               if package["name"] == "katana-screenshot")
+                next(node for node in orphaned["resolve"]["nodes"]
+                     if node["id"] == root_id)["deps"] = []
+                for fixture in (git_parent, wrong_zip_source, other_path, orphaned):
+                    with self.subTest(fixture=fixture["packages"]):
+                        with self.assertRaises(ValueError):
+                            MODULE.validate_metadata(fixture)
 
     def test_new_direct_parent_is_rejected(self):
         with self.assertRaises(ValueError):

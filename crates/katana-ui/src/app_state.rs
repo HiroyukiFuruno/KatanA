@@ -16,6 +16,7 @@ pub use katana_platform::CacheFacade;
 
 use katana_core::{ai::AiProviderRegistry, document::Document, plugin::PluginRegistry};
 use katana_platform::SettingsService;
+use std::path::PathBuf;
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ExportFormat {
     Html,
@@ -34,6 +35,16 @@ pub enum StatusType {
     Error,
 }
 
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct DocumentOperationRuntimeSnapshot {
+    pub(crate) active_document_path: Option<PathBuf>,
+    pub(crate) active_document_revision: Option<u64>,
+    pub(crate) active_doc_idx: Option<usize>,
+    pub(crate) preview_generation: Option<u64>,
+    pub(crate) pptx_slideshow_ready: bool,
+    pub(crate) epoch: u64,
+}
+
 pub struct AppState {
     pub document: DocumentState,
     pub workspace: WorkspaceState,
@@ -46,6 +57,7 @@ pub struct AppState {
     pub config: ConfigState,
     pub diagnostics: DiagnosticsState,
     pub command_palette: CommandPaletteState,
+    pub(crate) document_operation_runtime: DocumentOperationRuntimeSnapshot,
     pub global_workspace: katana_platform::workspace::GlobalWorkspaceService,
 }
 
@@ -81,6 +93,7 @@ impl AppState {
             config: ConfigState::new(plugin_registry, settings, cache),
             diagnostics: DiagnosticsState::new(),
             command_palette: CommandPaletteState::new(),
+            document_operation_runtime: DocumentOperationRuntimeSnapshot::default(),
             global_workspace: katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
                 katana_platform::workspace::JsonWorkspaceRepository::with_default_path(),
             )),

@@ -2,6 +2,7 @@
 
 import json
 import unittest
+import tomllib
 from pathlib import Path
 
 from document_host_io import HostEvidenceError
@@ -10,6 +11,7 @@ from document_host_publication import verify_generated_provenance, verify_public
 from postpublication_controller_scope import (
     CONTROLLER_PATHS, NEW_CLEANUP_INSTALL, OLD_CLEANUP_INSTALL, NEW_DOCUMENT_FILTER, OLD_DOCUMENT_FILTER,
     PINNED_SWEEP, UNPINNED_SWEEP, git, validate_controller_paths,
+    REGISTRY_RECEIPT_UPLOAD,
     validate_tool_pin, validate_workflow_prefix, validate_worktree_clean, verify_committed_scope,
 )
 
@@ -24,9 +26,16 @@ class PublishedControllerScopeTests(unittest.TestCase):
     def published(self, path):
         return git(ROOT, "show", f"{PUBLISHED}:{path}")
 
-    def test_current_committed_changes_are_controller_only(self):
+    def test_current_head_cannot_relabel_product_changes_as_published_controller(self):
         head = git(ROOT, "rev-parse", "HEAD").decode().strip()
-        self.assertLessEqual(set(verify_committed_scope(ROOT, PUBLISHED, head)), CONTROLLER_PATHS)
+        original = tomllib.loads(self.published("Cargo.toml").decode())
+        current = tomllib.loads(git(ROOT, "show", f"{head}:Cargo.toml").decode())
+        if current["workspace"]["package"]["version"] == original["workspace"]["package"]["version"]:
+            self.assertLessEqual(set(verify_committed_scope(ROOT, PUBLISHED, head)), CONTROLLER_PATHS)
+        else:
+            # WHY: 次版の製品変更を、公開済み版の非配布controller修正として認めない。
+            with self.assertRaises(HostEvidenceError):
+                verify_committed_scope(ROOT, PUBLISHED, head)
 
     def test_rejects_every_product_and_unrelated_tool_change(self):
         for path in ("Cargo.lock", "Cargo.toml", "crates/katana-ui/src/main.rs",
@@ -56,6 +65,21 @@ class PublishedControllerScopeTests(unittest.TestCase):
                         original.replace(b"Verify actual published release artifacts", b"Ignore published artifacts")):
             with self.subTest(mutation=mutated[:80]), self.assertRaises(HostEvidenceError):
                 validate_workflow_prefix(READINESS_WORKFLOW, original, mutated)
+
+    def test_registry_receipt_cannot_change_publication_or_upload_other_files(self):
+        original = self.published(BUILD_WORKFLOW)
+        repaired = original.replace(OLD_CLEANUP_INSTALL, NEW_CLEANUP_INSTALL, 1)
+        repaired = repaired.replace(OLD_DOCUMENT_FILTER, NEW_DOCUMENT_FILTER, 1)
+        repaired = repaired.replace(b"  cleanup_default:\n",
+                                    REGISTRY_RECEIPT_UPLOAD + b"  cleanup_default:\n", 1)
+        validate_workflow_prefix(BUILD_WORKFLOW, original, repaired)
+        for mutated in (repaired.replace(b"path: release-files/external-registry-sync.json",
+                                         b"path: release-files/*"),
+                        repaired.replace(b"if: always()", b"if: success()"),
+                        repaired.replace(b"continue-on-error: true", b"continue-on-error: false"),
+                        repaired.replace(b"gh release create", b"gh release delete")):
+            with self.subTest(mutation=mutated[-100:]), self.assertRaises(HostEvidenceError):
+                validate_workflow_prefix(BUILD_WORKFLOW, original, mutated)
 
     def test_ci_tool_pin_cannot_change_any_other_test_or_threshold(self):
         original = self.published(".github/workflows/test-and-build.yml")

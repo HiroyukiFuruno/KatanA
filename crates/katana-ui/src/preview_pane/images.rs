@@ -42,7 +42,11 @@ impl ImageLogicOps {
                             .request_repaint_after(std::time::Duration::from_millis(
                                 IMAGE_LOADING_REPAINT_INTERVAL_MS,
                             ));
-                        ui.label(&crate::i18n::I18nOps::get().preview.rendering);
+                        let loading = crate::widgets::LoadingPresentation::new(
+                            crate::widgets::LoadingState::Pending,
+                            crate::widgets::LoadingLabel::RenderingKind("image"),
+                        );
+                        crate::widgets::LoadingIndicator::show(ui, &loading);
                     }
                     super::local_image_loader::LocalImageStatus::Failed(error) => {
                         return Some(
@@ -64,7 +68,11 @@ impl ImageLogicOps {
                         .request_repaint_after(std::time::Duration::from_millis(
                             IMAGE_LOADING_REPAINT_INTERVAL_MS,
                         ));
-                    ui.label(&crate::i18n::I18nOps::get().preview.rendering);
+                    let loading = crate::widgets::LoadingPresentation::new(
+                        crate::widgets::LoadingState::Pending,
+                        crate::widgets::LoadingLabel::RenderingKind("image"),
+                    );
+                    crate::widgets::LoadingIndicator::show(ui, &loading);
                     None
                 }
                 super::local_image_loader::LocalTextureStatus::Failed(error) => {
@@ -96,8 +104,15 @@ impl ImageLogicOps {
         let base_size = Vec2::new(width as f32 * base_scale, height as f32 * base_scale);
         let zoomed_size = base_size * zoom;
 
-        let (container_rect, response) =
-            ui.allocate_exact_size(Vec2::new(max_w, base_size.y), egui::Sense::click_and_drag());
+        let (container_rect, response) = ui.allocate_exact_size(
+            Vec2::new(
+                max_w,
+                base_size
+                    .y
+                    .max(crate::diagram_controller::DiagramControllerOps::minimum_image_height()),
+            ),
+            egui::Sense::click_and_drag(),
+        );
         super::image_background::ImageBackgroundOps::paint(ui, container_rect);
 
         response.context_menu(|ui| {
@@ -150,11 +165,9 @@ impl ImageLogicOps {
             {
                 *req = Some(id);
             }
-            crate::diagram_controller::DiagramControllerOps::draw_controls(
-                ui,
-                state,
-                container_rect,
-            );
+            let controls_rect =
+                crate::diagram_controller::DiagramControllerOps::draw_controls_below(ui, state);
+            return Some(container_rect.union(controls_rect));
         }
 
         Some(container_rect)

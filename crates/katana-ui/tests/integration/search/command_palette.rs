@@ -2,30 +2,6 @@ use egui_kittest::kittest::Queryable;
 use katana_ui::app_state::AppAction;
 // use katana_ui::i18n::I18nOps;
 use katana_ui::state::command_palette::*;
-use katana_ui::state::command_palette_providers::*;
-
-#[test]
-fn test_app_command_provider() {
-    /* WHY: Verify that the AppCommandProvider correctly ranks and returns system actions like "Settings". */
-    let provider = AppCommandProvider;
-
-    // Empty query returns generic recent/common actions
-    let results = provider.search("", None, None);
-    assert!(!results.is_empty());
-    assert_eq!(results[0].kind, CommandPaletteResultKind::RecentOrCommon);
-
-    let results = provider.search("Settings", None, None);
-    assert!(!results.is_empty());
-    assert_eq!(results[0].kind, CommandPaletteResultKind::Action);
-    assert_eq!(results[0].label, "Settings");
-
-    match &results[0].execute_payload {
-        CommandPaletteExecutePayload::DispatchAppAction(action) => {
-            assert!(matches!(action, AppAction::ToggleSettings));
-        }
-        _ => panic!("Expected DispatchAppAction payload"),
-    }
-}
 
 #[test]
 fn test_integration_command_palette_ui() {

@@ -782,6 +782,15 @@ jobs:
             "${{ needs.preflight.outputs.version }}" \
             "release-files"
 
+      - name: Preserve external registry sync results
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: external-registry-sync
+          path: release-files/external-registry-sync.json
+          if-no-files-found: warn
+
   cleanup_default:
     name: Audit and clean published release branches
     needs: [preflight, publish]

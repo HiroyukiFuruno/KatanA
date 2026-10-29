@@ -29,20 +29,28 @@ fn direct_view_tools_dispatch_is_rejected_for_office_and_html_documents() {
     ] {
         for action in [AppAction::ToggleSplitMode, AppAction::ToggleCodePreview] {
             let mut app = app_with_active_path(path);
-            app.state.set_active_view_mode(ViewMode::CodeOnly);
             app.dispatch_secondary(&egui::Context::default(), action.clone());
             assert_eq!(
                 app.state.active_view_mode(),
-                ViewMode::CodeOnly,
+                ViewMode::PreviewOnly,
                 "{action:?} must be rejected for {path}"
             );
         }
+
+        let mut recovery_app = app_with_active_path(path);
+        recovery_app.state.set_active_view_mode(ViewMode::CodeOnly);
+        recovery_app.dispatch_secondary(&egui::Context::default(), AppAction::ToggleCodePreview);
+        assert_eq!(
+            recovery_app.state.active_view_mode(),
+            ViewMode::PreviewOnly,
+            "unsupported documents must retain the safe PreviewOnly recovery"
+        );
     }
 }
 
 #[test]
-fn direct_view_tools_dispatch_remains_available_for_pdf_and_markdown_documents() {
-    for path in ["report.pdf", "readme.md"] {
+fn direct_view_tools_dispatch_remains_available_for_markdown_documents() {
+    for path in ["readme.md"] {
         let mut split_app = app_with_active_path(path);
         split_app.state.set_active_view_mode(ViewMode::CodeOnly);
         split_app.dispatch_secondary(&egui::Context::default(), AppAction::ToggleSplitMode);
@@ -95,4 +103,15 @@ fn direct_set_view_mode_preserves_all_modes_for_markdown_documents() {
             "direct SetViewMode({mode:?}) must remain available for Markdown"
         );
     }
+}
+
+#[test]
+fn direct_doc_search_open_is_rejected_for_virtual_documents_but_close_is_allowed() {
+    let mut app = app_with_active_path("Katana://Welcome");
+    app.dispatch_secondary(&egui::Context::default(), AppAction::OpenDocSearch);
+    assert!(!app.state.search.doc_search_open);
+
+    app.state.search.doc_search_open = true;
+    app.dispatch_secondary(&egui::Context::default(), AppAction::ToggleDocSearch);
+    assert!(!app.state.search.doc_search_open);
 }

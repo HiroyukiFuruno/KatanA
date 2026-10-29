@@ -13,7 +13,13 @@ OLD_ZIP_PARENTS = {
     ("8.6.0", "katana-document-viewer", "0.5.12"),
 }
 SAFE_ZIP = ("9.0.5", "katana-core", "0.22.42")
-SAFE_ZIP_EDGES = frozenset((SAFE_ZIP, ("9.1.2", "katana-core", "0.22.42")))
+SAFE_ZIP_EDGES = frozenset(
+    (
+        SAFE_ZIP,
+        ("9.1.2", "katana-core", "0.22.42"),
+        ("9.1.3", "katana-core", "0.22.43"),
+    )
+)
 SAFE_ZIP_MANIFEST = (
     Path(__file__).resolve().parents[2] / "crates" / "katana-core" / "Cargo.toml"
 ).resolve()
