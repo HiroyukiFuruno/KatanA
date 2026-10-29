@@ -9,13 +9,18 @@ pub(crate) struct ImageDocumentOps;
 #[path = "image_document_canvas_tests.rs"]
 mod canvas_tests;
 
+#[cfg(test)]
+#[path = "image_document_reference_tests.rs"]
+mod reference_tests;
+
 impl ImageDocumentOps {
     pub(crate) fn is_image_path(path: &Path) -> bool {
-        path.exists() && katana_core::workspace::TreeEntry::path_is_image(path)
+        /* WHY: 選択中の同期statを避け、存在確認と読込失敗は画像workerへ委ねる。 */
+        katana_core::workspace::TreeEntry::path_is_image(path)
     }
 
     pub(crate) fn is_binary_document_path(path: &Path) -> bool {
-        path.exists() && katana_core::workspace::TreeEntry::path_is_document(path)
+        katana_core::workspace::TreeEntry::path_is_document(path)
     }
 
     pub(crate) fn load_or_create(
