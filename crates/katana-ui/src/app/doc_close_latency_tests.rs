@@ -1,4 +1,5 @@
 mod fixtures;
+mod png_explorer;
 
 use crate::app::DocumentOps;
 use crate::preview_pane::DocumentWorkerLifecycle;
