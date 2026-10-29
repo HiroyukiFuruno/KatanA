@@ -1,76 +1,19 @@
 use eframe::egui;
 use katana_document_viewer::{DocumentFitMode, DocumentSurfaceCommand, DocumentViewerCommand};
-use std::sync::atomic::{AtomicU64, Ordering};
 
 use super::controls::show_controls;
 use super::controls_sheet_tabs::{sheet_tab_rail_height, show_sheet_tabs};
 use super::painter::paint_document_frame;
-use super::render_support::{PendingDocumentCommands, show_diagnostics, show_failure};
+use super::render_support::{show_diagnostics, show_failure};
 use super::source::DocumentSurfaceSource;
 use super::types::{DocumentFailure, DocumentFailureLayer, DocumentSurface};
-use super::worker::{self, DocumentWorkerCommand};
+use super::worker::DocumentWorkerCommand;
 
-static NEXT_GENERATION: AtomicU64 = AtomicU64::new(1);
+const DOCUMENT_DIAGNOSTIC_GAP: f32 = 4.0;
+const SHEET_RAIL_HORIZONTAL_MARGIN: i8 = 6;
+const SHEET_RAIL_VERTICAL_MARGIN: i8 = 4;
 
 impl DocumentSurface {
-    pub(crate) fn start(source: DocumentSurfaceSource, ctx: &egui::Context) -> Self {
-        let started_at = std::time::Instant::now();
-        let generation = NEXT_GENERATION.fetch_add(1, Ordering::Relaxed);
-        let (command_tx, command_rx) = std::sync::mpsc::sync_channel(1);
-        let (event_tx, event_rx) = std::sync::mpsc::channel();
-        let display_source = source.descriptor();
-        super::debug_log::DebugLog::write(
-            "document_worker_handoff",
-            format_args!(
-                "generation={} format={} bytes={} uri={}",
-                generation,
-                source.format.extension(),
-                source.byte_len(),
-                source.uri
-            ),
-        );
-        let worker_source = source;
-        let repaint = ctx.clone();
-        let spawn = super::DocumentWorkerLifecycle::spawn(
-            format!("katana-document-{generation}"),
-            move || {
-                worker::run(generation, worker_source, command_rx, event_tx, repaint);
-            },
-        );
-        let failure = match spawn {
-            Ok(_worker) => None,
-            Err(error) => {
-                let failure = DocumentFailure::new(
-                    DocumentFailureLayer::KatanaHost,
-                    "start worker",
-                    display_source.uri.clone(),
-                    Some(display_source.format),
-                    error.to_string(),
-                );
-                failure.log();
-                Some(failure)
-            }
-        };
-        let started = failure.is_none();
-        Self {
-            generation,
-            source: display_source,
-            command_tx: Some(command_tx),
-            event_rx,
-            frame: None,
-            border_cache: Default::default(),
-            filter_ui: Default::default(),
-            fonts: Default::default(),
-            failure,
-            painter: Default::default(),
-            loading: started,
-            command_in_flight: started,
-            pending_commands: PendingDocumentCommands::default(),
-            viewport: None,
-            started_at,
-        }
-    }
-
     pub(crate) fn source(&self) -> &DocumentSurfaceSource {
         &self.source
     }
@@ -92,21 +35,20 @@ impl DocumentSurface {
                 crate::widgets::LoadingState::Pending,
                 crate::widgets::LoadingLabel::RenderingKind(self.source.format.extension()),
             );
-            ui.centered_and_justified(|ui| {
-                crate::widgets::LoadingIndicator::show(ui, &loading);
-            });
+            crate::widgets::LoadingIndicator::show_centered(ui, &loading);
             return;
         };
 
         show_controls(self, ui, &frame);
         /* WHY: Place diagnostics before allocating the grid so it cannot overlap the bottom tab input region. */
         show_diagnostics(ui, &frame);
-        ui.add_space(4.0);
+        ui.add_space(DOCUMENT_DIAGNOSTIC_GAP);
         super::page_navigation::show(self, ui, &frame);
         let sheet_tab_height = sheet_tab_rail_height(frame.format);
         if sheet_tab_height > 0.0 {
-            let rail_frame =
-                egui::Frame::side_top_panel(ui.style()).inner_margin(egui::Margin::symmetric(6, 4));
+            let rail_frame = egui::Frame::side_top_panel(ui.style()).inner_margin(
+                egui::Margin::symmetric(SHEET_RAIL_HORIZONTAL_MARGIN, SHEET_RAIL_VERTICAL_MARGIN),
+            );
             egui::Panel::bottom(egui::Id::new(("document-sheet-tabs-rail", self.generation)))
                 .resizable(false)
                 .exact_size(sheet_tab_height)

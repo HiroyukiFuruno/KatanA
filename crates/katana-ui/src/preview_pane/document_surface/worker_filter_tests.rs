@@ -55,6 +55,7 @@ fn start_worker() -> (
             command_rx,
             event_tx,
             eframe::egui::Context::default(),
+            Default::default(),
         );
     });
     (command_tx, event_rx, worker)

@@ -136,7 +136,21 @@ impl DocumentSurfaceSource {
 
     fn validate_embedded_font_metadata(&self, bytes: &[u8]) -> Result<(), DocumentFailure> {
         /* WHY: local/remote共通のworker引渡し前に、出力先を変え得るフォント名を拒否する。 */
-        OfficeFontSafetyPolicy::validate(self.format, bytes).map_err(|error| {
+        let started = std::time::Instant::now();
+        super::debug_log::DebugLog::write(
+            "document_font_validation_begin",
+            format_args!("bytes={}", bytes.len()),
+        );
+        let result = OfficeFontSafetyPolicy::validate(self.format, bytes);
+        super::debug_log::DebugLog::write(
+            "document_font_validation_end",
+            format_args!(
+                "elapsed_ms={} success={}",
+                started.elapsed().as_millis(),
+                result.is_ok()
+            ),
+        );
+        result.map_err(|error| {
             DocumentFailure::source_intake(
                 "validate_embedded_fonts",
                 self.uri.clone(),

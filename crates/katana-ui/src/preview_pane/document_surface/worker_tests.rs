@@ -59,6 +59,7 @@ pub(super) fn idle_surface() -> (
     let surface = super::types::DocumentSurface {
         generation: 1,
         source: representative_pdf_source().descriptor(),
+        cancellation: Default::default(),
         command_tx: Some(command_tx),
         event_rx,
         frame: Some(test_frame()),
@@ -206,6 +207,7 @@ fn document_worker_applies_queued_commands_in_order() {
         command_rx,
         event_tx,
         eframe::egui::Context::default(),
+        Default::default(),
     );
 
     let events = event_rx.try_iter().collect::<Vec<_>>();

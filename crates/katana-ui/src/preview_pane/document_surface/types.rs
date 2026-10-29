@@ -128,6 +128,7 @@ impl std::fmt::Display for DocumentFailure {
 }
 
 pub(crate) struct DocumentSurface {
+    pub(super) cancellation: super::worker_cancellation::DocumentWorkerCancellation,
     pub(super) generation: u64,
     pub(super) source: DocumentSurfaceSource,
     pub(super) command_tx: Option<SyncSender<DocumentWorkerCommand>>,
@@ -159,6 +160,7 @@ impl std::fmt::Debug for DocumentSurface {
 
 impl Drop for DocumentSurface {
     fn drop(&mut self) {
+        self.cancellation.cancel();
         super::debug_log::DebugLog::write(
             "document_surface_drop",
             format_args!(
