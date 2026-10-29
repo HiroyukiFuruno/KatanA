@@ -8,6 +8,11 @@ const FRAME_UPDATE_POLL_INTERVAL: std::time::Duration = std::time::Duration::fro
 const FRAME_UPDATE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
 const HTML_BROWSER_ERROR_TEXT_PADDING: f32 = 12.0;
 
+#[path = "image_html_surface_close.rs"]
+mod close;
+#[path = "image_html_surface_construction.rs"]
+mod construction;
+
 #[path = "image_html_surface_failure.rs"]
 mod failure;
 #[path = "image_html_surface_frame.rs"]
@@ -63,54 +68,6 @@ pub(crate) struct HtmlBrowserSurface {
 }
 
 impl HtmlBrowserSurface {
-    pub(crate) fn start(source: HtmlBrowserSource) -> Self {
-        let initial_origin = source.origin.as_str().to_owned();
-        let document_origin = Some(initial_origin.clone());
-        Self {
-            adapter: None,
-            katana_adapter_instance_id: None,
-            pending_renderer_session: false,
-            katana_renderer_session_epoch: None,
-            pending_source: Some(source),
-            frame: None,
-            document_origin,
-            texture: None,
-            viewport: None,
-            last_pointer_position: None,
-            primary_pointer_pressed: false,
-            focused: false,
-            pointer_over: false,
-            last_display_rect: None,
-            error: None,
-            frame_update_deadline: None,
-            pending_navigation_urls: VecDeque::new(),
-            navigation_history: VecDeque::from([initial_origin]),
-        }
-    }
-
-    pub(crate) fn failed(error: String) -> Self {
-        Self {
-            adapter: None,
-            katana_adapter_instance_id: None,
-            pending_renderer_session: false,
-            katana_renderer_session_epoch: None,
-            pending_source: None,
-            frame: None,
-            document_origin: None,
-            texture: None,
-            viewport: None,
-            last_pointer_position: None,
-            primary_pointer_pressed: false,
-            focused: false,
-            pointer_over: false,
-            last_display_rect: None,
-            error: Some(error),
-            frame_update_deadline: None,
-            pending_navigation_urls: VecDeque::new(),
-            navigation_history: VecDeque::new(),
-        }
-    }
-
     fn poll(&mut self, ctx: &egui::Context) {
         loop {
             let update = self
