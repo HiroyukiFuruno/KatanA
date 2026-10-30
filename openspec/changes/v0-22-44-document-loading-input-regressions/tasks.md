@@ -50,8 +50,8 @@
 
 - [x] 5.1 docs/coding-rules.ja.mdとself-reviewで差分を確認する。
 - [x] 5.2 Markdownとコードを整形し、対象回帰を回収する。
-- [ ] 5.3 関心別通常commitの後、通常push hook一回を正式ゲートとし、重い同検査を手動で重ねない。
-- [ ] 5.4 Draft PR→全reviewページ/threads取得→P0/P1修正と個別reply/resolve→fresh確認を完了する。
+- [x] 5.3 関心別通常commitの後、通常push hook一回を正式ゲートとし、重い同検査を手動で重ねない。
+- [x] 5.4 Draft PR→全reviewページ/threads取得→P0/P1修正と個別reply/resolve→fresh確認を完了する。
 - [ ] 5.5 Ready後のcurrent required checksを回収し、不合格は修正する。
 - [ ] 5.6 通常merge→Actions公開→全5asset/checksum・配布自動検査→Issue更新→OpenSpec archive→安全なbranch/worktree後処理を実施する。
 
@@ -91,3 +91,10 @@ OpenSpecはリポジトリの`./scripts/openspec`を使用する。既存品質�
 - 本人の既存方針「自動テストにないものはリリースの品質担保の対象外」「リリース後に動作確認して未解決なら改めて対応」を引き続き適用する。実行可能な自動検査の失敗は除外しない。今回の改善の公開と、報告全体を解決してIssueをCloseすることは別。
 - #385は30秒/Missingの全条件が未確定のためOpenを維持する。合計native起動のadmission未実装という設計懸念も物理監査へ残すが、30秒遅延の原因と断定しない。
 - 最初のKML呼出しはinstalled CLI0.16.1の未対応helpにより対象外Markdownを整形してしまった。直前cleanを根拠に、その差分patchだけを逆適用し全て復旧、tracked cleanを再確認。途中のpush検査は明示停止し採用しない。以後は実装を確認した`--file`による対象指定だけを使う。
+
+## Draftレビュー到達
+
+- HEAD `5691242406d548fd1125b770f04f9e17280572d4` の通常pushは元ローカル/Linux/Windows向け/PR前ゲートを通過しexit0。local/origin 0/0、tracked cleanを確認。
+- [Draft PR #397](https://github.com/HiroyukiFuruno/KatanA/pull/397)を作成。DraftのCI/Readinessは全job SKIPPEDでrunnerを割り当てていない。
+- current HEADのCodex summaryはcompleted/has_any_findings=false/has_unresolved_findings=false。formal review/会話/threads/nested commentsを全ページ取得し未解決0、独立レビューもP0/P1なし。`tmp/v0.22.44-prep/pr397-review-56912424-completed-all-pages.json`。
+- この記録更新後も最新HEADのレビューを再取得し、Ready後の必須CI・メモリ条件・公開結果はまだ完了扱いしない。
