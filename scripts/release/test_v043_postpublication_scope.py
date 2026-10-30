@@ -81,9 +81,11 @@ class ScopePolicyTest(unittest.TestCase):
                                   check=True, capture_output=True).stdout
         current = subprocess.run(["git", "-C", str(ROOT), "show", f"HEAD:{path}"],
                                  check=True, capture_output=True).stdout
-        self.assertEqual(current, baseline)
-        subprocess.run(["git", "-C", str(ROOT), "diff", "--exit-code", policy.SOURCE, "--", path],
-                       check=True, capture_output=True)
+        # WHY: 公開後branchの製品不変性はscope検査が担い、将来版のjob追加で旧版のtrigger契約を固定し直さない。
+        for content in (current, (ROOT / path).read_bytes()):
+            self.assertEqual(content.count(b"\njobs:"), 1)
+            self.assertEqual(baseline.count(b"\njobs:"), 1)
+            self.assertEqual(content.split(b"\njobs:", 1)[0], baseline.split(b"\njobs:", 1)[0])
         block = baseline.decode().split("paths-ignore:", 1)[1].split("  push:", 1)[0]
         for prefix in ("openspec/**", "evidence/**", "scripts/**", ".github/**"):
             self.assertIn(f"- '{prefix}'", block)
