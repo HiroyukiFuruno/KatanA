@@ -33,6 +33,7 @@ impl UpdateOps for KatanaApp {
         }
         self.state.update.checking = true;
         self.state.update.check_error = None;
+        self.state.update.install_error = None;
         self.state.update.available = None;
         if is_manual {
             self.show_update_dialog = true;
@@ -113,8 +114,7 @@ impl UpdateOps for KatanaApp {
                 UpdateInstallEvent::Finished(Err(err)) => {
                     self.state.update.checking = false;
                     self.state.update.phase = None;
-                    self.state.update.check_error =
-                        Some(katana_core::update::CheckUpdateError::Other(err));
+                    self.state.update.install_error = Some(err);
                     self.show_update_dialog = true;
                     self.update_install_rx = None;
                     ctx.request_repaint();

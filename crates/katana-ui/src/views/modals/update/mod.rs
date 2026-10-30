@@ -68,14 +68,23 @@ impl<'a> UpdateModal<'a> {
 
         if self.state.update.checking {
             phases::show_checking(ctx, &msgs.title, &msgs.checking_for_updates);
-        } else if let Some(err) = &self.state.update.check_error {
+        } else if let Some(err) = self.state.update.install_error.as_ref().or(self
+            .state
+            .update
+            .check_error
+            .as_ref())
+        {
             let color = self.resolve_error_color(ctx);
-            let message = error_message::UpdateErrorMessageOps::localize(err, msgs);
+            let (message, heading) = error_message::UpdateErrorMessageOps::for_phase(
+                err,
+                msgs,
+                self.state.update.install_error.is_some(),
+            );
             let close = phases::show_error(
                 ctx,
                 &msgs.title,
                 &message,
-                &msgs.failed_to_check,
+                heading,
                 &msgs.action_close,
                 color,
             );

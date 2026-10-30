@@ -33,7 +33,7 @@ pub(crate) struct PendingHtmlPreviewRefresh {
 
 pub enum UpdateInstallEvent {
     Progress(katana_core::update::UpdateProgress),
-    Finished(Result<katana_core::update::UpdatePreparation, String>),
+    Finished(Result<katana_core::update::UpdatePreparation, katana_core::update::CheckUpdateError>),
 }
 
 pub struct KatanaApp {

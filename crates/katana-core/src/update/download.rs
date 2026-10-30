@@ -3,6 +3,8 @@ use crate::update::UpdateProgress;
 
 #[path = "download_archive_security.rs"]
 mod download_archive_security;
+#[path = "storage.rs"]
+pub(super) mod storage;
 
 impl UpdateDownloadOps {
     pub fn download_update<P: AsRef<std::path::Path>, F>(
@@ -22,6 +24,9 @@ impl UpdateDownloadOps {
             .get("Content-Length")
             .and_then(|v| v.to_str().ok())
             .and_then(|s| s.parse::<u64>().ok());
+        if let Some(total_size) = total_size {
+            storage::UpdateStorageOps::check_download(dest_path.as_ref(), total_size)?;
+        }
         let mut reader = response.into_body().into_reader();
         let mut out_file = std::fs::File::create(dest_path)?;
 
