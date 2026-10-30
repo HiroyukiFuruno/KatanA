@@ -46,8 +46,8 @@ Implementation exists in this release checkout with target tests. No separate br
 ### Definition of Ready (DoR)
 All executable source/test feedback is addressed. User manual QA is a nonblocking follow-up, per explicit latest human policy.
 
-- [ ] 3.1 Execute self-review against coding rules and keep normal concern-specific commits.
-- [ ] 3.2 Format/lint updated documentation and synchronize version/changelog with the canonical release target.
+- [x] 3.1 Execute self-review against coding rules and keep normal concern-specific commits.
+- [x] 3.2 Format/lint updated documentation and synchronize version/changelog with the canonical release target.
 - [ ] 3.3 Pass the normal push hook once as the complete local quality gate; do not duplicate its heavy checks manually.
 - [ ] 3.4 Draft PR → full current reviews → repair/reply/resolve → fresh P0/P1 zero.
 - [ ] 3.5 Ready → current required CI/coverage/security/3OS checks → normal merge.
