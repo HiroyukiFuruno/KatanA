@@ -101,7 +101,7 @@ class CargoTargetInitTest(unittest.TestCase):
             self.fail("producer did not reach the next process barrier")
 
     def test_real_contract_producers_then_build_clean_and_reclean(self):
-        recipes = (ROOT / "just/tests.just").read_text()
+        recipes = (ROOT / "just/tests.just").read_text(encoding="utf-8")
         for name in ("test-commonmark-html-trace", "test-wgpu-native-surface-size"):
             with self.subTest(recipe=name), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory).resolve()
