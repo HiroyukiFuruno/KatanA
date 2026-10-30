@@ -45,6 +45,10 @@ impl PageNavigationFocusOps {
             if let Some(path) = activated_path {
                 Self::arm_for_selection(ctx, path);
             }
+        } else if previous_active_path != active_path
+            && let Some(path) = active_path.as_deref()
+        {
+            Self::arm_for_selection(ctx, path);
         }
     }
 

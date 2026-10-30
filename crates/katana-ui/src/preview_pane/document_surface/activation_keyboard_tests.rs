@@ -9,7 +9,7 @@ use std::sync::Arc;
 const PAGE_COUNT: usize = 3;
 const LOADING_FOCUS_FRAMES: usize = 2;
 
-fn app_with_documents(path: &std::path::Path) -> KatanaApp {
+pub(super) fn app_with_documents(path: &std::path::Path) -> KatanaApp {
     let mut state = AppState::new(
         AiProviderRegistry::new(),
         PluginRegistry::new(),
@@ -78,12 +78,12 @@ fn delayed_page_activation_survives_previous_widget_focus_expiring() {
     assert_eq!(ctx.memory(|memory| memory.focused()), None);
     assert!(activation_focus(&ctx, &owner_path));
     assert_eq!(
-        next_page_command(&ctx),
+        next_page_command(&ctx, katana_document_viewer::ViewerDocumentFormat::Pdf),
         Some(katana_document_viewer::DocumentViewerCommand::Next)
     );
 }
 
-fn activation_focus(ctx: &egui::Context, owner_path: &std::path::Path) -> bool {
+pub(super) fn activation_focus(ctx: &egui::Context, owner_path: &std::path::Path) -> bool {
     let mut focused = false;
     let mut output = ctx.run_ui(page_input(Vec::new()), |ui| {
         let response = navigation_response(ui, 0);
@@ -99,7 +99,10 @@ fn activation_focus(ctx: &egui::Context, owner_path: &std::path::Path) -> bool {
     focused
 }
 
-fn next_page_command(ctx: &egui::Context) -> Option<katana_document_viewer::DocumentViewerCommand> {
+pub(super) fn next_page_command(
+    ctx: &egui::Context,
+    format: katana_document_viewer::ViewerDocumentFormat,
+) -> Option<katana_document_viewer::DocumentViewerCommand> {
     let mut command = None;
     let input = page_input(vec![egui::Event::Key {
         key: egui::Key::ArrowRight,
@@ -113,11 +116,7 @@ fn next_page_command(ctx: &egui::Context) -> Option<katana_document_viewer::Docu
         command = navigation_command(
             ui,
             &response,
-            &super::keyboard_tests::frame(
-                katana_document_viewer::ViewerDocumentFormat::Pdf,
-                0,
-                PAGE_COUNT,
-            ),
+            &super::keyboard_tests::frame(format, 0, PAGE_COUNT),
         );
     });
     output.textures_delta.clear();
@@ -125,7 +124,7 @@ fn next_page_command(ctx: &egui::Context) -> Option<katana_document_viewer::Docu
     command
 }
 
-fn render_text_input(ctx: &egui::Context, text: &mut String, id: egui::Id) {
+pub(super) fn render_text_input(ctx: &egui::Context, text: &mut String, id: egui::Id) {
     let mut output = ctx.run_ui(page_input(Vec::new()), |ui| {
         ui.add(egui::TextEdit::singleline(text).id(id))
             .request_focus();
@@ -139,7 +138,7 @@ fn explicit_document_selection_focuses_real_page_surface_then_routes_one_arrow()
     let (_directory, ctx, _app, owner_path) = selected_pdf_app();
     assert!(activation_focus(&ctx, &owner_path));
     assert_eq!(
-        next_page_command(&ctx),
+        next_page_command(&ctx, katana_document_viewer::ViewerDocumentFormat::Pdf),
         Some(katana_document_viewer::DocumentViewerCommand::Next)
     );
 }

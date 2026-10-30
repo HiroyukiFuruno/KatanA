@@ -86,5 +86,9 @@ mod keyboard_tests;
 mod activation_keyboard_tests;
 
 #[cfg(test)]
+#[path = "tab_activation_keyboard_tests.rs"]
+mod tab_activation_keyboard_tests;
+
+#[cfg(test)]
 #[path = "disabled_keyboard_tests.rs"]
 mod disabled_keyboard_tests;
