@@ -25,14 +25,19 @@ commit-msg:
     issue-reference:
       run: bash scripts/release/check-commit-issue-reference.sh {1}
 
+# WHY: 版や依存情報が不整合なら、重い検査の開始前にpushを失敗させる。
 pre-push:
+  parallel: false
+  piped: true
   commands:
     pr-ready-check:
+      priority: 1
       run: ./scripts/release/check-pr-ready.sh --pr-bootstrap
       only:
         - ref: master
         - ref: release/*
     check-strict:
+      priority: 2
       run: python3 scripts/release/run-owned-push-check.py
       glob:
         - "Cargo.{toml,lock}"
@@ -50,6 +55,7 @@ pre-push:
         - ref: release/*
 
     check-light:
+      priority: 3
       run: just check-light
       glob: "{crates,vendor}/**/*.{rs,toml,lock}"
       skip:
