@@ -231,6 +231,18 @@ def git_source_identity(root: Path, commit: str) -> dict[str, Any]:
     }
 
 
+def git_workspace_version(root: Path, commit: str) -> str:
+    """Read the release version from the same immutable source commit."""
+    from postpublication_source_binding import validate_version
+    commit = _commit(root, commit)
+    tree = _tree_entries(root, commit)
+    content = _resolve_source(root, tree, b"Cargo.toml", {})
+    document = tomllib.loads(content.decode("utf-8"))
+    version = document.get("workspace", {}).get("package", {}).get("version")
+    require_version = "v" + version if isinstance(version, str) else ""
+    return validate_version(require_version)
+
+
 def verify_git_provenance(root: Path, value: object, expected_commit: str) -> dict[str, Any]:
     """Require all provenance fields to match the exact expected Git commit."""
     if not isinstance(value, dict):

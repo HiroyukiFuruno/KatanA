@@ -5,11 +5,14 @@ import argparse
 import os
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 from document_host_acceptance import provenance
 from document_host_io import digest, legacy, read, require, write_new
-from document_host_publication import make_manifest
+from generated_asset_identity import make_manifest
+from postpublication_source_binding import validate_version
+from published_git_source import git_workspace_version
 
 
 def source_identity(root: Path) -> dict:
@@ -31,13 +34,21 @@ def main() -> int:
     parser.add_argument("--worker", type=Path, required=True)
     parser.add_argument("--asset", type=Path, action="append", required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--version", default="v0.22.42")
     args = parser.parse_args()
     try:
         require(os.environ.get("GITHUB_ACTIONS") == "true", "generated publication manifests must be produced by the actual build job")
         root = args.root.resolve()
         source = source_identity(root)
+        version = validate_version(args.version)
+        require(git_workspace_version(root, source["source_commit"]) == version,
+                "publication version does not match committed Cargo.toml")
+        with (root / "Cargo.toml").open("rb") as manifest:
+            require(tomllib.load(manifest).get("workspace", {}).get("package", {}).get("version") == version.removeprefix("v"),
+                    "publication version does not match Cargo.toml")
         value = make_manifest(args.platform, args.asset, source, args.main, args.worker,
-                              run_id=os.environ.get("GITHUB_RUN_ID", ""), run_attempt=os.environ.get("GITHUB_RUN_ATTEMPT", ""))
+                              run_id=os.environ.get("GITHUB_RUN_ID", ""), run_attempt=os.environ.get("GITHUB_RUN_ATTEMPT", ""),
+                              version=version)
         provenance(root, source)
         write_new(args.output, value)
     except (ValueError, RuntimeError, OSError, KeyError, subprocess.SubprocessError) as error:
