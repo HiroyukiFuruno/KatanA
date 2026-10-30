@@ -11,6 +11,7 @@ mod dispatch_preview_operation;
 mod dispatch_secondary;
 mod dispatch_tertiary;
 mod file_open;
+mod file_open_dialog;
 mod html_navigation;
 mod image_ingest;
 mod language;

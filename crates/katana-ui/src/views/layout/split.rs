@@ -127,34 +127,58 @@ mod tests {
         assert!(!is_markdown_path(std::path::Path::new("notes.html")));
 
         let ctx = egui::Context::default();
-        let colors = katana_platform::theme::ThemePreset::KatanaLight.colors();
-        let visuals = crate::theme_bridge::ThemeBridgeOps::visuals_from_theme(&colors);
-        let expected_window = visuals.window_fill;
-        let expected_panel = visuals.panel_fill;
-        assert_ne!(expected_window, expected_panel);
-        let mut style = (*ctx.global_style()).clone();
-        style.visuals = visuals;
-        ctx.set_global_style(style);
-        let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
-            paint_split_background(ui, true);
-        });
-        assert!(output.shapes.iter().any(|shape| matches!(
-            &shape.shape,
-            egui::Shape::Rect(rect) if rect.fill == expected_window
-        )));
-        assert!(!output.shapes.iter().any(|shape| matches!(
-            &shape.shape,
-            egui::Shape::Rect(rect) if rect.fill == expected_panel
-        )));
-        output.textures_delta.clear();
+        for preset in katana_platform::theme::ThemePreset::builtins() {
+            let colors = preset.colors();
+            let visuals = crate::theme_bridge::ThemeBridgeOps::visuals_from_theme(&colors);
+            let mut style = (*ctx.global_style()).clone();
+            style.visuals = visuals.clone();
 
-        let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
-            paint_split_background(ui, false);
-        });
-        assert!(!output.shapes.iter().any(|shape| matches!(
-            &shape.shape,
-            egui::Shape::Rect(rect) if rect.fill == expected_window
-        )));
-        output.textures_delta.clear();
+            /* WHY: 実際のExplorerPanelと同じ背景色の役割を全テーマで維持する。 */
+            let explorer_fill =
+                crate::views::panels::explorer::panel::ExplorerPanel::frame(&style).fill;
+            assert_eq!(
+                explorer_fill,
+                visuals.window_fill,
+                "Explorer window role changed for {}",
+                preset.display_name()
+            );
+
+            ctx.set_global_style(style);
+            let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
+                paint_split_background(ui, true);
+            });
+            assert!(
+                output.shapes.iter().any(|shape| matches!(
+                    &shape.shape,
+                    egui::Shape::Rect(rect) if rect.fill == explorer_fill
+                )),
+                "Markdown split did not paint the Explorer fill for {}",
+                preset.display_name()
+            );
+            if visuals.window_fill != visuals.panel_fill {
+                assert!(
+                    !output.shapes.iter().any(|shape| matches!(
+                        &shape.shape,
+                        egui::Shape::Rect(rect) if rect.fill == visuals.panel_fill
+                    )),
+                    "Markdown split used panel_fill for {}",
+                    preset.display_name()
+                );
+            }
+            output.textures_delta.clear();
+
+            let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
+                paint_split_background(ui, false);
+            });
+            assert!(
+                !output.shapes.iter().any(|shape| matches!(
+                    &shape.shape,
+                    egui::Shape::Rect(rect) if rect.fill == explorer_fill
+                )),
+                "non-Markdown split unexpectedly painted Explorer fill for {}",
+                preset.display_name()
+            );
+            output.textures_delta.clear();
+        }
     }
 }

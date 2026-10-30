@@ -2,6 +2,24 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.44] - 2026-10-29 20:09:52 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Loading indicator placement**: Center full-document loading indicators horizontally and vertically, while keeping embedded Markdown image loading within its text flow.
+- **PDF and PowerPoint keyboard navigation**: Give newly selected page previews keyboard focus when ready, without taking focus back from text fields or modal dialogs.
+- **Closing HTML previews**: Move browser shutdown off the screen-update thread and keep tracking cleanup until it finishes.
+- **Document memory cleanup**: Return unused preview memory in the background without holding the lock used by document selection and cancellation.
+- **Selecting image files**: Defer file existence checks to background loading instead of checking synchronously when selecting an image.
+
+### 🔧 System
+
+- Updated compatible dependencies and expanded regression checks for Markdown split backgrounds across built-in themes.
+
+### Known limitations
+
+- Large Office documents may take time to finish shutting down when loading is still running inside the document engine. The missing upstream cancellation API is tracked in KDV #72. These changes do not establish that every reported initial image delay is resolved.
+
 ## [0.22.43] - 2026-10-28 19:47:20 (UTC)
 
 ### ✨ Improvements

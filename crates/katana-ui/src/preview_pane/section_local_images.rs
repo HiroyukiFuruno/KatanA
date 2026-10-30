@@ -1,5 +1,35 @@
 use crate::preview_pane::types::{SectionImageOps, SectionLogicOps};
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum LocalImageLoadingContext {
+    InlineMarkdown,
+    StandaloneDocument,
+}
+
+impl LocalImageLoadingContext {
+    pub(crate) fn for_document_path(path: &std::path::Path) -> Self {
+        /* WHY: 画像を埋め込んだ Markdown と、画像ファイル自体のプレビューを区別する。 */
+        if katana_core::workspace::TreeEntry::path_is_image(path) {
+            Self::StandaloneDocument
+        } else {
+            Self::InlineMarkdown
+        }
+    }
+
+    pub(super) fn show_indicator(
+        self,
+        ui: &mut egui::Ui,
+        presentation: &crate::widgets::LoadingPresentation,
+    ) {
+        let clipped_bounds = ui.clip_rect().intersect(ui.max_rect());
+        if self == Self::StandaloneDocument && clipped_bounds.is_positive() {
+            crate::widgets::LoadingIndicator::show_in_rect(ui, presentation, clipped_bounds);
+        } else {
+            crate::widgets::LoadingIndicator::show(ui, presentation);
+        }
+    }
+}
+
 impl SectionImageOps {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn handle_local_image_section(
@@ -7,6 +37,7 @@ impl SectionImageOps {
         path: &std::path::Path,
         i: usize,
         loader: &crate::preview_pane::local_image_loader::LocalImageLoader,
+        loading_context: LocalImageLoadingContext,
         lines_in_section: usize,
         global_line_offset: usize,
         active_editor_line: Option<usize>,
@@ -46,16 +77,19 @@ impl SectionImageOps {
             });
 
         let mut inner_req = None;
-        if let Some(rect) = crate::preview_pane::ImageLogicOps::show_local_image(
+        if let Some(rect) = crate::preview_pane::ImageLogicOps::show_local_image_with_context(
             ui,
             path,
             i,
             loader,
-            state,
-            if !allow_controls {
-                None
-            } else {
-                Some(&mut inner_req)
+            super::images::LocalImageDisplayOptions {
+                loading_context,
+                viewer_state: state,
+                fullscreen_request: if !allow_controls {
+                    None
+                } else {
+                    Some(&mut inner_req)
+                },
             },
             |ui, rect, is_hovered| {
                 if allow_hover

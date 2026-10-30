@@ -3859,7 +3859,7 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.43"
+version = "0.22.44"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -3931,9 +3931,9 @@ dependencies = [
 
 [[package]]
 name = "katana-markdown-linter"
-version = "0.20.0"
+version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9dc7132b1c491db2e12f6e969a74bd265847a43d61cf40dabe11ce347baeeac4"
+checksum = "c442fe8df7faeedf8b1da341a45c6a356ff7ff20b54bb2d6116ef16ee1d4427f"
 dependencies = [
  "glob",
  "ignore",
@@ -3967,7 +3967,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.43"
+version = "0.22.44"
 dependencies = [
  "anyhow",
  "cc",
@@ -4052,7 +4052,7 @@ dependencies = [
 
 [[package]]
 name = "katana-ui"
-version = "0.22.43"
+version = "0.22.44"
 dependencies = [
  "anyhow",
  "arboard",
@@ -4250,9 +4250,9 @@ checksum = "7a79a3332a6609480d7d0c9eab957bca6b455b91bb84e66d19f5ff66294b85b8"
 
 [[package]]
 name = "libbz2-rs-sys"
-version = "0.2.5"
+version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34b357333733e8260735ba5894eb928c02ecc69c78715f01a8019e7fa7f2db4c"
+checksum = "32f454fd6831a29c0e827ed075bca2a15be201bd57f4168f0fd1041124eab17e"
 
 [[package]]
 name = "libc"
@@ -8503,9 +8503,12 @@ dependencies = [
 
 [[package]]
 name = "utf16_iter"
-version = "1.0.5"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8232dd3cdaed5356e0f716d285e4b40b932ac434100fe9b7e0e8e935b9e6246"
+checksum = "1c7de35d9d8757dbc1f5125dc8b51438c68b4430546a735c3a9b91aaaaf9a18a"
+dependencies = [
+ "utf_types",
+]
 
 [[package]]
 name = "utf8-zero"
@@ -8515,15 +8518,24 @@ checksum = "b8c0a043c9540bae7c578c88f91dda8bd82e59ae27c21baca69c8b191aaf5a6e"
 
 [[package]]
 name = "utf8_iter"
-version = "1.0.4"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6c140620e7ffbb22c2dee59cafe6084a59b5ffc27a8859a5f0d494b5d52b6be"
+checksum = "af3bd9d3e571c26fcce9d033b87ea5ab061b8d2ffe9b7a5675d810d68f03edf0"
+dependencies = [
+ "utf_types",
+]
 
 [[package]]
 name = "utf8parse"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
+
+[[package]]
+name = "utf_types"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a3b425286980a367278453f3b6d28cdcb134b574e5a35824a6ff5eebad50bb6"
 
 [[package]]
 name = "uuid"

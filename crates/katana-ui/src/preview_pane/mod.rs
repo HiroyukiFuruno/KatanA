@@ -23,6 +23,8 @@ pub use types::ViewerState;
 #[cfg(test)]
 mod images_failure_tests;
 #[cfg(test)]
+mod images_loading_layout_tests;
+#[cfg(test)]
 mod tests;
 
 pub mod section;
@@ -64,6 +66,8 @@ pub(crate) use document_surface::{
 };
 
 #[cfg(test)]
-pub(crate) fn html_browser_runtime_test_guard() -> std::sync::MutexGuard<'static, ()> {
-    crate::test_render_env::RenderEnvLock::lock()
+mod runtime_test_guard;
+#[cfg(test)]
+pub(crate) fn html_browser_runtime_test_guard() -> runtime_test_guard::HtmlRuntimeTestGuard {
+    runtime_test_guard::HtmlRuntimeTestGuard::lock()
 }

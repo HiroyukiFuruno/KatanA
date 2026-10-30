@@ -1,5 +1,4 @@
 use super::worker_memory::{DOCUMENT_WORKER_MEMORY, WorkerMemoryState};
-use std::sync::atomic::Ordering;
 
 pub(crate) struct DocumentWorkerLifecycle;
 
@@ -16,7 +15,8 @@ impl DocumentWorkerLifecycle {
     }
 
     pub(crate) fn live_count() -> usize {
-        DOCUMENT_WORKER_MEMORY.counter.load(Ordering::Acquire)
+        /* WHY: 返却処理が残る間は文書lifecycleをidleと記録しない。 */
+        DOCUMENT_WORKER_MEMORY.activity_count()
     }
 
     pub(crate) fn request_closed_preview_memory_relief() {
@@ -28,24 +28,26 @@ impl DocumentWorkerLifecycle {
     }
 }
 
-struct DocumentWorkerLease<'a> {
-    state: &'a WorkerMemoryState,
+struct DocumentWorkerLease {
+    state: std::sync::Arc<WorkerMemoryState>,
 }
 
-impl DocumentWorkerLease<'static> {
+impl DocumentWorkerLease {
     fn start() -> Self {
         Self::acquire(&DOCUMENT_WORKER_MEMORY)
     }
 }
 
-impl<'a> DocumentWorkerLease<'a> {
-    fn acquire(state: &'a WorkerMemoryState) -> Self {
+impl DocumentWorkerLease {
+    fn acquire(state: &std::sync::Arc<WorkerMemoryState>) -> Self {
         state.acquire();
-        Self { state }
+        Self {
+            state: std::sync::Arc::clone(state),
+        }
     }
 }
 
-impl Drop for DocumentWorkerLease<'_> {
+impl Drop for DocumentWorkerLease {
     fn drop(&mut self) {
         self.state.release();
     }

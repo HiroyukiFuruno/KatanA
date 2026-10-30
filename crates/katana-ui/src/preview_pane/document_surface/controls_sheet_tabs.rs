@@ -109,6 +109,7 @@ mod tests {
         let surface = Arc::new(Mutex::new(super::super::types::DocumentSurface {
             generation: 91,
             source: source.descriptor(),
+            cancellation: Default::default(),
             command_tx: Some(command_tx),
             event_rx,
             frame: Some(frame),
@@ -158,6 +159,7 @@ mod tests {
         let click_surface = Arc::new(Mutex::new(super::super::types::DocumentSurface {
             generation: 92,
             source: source.descriptor(),
+            cancellation: Default::default(),
             command_tx: Some(click_tx),
             event_rx: click_event_rx,
             frame: None,

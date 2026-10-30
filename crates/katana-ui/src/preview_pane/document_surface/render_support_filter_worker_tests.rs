@@ -21,6 +21,7 @@ fn filter_surface() -> (DocumentSurface, std::thread::JoinHandle<()>) {
     surface.source = source.descriptor();
     surface.frame = None;
     surface.command_in_flight = true;
+    let cancellation = surface.cancellation.clone();
     let worker = std::thread::spawn(move || {
         worker::run(
             1,
@@ -28,6 +29,7 @@ fn filter_surface() -> (DocumentSurface, std::thread::JoinHandle<()>) {
             commands,
             events,
             eframe::egui::Context::default(),
+            cancellation,
         );
     });
     (surface, worker)

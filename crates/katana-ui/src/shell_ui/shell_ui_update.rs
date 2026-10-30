@@ -91,37 +91,7 @@ impl KatanaApp {
         if let Some(path) = self.file_dialog.take_picked()
             && let Some(action) = self.pending_dialog_action.take()
         {
-            self.handle_file_dialog_action(path, action);
-        }
-    }
-
-    fn handle_file_dialog_action(&mut self, path: std::path::PathBuf, action: AppAction) {
-        match action {
-            AppAction::PickOpenWorkspace => {
-                self.handle_open_explorer(path);
-            }
-            AppAction::PickOpenFileInCurrentWorkspace => {
-                crate::app::action::FileOpenOps::open_in_current_workspace(self, path);
-            }
-            AppAction::PickOpenFileInNewWorkspace => {
-                crate::app::action::FileOpenOps::open_as_temporary_workspace(self, path);
-            }
-            AppAction::IngestImageFile => {
-                let Ok(bytes) = std::fs::read(&path) else {
-                    return;
-                };
-                let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("png");
-                self.process_image_ingest(&bytes, ext);
-            }
-            AppAction::PickExportDocument {
-                doc_path,
-                ext,
-                source,
-            } => {
-                use crate::app::export_poll::ExportPoll;
-                self.perform_tool_export(&source, &ext, path, &doc_path);
-            }
-            _ => {}
+            self.handle_file_dialog_action(ctx, path, action);
         }
     }
 
@@ -213,3 +183,7 @@ mod tests {
         assert_eq!(hex, "#153955");
     }
 }
+
+#[cfg(test)]
+#[path = "shell_ui_update_keyboard_focus_tests.rs"]
+mod keyboard_focus_tests;

@@ -30,39 +30,55 @@ pub(super) enum DocumentWorkerEvent {
     },
 }
 
+#[path = "worker_output.rs"]
+mod worker_output;
+use worker_output::WorkerOutput;
+
 pub(super) fn run(
     generation: u64,
     mut source: DocumentSurfaceSource,
     commands: Receiver<DocumentWorkerCommand>,
     events: Sender<DocumentWorkerEvent>,
     repaint: egui::Context,
+    cancellation: super::worker_cancellation::DocumentWorkerCancellation,
 ) {
+    let output = WorkerOutput {
+        events,
+        repaint,
+        cancellation,
+    };
+    if output.cancellation.is_cancelled() {
+        return;
+    }
     let started_at = std::time::Instant::now();
-    let mut session = match super::worker_session::open_session(&mut source) {
-        Ok(session) => session,
+    let mut session = match super::worker_session::open_session(&mut source, &output.cancellation) {
+        Ok(Some(session)) => session,
+        Ok(None) => return,
         Err(failure) => {
-            super::worker_border_projection::send_failure(generation, failure, &events, &repaint);
+            super::worker_border_projection::send_failure(
+                generation,
+                failure,
+                &output.events,
+                &output.repaint,
+            );
             return;
         }
     };
     super::debug_log::DebugLog::write(
         "document_session_opened",
         format_args!(
-            "generation={} format={} elapsed_ms={} uri={}",
+            "generation={} format={} elapsed_ms={} cancelled={} uri={}",
             generation,
             source.format.extension(),
             started_at.elapsed().as_millis(),
+            output.cancellation.is_cancelled(),
             source.uri
         ),
     );
-    process_commands(
-        generation,
-        &mut session,
-        commands,
-        &events,
-        &repaint,
-        &source,
-    );
+    /* WHY: open中にタブが閉じられていたら、不要な初回rasterと罫線準備へ進まない。 */
+    if !output.cancellation.is_cancelled() {
+        process_commands(generation, &mut session, commands, &output, &source);
+    }
     session.close();
     super::debug_log::DebugLog::write(
         "document_session_closed",
@@ -79,94 +95,40 @@ fn process_commands(
     generation: u64,
     session: &mut DocumentSession,
     commands: Receiver<DocumentWorkerCommand>,
-    events: &Sender<DocumentWorkerEvent>,
-    repaint: &egui::Context,
+    output: &WorkerOutput,
     source: &DocumentSurfaceSource,
 ) {
-    if !send_frame(
+    if !output.send_frame(
         generation,
         session,
         DocumentSessionEvent::None,
         None,
-        events,
-        repaint,
         source,
     ) {
         return;
     }
     while let Ok(command) = commands.recv() {
+        if output.cancellation.is_cancelled() {
+            return;
+        }
         tracing::debug!(generation, ?command, "applying document command");
         let (event, filter_event) = match worker_commands::apply(session, command) {
             Ok(result) => result,
             Err(error) => {
                 let failure = failure(source, "input", DocumentFailureLayer::KdvWorker, error);
-                super::worker_border_projection::send_failure(generation, failure, events, repaint);
+                super::worker_border_projection::send_failure(
+                    generation,
+                    failure,
+                    &output.events,
+                    &output.repaint,
+                );
                 return;
             }
         };
-        if !send_frame(
-            generation,
-            session,
-            event,
-            filter_event,
-            events,
-            repaint,
-            source,
-        ) {
+        if !output.send_frame(generation, session, event, filter_event, source) {
             return;
         }
     }
-}
-
-fn send_frame(
-    generation: u64,
-    session: &mut DocumentSession,
-    session_event: DocumentSessionEvent,
-    filter_event: Option<SpreadsheetFilterEvent>,
-    events: &Sender<DocumentWorkerEvent>,
-    repaint: &egui::Context,
-    source: &DocumentSurfaceSource,
-) -> bool {
-    let frame = match session.frame() {
-        Ok(frame) => frame,
-        Err(error) => {
-            let failure = failure(source, "frame", DocumentFailureLayer::KdvSurface, error);
-            super::worker_border_projection::send_failure(generation, failure, events, repaint);
-            return false;
-        }
-    };
-    let border_cache = match super::worker_border_projection::project(&frame, generation) {
-        Ok(cache) => cache,
-        Err(error) => {
-            let failure = failure(
-                source,
-                "frame border projection",
-                DocumentFailureLayer::KatanaHost,
-                error,
-            );
-            super::worker_border_projection::send_failure(generation, failure, events, repaint);
-            return false;
-        }
-    };
-    let spreadsheet_metadata = session.spreadsheet_frame_metadata();
-    let font_requests = super::font_requests::DocumentFontRequestsOps::project(&frame.surface);
-    super::worker_border_projection::log_frame(generation, &frame);
-    if events
-        .send(DocumentWorkerEvent::Frame {
-            generation,
-            frame: Box::new(frame),
-            border_cache,
-            font_requests,
-            session_event,
-            spreadsheet_metadata,
-            filter_event,
-        })
-        .is_err()
-    {
-        return false;
-    }
-    repaint.request_repaint_after(std::time::Duration::ZERO);
-    true
 }
 
 #[cfg(test)]
@@ -181,7 +143,9 @@ mod tests {
         let identity = source.descriptor();
         assert!(source.byte_len() > 0);
         let mut session =
-            super::super::worker_session::open_session(&mut source).expect("PDF session");
+            super::super::worker_session::open_session(&mut source, &Default::default())
+                .expect("PDF session")
+                .expect("active PDF session");
         assert_eq!(source.byte_len(), 0);
         assert_eq!(source.uri, identity.uri);
         assert_eq!(source.revision, identity.revision);

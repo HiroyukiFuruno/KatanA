@@ -58,9 +58,7 @@ pub(super) fn show_fullscreen_local(
                             crate::widgets::LoadingState::Pending,
                             crate::widgets::LoadingLabel::RenderingKind("image"),
                         );
-                        ui.centered_and_justified(|ui| {
-                            crate::widgets::LoadingIndicator::show(ui, &loading);
-                        });
+                        crate::widgets::LoadingIndicator::show_in_rect(ui, &loading, blocker_rect);
                     }
                     super::local_image_loader::LocalImageStatus::Failed(error) => {
                         ui.label(&crate::i18n::I18nOps::get().preview.missing_image)
