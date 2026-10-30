@@ -78,3 +78,10 @@ OpenSpecはリポジトリの`./scripts/openspec`を使用する。既存品質�
 - 最終ソースで文書close/Explorerの実worker検査3件成功（`final-document-close-and-explorer.log`）。通常push・Draft review・Ready CI・公開は未完了。
 
 - board #388を最新commit・対象結果・KDV #72境界・token認証済みへ更新済み。実worker/出力/コマンド順序6件も成功。初回環境指定漏れの失敗は保持し、正式worker入口の再実行結果と区別する。
+
+## 正式push失敗の修復
+
+- 初回通常pushはUI1455成功/1失敗と、安全ZIP依存のrelease版識別漏れで不合格。合格へ読み替えずログを保持。
+- HTML自身の終了21件は全て完了していたが、別テストのPPTX native openが共用globalカウントへ混入していた。検証環境が所有するHTML終了ハンドルだけを元5秒で回収する検査寿命へ修正し、製品のglobal lifecycle/実文書close5秒基準は維持。旧実装の赤失敗と、実HTML結線・worker失敗回収を含む3成功、並列全UI1458成功を確認。`420b627f`へ通常commit。
+- 安全ZIP9.1.3/core0.22.44の完全一致許可を追加。別版・親・source・pathは拒否し、旧脆弱ZIPの例外を拡大していない。27契約とroot/screenshot両実locked graphの照合成功。core実装はmasterから不変。
+- 次の通常pushで正式gateを再実行し、まだremote反映/必須CI/公開完了とは扱わない。
