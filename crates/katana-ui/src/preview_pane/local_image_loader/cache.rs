@@ -45,6 +45,7 @@ impl LocalImageLoader {
             image,
             egui::TextureOptions::LINEAR,
         );
+        self.trace_texture_queued(&key.path, texture.id());
         self.store_active_texture(key.clone(), texture.clone());
         if bytes <= IMAGE_CACHE_LIMIT {
             self.store_texture(key, texture.clone());

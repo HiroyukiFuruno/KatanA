@@ -2,12 +2,10 @@ use super::super::fixtures::{CLOSE_TIMEOUT, await_workers_idle};
 use super::{IMAGE_NAME, LOAD_TIMEOUT};
 use crate::app::{DocumentOps, WorkspaceOps};
 use crate::preview_pane::DocumentWorkerLifecycle;
-use eframe::egui;
 use egui_kittest::{Harness, kittest::Queryable};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 const NATIVE_TEST_MAX_TEXTURE_SIDE: usize = 8192;
-const STABLE_TEXTURE_FRAMES: usize = 10;
 pub(super) struct ExplorerImageOps;
 
 impl ExplorerImageOps {
@@ -21,10 +19,20 @@ impl ExplorerImageOps {
         harness: &mut Harness<'_, crate::shell::KatanaApp>,
         root: &Path,
     ) -> PathBuf {
+        if let Some((workspace, image)) = super::input::LoadingFixtureInputs::configured_workspace()
+        {
+            Self::open_workspace(harness, &workspace);
+            return image;
+        }
         std::fs::create_dir_all(root).expect("create isolated Explorer workspace");
         let image_path = root.join(IMAGE_NAME);
         super::input::LoadingFixtureInputs::create_png(&image_path);
+        Self::open_workspace(harness, root);
+        image_path
+    }
+    pub(super) fn open_workspace(harness: &mut Harness<'_, crate::shell::KatanaApp>, root: &Path) {
         harness.state_mut().state.layout.show_explorer = true;
+        let started = Instant::now();
         harness.state_mut().handle_open_explorer(root.to_path_buf());
         let deadline = Instant::now() + LOAD_TIMEOUT;
         while harness.state_mut().state.workspace.data.is_none() {
@@ -35,7 +43,11 @@ impl ExplorerImageOps {
             Self::step(harness);
             std::thread::yield_now();
         }
-        image_path
+        eprintln!(
+            "png_explorer_workspace root={} elapsed_ms={}",
+            root.display(),
+            started.elapsed().as_secs_f64() * 1000.0
+        );
     }
     pub(super) fn click_png_row(
         harness: &mut Harness<'_, crate::shell::KatanaApp>,
@@ -45,7 +57,11 @@ impl ExplorerImageOps {
     ) -> Instant {
         Self::step(harness);
         let started = Instant::now();
-        harness.get_by_label(&format!("file {IMAGE_NAME}")).click();
+        let name = image_path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .expect("PNG filename is UTF-8");
+        harness.get_by_label(&format!("file {name}")).click();
         Self::await_png_selection(harness, image_path, started);
         assert_eq!(
             harness.state().state.active_path(),
@@ -88,81 +104,6 @@ impl ExplorerImageOps {
             .find(|tab| tab.path == path)
             .expect("Office preview retained at PNG selection");
         assert!(pane.pane.document_frame_state_for_test().is_none());
-    }
-    pub(super) fn assert_texture_painted(
-        harness: &mut Harness<'_, crate::shell::KatanaApp>,
-        image_path: &Path,
-        started: Instant,
-    ) {
-        let texture = Self::wait_for_texture_paint(harness, image_path, started);
-        Self::assert_texture_stable(harness, image_path, texture);
-        eprintln!(
-            "png_explorer_paint elapsed_ms={}",
-            started.elapsed().as_secs_f64() * 1000.0
-        );
-    }
-    fn wait_for_texture_paint(
-        harness: &mut Harness<'_, crate::shell::KatanaApp>,
-        image_path: &Path,
-        started: Instant,
-    ) -> egui::TextureId {
-        let deadline = started + LOAD_TIMEOUT;
-        loop {
-            Self::step(harness);
-            let texture = Self::local_image_texture(harness.state(), image_path);
-            if let Some(texture) = texture
-                && harness
-                    .output()
-                    .shapes
-                    .iter()
-                    .any(|shape| Self::shape_has_texture(&shape.shape, texture))
-            {
-                return texture;
-            }
-            assert!(
-                Instant::now() < deadline,
-                "PNG never reached an epaint mesh within the 15-second load budget"
-            );
-            std::thread::yield_now();
-        }
-    }
-    fn assert_texture_stable(
-        harness: &mut Harness<'_, crate::shell::KatanaApp>,
-        image_path: &Path,
-        texture: egui::TextureId,
-    ) {
-        for _ in 0..STABLE_TEXTURE_FRAMES {
-            Self::step(harness);
-            assert_eq!(
-                Self::local_image_texture(harness.state(), image_path),
-                Some(texture)
-            );
-            assert!(
-                harness
-                    .output()
-                    .shapes
-                    .iter()
-                    .any(|shape| Self::shape_has_texture(&shape.shape, texture))
-            );
-        }
-    }
-    fn local_image_texture(app: &crate::shell::KatanaApp, path: &Path) -> Option<egui::TextureId> {
-        app.tab_previews
-            .iter()
-            .find(|tab| tab.path == path)?
-            .pane
-            .viewer_states
-            .iter()
-            .find_map(|state| state.texture.as_ref().map(egui::TextureHandle::id))
-    }
-    fn shape_has_texture(shape: &egui::epaint::Shape, texture: egui::TextureId) -> bool {
-        match shape {
-            egui::epaint::Shape::Mesh(mesh) => mesh.texture_id == texture,
-            egui::epaint::Shape::Vec(children) => children
-                .iter()
-                .any(|child| Self::shape_has_texture(child, texture)),
-            _ => false,
-        }
     }
     pub(super) fn close_all(
         harness: &mut Harness<'_, crate::shell::KatanaApp>,

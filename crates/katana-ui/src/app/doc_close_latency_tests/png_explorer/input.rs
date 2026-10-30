@@ -13,16 +13,66 @@ const PNG_BACKGROUND_GRAY: u8 = 224;
 const PNG_MIN_BYTES: u64 = 80_000;
 const PNG_MAX_BYTES: u64 = 180_000;
 const INPUT_DIRECTORY_VARIABLE: &str = "KATANA_EXPLORER_LOADING_FIXTURE_DIR";
+const WORKSPACE_VARIABLE: &str = "KATANA_EXPLORER_WORKSPACE_ROOT";
+const IMAGE_VARIABLE: &str = "KATANA_EXPLORER_IMAGE_PATH";
 
 pub(super) struct LoadingFixtureInputs;
 
 impl LoadingFixtureInputs {
     pub(super) fn office_path() -> PathBuf {
+        if let Some(path) = Self::explicit_file("KATANA_EXPLORER_LOADING_OFFICE_PATH") {
+            return path;
+        }
         Self::supplied_input(OFFICE_NAME).unwrap_or_else(|| {
             Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("../../scripts/screenshot/fixtures/v0-22-38-multi-format")
                 .join(OFFICE_NAME)
         })
+    }
+
+    pub(super) fn configured_workspace() -> Option<(PathBuf, PathBuf)> {
+        match (
+            std::env::var_os(WORKSPACE_VARIABLE),
+            std::env::var_os(IMAGE_VARIABLE),
+        ) {
+            (None, None) => None,
+            (Some(root), Some(image)) => {
+                assert!(
+                    Path::new(&root).is_absolute() && Path::new(&image).is_absolute(),
+                    "configured workspace and PNG must be absolute paths"
+                );
+                let root = std::fs::canonicalize(root).expect("configured workspace exists");
+                let image = std::fs::canonicalize(image).expect("configured image exists");
+                Self::validate_workspace_image(&root, &image);
+                Some((root, image))
+            }
+            _ => panic!("{WORKSPACE_VARIABLE} and {IMAGE_VARIABLE} must be supplied together"),
+        }
+    }
+
+    fn validate_workspace_image(root: &Path, image: &Path) {
+        assert!(root.is_dir(), "configured workspace must be a directory");
+        assert!(image.is_file(), "configured image must be a regular file");
+        assert_eq!(
+            image.parent(),
+            Some(root),
+            "diagnostic PNG must be directly inside the workspace"
+        );
+        assert!(
+            image
+                .extension()
+                .is_some_and(|extension| extension.eq_ignore_ascii_case("png")),
+            "configured image must be PNG"
+        );
+    }
+
+    fn explicit_file(variable: &str) -> Option<PathBuf> {
+        let path = PathBuf::from(std::env::var_os(variable)?);
+        assert!(
+            path.is_absolute() && path.is_file(),
+            "{variable} must name an absolute file"
+        );
+        Some(path)
     }
 
     fn supplied_input(name: &str) -> Option<PathBuf> {
@@ -37,6 +87,10 @@ impl LoadingFixtureInputs {
     }
 
     pub(super) fn create_html(path: &Path) {
+        if let Some(source) = Self::explicit_file("KATANA_EXPLORER_LOADING_HTML_PATH") {
+            std::fs::copy(source, path).expect("copy explicit HTML fixture");
+            return;
+        }
         if let Some(source) = Self::supplied_input("loading.html") {
             std::fs::copy(source, path).expect("copy configured HTML fixture");
             return;

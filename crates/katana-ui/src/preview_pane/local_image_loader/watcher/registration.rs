@@ -45,6 +45,7 @@ impl Registration {
         if owner.generation.load(std::sync::atomic::Ordering::Acquire) != request.generation {
             return;
         }
+        request.perf_event("watch_start", format_args!(""));
         let result = Self::install(&request, watcher, watched_dirs, targets);
         Self::publish(request, result, watcher, watched_dirs, targets);
     }
@@ -63,6 +64,7 @@ impl Registration {
         if owner.generation.load(std::sync::atomic::Ordering::Acquire) != request.generation {
             return;
         }
+        request.perf_event("watch_start", format_args!(""));
         let result = Self::install(&request, watcher, watched_dirs, targets).and_then(|()| {
             /* WHY: 登録完了の通知より先に内容snapshotを確立し、登録直後の上書きも検出する。 */
             content.register(&request, watched_dirs, targets)
@@ -78,6 +80,7 @@ impl Registration {
         watched_dirs: &mut HashSet<PathBuf>,
         targets: &mut Targets,
     ) {
+        request.perf_event("watch_end", format_args!("success={}", result.is_ok()));
         let Some(owner) = request.owner.upgrade() else {
             return;
         };

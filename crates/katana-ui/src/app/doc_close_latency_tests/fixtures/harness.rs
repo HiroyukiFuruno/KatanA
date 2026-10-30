@@ -21,50 +21,57 @@ const VIEWPORT: eframe::egui::Vec2 = eframe::egui::vec2(VIEWPORT_WIDTH, VIEWPORT
 pub(in crate::app::doc_close_latency_tests) fn make_harness(
     directory: &TempDir,
 ) -> Harness<'static, KatanaApp> {
+    make_harness_with_profile(
+        directory,
+        super::image_profiles::ImageHarnessProfile::Memory,
+    )
+}
+
+pub(in crate::app::doc_close_latency_tests) fn make_harness_with_profile(
+    directory: &TempDir,
+    profile: super::image_profiles::ImageHarnessProfile,
+) -> Harness<'static, KatanaApp> {
     let settings_directory = directory.path().join("config");
     std::fs::create_dir_all(&settings_directory).expect("create isolated settings directory");
     let settings_path = settings_directory.join("settings.json");
-    Harness::builder()
-        .with_size(VIEWPORT)
-        .with_pixels_per_point(1.0)
-        .build_eframe(move |cc| {
-            use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
-            use katana_platform::SettingsService;
+    super::image_profiles::builder(profile, VIEWPORT).build_eframe(move |cc| {
+        use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
+        use katana_platform::SettingsService;
 
-            let preset = katana_core::markdown::color_preset::DiagramColorPreset::current();
-            crate::font_loader::SystemFontLoader::setup_fonts(&cc.egui_ctx, preset, None, None);
-            crate::svg_loader::KatanaSvgLoader::install(&cc.egui_ctx);
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::current();
+        crate::font_loader::SystemFontLoader::setup_fonts(&cc.egui_ctx, preset, None, None);
+        crate::svg_loader::KatanaSvgLoader::install(&cc.egui_ctx);
 
-            let repository = katana_platform::JsonFileRepository::new(settings_path.clone());
-            let settings = SettingsService::new(Box::new(repository));
-            let icon_pack = settings.settings().theme.icon_pack.clone();
-            let icon_settings = settings.settings().icon.clone();
-            crate::IconRegistry::install_pack_by_id(&cc.egui_ctx, &icon_pack, &icon_settings);
+        let repository = katana_platform::JsonFileRepository::new(settings_path.clone());
+        let settings = SettingsService::new(Box::new(repository));
+        let icon_pack = settings.settings().theme.icon_pack.clone();
+        let icon_settings = settings.settings().icon.clone();
+        crate::IconRegistry::install_pack_by_id(&cc.egui_ctx, &icon_pack, &icon_settings);
 
-            let mut state = crate::app_state::AppState::new(
-                AiProviderRegistry::new(),
-                PluginRegistry::new(),
-                settings,
-                std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
-            );
-            state.config.settings.settings_mut().terms_accepted_version =
-                Some(crate::about_info::APP_VERSION.to_string());
-            state
-                .config
-                .settings
-                .settings_mut()
-                .updates
-                .previous_app_version = Some(crate::about_info::APP_VERSION.to_string());
-            state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(
-                Box::new(katana_platform::workspace::InMemoryWorkspaceRepository::default()),
-            );
-            let _ = state.config.try_save_settings();
-            let mut app = KatanaApp::new(state);
-            app.skip_splash();
-            app.disable_update_check_for_test();
-            app.disable_changelog_popup_for_test();
-            app
-        })
+        let mut state = crate::app_state::AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            settings,
+            super::image_profiles::cache(profile, &settings_directory),
+        );
+        state.config.settings.settings_mut().terms_accepted_version =
+            Some(crate::about_info::APP_VERSION.to_string());
+        state
+            .config
+            .settings
+            .settings_mut()
+            .updates
+            .previous_app_version = Some(crate::about_info::APP_VERSION.to_string());
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::default(),
+        ));
+        let _ = state.config.try_save_settings();
+        let mut app = KatanaApp::new(state);
+        app.skip_splash();
+        app.disable_update_check_for_test();
+        app.disable_changelog_popup_for_test();
+        app
+    })
 }
 
 pub(in crate::app::doc_close_latency_tests) fn await_html_frame(

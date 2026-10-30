@@ -1,5 +1,6 @@
 use super::super::cancellable_read::ReadCancellation;
 use super::{Inner, decode, egui};
+use crate::preview_pane::image_perf::ImagePerf;
 use std::path::Path;
 use std::sync::{OnceLock, Weak, mpsc};
 
@@ -57,6 +58,9 @@ impl Work {
     }
 
     fn run(self) {
+        let trace =
+            ImagePerf::request(self.owner.as_ptr() as usize, self.generation, self.revision);
+        ImagePerf::emit(trace, "decode_start", &self.key.path, format_args!(""));
         let cancellation = ReadCancellation::new(|| self.is_cancelled());
         if cancellation.check().is_err() {
             return;
@@ -65,6 +69,13 @@ impl Work {
             Path::new(&self.key.path),
             self.key.background,
             &cancellation,
+            trace,
+        );
+        ImagePerf::emit(
+            trace,
+            "decode_end",
+            &self.key.path,
+            format_args!("success={}", image.is_ok()),
         );
         if cancellation.check().is_err() {
             return;
