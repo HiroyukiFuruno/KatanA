@@ -51,7 +51,7 @@
 - [x] 5.1 docs/coding-rules.ja.mdとself-reviewで差分を確認する。
 - [x] 5.2 Markdownとコードを整形し、対象回帰を回収する。
 - [x] 5.3 関心別通常commitの後、通常push hook一回を正式ゲートとし、重い同検査を手動で重ねない。
-- [/] 5.4 Draft PR→全reviewページ/threads取得→P0/P1修正と個別reply/resolve→fresh確認を完了する。
+- [x] 5.4 Draft PR→全reviewページ/threads取得→P0/P1修正と個別reply/resolve→fresh確認を完了する。
 - [ ] 5.5 Ready後のcurrent required checksを回収し、不合格は修正する。
 - [ ] 5.6 通常merge→Actions公開→全5asset/checksum・配布自動検査→Issue更新→OpenSpec archive→安全なbranch/worktree後処理を実施する。
 
@@ -107,3 +107,9 @@ OpenSpecはリポジトリの`./scripts/openspec`を使用する。既存品質�
 - タブ経路は新回帰で旧実装のfocus要求欠落を再現（`tab-keyboard-red.log`）。同時に出たtext側の失敗は、テストが旧TextEditを描かず消した問題であり製品の不具合へ数えない。
 - 操作名ごとの分岐は増やさず、実際にactive pathが変わった場合だけ既存の形式別focus処理へ接続。次/前×PDF/PPTX・旧focus失効・一タブno-change・TextEdit保持を含め10件成功（`tab-keyboard-green-all.log`）、独立レビューP0/P1なし。
 - この実装修正により最新HEADのDraftレビューを再開する。以前の56912424のレビュー結果を新コードの完了証跡へ流用しない。
+
+## タブ修復後のDraftレビュー完了
+
+- `e59d9cfa311f5ca7c27815cca6076c9c020e40fa` の通常push66979はexit0、元の全検査を維持して成功。remote HEAD一致・cleanを確認。
+- 同HEADのCodex reviewはcompleted/指摘なし。formal review/会話/thread/nested commentsを全頁取得し未解決0、GitHub上の全15commit Verified。`tmp/v0.22.44-prep/pr397-review-e59d9cfa-completed-all-pages.json`。
+- この後の差分は本ファイルの完了証跡だけで、実装/設定/両lockは変更しない。記録差分を査読してReadyへ進め、新HEADの必須CIとReadyイベントで開始される追加レビューはmerge前に回収する。過去CIの合格を新HEADへ流用しない。
