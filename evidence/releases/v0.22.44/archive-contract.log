@@ -1,0 +1,17 @@
+## archive-execution.log
+Task status: ✓ Complete
+
+Specs to update:
+  multi-format-document-preview: update
+Applying changes to openspec/specs/multi-format-document-preview/spec.md:
+  + 3 added
+Totals: + 3, ~ 0, - 0, → 0
+Specs updated successfully.
+Change 'v0-22-44-document-loading-input-regressions' archived as '2026-10-30-v0-22-44-document-loading-input-regressions'.
+
+## main-spec-validation.log
+Specification 'multi-format-document-preview' is valid
+
+## archive-task-validation.log
+OK: all OpenSpec tasks are complete
+

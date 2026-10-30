@@ -21,7 +21,7 @@
 
 - [x] 報告済み全件の実装/検証/未解決/上流境界を照合し、今回特定したKatanA所有の修正を完了した。原PNG30秒/Missing全条件は未確定として#385へ残し、全面解消とは扱わない。
 - [x] 実egui/production入力経路、原本混在負荷、既存自動検査で検証し、検査失敗や未再現を完了扱いしていない。
-- [/] `/openspec-delivery`相当の自己レビュー・関心別通常commit/push・Draft review/修正/reply/resolve・Ready・required checks・merge・公開・成果物確認を完了し、archiveと記録統合を実施中。本人の実機確認はClose条件に含めない。
+- [x] `/openspec-delivery`相当の自己レビュー・関心別通常commit/push・Draft review/修正/reply/resolve・Ready・required checks・merge・公開・成果物確認・製品branch整理を実施し、この変更をarchiveする。公開後記録PR自体は親作業台帳で別途追跡し、本人の実機確認はClose条件に含めない。
 
 ## 1. 画像と混在読込 — #385/#386
 
@@ -53,7 +53,7 @@
 - [x] 5.3 関心別通常commitの後、通常push hook一回を正式ゲートとし、重い同検査を手動で重ねない。
 - [x] 5.4 Draft PR→全reviewページ/threads取得→P0/P1修正と個別reply/resolve→fresh確認を完了する。
 - [x] 5.5 Ready後の製品HEAD b70d05bfの全required checksを回収し、成功を確認した。
-- [/] 5.6 通常merge・Actions公開・全5asset/checksum・配布自動検査・Issue更新・製品branchの安全な整理を完了。OpenSpec archiveと公開後記録の正式統合を実施する。
+- [x] 5.6 通常merge・Actions公開・全5asset/checksum・配布自動検査・Issue更新・製品branchの安全な整理を完了し、OpenSpecをarchiveする。公開後記録PRの正式統合は親作業台帳で完了まで追跡する。
 
 ## KatanA CLI Entry Point
 
