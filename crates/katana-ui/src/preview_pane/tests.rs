@@ -1308,6 +1308,7 @@ mod tests {
         state.zoom = 1.25;
         state.pan = egui::vec2(10.0, 20.0);
         let mut fullscreen_request = None;
+        let image_bounds = std::cell::Cell::new(egui::Rect::NOTHING);
 
         let render = |state: &mut ViewerState, fullscreen_request: &mut Option<usize>, events| {
             crate::test_ui::TestUiOps::run(
@@ -1331,14 +1332,19 @@ mod tests {
                                 state: Some(state),
                                 fullscreen_request: Some(fullscreen_request),
                             },
-                            |_, _, _| {},
+                            |_, rect, _| image_bounds.set(rect),
                         );
                     });
                 },
             );
         };
-        let pointer_start = egui::pos2(40.0, 40.0);
-        let pointer_end = egui::pos2(90.0, 70.0);
+        /* WHY: eguiの前フレームの当たり判定を、実際に操作する表示状態の領域で確定する。 */
+        render(&mut state, &mut fullscreen_request, vec![]);
+        let image_rect = image_bounds.get();
+        let pointer_start = image_rect.min + egui::vec2(32.0, 32.0);
+        let pointer_end = pointer_start + egui::vec2(50.0, 30.0);
+        assert!(image_rect.contains(pointer_start));
+        assert!(!image_rect.contains(pointer_end));
 
         render(
             &mut state,
