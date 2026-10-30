@@ -55,3 +55,10 @@
 - 将来版向けにversion/source/run/attemptを固定した3manifest・5asset照合と、公開後の読取専用検査を実装。従来42の承認・文書QA・必須job契約は維持。231対象検査成功、独立Highレビュー指摘なし。
 - exactな45の2変更だけを対象に、未実行CI/公開タスクを未完了のまま各段階で検査する経路を追加。対象・既存契約82件成功、独立Highレビュー指摘なし。
 - 公開後記録経路の新規10・既存release-flow27検査成功。独立HighレビューはP0/P1/P2なし。通常統合は継続中。実45のCI manifest・公開asset receiptの回収は未実行です。合成fixtureを実配布受入や95点評価へ流用しません。
+
+## PNG選択より前のUI待ち時間 — #385
+
+- HTML監視の同期生成・破棄、遅延HTML再読込、保留中の文書openが、画像action処理より前に実行される経路を確認。実buildのnotify backendはmacos_fseventであり、watcher破棄にはstop/joinが存在します。30秒の実測原因とはまだ断定していません。
+- 通常の動作・順序・backendは変更せず、DEBUG限定の共通時計・開始/終了spanを追加。画面更新全体は遅いframeだけ記録し、実作業は対で記録。ログは512イベントに制限し、対の2枠を先に予約。無効時にpath複製やtrace用のlockを増やしません。
+- 実ファイルを使う子プロセスのON/OFF・対・上限検査2件、既存HTML監視8件成功。静的検査filter30件成功。最初の静的検査はテスト内の数値literalで失敗し、命名定数へ修正して再検査しています。ルールの無効化はありません。
+- 独立Highレビューは追加の時計初期化・frame全体spanを含めP0/P1/P2なし。新しいnativeビルドでの原本計測は未回収です。既存baselineとはsource/lock/hashを分けます。
