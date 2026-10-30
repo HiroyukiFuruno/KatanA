@@ -8,9 +8,7 @@ impl UpdateStorageOps {
     const STAGING_AND_COPY_COUNT: u64 = 2;
 
     pub(in crate::update) fn check_download(destination: &Path, bytes: u64) -> anyhow::Result<()> {
-        let directory = destination
-            .parent()
-            .ok_or_else(|| anyhow::anyhow!("update download has no parent directory"))?;
+        let directory = Self::parent_directory(destination)?;
         Self::ensure_capacity(directory, Self::with_reserve(bytes)?)
     }
 
@@ -20,16 +18,24 @@ impl UpdateStorageOps {
         let staging = expanded
             .checked_mul(Self::STAGING_AND_COPY_COUNT)
             .ok_or_else(|| anyhow::anyhow!("update storage size overflow"))?;
-        let directory = archive
-            .parent()
-            .ok_or_else(|| anyhow::anyhow!("update archive has no parent directory"))?;
+        let directory = Self::parent_directory(archive)?;
         let archive_bytes = std::fs::metadata(archive)?.len();
         Self::ensure_capacity(directory, Self::with_reserve(staging)?)
             .map_err(|error| Self::include_released_archive(error, archive_bytes))?;
-        let target_directory = target
-            .parent()
-            .ok_or_else(|| anyhow::anyhow!("update target has no parent directory"))?;
+        let target_directory = Self::parent_directory(target)?;
         Self::ensure_capacity(target_directory, Self::with_reserve(expanded)?)
+    }
+
+    fn parent_directory(path: &Path) -> anyhow::Result<&Path> {
+        let parent = path
+            .parent()
+            .ok_or_else(|| anyhow::anyhow!("update path has no parent directory"))?;
+        /* WHY: ファイル名だけの相対パスの親は空になるが、容量照会には実在するカレントディレクトリが必要。 */
+        Ok(if parent.as_os_str().is_empty() {
+            Path::new(".")
+        } else {
+            parent
+        })
     }
 
     fn with_reserve(bytes: u64) -> anyhow::Result<u64> {
