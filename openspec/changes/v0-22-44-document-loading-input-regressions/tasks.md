@@ -27,7 +27,7 @@
 
 - [x] 1.1 原本/混在未完了条件と既存v43の診断結果を照合し、違いと未再現を記録する。
 - [x] 1.2 特定した画像選択の同期確認・allocator/HTML終了待ち・取消のKatanA所有処理を修正し、分類/実Explorer/終了寿命の回帰を追加する。原PNG30秒の全原因とMissingの全条件は未確定のまま#385へ残し、今回の局所修正を全面解消と呼ばない。
-- [/] 1.3 修正後の画像表示・反復・正常終了は実workerで検証済み。元メモリ基準を含むcurrent HEADの必須自動検査をReady後に回収する（cold196608KiB/steady65536KiBを変更しない）。
+- [x] 1.3 修正後の画像表示・反復・正常終了を実workerで検証し、Ready後の製品HEAD b70d05bfの必須自動検査を全て回収した（cold196608KiB/steady65536KiBを変更していない）。
 - [x] 1.4 最終preview終了時のallocator走査をUIと共用mutexから外し、lifecycleの完了観測を維持する。
 - [x] 1.5 HTML adapterの同期joinをUI破棄から外し、実HTMLの未完了/表示済みcloseと共有テスト環境の終了寿命を検証する。
 
@@ -52,7 +52,7 @@
 - [x] 5.2 Markdownとコードを整形し、対象回帰を回収する。
 - [x] 5.3 関心別通常commitの後、通常push hook一回を正式ゲートとし、重い同検査を手動で重ねない。
 - [x] 5.4 Draft PR→全reviewページ/threads取得→P0/P1修正と個別reply/resolve→fresh確認を完了する。
-- [ ] 5.5 Ready後のcurrent required checksを回収し、不合格は修正する。
+- [x] 5.5 Ready後の製品HEAD b70d05bfの全required checksを回収し、成功を確認した。
 - [ ] 5.6 通常merge→Actions公開→全5asset/checksum・配布自動検査→Issue更新→OpenSpec archive→安全なbranch/worktree後処理を実施する。
 
 ## KatanA CLI Entry Point
@@ -113,3 +113,10 @@ OpenSpecはリポジトリの`./scripts/openspec`を使用する。既存品質�
 - `e59d9cfa311f5ca7c27815cca6076c9c020e40fa` の通常push66979はexit0、元の全検査を維持して成功。remote HEAD一致・cleanを確認。
 - 同HEADのCodex reviewはcompleted/指摘なし。formal review/会話/thread/nested commentsを全頁取得し未解決0、GitHub上の全15commit Verified。`tmp/v0.22.44-prep/pr397-review-e59d9cfa-completed-all-pages.json`。
 - この後の差分は本ファイルの完了証跡だけで、実装/設定/両lockは変更しない。記録差分を査読してReadyへ進め、新HEADの必須CIとReadyイベントで開始される追加レビューはmerge前に回収する。過去CIの合格を新HEADへ流用しない。
+
+## 製品CI・merge完了と公開後処理の準備
+
+- b70d05bfの[Ready CI40992549904](https://github.com/HiroyukiFuruno/KatanA/actions/runs/40992549904)は全8job成功、[Readiness40992549926](https://github.com/HiroyukiFuruno/KatanA/actions/runs/40992549926)も成功。3OSの文書描画・操作受入と、文書surfaceのstrict coverage100%・meaningful coverage gate成功を実ログで回収した。
+- 同HEADの追加Codexは指摘なし・全ページの未解決thread0を再確認。[PR397](https://github.com/HiroyukiFuruno/KatanA/pull/397)を通常mergeし、署名付きmerge20bf151fと製品treeの一致を確認した。
+- [公開run41002934022](https://github.com/HiroyukiFuruno/KatanA/actions/runs/41002934022)はマージ後CI確認中。公開・全5asset・checksum・外部配布はまだ完了扱いしない。
+- 公開後の記録・archiveは、既存validatorの共通処理へ版別の固定契約だけを追加して扱う。対象75契約成功、独立HighレビューP0/P1/P2なし。候補source20bf151fのコミットは公開証明ではなく、正式push/admission前に実stable Release/API/local tagの一致を必ず確認する。製品/lock差分・任意版/source・旧版の広い修復範囲は許可しない。
