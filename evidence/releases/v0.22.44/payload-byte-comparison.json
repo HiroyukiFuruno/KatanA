@@ -1,0 +1,62 @@
+{
+  "result": "success",
+  "run_id": 41002934022,
+  "run_attempt": 1,
+  "source_commit": "20bf151f40165084c8748b4cca8c7ab54ff6bdf2",
+  "payloads": [
+    {
+      "name": "KatanA-Desktop-0.22.44.dmg",
+      "size": 223098971,
+      "sha256": "59847d86c9c20a2f563edff56668f310f4127128069bc222ff69b31326828e73",
+      "same_run_artifact_sha256": "59847d86c9c20a2f563edff56668f310f4127128069bc222ff69b31326828e73",
+      "result": "identical"
+    },
+    {
+      "name": "KatanA-linux-x86_64.tar.gz",
+      "size": 121063370,
+      "sha256": "8c1985d07682a9a4d84adc10846678e954720364159435123cdade8f6737252b",
+      "same_run_artifact_sha256": "8c1985d07682a9a4d84adc10846678e954720364159435123cdade8f6737252b",
+      "result": "identical"
+    },
+    {
+      "name": "KatanA-macOS.zip",
+      "size": 223368232,
+      "sha256": "c9e213bedbe045dbb269c9f2e6dfc63390a817f4bc84896c403da24b8e7c7550",
+      "same_run_artifact_sha256": "c9e213bedbe045dbb269c9f2e6dfc63390a817f4bc84896c403da24b8e7c7550",
+      "result": "identical"
+    },
+    {
+      "name": "KatanA-windows-x86_64.msi",
+      "size": 109170688,
+      "sha256": "690c8731a69285b75f4eac432dd37893ade0154317ed2d2d8064792fc2add82e",
+      "same_run_artifact_sha256": "690c8731a69285b75f4eac432dd37893ade0154317ed2d2d8064792fc2add82e",
+      "result": "identical"
+    },
+    {
+      "name": "KatanA-windows-x86_64.zip",
+      "size": 105848690,
+      "sha256": "00ecdc0741bf1ce5c656694d52825ab2c9e875fa2973b8ca5d83501c024a6e9f",
+      "same_run_artifact_sha256": "00ecdc0741bf1ce5c656694d52825ab2c9e875fa2973b8ca5d83501c024a6e9f",
+      "result": "identical"
+    }
+  ],
+  "internal_package_parity": {
+    "result": "success",
+    "version": "0.22.44",
+    "macos": {
+      "main_sha256": "23c2078c5afbd8648de23b877fc5fc4a7008dc7eee31fece7010ea6aff6b185c",
+      "sidecar_sha256": "549d33dd4906cd89bf6dc77540d7dbbbcdbb2c93398206d2f166fe3863e8b781"
+    },
+    "windows": {
+      "main_sha256": "73a74f87666b860c8bf11020de29e9716cb0398a0251f0c7650d39d2ab18b8e9",
+      "sidecar_sha256": "e9c7183781378c6bac60ac9647f0e33d1ea1fe9cf9656c3938154c02d9411806"
+    },
+    "linux": {
+      "main_sha256": "6f966b53ad08ac600ee809009a78f49fb57ba5af37513bd1b57fb2bcf2190b14",
+      "sidecar_sha256": "587b93beff3ca81b528a4f05291e43fae1c3b87fa34c61b2a1a2a390ef9e7f5a"
+    },
+    "dmg_matches_macos_zip": true,
+    "msi_matches_windows_zip": true,
+    "scope": "published package main/worker byte parity; native startup evidence is the release jobs"
+  }
+}

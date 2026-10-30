@@ -276,6 +276,12 @@ class WorkflowContractTests(unittest.TestCase):
             ("release/v0.22.43-public-release-evidence", "0.22.43", "strict", "strict"),
             ("release/v0.22.43-public-release-evidence-extra", "0.22.43", "pr-bootstrap", "pr-bootstrap"),
             ("release/v0.22.43-public-release-evidence", "0.22.44", "pr-bootstrap", "pr-bootstrap"),
+            ("release/v0.22.44-public-release-evidence", "0.22.44", "", "post-release-evidence"),
+            ("release/v0.22.44-public-release-evidence", "0.22.44", "pr-bootstrap", "post-release-evidence"),
+            ("release/v0.22.44-public-release-evidence", "0.22.44", "strict", "strict"),
+            ("release/v0.22.44-public-release-evidence", "0.22.44", "release-artifact-pending", "release-artifact-pending"),
+            ("release/v0.22.44-public-release-evidence-extra", "0.22.44", "pr-bootstrap", "pr-bootstrap"),
+            ("release/v0.22.44-public-release-evidence", "0.22.45", "pr-bootstrap", "pr-bootstrap"),
             ("release/v0.22.42-public-release-evidence", "0.22.43", "", ""),
         )
         for branch, target, requested, expected in matrix:
@@ -463,17 +469,31 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertEqual(run_readiness_routing(readiness, "release/v0.22.43-public-release-evidence"),
                          ["0.22.43", "--post-release-evidence"])
         for branch in ("release/v0.22.43", "release/v0.22.43-public-release-evidence-extra",
-                       "release/v0.22.43-PUBLIC-release-evidence", "release/v0.22.44-public-release-evidence"):
+                       "release/v0.22.43-PUBLIC-release-evidence", "release/v0.22.45-public-release-evidence"):
             with self.subTest(branch=branch):
                 self.assertEqual(run_readiness_routing(readiness, branch)[1], "--pr-bootstrap")
 
     def test_v43_scope_check_follows_stable_release_guard(self) -> None:
         source = (ROOT / "scripts/release/check-pr-ready.sh").read_text(encoding="utf-8")
         call = "python3 -B scripts/release/check-v043-postpublication-scope.py"
-        self.assertEqual(source.count(call), 1)
+        self.assertEqual(source.count(call), 2)
         self.assertLess(source.index('if [[ "$RELEASE_STATE" !='), source.index(call))
         self.assertLess(source.index(call), source.index("# 7. Run preflight"))
         self.assertIn('"$TARGET_VERSION" == "0.22.43" && "$TASK_GATE_MODE" == "post-release-evidence"', source)
+
+    def test_exact_v44_evidence_route_preserves_scope_and_other_branches(self) -> None:
+        readiness = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")
+        self.assertEqual(run_readiness_routing(readiness, "release/v0.22.44-public-release-evidence"),
+                         ["0.22.44", "--post-release-evidence"])
+        for branch in ("release/v0.22.44", "release/v0.22.44-public-release-evidence-extra",
+                       "release/v0.22.44-PUBLIC-release-evidence", "release/v0.22.45-public-release-evidence"):
+            with self.subTest(branch=branch):
+                self.assertEqual(run_readiness_routing(readiness, branch)[1], "--pr-bootstrap")
+        source = (ROOT / "scripts/release/check-pr-ready.sh").read_text(encoding="utf-8")
+        route = 'if [[ "$CURRENT_BRANCH" == "release/v0.22.44-public-release-evidence" &&'
+        self.assertLess(source.index('if [[ "$RELEASE_STATE" !='), source.index(route))
+        self.assertLess(source.index(route), source.index("# 6. Branch naming"))
+        self.assertIn('"$TARGET_VERSION" == "0.22.44" && "$TASK_GATE_MODE" == "post-release-evidence"', source)
 
     def test_legacy_docs_evidence_route_is_unchanged(self) -> None:
         readiness = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")

@@ -1,0 +1,59 @@
+{
+  "result": "success",
+  "files": [
+    {
+      "name": "checksums.txt",
+      "sha256": "a32f1678da1ea4674928a32023acdf80c805b97e15b069a86c72cd8baa745082",
+      "source_commit": "20bf151f40165084c8748b4cca8c7ab54ff6bdf2",
+      "signer_workflow": "https://github.com/HiroyukiFuruno/KatanA/.github/workflows/build-and-release.yml@refs/heads/master",
+      "invocation": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41002934022/attempts/1",
+      "predicate_type": "https://slsa.dev/provenance/v1",
+      "verified": true
+    },
+    {
+      "name": "KatanA-Desktop-0.22.44.dmg",
+      "sha256": "59847d86c9c20a2f563edff56668f310f4127128069bc222ff69b31326828e73",
+      "source_commit": "20bf151f40165084c8748b4cca8c7ab54ff6bdf2",
+      "signer_workflow": "https://github.com/HiroyukiFuruno/KatanA/.github/workflows/build-and-release.yml@refs/heads/master",
+      "invocation": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41002934022/attempts/1",
+      "predicate_type": "https://slsa.dev/provenance/v1",
+      "verified": true
+    },
+    {
+      "name": "KatanA-linux-x86_64.tar.gz",
+      "sha256": "8c1985d07682a9a4d84adc10846678e954720364159435123cdade8f6737252b",
+      "source_commit": "20bf151f40165084c8748b4cca8c7ab54ff6bdf2",
+      "signer_workflow": "https://github.com/HiroyukiFuruno/KatanA/.github/workflows/build-and-release.yml@refs/heads/master",
+      "invocation": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41002934022/attempts/1",
+      "predicate_type": "https://slsa.dev/provenance/v1",
+      "verified": true
+    },
+    {
+      "name": "KatanA-macOS.zip",
+      "sha256": "c9e213bedbe045dbb269c9f2e6dfc63390a817f4bc84896c403da24b8e7c7550",
+      "source_commit": "20bf151f40165084c8748b4cca8c7ab54ff6bdf2",
+      "signer_workflow": "https://github.com/HiroyukiFuruno/KatanA/.github/workflows/build-and-release.yml@refs/heads/master",
+      "invocation": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41002934022/attempts/1",
+      "predicate_type": "https://slsa.dev/provenance/v1",
+      "verified": true
+    },
+    {
+      "name": "KatanA-windows-x86_64.msi",
+      "sha256": "690c8731a69285b75f4eac432dd37893ade0154317ed2d2d8064792fc2add82e",
+      "source_commit": "20bf151f40165084c8748b4cca8c7ab54ff6bdf2",
+      "signer_workflow": "https://github.com/HiroyukiFuruno/KatanA/.github/workflows/build-and-release.yml@refs/heads/master",
+      "invocation": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41002934022/attempts/1",
+      "predicate_type": "https://slsa.dev/provenance/v1",
+      "verified": true
+    },
+    {
+      "name": "KatanA-windows-x86_64.zip",
+      "sha256": "00ecdc0741bf1ce5c656694d52825ab2c9e875fa2973b8ca5d83501c024a6e9f",
+      "source_commit": "20bf151f40165084c8748b4cca8c7ab54ff6bdf2",
+      "signer_workflow": "https://github.com/HiroyukiFuruno/KatanA/.github/workflows/build-and-release.yml@refs/heads/master",
+      "invocation": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41002934022/attempts/1",
+      "predicate_type": "https://slsa.dev/provenance/v1",
+      "verified": true
+    }
+  ]
+}

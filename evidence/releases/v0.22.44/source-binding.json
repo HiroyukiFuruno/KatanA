@@ -1,0 +1,15 @@
+{
+  "version": "0.22.44",
+  "pull_request": 397,
+  "reviewed_product_head": "b70d05bf751e79d216c1897dceb40730ed4987a5",
+  "merge_commit": "20bf151f40165084c8748b4cca8c7ab54ff6bdf2",
+  "api_tag_source": "20bf151f40165084c8748b4cca8c7ab54ff6bdf2",
+  "local_tag_source": "20bf151f40165084c8748b4cca8c7ab54ff6bdf2",
+  "release_url": "https://github.com/HiroyukiFuruno/KatanA/releases/tag/v0.22.44",
+  "tag_commit_verified": true,
+  "attested_source": "20bf151f40165084c8748b4cca8c7ab54ff6bdf2",
+  "attested_run_id": 41002934022,
+  "controller_preparation_commit": "5c098c119851b0e0cdd88662f462880aae8d047e",
+  "product_source_unchanged": true,
+  "observed_at": "2026-10-30T06:14:32.165028+00:00"
+}

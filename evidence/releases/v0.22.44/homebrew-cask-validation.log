@@ -1,0 +1,4 @@
+cask-latest.rb: Syntax OK
+cask-versioned.rb: Syntax OK
+formula-latest.rb: Syntax OK
+formula-versioned.rb: Syntax OK
