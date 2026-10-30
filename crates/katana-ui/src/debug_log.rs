@@ -1,6 +1,14 @@
 pub(crate) struct DebugLog;
 
 impl DebugLog {
+    pub(crate) fn monotonic_us() -> u128 {
+        static ORIGIN: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
+        ORIGIN
+            .get_or_init(std::time::Instant::now)
+            .elapsed()
+            .as_micros()
+    }
+
     pub(crate) fn write(event: &str, details: std::fmt::Arguments<'_>) {
         if Self::is_enabled() {
             eprintln!("[KATANA_DEBUG] event={event} {details}");

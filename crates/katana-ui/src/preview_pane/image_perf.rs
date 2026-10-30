@@ -2,7 +2,6 @@ use std::collections::VecDeque;
 use std::fmt::Arguments;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
-use std::time::Instant;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) struct ImageRequestTrace {
@@ -106,13 +105,11 @@ impl ImagePerf {
     }
 
     fn write(stage: &str, path: &Path, details: Arguments<'_>) {
-        static ORIGIN: OnceLock<Instant> = OnceLock::new();
-        let elapsed = ORIGIN.get_or_init(Instant::now).elapsed();
         crate::debug_log::DebugLog::write(
             "image_perf",
             format_args!(
                 "stage={stage} monotonic_us={} path={path:?} {details}",
-                elapsed.as_micros()
+                crate::debug_log::DebugLog::monotonic_us()
             ),
         );
     }
