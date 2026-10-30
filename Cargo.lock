@@ -2503,6 +2503,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "fs4"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7e72ed92b67c146290f88e9c89d60ca163ea417a446f61ffd7b72df3e7f1dfd5"
+dependencies = [
+ "rustix 1.1.6",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
 name = "fslock"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3799,7 +3809,7 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.44"
+version = "0.22.45"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -3808,6 +3818,7 @@ dependencies = [
  "emojis",
  "epaint_default_fonts",
  "flate2",
+ "fs4",
  "image",
  "include_dir",
  "katana-document-viewer",
@@ -3872,7 +3883,7 @@ dependencies = [
 
 [[package]]
 name = "katana-linter"
-version = "0.22.44"
+version = "0.22.45"
 dependencies = [
  "ignore",
  "katana-ast-lint",
@@ -3916,7 +3927,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.44"
+version = "0.22.45"
 dependencies = [
  "anyhow",
  "cc",
@@ -3981,7 +3992,7 @@ checksum = "729af5d660bb6f439ced0a7c56d86ad1cd15b6f1092becc70afd97d41c5a6073"
 
 [[package]]
 name = "katana-ui"
-version = "0.22.44"
+version = "0.22.45"
 dependencies = [
  "anyhow",
  "arboard",
