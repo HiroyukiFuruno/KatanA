@@ -15,13 +15,13 @@
 
 ## Branch Rule
 
-作業はrelease/v0.22.44のみ。最新本人指示により、新規worktree/master編集/通常stash/hook迂回/強制pushは禁止。関心別通常commit、単一Draft PRへ統合する。古いHEADのCIを新HEADへ流用しない。
+製品差分はrelease/v0.22.44、公開後の記録はrelease/v0.22.44-public-release-evidenceで扱う。最新本人指示により、新規worktree/master編集/通常stash/hook迂回/強制pushは禁止。製品差分は関心別通常commitと単一Draft PRへ統合し、公開後記録は公開sourceを変えない別Draft PRで統合する。古いHEADのCIを新HEADへ流用しない。
 
 ## Definition of Done
 
-- [ ] 報告済み全件の実装/検証/未解決/上流境界を照合し、実行可能なKatanA所有の修正を完了する。
-- [ ] 実egui/production入力経路、原本混在負荷、既存自動検査で検証し、検査失敗や未再現を完了扱いしない。
-- [ ] `/openspec-delivery`相当の自己レビュー・関心別通常commit/push・Draft review/修正/reply/resolve・Ready・required checks・merge・公開・成果物確認・安全な後処理を実施する。本人の実機確認はClose条件に含めない。
+- [x] 報告済み全件の実装/検証/未解決/上流境界を照合し、今回特定したKatanA所有の修正を完了した。原PNG30秒/Missing全条件は未確定として#385へ残し、全面解消とは扱わない。
+- [x] 実egui/production入力経路、原本混在負荷、既存自動検査で検証し、検査失敗や未再現を完了扱いしていない。
+- [/] `/openspec-delivery`相当の自己レビュー・関心別通常commit/push・Draft review/修正/reply/resolve・Ready・required checks・merge・公開・成果物確認を完了し、archiveと記録統合を実施中。本人の実機確認はClose条件に含めない。
 
 ## 1. 画像と混在読込 — #385/#386
 
@@ -53,7 +53,7 @@
 - [x] 5.3 関心別通常commitの後、通常push hook一回を正式ゲートとし、重い同検査を手動で重ねない。
 - [x] 5.4 Draft PR→全reviewページ/threads取得→P0/P1修正と個別reply/resolve→fresh確認を完了する。
 - [x] 5.5 Ready後の製品HEAD b70d05bfの全required checksを回収し、成功を確認した。
-- [ ] 5.6 通常merge→Actions公開→全5asset/checksum・配布自動検査→Issue更新→OpenSpec archive→安全なbranch/worktree後処理を実施する。
+- [/] 5.6 通常merge・Actions公開・全5asset/checksum・配布自動検査・Issue更新・製品branchの安全な整理を完了。OpenSpec archiveと公開後記録の正式統合を実施する。
 
 ## KatanA CLI Entry Point
 
@@ -120,3 +120,13 @@ OpenSpecはリポジトリの`./scripts/openspec`を使用する。既存品質�
 - 同HEADの追加Codexは指摘なし・全ページの未解決thread0を再確認。[PR397](https://github.com/HiroyukiFuruno/KatanA/pull/397)を通常mergeし、署名付きmerge20bf151fと製品treeの一致を確認した。
 - [公開run41002934022](https://github.com/HiroyukiFuruno/KatanA/actions/runs/41002934022)はマージ後CI確認中。公開・全5asset・checksum・外部配布はまだ完了扱いしない。
 - 公開後の記録・archiveは、既存validatorの共通処理へ版別の固定契約だけを追加して扱う。対象75契約成功、独立HighレビューP0/P1/P2なし。候補source20bf151fのコミットは公開証明ではなく、正式push/admission前に実stable Release/API/local tagの一致を必ず確認する。製品/lock差分・任意版/source・旧版の広い修復範囲は許可しない。
+
+## 2026-10-30 実公開の照合結果
+
+- [v0.22.44](https://github.com/HiroyukiFuruno/KatanA/releases/tag/v0.22.44)を正式公開。[公開run41002934022](https://github.com/HiroyukiFuruno/KatanA/actions/runs/41002934022)は全必須job成功、公開後cleanupも成功した。追加のWindows Server 2022比較診断はSKIPPEDであり、成功へ数えない。
+- 実stable Release/API/local tagは20bf151f40165084c8748b4cca8c7ab54ff6bdf2で一致。全5配布物の実download/checksum/API digestと同run成果物のbyte一致、全6件の署名付き来歴の同source/run一致を確認した。DMG/MSI内の本体・workerも対応ZIPと一致した。
+- 配布版の起動はMac arm64/x86_64・Linux x64・Windows x64で成功。LinuxはCIのsoftware Vulkan環境であり、物理機性能の実測ではない。既存の保護・メモリ予算・自動検査の基準は変更していない。
+- Homebrew/Linuxbrewの実書込が成功し、latest/versionedの4metadataを版・URL・SHA・Ruby構文まで照合。WinGetは[PR465985](https://github.com/microsoft/winget-pkgs/pull/465985)へ提出成功で、Microsoft側の検査・catalog配信は別追跡とする。配信済みとは偽らない。
+- #385/#386/#388へ今回公開した局所改善と未解決を反映。#385の原30秒/Missing全条件、#386の実行中native open取消（KDV #72）は残している。本人確認をClose条件に加えていない。
+- 公開元のrelease/v0.22.44は公開後cleanupでremote absentを確認、localは公開後証跡branchへ改名して未統合commitを保持した。既存primary checkoutだけを使用し、新規worktree/stash/強制削除はない。
+- `evidence/releases/v0.22.44/`へ実公開・配布照合・来歴・外部配布の記録を追加。公開sourceに固定する実CLI検査も、active taskの残件が5.6のみで成功した。公開後記録PR自体のreview/CI/merge/安全な整理は親作業台帳で別途完了まで追跡する。

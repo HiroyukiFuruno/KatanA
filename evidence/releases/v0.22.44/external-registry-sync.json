@@ -1,0 +1,76 @@
+{
+  "version": "0.22.44",
+  "tag": "v0.22.44",
+  "targets": [
+    {
+      "name": "homebrew",
+      "status": "success",
+      "reason": "updated"
+    },
+    {
+      "name": "linuxbrew",
+      "status": "success",
+      "reason": "updated"
+    },
+    {
+      "name": "winget",
+      "status": "success",
+      "reason": "submission_completed"
+    }
+  ],
+  "observed_at": "2026-10-30T06:14:32.165028+00:00",
+  "live_homebrew_metadata": [
+    {
+      "path": "Casks/katana-desktop.rb",
+      "blob_sha": "d2970b0a4f746b059e093ab5d870ba28b385bc9c",
+      "version": "0.22.44",
+      "asset": "KatanA-Desktop-0.22.44.dmg",
+      "asset_sha256": "59847d86c9c20a2f563edff56668f310f4127128069bc222ff69b31326828e73",
+      "result": "success"
+    },
+    {
+      "path": "Casks/katana-desktop@0.22.44.rb",
+      "blob_sha": "241c8ffbfaa19781c850eac7d04ce7a6f82274a0",
+      "version": "0.22.44",
+      "asset": "KatanA-Desktop-0.22.44.dmg",
+      "asset_sha256": "59847d86c9c20a2f563edff56668f310f4127128069bc222ff69b31326828e73",
+      "result": "success"
+    },
+    {
+      "path": "Formula/katana-desktop.rb",
+      "blob_sha": "1d5608ee5135c4711091fc9309e01fc22f3e48f2",
+      "version": "0.22.44",
+      "asset": "KatanA-linux-x86_64.tar.gz",
+      "asset_sha256": "8c1985d07682a9a4d84adc10846678e954720364159435123cdade8f6737252b",
+      "result": "success"
+    },
+    {
+      "path": "Formula/katana-desktop@0.22.44.rb",
+      "blob_sha": "f02e49bebe908687cb1473f1ba8133fb474ec7e1",
+      "version": "0.22.44",
+      "asset": "KatanA-linux-x86_64.tar.gz",
+      "asset_sha256": "8c1985d07682a9a4d84adc10846678e954720364159435123cdade8f6737252b",
+      "result": "success"
+    }
+  ],
+  "winget_submission": {
+    "url": "https://github.com/microsoft/winget-pkgs/pull/465985",
+    "headRefOid": "88328c0203c08bd555c7ecad45dd0a82c83f601f",
+    "labels": [],
+    "mergedAt": null,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-30T05:59:24Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/apps/microsoft-github-policy-service",
+        "name": "license/cla",
+        "startedAt": "2026-10-30T05:59:24Z",
+        "status": "COMPLETED",
+        "workflowName": ""
+      }
+    ]
+  },
+  "winget_catalog_publication": "not verified; Microsoft distribution is a separate follow-up"
+}

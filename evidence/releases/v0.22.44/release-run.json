@@ -1,0 +1,12 @@
+{
+  "version": "0.22.44",
+  "run_id": 41002934022,
+  "run_attempt": 1,
+  "url": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41002934022",
+  "event": "pull_request",
+  "status": "completed",
+  "conclusion": "success",
+  "event_head_sha": "b70d05bf751e79d216c1897dceb40730ed4987a5",
+  "actual_published_source": "20bf151f40165084c8748b4cca8c7ab54ff6bdf2",
+  "observed_at": "2026-10-30T06:14:32.165028+00:00"
+}
