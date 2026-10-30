@@ -31,3 +31,9 @@
 - producerがCargoより先にtargetを作る場合だけ、空であることを確認して所有者タグを作成。未知データや不正タグ、symlinkを所有済みとして扱いません。
 - 独立レビューで、タグ作成後からproducer終了までのclean競合と、親共有leaseからの排他昇格の問題を修正。POSIXでは実行と子孫終了まで共有leaseを保持し、初期化のみ別sidecarで直列化。
 - 実rustcのコンパイル待ち・生成バイナリ実行待ち・共有leaseを持つ親の下での実行を含め、契約24件成功。稼働中のclean拒否と終了後のclean成功を確認しました。Windowsでのcleanup拒否を保つ契約も維持していますが、この記録でWindows実行済みとは扱いません。
+
+## 依存関係の確認・更新
+
+- `just outdated` の仮更新診断は、KDV固定版のlibc=0.2.190と診断候補0.2.191の競合で失敗しました。現行の固定graphのビルド失敗とは区別します。
+- manifestの更新候補確認と、両lockに対する`cargo update --dry-run`を実施後、既存`just update`が成功。pulldown-cmark0.13.6および互換9package更新を採用し、KDV/KRRの固定版やoverride無しを維持。
+- 新graphのMarkdown対象検査94件成功。起動中のネイティブ診断bundleは更新前baselineとしてlockhashを別途固定し、新graphの配布受入へ流用しません。

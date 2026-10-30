@@ -10,6 +10,10 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - **Update error messages**: Distinguish installation failures from update checks, including storage and permission errors.
 - **Image controls**: Keep fullscreen at the upper right and place zoom and navigation controls below the image, without changing the following document layout. Continue an active drag outside the image area.
 
+### 🔧 System
+
+- Updated compatible dependencies, including the Markdown parser, and synchronized both lockfiles.
+
 ### Known limitations
 
 - Initial image delays in workspaces containing Office and HTML documents remain under investigation. Diagnostic logging does not establish that the reported delay has been resolved.
