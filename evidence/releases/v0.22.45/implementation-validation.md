@@ -69,3 +69,9 @@
 - source ce088c0f、root lock、crates tree、両実行ファイルの署名前後hashを固定。arm64の本体/workerと診断bundleのstrict deep ad-hoc署名を確認。全OS配布受入とは区別します。
 - 旧診断版の終了後に画面確認ツールが環境指定無しで再起動し、通常settings.jsonの保存が1回発生しました。直ちに終了。事前snapshotがなく設定内容の差分は未確定であり、古いbackupへの復元は行っていません。以降の通常設定は保存したpostincident snapshotとSHA一致を確認しました。
 - 診断bundleの起動環境にも専用profile/DEBUGを指定し、明示した隔離環境で新診断版を起動。利用規約画面・同意未操作を確認しました。原本文書のネイティブ計測は依然未回収です。
+
+## 正式pushとDraftレビューの回収
+
+- source4b19a96af2ebe74b1976e3622ee7f2b71f318bd9の通常pushがexit0で成功。正式pre-push内の既存checkを通り、remoteとのahead/behind0/0を確認しました。
+- Draft PR402を作成し、同HEADのCodex完了・findingsなしのreceiptを回収。REST reviews/review comments/issue commentsとGraphQL threads/nested commentsは全ページ取得。未解決thread0。
+- Draft段階のCIはSKIPPEDであり、合格とは扱いません。Ready後の全必須CIと公開は未完了です。実測未回収のPNG遅延を解消済みとしていません。

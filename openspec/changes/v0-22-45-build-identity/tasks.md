@@ -41,7 +41,7 @@ The bounded v45 postpublication records route also passed independent High revie
 
 Focused regressions and parent review pass. Formal release work remains owned by the parent session.
 
-- [ ] 3.1 Self-review and formatting; normal concern-specific commit and normal push hook.
+- [x] 3.1 Self-review and formatting; normal concern-specific commit and normal push hook.
 - [ ] 3.2 Draft PR → current review → repair/reply/resolve → P0/P1 zero → Ready → required checks → normal merge.
 - [ ] 3.3 Obtain actual v45 raw macOS/Linux/Windows identity manifests with the same source/run/attempt.
 - [ ] 3.4 Confirm actual v45 public five-asset payload verification and preserve its identity-only receipt; do not relabel synthetic tests or v44 missing artifacts as success.
@@ -54,3 +54,5 @@ Agent-executable implementation, automated regression gates, normal review/publi
 ## KatanA CLI Entry Point
 
 Use `./scripts/openspec` for status, instructions, and validation.
+
+Actual normal push at 4b19a96a exited0; Draft PR402 Codex completed with no findings and full-page collection found zero unresolved threads. The remaining composite3.2 still includes Ready/required CI/merge and stays incomplete. Actual v45 raw/public identity evidence is still pending.

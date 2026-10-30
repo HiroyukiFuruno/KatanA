@@ -48,10 +48,12 @@ All executable source/test feedback is addressed. User manual QA is a nonblockin
 
 - [x] 3.1 Execute self-review against coding rules and keep normal concern-specific commits.
 - [x] 3.2 Format/lint updated documentation and synchronize version/changelog with the canonical release target.
-- [ ] 3.3 Pass the normal push hook once as the complete local quality gate; do not duplicate its heavy checks manually.
-- [ ] 3.4 Draft PR → full current reviews → repair/reply/resolve → fresh P0/P1 zero.
+- [x] 3.3 Pass the normal push hook once as the complete local quality gate; do not duplicate its heavy checks manually.
+- [x] 3.4 Draft PR → full current reviews → repair/reply/resolve → fresh P0/P1 zero.
 - [ ] 3.5 Ready → current required CI/coverage/security/3OS checks → normal merge.
 - [ ] 3.6 Confirm public Release,5 payloads/checksums and external distribution outcomes; archive OpenSpec and safely clean local release state.
 
 ### Definition of Done (DoD)
 Automated implementation/validation and the normal review/commit/PR/merge/publication sequence are evidenced. No user-only operation or impossible manual acceptance is added as an Issue Close condition.
+
+PR402 draft evidence: normal push of 4b19a96af2ebe74b1976e3622ee7f2b71f318bd9 exited0 and remote matches. Complete REST and nested GraphQL review collection in `tmp/update-check-failure/pr402-review/current.json` recorded zero unresolved threads and the exact-head Codex completed/no-findings receipt. Ready/required CI/merge/publication are not yet complete.
