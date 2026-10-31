@@ -1,3 +1,4 @@
+import json
 import os
 from contextlib import nullcontext
 from pathlib import Path
@@ -123,8 +124,19 @@ class CargoTargetInitTest(unittest.TestCase):
                     shutil.copyfile(INITIALIZER.with_name("cargo_target_lease.py"),
                                     destination.with_name("cargo_target_lease.py"))
                 recipe = re.search(rf"(?m)^{name}:.*\n(?:[ \t]+.*\n)+", recipes).group()
-                (root / "justfile").write_text('set shell := ["bash", "-uc"]\nRTK_CMD := ""\n' + recipe)
                 environment = os.environ.copy()
+                shell = "bash"
+                if os.name == "nt":
+                    shell = environment.get("KATANA_GUARD_BASH_EXECUTABLE", "")
+                    self.assertTrue(shell, "KATANA_GUARD_BASH_EXECUTABLE must identify the running Git Bash")
+                    shell_path = Path(shell)
+                    self.assertTrue(shell_path.is_absolute(),
+                                    f"Git Bash must be a native absolute path: {shell}")
+                    # WHY: recipe内の --run bash も、WSLではなく外側と同じGit Bashを使う。
+                    environment["PATH"] = str(shell_path.parent) + os.pathsep + environment.get("PATH", "")
+                (root / "justfile").write_text(
+                    f'set shell := [{json.dumps(shell, ensure_ascii=False)}, "-uc"]\nRTK_CMD := ""\n' + recipe,
+                    encoding="utf-8")
                 environment.pop("CARGO_TARGET_DIR", None)
                 environment.pop("CARGO_BUILD_TARGET_DIR", None)
                 result = subprocess.run(["just", name], cwd=root, env=environment,
