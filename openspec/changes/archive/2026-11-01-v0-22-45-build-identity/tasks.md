@@ -42,10 +42,10 @@ The bounded v45 postpublication records route also passed independent High revie
 Focused regressions and parent review pass. Formal release work remains owned by the parent session.
 
 - [x] 3.1 Self-review and formatting; normal concern-specific commit and normal push hook.
-- [ ] 3.2 Draft PR → current review → repair/reply/resolve → P0/P1 zero → Ready → required checks → normal merge.
-- [ ] 3.3 Obtain actual v45 raw macOS/Linux/Windows identity manifests with the same source/run/attempt.
-- [ ] 3.4 Confirm actual v45 public five-asset payload verification and preserve its identity-only receipt; do not relabel synthetic tests or v44 missing artifacts as success.
-- [ ] 3.5 Archive the completed change after public evidence and safely clean local release state.
+- [x] 3.2 Draft PR → current review → repair/reply/resolve → P0/P1 zero → Ready → required checks → normal merge.
+- [x] 3.3 Obtain actual v45 raw macOS/Linux/Windows identity manifests with the same source/run/attempt.
+- [x] 3.4 Confirm actual v45 public five-asset payload verification and preserve its identity-only receipt; do not relabel synthetic tests or v44 missing artifacts as success.
+- [x] 3.5 Archive the completed change after public evidence and safely clean local release state.
 
 ## Definition of Done
 

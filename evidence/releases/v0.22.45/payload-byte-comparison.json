@@ -1,0 +1,42 @@
+{
+  "schema": "katana-v45-public-byte-comparison-v1",
+  "public_downloads": {
+    "tag": "v0.22.45",
+    "release_id": 430009173,
+    "source": "6bb5a5b0ccc455d10a2b162050cd4a7088382fe1",
+    "files": {
+      "KatanA-Desktop-0.22.45.dmg": {
+        "sha256": "77f5da0da076e8376d8e5066ca219eecc2d45b772cb122bb0c406c52b46eafa7",
+        "size": 223158390,
+        "asset_id": 695699007
+      },
+      "KatanA-linux-x86_64.tar.gz": {
+        "sha256": "9061d1f98fee376fd596fa2d6adb4e5d53d1dca3d05acce2d10f5092603c0510",
+        "size": 120607100,
+        "asset_id": 695699002
+      },
+      "KatanA-macOS.zip": {
+        "sha256": "e3de80920177e627674906356e5e86090764a250b93b528d80fc12258a9d2954",
+        "size": 223465897,
+        "asset_id": 695698998
+      },
+      "KatanA-windows-x86_64.msi": {
+        "sha256": "8249111dfb3e74d101840c2dbbae61709bb181122a1b98c14663927d272339cc",
+        "size": 109203456,
+        "asset_id": 695699000
+      },
+      "KatanA-windows-x86_64.zip": {
+        "sha256": "fbeb0791906bfc8e583b367a155c99d65e1cacfed8ec8f30d74d2c7ce1eb3571",
+        "size": 105875953,
+        "asset_id": 695699021
+      },
+      "checksums.txt": {
+        "sha256": "3b46c926f42d8a2e167488ad50703af57ea5daa3f165cfea11889783bdd305ff",
+        "size": 453,
+        "asset_id": 695699001
+      }
+    }
+  },
+  "canonical_receipt_matches": true,
+  "archive_and_executable_contracts": "Verified by canonical read-only workflow 41213893520; receipt is identity-only and does not evaluate document QA."
+}

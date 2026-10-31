@@ -1,0 +1,11 @@
+{
+  "tag": "v0.22.45",
+  "published_source": "6bb5a5b0ccc455d10a2b162050cd4a7088382fe1",
+  "verified_tag_commit": true,
+  "pull_request": 402,
+  "pr_head_and_event_run_head": "c6864bc8c7fda05fc4a9c2d6eab7ca2fddd98fb0",
+  "identical_product_tree": "c7af9e534d5dc13a80d075753a42ba3445e47c90",
+  "release_run": 41207347968,
+  "attempt": 1,
+  "canonical_identity_run": 41213893520
+}

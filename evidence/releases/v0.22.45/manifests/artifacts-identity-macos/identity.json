@@ -1,0 +1,49 @@
+{
+  "schema": "katana-generated-asset-identity-v1",
+  "version": "v0.22.45",
+  "platform": "macos",
+  "provenance": {
+    "source_commit": "6bb5a5b0ccc455d10a2b162050cd4a7088382fe1",
+    "source_tree_sha256": "4d234d5945a3c594f51078340d87d3acd2c3d42e5293f5faf894f6bd8d4905d3",
+    "cargo_lock_sha256": "ca86c3d269094c285ea9288379ca17679bd0943b074bf1def94a625c379fe3a6",
+    "published_dependencies": {
+      "katana-document-viewer": {
+        "version": "0.5.12",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635"
+      },
+      "katana-render-runtime": {
+        "version": "0.4.23",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "8e5e0803f343d781dc015d1fe21b052492d67579ba303cf86203f60455852e00"
+      },
+      "katana-ui-core": {
+        "version": "0.4.1",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "f8fd7856249d96c0ce65e68151a327d82511af70a8fbe7416058a1a0ba8e9d5c"
+      }
+    }
+  },
+  "github_run_id": "41207347968",
+  "github_run_attempt": "1",
+  "targets": {
+    "macos-x86_64": {
+      "main_sha256": "1f20773072fdd3ba2975c278cb2729c558ce8f3243fb6a2c4968ea1632bd1bf7",
+      "sidecar_sha256": "063b984aaca2040834e430ea16c0293adaae2aba2ce1187ac06e25574528701c"
+    },
+    "macos-arm64": {
+      "main_sha256": "1f20773072fdd3ba2975c278cb2729c558ce8f3243fb6a2c4968ea1632bd1bf7",
+      "sidecar_sha256": "063b984aaca2040834e430ea16c0293adaae2aba2ce1187ac06e25574528701c"
+    }
+  },
+  "assets": {
+    "KatanA-macOS.zip": {
+      "sha256": "e3de80920177e627674906356e5e86090764a250b93b528d80fc12258a9d2954",
+      "size": 223465897
+    },
+    "KatanA-Desktop-0.22.45.dmg": {
+      "sha256": "77f5da0da076e8376d8e5066ca219eecc2d45b772cb122bb0c406c52b46eafa7",
+      "size": 223158390
+    }
+  }
+}

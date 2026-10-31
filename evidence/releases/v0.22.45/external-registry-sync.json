@@ -1,0 +1,21 @@
+{
+  "version": "0.22.45",
+  "tag": "v0.22.45",
+  "targets": [
+    {
+      "name": "homebrew",
+      "status": "success",
+      "reason": "updated"
+    },
+    {
+      "name": "linuxbrew",
+      "status": "success",
+      "reason": "updated"
+    },
+    {
+      "name": "winget",
+      "status": "success",
+      "reason": "submission_completed"
+    }
+  ]
+}

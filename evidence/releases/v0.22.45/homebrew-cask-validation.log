@@ -1,0 +1,42 @@
+{
+  "observed_at": "2026-10-31T15:17:12.248508+00:00",
+  "files": [
+    {
+      "path": "Casks/katana-desktop.rb",
+      "blob_sha": "4b951c96b9054db719c8dec7d0d25e5b9757864f",
+      "url": "https://github.com/HiroyukiFuruno/homebrew-katana/blob/master/Casks/katana-desktop.rb",
+      "version": "0.22.45",
+      "asset": "KatanA-Desktop-0.22.45.dmg",
+      "sha256": "77f5da0da076e8376d8e5066ca219eecc2d45b772cb122bb0c406c52b46eafa7",
+      "ruby_syntax": "Syntax OK"
+    },
+    {
+      "path": "Casks/katana-desktop@0.22.45.rb",
+      "blob_sha": "d5932f6947c0e64a69bd35c093387b191eeb979b",
+      "url": "https://github.com/HiroyukiFuruno/homebrew-katana/blob/master/Casks/katana-desktop@0.22.45.rb",
+      "version": "0.22.45",
+      "asset": "KatanA-Desktop-0.22.45.dmg",
+      "sha256": "77f5da0da076e8376d8e5066ca219eecc2d45b772cb122bb0c406c52b46eafa7",
+      "ruby_syntax": "Syntax OK"
+    },
+    {
+      "path": "Formula/katana-desktop.rb",
+      "blob_sha": "c5f35c32b46f4da1bb7efeff2c4dd3a099c49b82",
+      "url": "https://github.com/HiroyukiFuruno/homebrew-katana/blob/master/Formula/katana-desktop.rb",
+      "version": "0.22.45",
+      "asset": "KatanA-linux-x86_64.tar.gz",
+      "sha256": "9061d1f98fee376fd596fa2d6adb4e5d53d1dca3d05acce2d10f5092603c0510",
+      "ruby_syntax": "Syntax OK"
+    },
+    {
+      "path": "Formula/katana-desktop@0.22.45.rb",
+      "blob_sha": "3676082891b61ac0e2612d0e05a1dcc8e0f42008",
+      "url": "https://github.com/HiroyukiFuruno/homebrew-katana/blob/master/Formula/katana-desktop@0.22.45.rb",
+      "version": "0.22.45",
+      "asset": "KatanA-linux-x86_64.tar.gz",
+      "sha256": "9061d1f98fee376fd596fa2d6adb4e5d53d1dca3d05acce2d10f5092603c0510",
+      "ruby_syntax": "Syntax OK"
+    }
+  ]
+}
+Both current and versioned Casks use depends_on macos: :ventura and postflight_steps. Four Ruby syntax checks passed.
