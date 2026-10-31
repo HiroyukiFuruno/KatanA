@@ -22,7 +22,7 @@ class FutureIdentityWorkflowTests(unittest.TestCase):
             self.assertEqual(0, result.returncode, result.stderr)
 
     def test_all_builds_record_versioned_raw_identity_and_fail_missing_upload(self):
-        workflow = (ROOT / ".github/workflows/build-and-release.yml").read_text()
+        workflow = (ROOT / ".github/workflows/build-and-release.yml").read_text(encoding="utf-8")
         for label, platform in (("macOS", "macos"), ("Linux", "linux"), ("Windows", "windows")):
             producer = workflow.split(f"      - name: Record generated {label} payload identity\n", 1)[1]
             producer = producer.split("      - name:", 1)[0]
@@ -38,7 +38,7 @@ class FutureIdentityWorkflowTests(unittest.TestCase):
         self.assertIn('--asset "target/release/KatanA-Desktop-$RELEASE_VERSION_BARE.dmg"', workflow)
 
     def test_all_identity_checks_precede_public_mutation_and_42_approval_stays(self):
-        workflow = (ROOT / ".github/workflows/build-and-release.yml").read_text()
+        workflow = (ROOT / ".github/workflows/build-and-release.yml").read_text(encoding="utf-8")
         publish = workflow.split("  publish:\n", 1)[1]
         self.assertLess(publish.index("Normalize generated payload identity filenames"), publish.index("collect-artifacts.sh"))
         self.assertLess(publish.index("collect-artifacts.sh"), publish.index("check-generated-artifact-identity.py"))
@@ -50,7 +50,7 @@ class FutureIdentityWorkflowTests(unittest.TestCase):
         self.assertIn("--scope automated-release", old)
 
     def test_finished_run_verification_does_not_relax_draft_or_required_build_jobs(self):
-        readiness = (ROOT / ".github/workflows/release-readiness.yml").read_text()
+        readiness = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")
         self.assertIn("if: github.event_name == 'pull_request' && !github.event.pull_request.draft", readiness)
         self.assertIn("workflows: [Release]\n    types: [completed]", readiness)
         job = readiness.split("  published-asset-identity:\n", 1)[1]

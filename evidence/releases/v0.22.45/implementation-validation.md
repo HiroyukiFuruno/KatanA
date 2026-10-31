@@ -85,4 +85,5 @@
 - Office/HTMLの読込活動は記録しましたが、Officeのframe受信は最初のPNG選択より前であり、このrunが同時ロード中の遅延を否定する証拠にはなりません。30秒待ちの原因・解消は未確定です。公開可能な数値記録は `png-cold-cache-observation.json`、原本名を含むログはローカル診断資料として分離しました。
 - 明示的なcache消去でinactiveタブのLocalImageLoaderが残ることも判明しましたが、追加修正の前に本人が調査終了・現状公開を指示したため、未実装の後続事項として記録しました。30秒待ちの原因とは断定しません。
 - Windows検査のcp1252読込失敗は1862c7fでUTF-8を明示して修復。関連24検査と通常pushが成功。旧HEAD41d1のCIはWindows失敗・残るbuild取消であり、新HEADへ合格を流用しません。
+- 同じ問題が新しい公開検査3ファイルの実YAML・preflight・ソース読書きにもあることをcp1252で再確認し、UTF-8へ統一。assertionと製品処理は変えず、関連17検査と独立Highレビューが成功しました。旧最終pushはこの修正前に意図的に中止（exit130）し、修正後HEADで通常pushをやり直します。
 - 追加互換更新はencoding_rs/log/webbrowser/ZIP9.2.0と両lockのみ。KDV/KRRおよび旧ZIP経路を変更せず、ZIPの許可追加はregistryのkatana-core0.22.45→9.2.0の完全一致に限定しました。境界27検査と両実metadata検査が成功し、独立HighレビューP0/P1/P2なし。対象update回帰116件も成功。新しい正式push・current review・Ready CI・公開結果は別途回収します。

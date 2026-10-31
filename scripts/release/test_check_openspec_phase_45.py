@@ -77,12 +77,13 @@ class Phase45Tests(unittest.TestCase):
             self.assertNotEqual(0, result.returncode)
 
     def preflight(self, mode):
-        source = (RELEASE / "preflight.sh").read_text()
+        source = (RELEASE / "preflight.sh").read_text(encoding="utf-8")
         dispatch = source.split("VERSION_DASHED=$(", 1)[1]
         dispatch = "VERSION_DASHED=$(" + dispatch.split('success "All preflight checks passed', 1)[0]
         script = self.root / "preflight-task-dispatch.zsh"
         script.write_text('set -e\nVERSION=0.22.45\nTASK_GATE_MODE="$1"\n'
-                          'error() { print -u2 -- "$*"; }\nsuccess() { print -- "$*"; }\n' + dispatch)
+                          'error() { print -u2 -- "$*"; }\nsuccess() { print -- "$*"; }\n' + dispatch,
+                          encoding="utf-8")
         return subprocess.run(["zsh", str(script), mode], cwd=self.root,
                               capture_output=True, text=True, timeout=60)
 

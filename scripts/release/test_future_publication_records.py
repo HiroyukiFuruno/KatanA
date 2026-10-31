@@ -33,7 +33,7 @@ class RecordsScopeTests(unittest.TestCase):
             self.write(f"openspec/changes/{change}/specs/{capability}/spec.md",
                        "## ADDED Requirements\n\n### Requirement: Exact behavior\n\nThe product SHALL retain its contract.\n")
         for name in ("check-openspec-task-phase.py", "check-openspec-task-completion.py"):
-            self.write("scripts/release/" + name, (ROOT / "scripts/release" / name).read_text())
+            self.write("scripts/release/" + name, (ROOT / "scripts/release" / name).read_text(encoding="utf-8"))
         self.commit()
         self.source = git(self.root, "rev-parse", "HEAD")
         self.write(records.EVIDENCE + "publication.md", "Synthetic unit metadata only\n")
@@ -45,7 +45,7 @@ class RecordsScopeTests(unittest.TestCase):
     def write(self, name, text):
         path = self.root / name
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text)
+        path.write_text(text, encoding="utf-8")
 
     def commit(self):
         git(self.root, "add", ".")
