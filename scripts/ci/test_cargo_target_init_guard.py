@@ -21,6 +21,42 @@ SIGNATURE = b"Signature: 8a477f597d28d172789f06886806bc55"
 
 
 class CargoTargetInitTest(unittest.TestCase):
+    @unittest.skipUnless(os.name == "nt", "Windows CreateProcess executable search regression")
+    def test_windows_producer_uses_environment_path_before_system32(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            initializer = root / "scripts/ci/cargo_target_init.py"
+            initializer.parent.mkdir(parents=True)
+            shutil.copyfile(INITIALIZER, initializer)
+            shutil.copyfile(INITIALIZER.with_name("cargo_target_lease.py"),
+                            initializer.with_name("cargo_target_lease.py"))
+            self.assertTrue((Path(os.environ["SystemRoot"]) / "System32/cmd.exe").is_file())
+            binary = root / "bin/cmd.exe"
+            binary.parent.mkdir()
+            built = subprocess.run(
+                ["rustc", "--edition", "2024", "-", "-o", str(binary)],
+                input='fn main() { println!("{}", std::env::args().skip(1).collect::<Vec<_>>().join("|")); }',
+                capture_output=True, text=True, timeout=60)
+            self.assertEqual(0, built.returncode, built.stdout + built.stderr)
+            environment = os.environ.copy()
+            environment["PATH"] = str(binary.parent) + os.pathsep + environment.get("PATH", "")
+            environment.pop("CARGO_TARGET_DIR", None)
+            environment.pop("CARGO_BUILD_TARGET_DIR", None)
+            for executable in ("cmd.exe", ".\\bin\\cmd.exe", str(binary)):
+                with self.subTest(executable=executable):
+                    result = subprocess.run(
+                        [sys.executable, str(initializer), str(root / "target"), "--run", executable,
+                         "explicit-path-producer", "argument with spaces"],
+                        cwd=root, env=environment, capture_output=True, text=True, timeout=15)
+                    self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+                    self.assertEqual("explicit-path-producer|argument with spaces", result.stdout.strip())
+            environment["PATH"] = str(root / "missing")
+            missing = subprocess.run(
+                [sys.executable, str(initializer), str(root / "target"), "--run", "cmd.exe"],
+                cwd=root.parent, env=environment, capture_output=True, text=True, timeout=15)
+            self.assertNotEqual(0, missing.returncode)
+            self.assertIn("producer executable not found on PATH", missing.stderr)
+
     def test_producer_lifetime_blocks_clean(self):
         self.assert_producer_lifetime(shared_parent=False)
 

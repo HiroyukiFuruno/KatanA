@@ -7,6 +7,7 @@ import errno
 import hashlib
 import os
 from pathlib import Path
+import shutil
 import signal
 import stat
 import subprocess
@@ -301,6 +302,12 @@ def run_process_group(
                 options["pass_fds"] = inherited_fds
         elif os.name == "nt":
             options["creationflags"] = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+            if Path(command[0]).name == command[0]:
+                # WHY: CreateProcessのSystem32優先検索を避け、指定されたPATHのproducerを実行する。
+                executable = shutil.which(command[0], path=environment.get("PATH", ""))
+                if executable is None:
+                    raise FileNotFoundError(f"producer executable not found on PATH: {command[0]}")
+                command = [str(Path(executable).absolute()), *command[1:]]
         process = subprocess.Popen(command, **options)
         if pending_signals:
             _signal_group(process, pending_signals[-1])
