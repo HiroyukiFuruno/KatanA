@@ -1766,6 +1766,24 @@ mod tests_extra {
     }
 
     #[test]
+    fn test_update_install_storage_failure_is_not_check_failure() {
+        let mut app = setup_test_app();
+        app.state.update.checking = true;
+        app.state.update.phase = Some(crate::app_state::UpdatePhase::Installing { progress: 0.5 });
+        let (tx, rx) = std::sync::mpsc::channel();
+        tx.send(UpdateInstallEvent::Finished(Err(katana_core::update::CheckUpdateError::StorageFull))).unwrap();
+        app.update_install_rx = Some(rx);
+        app.poll_update_install(&egui::Context::default());
+        assert_eq!(app.state.update.install_error, Some(katana_core::update::CheckUpdateError::StorageFull));
+        assert!(app.state.update.check_error.is_none());
+        assert!(app.state.update.phase.is_none());
+        assert!(!app.state.update.checking);
+        assert!(app.show_update_dialog);
+        assert!(app.update_install_rx.is_none());
+        assert!(app.pending_relaunch.is_none());
+    }
+
+    #[test]
     fn test_update_check_channel_closed() {
         let mut app = setup_test_app();
         app.state.update.checking = true;

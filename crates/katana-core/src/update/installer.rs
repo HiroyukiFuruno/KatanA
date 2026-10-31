@@ -32,6 +32,7 @@ impl UpdateInstallerOps {
         let archive_path = temp_dir.path().join(format!("update.{}", extension));
 
         UpdateDownloadOps::download_update(download_url, &archive_path, &mut on_progress)?;
+        super::download::storage::UpdateStorageOps::check_archive(&archive_path, target_app_path)?;
 
         let extract_dir = temp_dir.path().join("extracted");
         std::fs::create_dir_all(&extract_dir)?;

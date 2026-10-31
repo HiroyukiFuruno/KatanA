@@ -14,6 +14,8 @@ impl KatanaApp {
         &mut self,
         ctx: &egui::Context,
     ) -> katana_platform::theme::ThemeColors {
+        let _frame_timing =
+            crate::document_ui_perf::DocumentUiPerf::begin("frame_prepare", None, false);
         if self.needs_splash {
             self.splash_start = Some(std::time::Instant::now());
             self.needs_splash = false;
@@ -52,6 +54,13 @@ impl KatanaApp {
         self.poll_explorer_load(ctx);
 
         if let Some(path) = self.pending_document_loads.pop_front() {
+            let timing_path =
+                crate::document_ui_perf::DocumentUiPerf::enabled().then(|| path.clone());
+            let _timing = crate::document_ui_perf::DocumentUiPerf::begin(
+                "deferred_document_open",
+                timing_path.as_deref(),
+                true,
+            );
             self.handle_select_document(path, false);
             ctx.request_repaint();
         }

@@ -2,6 +2,8 @@ pub mod cleanup;
 pub mod download;
 #[cfg(test)]
 mod download_archive_tests;
+#[cfg(test)]
+mod download_capacity_tests;
 pub mod error;
 pub mod installer;
 #[cfg(test)]

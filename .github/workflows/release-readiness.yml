@@ -1,6 +1,9 @@
 name: Release Readiness
 
 on:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
   pull_request:
     branches: [master]
     types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
@@ -111,4 +114,42 @@ jobs:
         with:
           name: published-run-admission
           path: ${{ steps.actual_published_artifacts.outputs.admission_path }}
+          if-no-files-found: error
+
+  published-asset-identity:
+    name: Verify published asset identity
+    # WHY: 元のDraft/PR検査には触れず、完了した同一repoのrelease runだけを別の読取専用jobで検査する。
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      ((github.event.workflow_run.event == 'pull_request' && startsWith(github.event.workflow_run.head_branch, 'release/v')) ||
+       (github.event.workflow_run.event == 'workflow_dispatch' && github.event.workflow_run.head_branch == 'master'))
+    runs-on: macos-latest
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+      - name: Install publication identity tools
+        run: brew install sevenzip
+      - name: Verify finished publication identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_RUN: ${{ github.event.workflow_run.id }}
+          BUILD_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        run: |
+          python3 -B scripts/release/check-generated-artifact-identity.py --root . --phase postpublication --run-id "$BUILD_RUN" --run-attempt "$BUILD_ATTEMPT" --work "$RUNNER_TEMP/published-identity-$BUILD_RUN-$BUILD_ATTEMPT"
+      - name: Preserve publication identity evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: published-asset-identity
+          path: |
+            ${{ runner.temp }}/published-identity-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}/run-admission.json
+            ${{ runner.temp }}/published-identity-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}/publication-identity.json
+            ${{ runner.temp }}/published-identity-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}/manifests/
           if-no-files-found: error

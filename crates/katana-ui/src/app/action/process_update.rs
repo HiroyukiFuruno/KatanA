@@ -13,6 +13,8 @@ impl KatanaApp {
         }
 
         self.state.update.checking = true;
+        self.state.update.check_error = None;
+        self.state.update.install_error = None;
         self.state.update.phase =
             Some(crate::app_state::UpdatePhase::Downloading { progress: 0.0 });
         let exe_path = std::env::current_exe().unwrap();
@@ -46,7 +48,7 @@ impl KatanaApp {
                     let _ = tx_clone.send(UpdateInstallEvent::Progress(progress));
                 },
             )
-            .map_err(|e| e.to_string());
+            .map_err(katana_core::update::CheckUpdateError::from_preparation_error);
             let _ = tx.send(UpdateInstallEvent::Finished(res));
         });
     }

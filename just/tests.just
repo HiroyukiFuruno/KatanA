@@ -15,9 +15,7 @@ test: test-docker-volume-lifecycle test-cargo-sweep-contract test-ci-resource-co
 
 # vendor workspaceの別lockを更新せず、依存なしの実要約moduleを直接検査する。
 test-commonmark-html-trace:
-    mkdir -p target/contract-tests
-    {{RTK_CMD}}rustc --edition 2024 -D warnings --test vendor/egui_commonmark_upstream/egui_commonmark/src/parsers/pulldown/html_trace_summary.rs -o target/contract-tests/commonmark-html-trace.exe
-    {{RTK_CMD}}target/contract-tests/commonmark-html-trace.exe
+    {{RTK_CMD}}python3 -B scripts/ci/cargo_target_init.py --run bash -euc 'mkdir -p target/contract-tests && {{RTK_CMD}}rustc --edition 2024 -D warnings --test vendor/egui_commonmark_upstream/egui_commonmark/src/parsers/pulldown/html_trace_summary.rs -o target/contract-tests/commonmark-html-trace.exe && {{RTK_CMD}}target/contract-tests/commonmark-html-trace.exe'
 
 # root lockとUIのfeature集合で、workspace外の既存patched backendを検査する。
 test-commonmark-backend:
@@ -29,9 +27,7 @@ test-custom-cursor-cache:
 
 # 実描画に使う寸法判定moduleを、追加のGPU環境なしで全OSの通常検査へ含める。
 test-wgpu-native-surface-size:
-    mkdir -p target/contract-tests
-    {{RTK_CMD}}rustc --edition 2024 -D warnings --test vendor/egui-wgpu/src/native_surface_size.rs -o target/contract-tests/wgpu-native-surface-size.exe
-    {{RTK_CMD}}target/contract-tests/wgpu-native-surface-size.exe
+    {{RTK_CMD}}python3 -B scripts/ci/cargo_target_init.py --run bash -euc 'mkdir -p target/contract-tests && {{RTK_CMD}}rustc --edition 2024 -D warnings --test vendor/egui-wgpu/src/native_surface_size.rs -o target/contract-tests/wgpu-native-surface-size.exe && {{RTK_CMD}}target/contract-tests/wgpu-native-surface-size.exe'
 
 # デバッグ情報の容量対策で全test・coverage・受入を削減していないことを確認する。
 test-ci-resource-contract:

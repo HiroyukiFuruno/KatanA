@@ -5,13 +5,21 @@ use katana_core::markdown::svg_rasterize::RasterizedSvg;
 
 use super::types::ImageLogicOps;
 
+#[path = "image_raster_interaction.rs"]
+mod interaction;
+
 pub(super) const MIN_ZOOM: f32 = 0.1;
 pub(super) const MAX_ZOOM: f32 = 10.0;
 
-/// WHY: Minimum container height to prevent the 3×3 control grid and fullscreen
-/// button from overlapping on diagrams with a small rendered height.
-const MIN_CONTAINER_HEIGHT: f32 = 145.0;
 const MAX_TEXTURE_SIDE: usize = 2048;
+
+#[cfg(test)]
+#[path = "image_raster_layout_tests.rs"]
+mod layout_tests;
+
+#[cfg(test)]
+#[path = "image_local_layout_tests.rs"]
+mod local_layout_tests;
 
 pub(super) enum RasterizedInteraction<'a> {
     Hidden {
@@ -88,7 +96,13 @@ impl ImageLogicOps {
         let display_height = img.display_height.max(1.0);
         let base_scale = (max_w / display_width).min(1.0);
         let base_size = Vec2::new(display_width * base_scale, display_height * base_scale);
-        let container_h = base_size.y.max(MIN_CONTAINER_HEIGHT);
+        let container_h = if show_controls && state.is_some() {
+            base_size
+                .y
+                .max(crate::diagram_controller::DiagramControllerOps::minimum_image_height())
+        } else {
+            base_size.y
+        };
         let interaction_sense = if show_controls {
             egui::Sense::click_and_drag()
         } else {
@@ -106,17 +120,8 @@ impl ImageLogicOps {
             state.prepare_texture(ViewerTextureIdentity::rasterized(img), preview_background);
         }
 
-        if show_controls
-            && let Some(state) = state.as_mut()
-            && response.hovered()
-        {
-            let zoom_delta = ui.input(|i| i.zoom_delta());
-            if zoom_delta != 1.0 {
-                state.zoom = (state.zoom * zoom_delta).clamp(MIN_ZOOM, MAX_ZOOM);
-            }
-            if response.dragged() {
-                state.pan += response.drag_delta();
-            }
+        if show_controls && let Some(state) = state.as_mut() {
+            Self::apply_raster_pointer_input(ui, state, &response);
         }
 
         let transform = state.as_ref().filter(|_| show_controls);
@@ -180,11 +185,9 @@ impl ImageLogicOps {
             {
                 *req = Some(idx);
             }
-            crate::diagram_controller::DiagramControllerOps::draw_controls(
-                ui,
-                state,
-                container_rect,
-            );
+            let controls_rect =
+                crate::diagram_controller::DiagramControllerOps::draw_controls_below(ui, state);
+            return container_rect.union(controls_rect);
         }
 
         container_rect

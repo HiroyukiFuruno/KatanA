@@ -11,6 +11,7 @@ use std::time::Duration;
 mod backend;
 #[cfg(any(windows, test))]
 mod content_watch;
+mod coordinator;
 mod directory_recovery;
 mod events;
 mod registration;
@@ -44,32 +45,6 @@ pub(super) struct Coordinator {
 enum WatchCommand {
     Watch(WatchRequest),
     Clear(Weak<Inner>),
-}
-
-impl Coordinator {
-    pub(super) fn request(
-        &self,
-        owner: Weak<Inner>,
-        path: PathBuf,
-        generation: u64,
-    ) -> Result<(), String> {
-        if let Some(error) = &self.startup_error {
-            return Err(error.clone());
-        }
-        self.request_tx
-            .try_send(WatchCommand::Watch(WatchRequest {
-                owner,
-                path,
-                generation,
-            }))
-            .map_err(|error| format!("image watcher queue unavailable: {error}"))
-    }
-
-    pub(super) fn clear(&self, owner: Weak<Inner>) {
-        if let Err(error) = self.request_tx.try_send(WatchCommand::Clear(owner)) {
-            tracing::warn!(%error, "local image watcher clear request dropped");
-        }
-    }
 }
 
 pub(super) fn coordinator() -> &'static Coordinator {

@@ -12,6 +12,7 @@ pub struct UpdateState {
     pub checking: bool,
     pub phase: Option<UpdatePhase>,
     pub check_error: Option<CheckUpdateError>,
+    pub install_error: Option<CheckUpdateError>,
 }
 
 impl Default for UpdateState {
@@ -27,6 +28,7 @@ impl UpdateState {
             checking: false,
             phase: None,
             check_error: None,
+            install_error: None,
         }
     }
 }

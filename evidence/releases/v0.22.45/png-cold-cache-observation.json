@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-10-31T10:08:36.883910+00:00",
+  "binary_source_commit": "ce088c0fbf353baf267967c46e6e8819b7872b95",
+  "raw_log_sha256": "dc0bee12cdcad58355f2fbb003049682126d96ba2fd4eed69ccb8878642ecc72",
+  "scenario": "fresh native macOS diagnostic process; empty app cache directory; first actual file reads for six original PNG inputs",
+  "loading_overlap": "Office/HTML load activity was recorded, but Office frames arrived before first PNG selection; simultaneous pending load is not established by this run",
+  "os_file_cache": "not purged",
+  "status": "reported 30-second PNG delay not reproduced; no root-cause or resolution claim",
+  "measurements": [
+    {
+      "fixture_id": "png-1",
+      "bytes": 104907,
+      "selection_to_mesh_submission_ms": 18.401,
+      "file_open_ms": 0.352,
+      "file_read_ms": 0.091,
+      "raster_decode_ms": 2.266,
+      "watch_queue_wait_ms": 4.744,
+      "decode_queue_wait_ms": 0.093,
+      "gpu_complete": false
+    },
+    {
+      "fixture_id": "png-2",
+      "bytes": 186435,
+      "selection_to_mesh_submission_ms": 42.405,
+      "file_open_ms": 0.13,
+      "file_read_ms": 0.668,
+      "raster_decode_ms": 4.218,
+      "watch_queue_wait_ms": 28.617,
+      "decode_queue_wait_ms": 0.123,
+      "gpu_complete": false
+    },
+    {
+      "fixture_id": "png-3",
+      "bytes": 167328,
+      "selection_to_mesh_submission_ms": 42.162,
+      "file_open_ms": 0.222,
+      "file_read_ms": 0.645,
+      "raster_decode_ms": 3.415,
+      "watch_queue_wait_ms": 29.051,
+      "decode_queue_wait_ms": 0.097,
+      "gpu_complete": false
+    },
+    {
+      "fixture_id": "png-4",
+      "bytes": 207673,
+      "selection_to_mesh_submission_ms": 27.636,
+      "file_open_ms": 0.238,
+      "file_read_ms": 1.287,
+      "raster_decode_ms": 4.403,
+      "watch_queue_wait_ms": 8.682,
+      "decode_queue_wait_ms": 0.112,
+      "gpu_complete": false
+    },
+    {
+      "fixture_id": "png-5",
+      "bytes": 158712,
+      "selection_to_mesh_submission_ms": 24.719,
+      "file_open_ms": 0.29,
+      "file_read_ms": 0.893,
+      "raster_decode_ms": 1.663,
+      "watch_queue_wait_ms": 10.034,
+      "decode_queue_wait_ms": 0.1,
+      "gpu_complete": false
+    },
+    {
+      "fixture_id": "png-6",
+      "bytes": 109549,
+      "selection_to_mesh_submission_ms": 63.349,
+      "file_open_ms": 0.326,
+      "file_read_ms": 0.807,
+      "raster_decode_ms": 2.446,
+      "watch_queue_wait_ms": 23.826,
+      "decode_queue_wait_ms": 0.105,
+      "gpu_complete": false
+    }
+  ],
+  "limits": [
+    "Selection begins when app consumes action, not physical click",
+    "Mesh submission is not GPU/display completion",
+    "Original observation is diagnostic, not all-OS distribution acceptance",
+    "Further nonreproduction investigation stopped by latest human direction",
+    "Measured before subsequent compatible dependency updates; not acceptance evidence for the final updated dependency graph"
+  ],
+  "binary_root_lock_sha256": "08ac9faee7a5d4ce112c9b0896a0b5121e1a5199e21333a646d7b4ef68a821e7"
+}

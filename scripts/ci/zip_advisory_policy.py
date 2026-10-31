@@ -19,6 +19,8 @@ SAFE_ZIP_EDGES = frozenset(
         ("9.1.2", "katana-core", "0.22.42"),
         ("9.1.3", "katana-core", "0.22.43"),
         ("9.1.3", "katana-core", "0.22.44"),
+        ("9.1.3", "katana-core", "0.22.45"),
+        ("9.2.0", "katana-core", "0.22.45"),
     )
 )
 SAFE_ZIP_MANIFEST = (

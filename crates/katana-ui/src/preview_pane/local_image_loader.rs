@@ -10,7 +10,9 @@ mod decode_retry;
 #[cfg(test)]
 mod decode_retry_boundary_tests;
 mod overflow;
+mod perf;
 mod pool;
+mod queue;
 mod retry;
 mod revision;
 mod revision_cache;
@@ -84,6 +86,16 @@ impl LocalImageLoader {
             return false;
         };
         while let Ok(result) = rx.try_recv() {
+            crate::preview_pane::image_perf::ImagePerf::emit(
+                crate::preview_pane::image_perf::ImagePerf::request(
+                    Arc::as_ptr(&self.inner) as usize,
+                    result.generation,
+                    result.revision,
+                ),
+                "result_collected",
+                &result.key.path,
+                format_args!("success={}", result.image.is_ok()),
+            );
             if result.generation != self.generation()
                 || result.revision != self.path_revision(&result.key.path)
             {
@@ -145,46 +157,6 @@ impl LocalImageLoader {
             self.request_decode_repaint(&key);
         }
         status
-    }
-
-    fn enqueue(&self, key: RequestKey) -> LocalImageStatus {
-        let Some(pool) = GlobalPool::get() else {
-            return LocalImageStatus::Failed("image loader unavailable".to_owned());
-        };
-        let generation = self.generation();
-        let revision = self.path_revision(&key.path);
-        let Ok(mut pending) = self.inner.pending.lock() else {
-            return LocalImageStatus::Failed("image loader unavailable".to_owned());
-        };
-        pending.insert(key.clone());
-        drop(pending);
-        let work = Work {
-            owner: Arc::downgrade(&self.inner),
-            result_tx: self.inner.result_tx.clone(),
-            key: key.clone(),
-            generation,
-            revision,
-        };
-        self.enqueue_to(&pool.request_tx, &key, work)
-    }
-
-    fn enqueue_to(
-        &self,
-        sender: &mpsc::SyncSender<Work>,
-        key: &RequestKey,
-        work: Work,
-    ) -> LocalImageStatus {
-        match sender.try_send(work) {
-            Ok(()) => LocalImageStatus::Pending,
-            Err(mpsc::TrySendError::Full(_)) => {
-                self.remove_pending(key);
-                LocalImageStatus::Pending
-            }
-            Err(mpsc::TrySendError::Disconnected(_)) => {
-                self.remove_pending(key);
-                LocalImageStatus::Failed("image loader unavailable".to_owned())
-            }
-        }
     }
 }
 

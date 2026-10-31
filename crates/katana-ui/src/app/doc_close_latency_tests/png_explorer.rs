@@ -7,10 +7,18 @@ use egui_kittest::Harness;
 use std::path::Path;
 use std::time::{Duration, Instant};
 
+#[path = "png_explorer/assertions.rs"]
+mod assertions;
 #[path = "png_explorer/fixture.rs"]
 mod fixture;
 #[path = "png_explorer/input.rs"]
 mod input;
+#[path = "png_explorer/mixed_directory_tests.rs"]
+mod mixed_directory_tests;
+#[path = "png_explorer/on_demand.rs"]
+mod on_demand;
+#[path = "png_explorer/png_directory_tests.rs"]
+mod png_directory_tests;
 use fixture::ExplorerImageOps;
 
 const LOAD_TIMEOUT: Duration = Duration::from_secs(15);

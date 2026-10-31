@@ -17,6 +17,7 @@ pub mod app;
 pub mod app_action;
 pub use app_action::AppAction;
 pub mod app_state;
+mod document_ui_perf;
 pub mod font_loader;
 mod html_preview_observer;
 pub mod html_renderer;

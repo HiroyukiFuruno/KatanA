@@ -2,6 +2,22 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.45] - 2026-10-30 10:47:40 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Update storage checks**: Check free space before downloading and extracting updates, and show the required and available capacity when storage is insufficient.
+- **Update error messages**: Distinguish installation failures from update checks, including storage and permission errors.
+- **Image controls**: Keep fullscreen at the upper right and place zoom and navigation controls below the image, without changing the following document layout. Continue an active drag outside the image area.
+
+### 🔧 System
+
+- Updated compatible dependencies, including the Markdown parser, and synchronized both lockfiles.
+
+### Known limitations
+
+- The reported initial image delay was not reproduced in the current diagnostic build. Its original cause remains unidentified; it is not considered resolved and will be followed up if it recurs.
+
 ## [0.22.44] - 2026-10-29 20:09:52 (UTC)
 
 ### 🐛 Bug Fixes

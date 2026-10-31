@@ -44,11 +44,23 @@ impl HtmlPreviewObserver {
 
 impl crate::shell::KatanaApp {
     pub(crate) fn sync_html_preview_observer(&mut self) {
-        let Some(path) = self.state.active_path() else {
+        let active = self.state.active_path();
+        let changing = crate::document_ui_perf::DocumentUiPerf::enabled()
+            && match (active.as_deref(), self.html_preview_observer.as_ref()) {
+                (Some(path), Some(observer)) => observer.target() != path,
+                (Some(path), None) => katana_core::workspace::TreeEntry::path_is_html(path),
+                (None, observer) => observer.is_some(),
+            };
+        let _timing = crate::document_ui_perf::DocumentUiPerf::begin(
+            "html_observer_sync",
+            active.as_deref(),
+            changing,
+        );
+        let Some(path) = active.as_ref() else {
             self.html_preview_observer = None;
             return;
         };
-        self.observe_html_preview_path(&path);
+        self.observe_html_preview_path(path);
     }
 
     pub(crate) fn observe_html_preview_path(&mut self, path: &Path) {

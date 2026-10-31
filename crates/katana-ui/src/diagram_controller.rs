@@ -75,8 +75,9 @@ impl DiagramControllerOps {
             (hovered, active)
         });
 
+        /* WHY: 手動配置したボタンで親のカーソルを戻すと、画像下の操作領域や後続内容が重なる。 */
         let response = if clickable {
-            ui.put(
+            ui.place(
                 rect,
                 egui::Button::image(
                     icon.image(IconSize::Large)
@@ -87,7 +88,7 @@ impl DiagramControllerOps {
                 .stroke(Self::control_stroke(is_hovered, is_active, false)),
             )
         } else {
-            ui.put(
+            ui.place(
                 rect,
                 egui::Button::image(
                     icon.image(IconSize::Large)

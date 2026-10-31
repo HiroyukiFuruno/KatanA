@@ -79,7 +79,15 @@ impl KatanaApp {
             return;
         }
         let path = doc.path.clone();
-        let content = match std::fs::read_to_string(&path) {
+        let content_result = {
+            let _timing = crate::document_ui_perf::DocumentUiPerf::begin(
+                "html_deferred_read",
+                Some(&path),
+                true,
+            );
+            std::fs::read_to_string(&path)
+        };
+        let content = match content_result {
             Ok(content) => content,
             Err(error) => {
                 tracing::warn!(path = %path.display(), %error, "HTML preview refresh read failed");
@@ -93,6 +101,11 @@ impl KatanaApp {
             .settings()
             .performance
             .resolved_diagram_concurrency();
+        let _timing = crate::document_ui_perf::DocumentUiPerf::begin(
+            "html_deferred_refresh",
+            Some(&path),
+            true,
+        );
         self.full_refresh_preview(&path, &content, true, concurrency);
     }
 }

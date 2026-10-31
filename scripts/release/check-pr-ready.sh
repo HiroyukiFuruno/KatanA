@@ -186,6 +186,14 @@ if [[ "$CURRENT_BRANCH" == "release/v0.22.44-public-release-evidence" &&
         --repository "${KATANA_RELEASE_REPO:-HiroyukiFuruno/KatanA}"
 fi
 
+# WHY: v45の公開後記録は実tag/run/公開identity証跡へ動的に結合し、製品sourceを変更させない。
+if [[ "$CURRENT_BRANCH" == "release/v0.22.45-public-release-evidence" &&
+      "$TARGET_VERSION" == "0.22.45" && "$TASK_GATE_MODE" == "post-release-evidence" ]]; then
+    python3 -B scripts/release/future_publication_records.py \
+        --root "$PWD" --branch "$CURRENT_BRANCH" --version "$TARGET_VERSION" \
+        --repository "${KATANA_RELEASE_REPO:-HiroyukiFuruno/KatanA}"
+fi
+
 # 6. Branch naming vs Target Version for Release branches
 if [[ "$CURRENT_BRANCH" =~ ^release/ ]]; then
     if ! BRANCH_VERSION=$(bash "$RELEASE_BRANCH_VERSION_SCRIPT" "$CURRENT_BRANCH" 2>/dev/null); then

@@ -25,6 +25,20 @@ PHASE_ALLOWLISTS = {
         "release-artifact-pending": {"1.3", "5.5", "5.6"},
         "post-release-evidence": {"5.6"},
     },
+    ("0.22.45", "v0-22-45-update-storage-preflight"): {
+        "strict": set(),
+        # WHY: 実装・reviewは必須とし、push終了と後続のPR・CI・公開証跡だけを各段階へ残す。
+        "pr-bootstrap": {"3.3", "3.4", "3.5", "3.6"},
+        "release-artifact-pending": {"3.5", "3.6"},
+        "post-release-evidence": {"3.6"},
+    },
+    ("0.22.45", "v0-22-45-build-identity"): {
+        "strict": set(),
+        # WHY: 3.2はmergeまでの集約項目のため、公開workflow開始時点では未完了のまま検査する。
+        "pr-bootstrap": {"3.1", "3.2", "3.3", "3.4", "3.5"},
+        "release-artifact-pending": {"3.2", "3.3", "3.4", "3.5"},
+        "post-release-evidence": {"3.5"},
+    },
 }
 
 

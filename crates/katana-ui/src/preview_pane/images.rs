@@ -37,11 +37,13 @@ impl ImageLogicOps {
             if state.texture.is_none() || state.texture_background != Some(preview_background) {
                 match loader.request(path, preview_background) {
                     super::local_image_loader::LocalImageStatus::Ready(image) => {
-                        state.texture = Some(ui.ctx().load_texture(
+                        let texture = ui.ctx().load_texture(
                             format!("local_image_{id}"),
                             image,
                             egui::TextureOptions::LINEAR,
-                        ));
+                        );
+                        loader.trace_texture_queued(path, texture.id());
+                        state.texture = Some(texture);
                         state.texture_background = Some(preview_background);
                         loader.release_active_image(path, preview_background);
                     }
@@ -157,6 +159,7 @@ impl ImageLogicOps {
             egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
             crate::theme_bridge::WHITE,
         );
+        loader.trace_mesh_added(path, texture_handle.id());
 
         if let Some(state) = viewer_state {
             #[cfg(feature = "screenshot-test-hooks")]
