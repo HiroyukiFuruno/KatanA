@@ -57,3 +57,7 @@ All executable source/test feedback is addressed. User manual QA is a nonblockin
 Automated implementation/validation and the normal review/commit/PR/merge/publication sequence are evidenced. No user-only operation or impossible manual acceptance is added as an Issue Close condition.
 
 PR402 draft evidence: normal push of 4b19a96af2ebe74b1976e3622ee7f2b71f318bd9 exited0 and remote matches. Complete REST and nested GraphQL review collection in `tmp/update-check-failure/pr402-review/current.json` recorded zero unresolved threads and the exact-head Codex completed/no-findings receipt. Ready/required CI/merge/publication are not yet complete.
+
+## Latest release direction — 2026-10-31
+
+The user stopped further investigation of the unreproduced PNG delay and requested release in the current state. Proceed with the published KRR0.4.23/KDV0.5.12 registry dependencies; adoption of their next releases is a follow-up. The remaining automatic quality gates and review sequence are unchanged. Native cold-process PNG measurements are recorded in `evidence/releases/v0.22.45/png-cold-cache-observation.json`; they do not establish the original cause or GPU completion. A discovered inactive-image cache-clear omission remains unimplemented and deferred, rather than being silently counted as fixed. Compatible ZIP9.2.0, encoding, logging and browser-opening updates passed116 targeted update tests and27 dependency-boundary tests; collect a new normal push, exact-head review and Ready CI before publication.

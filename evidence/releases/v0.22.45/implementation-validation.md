@@ -75,3 +75,14 @@
 - source4b19a96af2ebe74b1976e3622ee7f2b71f318bd9の通常pushがexit0で成功。正式pre-push内の既存checkを通り、remoteとのahead/behind0/0を確認しました。
 - Draft PR402を作成し、同HEADのCodex完了・findingsなしのreceiptを回収。REST reviews/review comments/issue commentsとGraphQL threads/nested commentsは全ページ取得。未解決thread0。
 - Draft段階のCIはSKIPPEDであり、合格とは扱いません。Ready後の全必須CIと公開は未完了です。実測未回収のPNG遅延を解消済みとしていません。
+
+## 2026-10-31の本人指示とネイティブPNGログ回収
+
+- 本人は診断版で対象フォルダーと画像を開き、アプリからキャッシュを消去したと報告。その後も再現せず、「現在の状態でリリース」と指示したため、追加の再現調査を中止しました。公開済みKRR0.4.23/KDV0.5.12を維持して先行公開し、次版の取り込みを次回へ回す方針を明示しました。
+- 同意を複製・編集・代行せず、同じ隔離profileの受諾済み状態を観測した後に検証を継続。検証用アプリだけを正常終了・再起動し、本体と採取プロセスのexit0を回収しました。
+- 新プロセス・アプリのcache directory0件から、原本PNG6件の初回実読込を回収。action消費からmesh投入まで18.401–63.349msでした。物理クリック開始やGPU表示完了の時間ではありません。OSのファイルキャッシュも消去していません。
+- この観測はce088c0fのバイナリと当時のlockに対応し、その後の互換依存更新を含む最終配布版の受入証明へ流用しません。
+- Office/HTMLの読込活動は記録しましたが、Officeのframe受信は最初のPNG選択より前であり、このrunが同時ロード中の遅延を否定する証拠にはなりません。30秒待ちの原因・解消は未確定です。公開可能な数値記録は `png-cold-cache-observation.json`、原本名を含むログはローカル診断資料として分離しました。
+- 明示的なcache消去でinactiveタブのLocalImageLoaderが残ることも判明しましたが、追加修正の前に本人が調査終了・現状公開を指示したため、未実装の後続事項として記録しました。30秒待ちの原因とは断定しません。
+- Windows検査のcp1252読込失敗は1862c7fでUTF-8を明示して修復。関連24検査と通常pushが成功。旧HEAD41d1のCIはWindows失敗・残るbuild取消であり、新HEADへ合格を流用しません。
+- 追加互換更新はencoding_rs/log/webbrowser/ZIP9.2.0と両lockのみ。KDV/KRRおよび旧ZIP経路を変更せず、ZIPの許可追加はregistryのkatana-core0.22.45→9.2.0の完全一致に限定しました。境界27検査と両実metadata検査が成功し、独立HighレビューP0/P1/P2なし。対象update回帰116件も成功。新しい正式push・current review・Ready CI・公開結果は別途回収します。

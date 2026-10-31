@@ -16,7 +16,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### Known limitations
 
-- Initial image delays in workspaces containing Office and HTML documents remain under investigation. Diagnostic logging does not establish that the reported delay has been resolved.
+- The reported initial image delay was not reproduced in the current diagnostic build. Its original cause remains unidentified; it is not considered resolved and will be followed up if it recurs.
 
 ## [0.22.44] - 2026-10-29 20:09:52 (UTC)
 
