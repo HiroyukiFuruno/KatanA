@@ -1,9 +1,11 @@
 """Keep Windows cache observations separate from quality/reuse decisions."""
 
 from pathlib import Path
+import tempfile
 import unittest
 
 from test_ci_resource_contract import current_test_job, step_block
+from action_pin_fixture import PIN_CASES, action_pin_variants, prepare_pin_fixture, run_pin_contract
 
 
 class WindowsCiObservationContractTest(unittest.TestCase):
@@ -11,7 +13,10 @@ class WindowsCiObservationContractTest(unittest.TestCase):
         job = current_test_job()
         setup = step_block(job, "Install Python for Windows inventory")
         self.assertIn("runner.os == 'Windows'", setup)
-        self.assertIn("actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97", setup)
+        self.assertRegex(
+            setup,
+            r"(?m)^        uses:[ \t]+actions/setup-python@[0-9a-f]{40}(?:[ \t]+#.*)?[ \t]*$",
+        )
         self.assertIn("python-version: '3.14'", setup)
         tests = step_block(job, "Verify native inventory pipes (Windows)")
         self.assertIn("runner.os == 'Windows'", tests)
@@ -63,6 +68,24 @@ class WindowsCiObservationContractTest(unittest.TestCase):
         workflow = (Path(__file__).resolve().parents[2]
                     / ".github/workflows/test-and-build.yml").read_text(encoding="utf-8")
         self.assertIn("!github.event.pull_request.draft", workflow)
+
+    def test_action_pins_allow_rotation_and_reject_mutable_or_spoofed_refs(self):
+        root = Path(__file__).resolve().parents[2]
+        workflow = (root / ".github/workflows/test-and-build.yml").read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory(prefix="katana-action-pins-") as temporary:
+            fixture = Path(temporary)
+            target = prepare_pin_fixture(root, fixture)
+            for case in PIN_CASES:
+                self.assert_pin_case(fixture, target, workflow, case)
+
+    def assert_pin_case(self, fixture, target, workflow, case):
+        name, action, revisions, script, test, requirements = case
+        original = step_block(current_test_job(), name)
+        for label, step, accepted in action_pin_variants(original, action, revisions, requirements):
+            with self.subTest(action=action, variant=label):
+                target.write_text(workflow.replace(original, step, 1), encoding="utf-8")
+                result = run_pin_contract(fixture, script, test)
+                self.assertEqual(result.returncode == 0, accepted, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":

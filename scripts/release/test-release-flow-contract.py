@@ -413,8 +413,11 @@ class WorkflowContractTests(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/test-and-build.yml").read_text(encoding="utf-8")
         self.assertNotIn("/releases/latest/download/cargo-llvm-cov", workflow)
         self.assertLess(workflow.index("- name: Install coverage tool\n"), workflow.index("- name: Run coverage\n"))
-        install = workflow.split("- name: Install coverage tool\n", 1)[1].split("- name: Run coverage\n", 1)[0]
-        self.assertIn("uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91", install)
+        install = workflow.split("- name: Install coverage tool\n", 1)[1].split("\n      - ", 1)[0]
+        self.assertRegex(
+            install,
+            r"(?m)^        uses:[ \t]+taiki-e/install-action@[0-9a-f]{40}(?:[ \t]+#.*)?[ \t]*$",
+        )
         self.assertIn("tool: cargo-llvm-cov@0.9.1", install)
         self.assertIn("fallback: none", install)
         condition = "if: runner.os == 'macOS' && github.event_name == 'pull_request'"
