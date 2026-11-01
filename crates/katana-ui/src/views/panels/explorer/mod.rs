@@ -7,6 +7,9 @@ pub mod drag;
 pub mod empty;
 pub mod file_entry;
 pub mod file_entry_paint;
+mod filter_pattern;
+#[cfg(test)]
+mod filter_tests;
 pub mod header;
 mod header_filter;
 pub mod header_menu;
