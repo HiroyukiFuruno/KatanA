@@ -21,3 +21,7 @@
 ## 判定
 
 差分レビューはPASS。通常commit/push、必須CI、公開後asset確認はtasks.mdで実結果を回収し、未実施を成功扱いしない。
+
+## Draft後の再レビュー
+
+CodexのWindows path P2と独立reviewのUnix filename P2を採用した。OSのMAIN_SEPARATORでwildcard生成だけを切り替え、通常literal/regexの既存挙動を保持。28回帰が成功し、High再reviewで残指摘なし。GitHub threadは修正push後に個別返信・resolveして再取得する。

@@ -1,7 +1,7 @@
 use super::types::ExplorerLogicOps;
 use crate::app_state::SearchState;
 use katana_core::workspace::TreeEntry;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[test]
 fn regex_filter_matches_relative_paths_and_preserves_ancestors() {
@@ -49,6 +49,21 @@ fn regex_mode_keeps_regex_syntax_and_marks_wildcard_regex_invalid() {
     ExplorerLogicOps::update_search_filter_cache(&mut search, root, &entries, 1);
     assert!(search.filter_cache.is_none());
     assert!(super::filter_pattern::FilterPattern::compile(&search.filter).is_err());
+}
+
+#[test]
+fn regex_mode_preserves_raw_backslash_patterns() {
+    let root = Path::new("");
+    let file = PathBuf::from(r"assets\icon.png");
+    let entries = vec![TreeEntry::File { path: file.clone() }];
+    let mut search = SearchState::new();
+    search.filter_enabled = true;
+    search.filter.query = r"assets\\icon\.png$".into();
+    search.filter.use_regex = true;
+
+    ExplorerLogicOps::update_search_filter_cache(&mut search, root, &entries, 1);
+
+    assert!(search.filter_cache.as_ref().unwrap().1.contains(&file));
 }
 
 #[test]

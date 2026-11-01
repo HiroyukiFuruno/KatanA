@@ -13,7 +13,7 @@
 - upload直前に実contextの `max_texture_side` を参照し、超過する画像だけ縦横比を維持して縮小する。画像を拒否する方式では既存タブを表示できないため採用しない。
 - 元の寸法を表示状態とtexture cacheへ保持し、画面上のサイズ・比率・操作を変えない。元画像は変更しない。
 - 正規表現のエラー色は実際の照合で使用するpattern生成と一致させる。既存の不正入力時の全表示を維持する。
-- ユーザーの実入力 `*.png` は通常検索のwildcardとして受け付ける。`*` を含む場合だけ1 path segment内の任意文字へ変換し、basenameのみなら全階層のbasenameへ、`/` を含むなら相対path全体へ一致させる。他の通常文字は従来のsubstring照合、regex modeは標準構文のままとする。
+- ユーザーの実入力 `*.png` は通常検索のwildcardとして受け付ける。`*` を含む場合だけ1 path segment内の任意文字へ変換し、basenameのみなら全階層のbasenameへ、OSのパス区切りを含むなら相対path全体へ一致させる。区切りはUnixでは `/`、Windowsでは `/` とbackslashとし、Unixのbackslashをfilename文字として保持する。他の通常文字は従来のsubstring照合、regex modeは標準構文のままとする。
 - 一時復旧では36tabsと履歴を保持しactive_pathだけを別の既存タブへ切り替える。公開修正版を直接インストールした後に元PNGをactiveへ戻し、起動検証する。
 - 先に回帰テストを失敗させ、その後に修正し、実アプリ起動も検証する。
 

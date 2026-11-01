@@ -1,7 +1,7 @@
 use super::types::ExplorerLogicOps;
 use crate::app_state::SearchState;
 use katana_core::workspace::TreeEntry;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[test]
 fn wildcard_filter_matches_png_basenames_and_preserves_parent_directories() {
@@ -121,4 +121,60 @@ fn wildcard_filter_respects_negation_case_and_literal_special_characters() {
     let visible = &search.filter_cache.as_ref().unwrap().1;
     assert!(visible.contains(&bracketed));
     assert!(!visible.contains(&plain));
+}
+
+#[cfg(unix)]
+#[test]
+fn unix_wildcards_treat_backslash_as_a_filename_character() {
+    let root = Path::new("");
+    let filename = PathBuf::from(r"a\b.png");
+    let entries = vec![TreeEntry::File {
+        path: filename.clone(),
+    }];
+    let mut search = SearchState::new();
+    search.filter_enabled = true;
+
+    search.filter.query = "a*.png".into();
+    ExplorerLogicOps::update_search_filter_cache(&mut search, root, &entries, 1);
+    assert!(search.filter_cache.as_ref().unwrap().1.contains(&filename));
+
+    search.filter.query = "b*.png".into();
+    ExplorerLogicOps::update_search_filter_cache(&mut search, root, &entries, 1);
+    assert!(!search.filter_cache.as_ref().unwrap().1.contains(&filename));
+
+    search.filter.query = "assets/".into();
+    ExplorerLogicOps::update_search_filter_cache(&mut search, root, &entries, 1);
+    assert!(!search.filter_cache.as_ref().unwrap().1.contains(&filename));
+}
+
+#[cfg(windows)]
+#[test]
+fn wildcard_cache_matches_windows_joined_tree_paths() {
+    let root = PathBuf::from(r"C:\workspace");
+    let assets = root.join("assets");
+    let direct = assets.join("icon.png");
+    let nested = assets.join("nested").join("icon.png");
+    let entries = vec![TreeEntry::Directory {
+        path: assets.clone(),
+        children: vec![
+            TreeEntry::File {
+                path: direct.clone(),
+            },
+            TreeEntry::Directory {
+                path: assets.join("nested"),
+                children: vec![TreeEntry::File {
+                    path: nested.clone(),
+                }],
+            },
+        ],
+    }];
+    let mut search = SearchState::new();
+    search.filter_enabled = true;
+    search.filter.query = "assets/*.png".into();
+
+    ExplorerLogicOps::update_search_filter_cache(&mut search, &root, &entries, 1);
+    let visible = &search.filter_cache.as_ref().unwrap().1;
+    assert!(visible.contains(&assets));
+    assert!(visible.contains(&direct));
+    assert!(!visible.contains(&nested));
 }

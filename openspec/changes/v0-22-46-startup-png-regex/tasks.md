@@ -82,7 +82,7 @@ OpenSpec は `./scripts/openspec`、検証は既存の `just` ターゲットを
 ## 5. Final Verification & Release Work
 
 - [x] 5.1 self-review、Markdown整合、CHANGELOG日英同期、version同期。
-- [ ] 5.2 通常pushでpre-pushを通しDraft PRを作成する。
+- [x] 5.2 通常pushでpre-pushを通しDraft PRを作成する。
 - [ ] 5.3 reviewを実行・取得し、指摘修正・thread reply/resolve・P0/P1ゼロを確認する。
 - [ ] 5.4 Ready昇格、required checks成功後にmergeする。
 - [ ] 5.5 GitHub Release成果物を検証し、既存appを公開版へ直接更新して元PNGの自動復元を検証した後、OpenSpecをarchiveする。
@@ -116,3 +116,10 @@ OpenSpec は `./scripts/openspec`、検証は既存の `just` ターゲットを
 - releaseゲート最終: postpublication-final.log 7件成功。独立review再確認でP2解消、残P0/P1/P2なし。3.2未完を拒否するphase regressionを維持。
 
 - preflight初回はsafe ZIP9.2.0→local katana-core0.22.46の未登録で停止。core/srcは公開v0.22.45から完全同一（git diff exit0）。既存safe edgeへexact1組だけ追加し、未知v0.22.47/別manifest/git source/orphan拒否を維持。zip-edge-red.log 1error→zip-edge-green.log 27件成功。独立High reviewでP0/P1/P2なし。just supply-chainは実3manifestのadvisories/bans/licenses/sourcesを実行してexit0。旧ZIP経路・advisory ID・2026-11-07期限は変更しない。
+
+## Draft PRレビュー
+
+- [/] Codex P2: Windowsの相対pathはbackslashのため、icon*.png / assets/*.pngの照合を両区切りで成立させる。PR407 thread PRRT_kwDORm09y86yYr30、comment4434972135。
+- 通常push exit0、8コミットVerified、Draft PR407を作成し@codex review実行・取得済み。Draft由来SKIPPEDはCI成功扱いしない。
+
+- Codex Windows P2と独立reviewのUnix filename互換P2を修正。MAIN_SEPARATORをprivate boundaryとして、Unixは/だけ・Windowsは両sepでglobを生成。通常literal/regexは無変更。portable両OSの実Regex + Unix cache + cfgWindows nativePathJoin/cacheを回帰。windows-glob-unix-red.logでRED、windows-glob-unix-green.log Explorer28成功。独立High再reviewで残P0/P1/P2なし。修正pushとthread reply/resolveは次段で回収する。

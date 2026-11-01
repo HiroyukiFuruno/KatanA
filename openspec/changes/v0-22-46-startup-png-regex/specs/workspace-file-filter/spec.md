@@ -16,7 +16,7 @@ KatanA MUST 通常検索・正規表現・大小文字・単語一致の有効�
 
 ### Requirement: 通常検索のファイル名ワイルドカード
 
-KatanA SHALL 通常検索で `*` を含む入力を1 path segment内の任意文字として照合する。`/` を含まない入力は各階層のbasename、含む入力はワークスペース相対path全体に一致させる。`*` を含まない通常文字列と標準正規表現モードの動作は維持する。
+KatanA SHALL 通常検索で `*` を含む入力を1 path segment内の任意文字として照合する。パス区切りを含まない入力は各階層のbasename、含む入力はワークスペース相対path全体に一致させる。区切りはUnixでは `/`、Windowsでは `/` とbackslashとする。Unixのbackslashはfilename文字として保持する。`*` を含まない通常文字列と標準正規表現モードの動作は維持する。
 
 #### Scenario: PNGだけを表示する
 
