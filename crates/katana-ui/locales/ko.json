@@ -482,6 +482,7 @@
     "unpin": "고정 해제",
     "restore_closed": "닫은 탭 다시 열기",
     "group_name_placeholder": "그룹 이름",
+    "group_identity_duplicate": "같은 이름과 색상의 그룹이 이미 있습니다.",
     "create_group_button": "생성",
     "close_group": "그룹 닫기",
     "ungroup": "그룹 해제",

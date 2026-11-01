@@ -3,13 +3,7 @@ use crate::state::document::TabGroup;
 use eframe::egui;
 
 const GROUP_POPUP_MIN_WIDTH: f32 = 200.0;
-const PALETTE_SIZE: f32 = 16.0;
-const PALETTE_RADIUS: f32 = 8.0;
-const PALETTE_STROKE: f32 = 2.0;
 const POPUP_SPACING: f32 = 4.0;
-const GROUP_COLORS: [&str; 7] = [
-    "#4A90D9", "#D94A4A", "#4AD97A", "#D9A04A", "#9B59B6", "#F1C40F", "#1ABC9C",
-];
 
 pub(super) use super::group_header_popup_state::GroupHeaderPopupState;
 
@@ -21,6 +15,7 @@ enum RenameDecision {
 
 pub(crate) struct GroupHeaderPopup<'a> {
     pub g: &'a TabGroup,
+    pub groups: &'a [TabGroup],
     pub inline_rename_group: Option<&'a String>,
     pub tab_action: &'a mut Option<AppAction>,
     pub popup_id: egui::Id,
@@ -37,13 +32,39 @@ impl<'a> GroupHeaderPopup<'a> {
         Self::store_name_draft(ui.ctx(), state.name_draft_id, &draft);
         let keyboard_decision = Self::keyboard_decision(ui, &response, &draft);
         ui.add_space(POPUP_SPACING);
-        self.render_palette(ui);
+        let mut color = Self::load_name_draft(ui.ctx(), state.color_draft_id, &self.g.color_hex);
+        self.render_palette(ui, &mut color);
+        Self::store_name_draft(ui.ctx(), state.color_draft_id, &color);
+        let conflict = self.is_duplicate(&draft, &color);
+        if conflict {
+            ui.colored_label(
+                ui.visuals().error_fg_color,
+                &i18n.tab.group_identity_duplicate,
+            );
+        }
         ui.add_space(POPUP_SPACING);
         let button_decision =
             Self::render_completion_buttons(ui, &i18n.action.confirm, &i18n.action.cancel, &draft);
-        self.finish_rename(ui, state, button_decision.or(keyboard_decision));
+        let decision = button_decision.or(keyboard_decision);
+        if !conflict || matches!(decision, Some(RenameDecision::Cancel)) {
+            self.finish_rename(ui, state, decision, color);
+        }
         self.render_group_actions(ui, i18n);
         ui.min_rect()
+    }
+
+    fn is_duplicate(&self, name: &str, color: &str) -> bool {
+        !crate::state::group_identity::GroupIdentity::same_identity(
+            &self.g.name,
+            &self.g.color_hex,
+            name,
+            color,
+        ) && crate::state::group_identity::GroupIdentity::conflicts(
+            self.groups,
+            Some(&self.g.id),
+            name,
+            color,
+        )
     }
 
     fn load_name_draft(ctx: &egui::Context, id: egui::Id, saved_name: &str) -> String {
@@ -115,58 +136,27 @@ impl<'a> GroupHeaderPopup<'a> {
         ui: &mut egui::Ui,
         state: GroupHeaderPopupState,
         decision: Option<RenameDecision>,
+        color: String,
     ) {
         let Some(decision) = decision else {
             return;
         };
-        let new_name = match decision {
-            RenameDecision::Confirm(name) => Some(name),
-            RenameDecision::Cancel => None,
-        };
-        *self.tab_action = Some(AppAction::FinishInlineRename {
-            group_id: self.g.id.clone(),
-            new_name,
-        });
-        state.clear_editor_state(ui.ctx());
-        egui::Popup::close_id(ui.ctx(), state.popup_id);
-    }
-
-    fn render_palette(&mut self, ui: &mut egui::Ui) {
-        let mut selected = None;
-        let current = self.g.color_hex.clone();
-        crate::widgets::AlignCenter::new()
-            .shrink_to_fit(true)
-            .content(|ui| selected = Self::render_palette_chips(ui, &current))
-            .show(ui);
-        if let Some(new_color) = selected {
-            *self.tab_action = Some(AppAction::RecolorTabGroup {
+        let cancel = matches!(decision, RenameDecision::Cancel);
+        let action = match decision {
+            RenameDecision::Confirm(name) => AppAction::FinishInlineRename {
                 group_id: self.g.id.clone(),
-                new_color,
-            });
+                new_identity: Some((name, color)),
+            },
+            RenameDecision::Cancel => AppAction::FinishInlineRename {
+                group_id: self.g.id.clone(),
+                new_identity: None,
+            },
+        };
+        *self.tab_action = Some(action);
+        if cancel {
+            state.clear_editor_state(ui.ctx());
+            egui::Popup::close_id(ui.ctx(), state.popup_id);
         }
-    }
-
-    fn render_palette_chips(ui: &mut egui::Ui, current: &str) -> Option<String> {
-        GROUP_COLORS
-            .into_iter()
-            .find(|color| Self::render_palette_chip(ui, color, current))
-            .map(str::to_owned)
-    }
-
-    fn render_palette_chip(ui: &mut egui::Ui, color: &str, current: &str) -> bool {
-        let color32 = egui::Color32::from_hex(color).unwrap_or_default();
-        let (rect, response) =
-            ui.allocate_exact_size(egui::vec2(PALETTE_SIZE, PALETTE_SIZE), egui::Sense::click());
-        ui.painter()
-            .circle_filled(rect.center(), PALETTE_RADIUS, color32);
-        if current == color {
-            ui.painter().circle_stroke(
-                rect.center(),
-                PALETTE_RADIUS,
-                egui::Stroke::new(PALETTE_STROKE, ui.visuals().text_color()),
-            );
-        }
-        response.clicked()
     }
 
     fn render_group_actions(&mut self, ui: &mut egui::Ui, i18n: &crate::i18n::I18nMessages) {

@@ -482,6 +482,7 @@
     "unpin": "ピン留め解除",
     "restore_closed": "閉じたタブを復元",
     "group_name_placeholder": "グループ名",
+    "group_identity_duplicate": "同じ名前と色のグループが既にあります。",
     "create_group_button": "作成",
     "close_group": "グループを閉じる",
     "ungroup": "グループを解除",

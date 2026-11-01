@@ -482,6 +482,7 @@
     "unpin": "Abpinnen",
     "restore_closed": "Geschlossenen Tab wiederherstellen",
     "group_name_placeholder": "Gruppe",
+    "group_identity_duplicate": "Eine Gruppe mit diesem Namen und dieser Farbe existiert bereits.",
     "create_group_button": "Erstellen",
     "close_group": "Gruppe schließen",
     "ungroup": "Gruppe auflösen",

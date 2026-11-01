@@ -14,6 +14,7 @@ const GROUP_HEADER_FONT_SIZE: f32 = 11.0;
 
 pub(crate) struct GroupHeader<'a> {
     pub g: &'a TabGroup,
+    pub groups: &'a [TabGroup],
     pub inline_rename_group: Option<&'a String>,
 }
 
@@ -135,6 +136,7 @@ impl<'a> GroupHeader<'a> {
             .show(|ui| {
                 super::group_header_popup::GroupHeaderPopup {
                     g: self.g,
+                    groups: self.groups,
                     inline_rename_group: rename,
                     tab_action,
                     popup_id: state.popup_id,
@@ -157,7 +159,7 @@ impl<'a> GroupHeader<'a> {
         {
             *tab_action = Some(AppAction::FinishInlineRename {
                 group_id: self.g.id.clone(),
-                new_name: None,
+                new_identity: None,
             });
         }
     }

@@ -1,5 +1,5 @@
 use super::GroupHeader;
-use crate::app_state::AppAction;
+use crate::app::action::ActionOps;
 use crate::state::document::TabGroup;
 use eframe::egui;
 
@@ -18,22 +18,26 @@ const TEST_VIEWPORT: egui::Vec2 = egui::vec2(640.0, 240.0);
 #[test]
 fn closed_header_popup_removes_visible_controls() {
     use egui_kittest::kittest::Queryable;
+    let mut app = super::tests::make_app();
+    app.state.document.tab_groups.push(group());
+    app.state.layout.inline_rename_group = Some("visible_test".into());
     let mut harness = egui_kittest::Harness::builder()
         .with_size(TEST_VIEWPORT)
         .build_ui_state(
-            |ui, editing: &mut bool| {
+            |ui, app: &mut crate::shell::KatanaApp| {
                 let group = group();
                 let mut action = None;
                 GroupHeader {
                     g: &group,
-                    inline_rename_group: editing.then_some(&group.id),
+                    groups: std::slice::from_ref(&group),
+                    inline_rename_group: app.state.layout.inline_rename_group.as_ref(),
                 }
                 .show(ui, &mut action);
-                if matches!(action, Some(AppAction::FinishInlineRename { .. })) {
-                    *editing = false;
+                if let Some(action) = action {
+                    app.process_action(ui.ctx(), action);
                 }
             },
-            true,
+            app,
         );
     for _ in 0..3 {
         harness.step();
