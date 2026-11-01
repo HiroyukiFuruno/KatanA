@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [master]
     paths:
@@ -15,7 +16,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'gate' }}
   cancel-in-progress: true
 
 # Restrict default GITHUB_TOKEN permissions (Task 7.3 hardening).
@@ -31,7 +32,9 @@ jobs:
   test:
     name: Test and Build
     # WHY: Draft PRでは重い検査を起動せず、pushとReady PRだけを実行する。
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.draft)
+    if: >-
+      github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.draft) ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
     # 全テストを維持し、巨大なOffice/V8依存のデバッグ情報だけでrunnerを満杯にしない。
     env:
       RUST_TEST_THREADS: 2
@@ -146,6 +149,7 @@ jobs:
           python3 -B -m unittest discover -s scripts/ci -p test_native_profiler_job_contract.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_observe_ci_command.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_windows_ci_observation_contract.py -v
+          python3 -B -m unittest discover -s scripts/ci -p test_compare_windows_cache_measurements.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_windows_compiled_cache_contract.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_windows_shell_entry_contract.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_observe_compiled_cache.py -v
@@ -168,7 +172,8 @@ jobs:
         shell: bash
         run: |
           if [[ "${RUNNER_OS}" == "Windows" ]]; then
-            export KATANA_GUARD_BASH_EXECUTABLE="$(cygpath -w "$BASH")"
+            KATANA_GUARD_BASH_EXECUTABLE="$(cygpath -w "$BASH")"
+            export KATANA_GUARD_BASH_EXECUTABLE
           fi
           python3 -B -m unittest discover -s scripts/ci -p 'test_cargo_*guard.py' -v
 
@@ -238,14 +243,14 @@ jobs:
           -- --exact --nocapture'
 
       - name: Test screenshot harness contracts
-        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
         shell: bash
         env:
           CARGO_TARGET_DIR: target/screenshot-harness
         run: cargo test --locked --release --manifest-path scripts/screenshot/Cargo.toml
 
       - name: Run multi-format headless acceptance
-        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
         shell: bash
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
@@ -259,7 +264,7 @@ jobs:
             --output "target/multi-format-headless-${{ runner.os }}"
 
       - name: Upload multi-format headless evidence
-        if: always() && github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        if: always() && (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: multi-format-headless-${{ runner.os }}
@@ -267,14 +272,14 @@ jobs:
           if-no-files-found: error
 
       - name: Install coverage tool
-        if: runner.os == 'macOS' && github.event_name == 'pull_request'
+        if: runner.os == 'macOS' && (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
         uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: cargo-llvm-cov@0.9.1
           fallback: none
 
       - name: Run coverage
-        if: runner.os == 'macOS' && github.event_name == 'pull_request'
+        if: runner.os == 'macOS' && (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
         env:
           KATANA_TEST_INVENTORY_DIRECTORY: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/coverage
         run: |
@@ -295,7 +300,7 @@ jobs:
 
   lint:
     name: Lint
-    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
     strategy:
       fail-fast: false
       matrix:
@@ -360,7 +365,7 @@ jobs:
 
   supply-chain:
     name: Dependency Supply Chain
-    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -377,7 +382,7 @@ jobs:
   # CodeQL security scanning (Task 7.2 / 7.3).
   codeql:
     name: CodeQL Security Scan
-    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     permissions:
       security-events: write  # Required to upload SARIF results.

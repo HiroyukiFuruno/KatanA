@@ -5,7 +5,8 @@ import tempfile
 import unittest
 
 from test_ci_resource_contract import current_test_job, step_block
-from action_pin_fixture import PIN_CASES, action_pin_variants, prepare_pin_fixture, run_pin_contract
+from action_pin_fixture import (PIN_CASES, action_pin_variants, inventory_installer_variants,
+                                prepare_pin_fixture, run_pin_contract)
 
 
 class WindowsCiObservationContractTest(unittest.TestCase):
@@ -86,6 +87,22 @@ class WindowsCiObservationContractTest(unittest.TestCase):
                 target.write_text(workflow.replace(original, step, 1), encoding="utf-8")
                 result = run_pin_contract(fixture, script, test)
                 self.assertEqual(result.returncode == 0, accepted, result.stdout + result.stderr)
+
+    def test_inventory_installers_reject_decoys_and_allow_atomic_rotation(self):
+        root = Path(__file__).resolve().parents[2]
+        names = ("release-readiness.yml", "build-and-release.yml", "test-and-build.yml")
+        workflows = {name: (root / ".github/workflows" / name).read_text() for name in names}
+        with tempfile.TemporaryDirectory(prefix="katana-inventory-pin-") as temporary:
+            fixture = Path(temporary)
+            prepare_pin_fixture(root, fixture)
+            for label, variants, accepted in inventory_installer_variants(workflows):
+                with self.subTest(variant=label):
+                    for name, contents in variants.items():
+                        (fixture / ".github/workflows" / name).write_text(contents)
+                    result = run_pin_contract(
+                        fixture, "scripts/release/test_native_test_inventory_wiring.py",
+                        "InventoryWiringTests.test_tool_installers_share_the_pinned_coverage_compatible_revision")
+                    self.assertEqual(result.returncode == 0, accepted, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":

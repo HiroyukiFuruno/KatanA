@@ -70,6 +70,11 @@ on:
         required: false
         default: false
         type: boolean
+      cleanup_remote:
+        description: 'Opt in to guarded deletion of the published release branch'
+        required: false
+        default: false
+        type: boolean
 
 env:
   CARGO_INCREMENTAL: 0
@@ -80,6 +85,9 @@ jobs:
   preflight:
     name: Preflight Check
     runs-on: macos-latest
+    permissions:
+      contents: write
+      actions: write
     # WHY: For PR merges, only trigger when a release/v* branch is merged into master
     if: |
       github.actor == 'HiroyukiFuruno' && (
@@ -151,9 +159,48 @@ jobs:
         id: bump
         # WHY: A failed artifact publication must be replayable without mutating its merged source.
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.reuse_existing_version != 'true')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUMP_VERSION: ${{ steps.version.outputs.version_bare }}
         run: |
-          ./scripts/release/bump-version.sh "${{ steps.version.outputs.version_bare }}"
+          ./scripts/release/bump-version.sh "$BUMP_VERSION"
           echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Record manual bump transition
+        id: manual_bump_transition
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.reuse_existing_version != 'true'
+        env:
+          TRANSITION_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          python3 -B scripts/release/manual_bump_transition.py --version "$TRANSITION_VERSION" --record "$RUNNER_TEMP/transition.json"
+
+      - name: Verify manual release source CI
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REUSE_EXISTING_VERSION: ${{ github.event.inputs.reuse_existing_version }}
+        run: |
+          SOURCE_SHA=$(git rev-parse HEAD)
+          OPTIONS=()
+          if [[ "$REUSE_EXISTING_VERSION" != 'true' ]]; then
+            OPTIONS=(--dispatch-if-missing)
+          fi
+          scripts/release/verify-version-bump-ci.sh "$SOURCE_SHA" --required "$RUNNER_TEMP/manual-ci-receipt.json" "${OPTIONS[@]}"
+      - name: Preserve manual source CI receipt
+        if: always() && github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: manual-source-ci-receipt
+          path: ${{ runner.temp }}/manual-ci-receipt.json
+          if-no-files-found: error
+
+      - name: Upload manual bump transition
+        if: steps.manual_bump_transition.outputs.present == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: manual-bump-transition-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/transition.json
+          if-no-files-found: error
 
       - name: Run release preflight logic
         # WHY: check-pr-ready が preflight を内包するため、同じ公開検査を二重実行しない。
@@ -839,7 +886,17 @@ jobs:
           VERSION: ${{ needs.preflight.outputs.version_bare }}
           PUBLISHED: ${{ needs.preflight.outputs.commit_sha }}
           SOURCE_PR: ${{ github.event.pull_request.number }}
+          CLEANUP_REMOTE: ${{ github.event.inputs.cleanup_remote }}
         run: |
+          case "$CLEANUP_REMOTE" in
+            ""|false)
+              python3 -B scripts/release/record-skipped-cleanup.py --controller "$PWD" \
+                --repository "$REPOSITORY" --version "$VERSION" --published "$PUBLISHED"
+              exit 0
+              ;;
+            true) ;;
+            *) echo "Invalid cleanup_remote input" >&2; exit 2 ;;
+          esac
           PR_OPTIONS=()
           if [[ -n "$SOURCE_PR" ]]; then
             PR_OPTIONS=("--pull-request" "$SOURCE_PR")

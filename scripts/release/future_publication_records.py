@@ -25,6 +25,10 @@ EVIDENCE = "evidence/releases/" + TAG + "/"
 CHANGES = {"v0-22-45-update-storage-preflight": "update-storage-preflight",
            "v0-22-45-build-identity": "generated-release-identity"}
 POLICIES = {
+    "0.22.47": {"v0-22-47-katana-contained-fixes": (
+        "tab-group-dialog-interaction", "multi-format-document-preview",
+        "generated-release-identity", "release-ci-integrity", "canonical-diagram-reference",
+        "oss-repository-security", "auto-update")},
     "0.22.45": {change: (capability,) for change, capability in CHANGES.items()},
     "0.22.46": {"v0-22-46-startup-png-regex": ("local-asset-preview", "workspace-file-filter")},
 }
@@ -82,7 +86,8 @@ def verify_scope(root, source, version=VERSION):
     git(root, "merge-base", "--is-ancestor", source, "HEAD")
     require(not git(root, "diff", "--name-only", "-z", source, "HEAD", "--", *SOURCE_ROOTS),
             "published production tree must remain unchanged")
-    validate_worktree_clean(git(root, "diff", "--name-only", "-z", "HEAD"),
+    validate_worktree_clean(git(root, "diff", "--name-only", "-z")
+                            + git(root, "diff", "--cached", "--name-only", "-z", "HEAD"),
                             git(root, "ls-files", "--others", "--exclude-standard", "-z"))
     inventory = set(paths(git(root, "ls-tree", "-r", "--name-only", "-z", source, "--",
                               *(f"openspec/changes/{change}" for change in changes))))

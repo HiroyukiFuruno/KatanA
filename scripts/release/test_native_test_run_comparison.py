@@ -61,6 +61,8 @@ class RunComparisonTests(unittest.TestCase):
         self.assertEqual(result["coverage_only_candidates"], [])
         self.assertFalse(result["execution_equivalent"])
         self.assertFalse(result["reuse_authorized"])
+        self.assertFalse(result["inventory_complete"])
+        self.assertEqual(len(result["inputs_sha256"]), 64)
         self.assertIn("doctest inventory not captured", result["reasons"])
 
     def test_skip_and_ignored_selection_are_not_counted_as_execution(self) -> None:
@@ -148,6 +150,21 @@ class RunComparisonTests(unittest.TestCase):
                 self.assertFalse(result["selection_comparison_available"])
                 self.assertFalse(result["execution_equivalent"])
                 self.assertFalse(result["reuse_authorized"])
+
+    def test_dimensions_report_unknown_and_observed_differences_without_reuse(self):
+        normal = manifest()
+        coverage = manifest("coverage", ("--skip", "fixture"))
+        coverage["inputs"]["environment"]["RUST_TEST_THREADS"] = "1"
+        result = self.compare(normal, [coverage])
+        dimensions = result["dimensions"]
+        self.assertEqual(set(dimensions), {"doctest", "ignored", "fixture", "serial", "environment"})
+        self.assertEqual(dimensions["doctest"]["status"], "unknown")
+        self.assertEqual(dimensions["ignored"]["status"], "unknown")
+        for key in ("fixture", "serial", "environment"):
+            self.assertEqual(dimensions[key]["status"], "different")
+        self.assertTrue(all(value["evidence"] for value in dimensions.values()))
+        self.assertFalse(result["inventory_complete"])
+        self.assertFalse(result["reuse_authorized"])
 
 
 if __name__ == "__main__":

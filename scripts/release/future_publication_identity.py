@@ -54,7 +54,7 @@ def collect(root: Path, work: Path, run_id: str, run_attempt: str, version: str 
     candidate = decode(read(manifests / "artifacts-identity-macos/identity.json"))
     actual_version, source = publication_candidate(candidate, run_id, run_attempt, version)
     try:
-        selected, attempt, admitted_source = admit(source, actual_version, work / "run-admission.json")
+        selected, attempt, admitted_source = admit(source, actual_version, work / "run-admission.json", root)
     except ValueError as error:
         raise ValueError(f"publication identity ineligible: {error}") from error
     require((str(selected), str(attempt), admitted_source) == (run_id, run_attempt, source),

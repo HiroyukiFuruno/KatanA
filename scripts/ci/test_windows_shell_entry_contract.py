@@ -27,10 +27,11 @@ class WindowsShellEntryContractTests(unittest.TestCase):
 
     def test_cargo_guard_receives_the_running_git_bash_and_keeps_all_tests(self):
         step = step_block(current_test_job(), "Verify Cargo sweep safety contract")
-        binding = 'export KATANA_GUARD_BASH_EXECUTABLE="$(cygpath -w "$BASH")"'
+        binding = 'KATANA_GUARD_BASH_EXECUTABLE="$(cygpath -w "$BASH")"'
         command = "python3 -B -m unittest discover -s scripts/ci -p 'test_cargo_*guard.py' -v"
         self.assertIn('if [[ "${RUNNER_OS}" == "Windows" ]]; then', step)
         self.assertIn(binding, step)
+        self.assertIn("export KATANA_GUARD_BASH_EXECUTABLE", step)
         self.assertEqual(step.count(command), 1)
         self.assertLess(step.index(binding), step.index(command))
         self.assertNotIn("--skip", step)

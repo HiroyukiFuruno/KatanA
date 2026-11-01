@@ -139,10 +139,47 @@ class CiResourceContractTest(unittest.TestCase):
             contracts,
         )
         acceptance = step_block(job, "Run multi-format headless acceptance")
-        condition = "if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')"
+        condition = "if: github.event_name == 'pull_request'"
         self.assertIn(condition, contracts)
         self.assertIn(condition, acceptance)
+        self.assertNotIn("github.head_ref", contracts)
+        self.assertNotIn("github.head_ref", acceptance)
+        self.assertIn("if: always() && (github.event_name == 'pull_request'",
+                      step_block(job, "Upload multi-format headless evidence"))
         self.assertLess(job.index(name), job.index("- name: Run multi-format headless acceptance"))
+
+    def test_cache_measurement_is_opt_in_and_does_not_replace_ci(self):
+        root = Path(__file__).resolve().parents[2]
+        normal = (root / ".github/workflows/test-and-build.yml").read_text()
+        workflow = (root / ".github/workflows/windows-cache-measurement.yml").read_text()
+        self.assertNotIn("windows-cache-cold:", normal)
+        self.assertIn("workflow_dispatch:", workflow)
+        self.assertIn("pull_request:", workflow)
+        self.assertIn("types: [ready_for_review, synchronize, labeled, reopened]", workflow)
+        for name in ("windows-cache-cold", "windows-cache-warm", "windows-cache-comparison"):
+            job = re.search(rf"(?ms)^  {name}:\n(.*?)(?=^  [A-Za-z][\w-]*:\n|\Z)", workflow).group(1)
+            self.assertIn("github.event_name == 'workflow_dispatch'", job)
+            self.assertIn("github.event_name == 'pull_request'", job)
+            self.assertIn("contains(github.event.pull_request.labels.*.name, 'measure-windows-cache')", job)
+        self.assertIn("test ! -e target/debug && test ! -e target/.rustc_info.json", workflow)
+        self.assertIn("--diagnostic-payload", workflow)
+        self.assertIn("fail-on-cache-miss: true", workflow)
+        self.assertIn("scripts/ci/compare_windows_cache_measurements.py", workflow)
+        self.assertIn("test_compare_windows_cache_measurements.py", normal)
+        self.assertIn("cargo test --workspace", current_test_job())
+
+    def test_manual_master_ci_runs_all_release_checks(self):
+        workflow = (Path(__file__).resolve().parents[2] / ".github/workflows/test-and-build.yml").read_text()
+        manual = "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'"
+        for name in ("test", "lint", "supply-chain", "codeql"):
+            job = re.search(rf"(?ms)^  {name}:\n(.*?)(?=^  [A-Za-z][\w-]*:\n|\Z)", workflow).group(1)
+            self.assertIn(manual, job)
+            self.assertIn("github.event_name == 'push'", job)
+        job = current_test_job()
+        for name in ("Test screenshot harness contracts", "Run multi-format headless acceptance",
+                     "Install coverage tool", "Run coverage"):
+            self.assertIn(manual, step_block(job, name))
+            self.assertIn("github.event_name == 'push'", step_block(job, name))
 
     def test_cold_font_diagnostic_keeps_full_suite_and_isolates_debug(self):
         job = current_test_job()

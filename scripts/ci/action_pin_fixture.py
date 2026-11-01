@@ -33,13 +33,42 @@ def prepare_pin_fixture(root, fixture):
         "scripts/ci/test_ci_resource_contract.py",
         "scripts/ci/test_windows_ci_observation_contract.py",
         "scripts/release/test-release-flow-contract.py",
+        "scripts/release/test_native_test_inventory_wiring.py",
     ):
         target = fixture / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(root / relative, target)
     target = fixture / ".github/workflows/test-and-build.yml"
     target.parent.mkdir(parents=True, exist_ok=True)
+    for name in ("release-readiness.yml", "build-and-release.yml"):
+        shutil.copyfile(root / ".github/workflows" / name, target.parent / name)
     return target
+
+
+def inventory_installer_variants(workflows):
+    action = "taiki-e/install-action"
+    match = re.search(r"(?m)^        uses: taiki-e/install-action@([0-9a-f]{40})", workflows["release-readiness.yml"])
+    if match is None:
+        raise AssertionError("expected pinned release-readiness installer")
+    old = match.group(1)
+    new = ("a" if old != "a" * 40 else "b") * 40
+    rotated = {name: content.replace(f"{action}@{old}", f"{action}@{new}")
+               for name, content in workflows.items()}
+    variants = [("rotation", rotated, True)]
+    name = "release-readiness.yml"
+    source = workflows[name]
+    valid = f"        uses: {action}@{old}"
+    if source.count(valid) != 1:
+        raise AssertionError("expected exact installer line")
+    for label, replacement in (
+        ("mutable ref", f"        uses: {action}@main"),
+        ("wrong action", f"        uses: other/action@{old}"),
+        ("comment", f"        # uses: {action}@{old}"),
+        ("run body", f"        run: |\n          uses: {action}@{old}"),
+        ("wrong step", f"        uses: other/action@{old}\n      - name: Decoy\n{valid}"),
+    ):
+        variants.append((label, workflows | {name: source.replace(valid, replacement, 1)}, False))
+    return variants
 
 
 def action_pin_variants(original, action, revisions, requirements):

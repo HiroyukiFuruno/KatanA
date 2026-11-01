@@ -4,12 +4,19 @@
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 from pathlib import Path
 
 
 PHASE_ALLOWLISTS = {
+    ("0.22.47", "v0-22-47-katana-contained-fixes"): {
+        "strict": set(),
+        "pr-bootstrap": {"6.2", "6.3", "6.4", "6.5", "6.6", "6.7"},
+        "release-artifact-pending": {"6.3", "6.4", "6.5", "6.6", "6.7"},
+        "post-release-evidence": {"6.5", "6.6", "6.7"},
+    },
     ("0.22.43", "v0-22-43-document-ui-regressions"): {
         "strict": set(),
         # WHY: 実行中のpush結果はhook終了前には存在しないため、完了証跡だけを後段へ残す。
@@ -70,6 +77,12 @@ def main() -> int:
     expected_tasks = repository_root / "openspec/changes" / args.change_name / "tasks.md"
     if tasks_path.resolve() != expected_tasks.resolve():
         parser.error("phase exceptions are restricted to the canonical tasks.md path")
+
+    if binding == ("0.22.47", "v0-22-47-katana-contained-fixes"):
+        for line in tasks_path.read_text(encoding="utf-8").splitlines():
+            if (re.match(r"^\s*-\s*\[([^xX/])\]\s+", line)
+                    and not re.match(r"^\s*-\s*\[([^xX/])\]\s+\d+\.\d+\b", line)):
+                parser.error("unnumbered incomplete feedback cannot be deferred")
 
     checker = Path(__file__).with_name("check-openspec-task-completion.py")
     command = [sys.executable, str(checker), str(tasks_path)]

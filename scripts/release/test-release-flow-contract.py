@@ -420,7 +420,9 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIn("tool: cargo-llvm-cov@0.9.1", install)
         self.assertIn("fallback: none", install)
-        condition = "if: runner.os == 'macOS' && github.event_name == 'pull_request'"
+        condition = ("if: runner.os == 'macOS' && (github.event_name == 'pull_request' || github.event_name == 'push' || "
+                     "(github.event_name == 'workflow_dispatch' "
+                     "&& github.ref == 'refs/heads/master'))")
         self.assertIn(condition, install)
         coverage_step = workflow.split("- name: Run coverage\n", 1)[1].split("\n      - name:", 1)[0]
         self.assertIn(condition, coverage_step)

@@ -1,0 +1,158 @@
+name: Windows cache measurement
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master]
+    types: [ready_for_review, synchronize, labeled, reopened]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: windows-cache-measurement-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-cache-cold:
+    name: Windows cache cold measurement
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && !github.event.pull_request.draft && contains(github.event.pull_request.labels.*.name, 'measure-windows-cache'))
+    runs-on: windows-latest
+    env:
+      RUST_TEST_THREADS: 2
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_PROFILE_TEST_DEBUG: 0
+      CARGO_PROFILE_DEV_STRIP: none
+      CARGO_PROFILE_TEST_STRIP: none
+    outputs:
+      key: ${{ steps.identity.outputs.cache_key }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.14'
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+      - name: Fetch identical locked dependencies
+        run: cargo fetch --locked
+      - name: Capture cold identity
+        id: identity
+        shell: bash
+        run: |
+          python3 -B scripts/ci/windows_target_cache_identity.py --repo . --profile test --selection ci-test --diagnostic-payload --github-output "$GITHUB_OUTPUT" > "$RUNNER_TEMP/cold-before.json"
+      - name: Require measured identity
+        if: steps.identity.outputs.cache_eligible != 'true'
+        run: exit 1
+      - name: Verify cold compiled target is absent
+        shell: bash
+        run: test ! -e target/debug && test ! -e target/.rustc_info.json
+      - name: Run cold test
+        shell: bash
+        run: |
+          BASH_EXECUTABLE="$(cygpath -w "$BASH")"
+          python3 -B scripts/ci/observe-ci-command.py --output "$RUNNER_TEMP/cold.json" --cache-hit false --compiled-cache-eligible true --compiled-cache-key '${{ steps.identity.outputs.cache_key }}' --compiled-cache-hit false -- "$BASH_EXECUTABLE" scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
+      - name: Capture cold identity after test
+        shell: bash
+        run: python3 -B scripts/ci/windows_target_cache_identity.py --repo . --profile test --selection ci-test --diagnostic-payload > "$RUNNER_TEMP/cold-after.json"
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            target/debug
+            target/.rustc_info.json
+          key: measure-${{ github.run_id }}-${{ github.run_attempt }}-${{ steps.identity.outputs.cache_key }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-cache-cold
+          path: |
+            ${{ runner.temp }}/cold.json
+            ${{ runner.temp }}/cold-before.json
+            ${{ runner.temp }}/cold-after.json
+          if-no-files-found: error
+
+  windows-cache-warm:
+    name: Windows cache warm measurement
+    needs: windows-cache-cold
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && !github.event.pull_request.draft && contains(github.event.pull_request.labels.*.name, 'measure-windows-cache'))
+    runs-on: windows-latest
+    env:
+      RUST_TEST_THREADS: 2
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_PROFILE_TEST_DEBUG: 0
+      CARGO_PROFILE_DEV_STRIP: none
+      CARGO_PROFILE_TEST_STRIP: none
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.14'
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+      - name: Fetch identical locked dependencies
+        run: cargo fetch --locked
+      - name: Capture warm identity
+        id: identity
+        shell: bash
+        run: |
+          python3 -B scripts/ci/windows_target_cache_identity.py --repo . --profile test --selection ci-test --diagnostic-payload --github-output "$GITHUB_OUTPUT" > "$RUNNER_TEMP/warm-before.json"
+      - name: Require matching warm identity
+        shell: bash
+        run: |
+          [[ '${{ steps.identity.outputs.cache_eligible }}' == 'true' ]]
+          [[ '${{ needs.windows-cache-cold.outputs.key }}' == '${{ steps.identity.outputs.cache_key }}' ]]
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: cache
+        with:
+          path: |
+            target/debug
+            target/.rustc_info.json
+          key: measure-${{ github.run_id }}-${{ github.run_attempt }}-${{ needs.windows-cache-cold.outputs.key }}
+          fail-on-cache-miss: true
+      - name: Run warm test
+        shell: bash
+        run: |
+          BASH_EXECUTABLE="$(cygpath -w "$BASH")"
+          python3 -B scripts/ci/observe-ci-command.py --output "$RUNNER_TEMP/warm.json" --cache-hit false --compiled-cache-eligible true --compiled-cache-key '${{ steps.identity.outputs.cache_key }}' --compiled-cache-hit '${{ steps.cache.outputs.cache-hit }}' -- "$BASH_EXECUTABLE" scripts/ci/with-office-test-worker.sh 'cargo test --workspace'
+      - name: Capture warm identity after test
+        shell: bash
+        run: python3 -B scripts/ci/windows_target_cache_identity.py --repo . --profile test --selection ci-test --diagnostic-payload > "$RUNNER_TEMP/warm-after.json"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-cache-warm
+          path: |
+            ${{ runner.temp }}/warm.json
+            ${{ runner.temp }}/warm-before.json
+            ${{ runner.temp }}/warm-after.json
+          if-no-files-found: error
+
+  windows-cache-comparison:
+    name: Compare Windows cache measurements
+    needs: [windows-cache-cold, windows-cache-warm]
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && !github.event.pull_request.draft && contains(github.event.pull_request.labels.*.name, 'measure-windows-cache'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: windows-cache-cold
+          path: cold
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: windows-cache-warm
+          path: warm
+      - name: Compare matched measurements
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 -B scripts/ci/compare_windows_cache_measurements.py cold/cold.json warm/warm.json cold/cold-before.json cold/cold-after.json warm/warm-before.json warm/warm-after.json | tee "$RUNNER_TEMP/windows-cache-comparison.json"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-cache-comparison
+          path: ${{ runner.temp }}/windows-cache-comparison.json
+          if-no-files-found: error

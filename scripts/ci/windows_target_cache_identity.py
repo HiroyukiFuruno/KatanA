@@ -121,7 +121,8 @@ def _cache_key(payload: dict) -> str:
 
 
 def cache_identity(root: Path, environment: dict[str, str], profile: str,
-                   features: tuple[str, ...], test_selection: tuple[str, ...]) -> dict:
+                   features: tuple[str, ...], test_selection: tuple[str, ...],
+                   *, diagnostic_payload: bool = False) -> dict:
     try:
         if (not isinstance(profile, str) or not profile or "\x00" in profile
                 or any(not isinstance(value, str) or not value or "\x00" in value
@@ -131,7 +132,13 @@ def cache_identity(root: Path, environment: dict[str, str], profile: str,
         before = payload["source"]
         if not _source_stable(before, root):
             raise ValueError("source changed during identity collection")
-        return {"schema": 1, "cache_eligible": True, "key": _cache_key(payload)}
+        result = {"schema": 1, "cache_eligible": True, "key": _cache_key(payload)}
+        if diagnostic_payload:
+            result["inputs"] = payload | {"environment": {
+                name: hashlib.sha256(value.encode()).hexdigest() if value is not None else None
+                for name, value in payload["environment"].items()}}
+            result["environment_encoding"] = "sha256-per-value"
+        return result
     except (OSError, ValueError, UnicodeError):
         return {"schema": 1, "cache_eligible": False, "key": "",
                 "reason": "identity_unavailable"}
@@ -152,10 +159,12 @@ def main() -> int:
     parser.add_argument("--feature", action="append", default=[])
     parser.add_argument("--selection", action="append", default=[])
     parser.add_argument("--github-output", type=Path)
+    parser.add_argument("--diagnostic-payload", action="store_true")
     arguments = parser.parse_args()
     try:
         result = cache_identity(arguments.repo.resolve(), dict(os.environ), arguments.profile,
-                                tuple(arguments.feature), tuple(arguments.selection))
+                                tuple(arguments.feature), tuple(arguments.selection),
+                                diagnostic_payload=arguments.diagnostic_payload)
     except (OSError, ValueError, UnicodeError):
         result = {"schema": 1, "cache_eligible": False, "key": "",
                   "reason": "identity_unavailable"}
