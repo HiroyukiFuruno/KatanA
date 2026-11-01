@@ -20,6 +20,9 @@ pub(crate) struct GroupHeader<'a> {
 #[cfg(test)]
 #[path = "group_header_tests.rs"]
 mod tests;
+#[cfg(test)]
+#[path = "group_header_visible_tests.rs"]
+mod visible_tests;
 
 impl<'a> GroupHeader<'a> {
     #[allow(deprecated)]
@@ -127,6 +130,7 @@ impl<'a> GroupHeader<'a> {
         let rename = self.inline_rename_group;
         let _popup_response = egui::Popup::from_response(group_response)
             .id(state.popup_id)
+            .open_memory(None)
             .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
             .show(|ui| {
                 super::group_header_popup::GroupHeaderPopup {
