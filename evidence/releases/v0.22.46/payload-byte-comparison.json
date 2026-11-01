@@ -1,0 +1,44 @@
+{
+  "version": "v0.22.46",
+  "source": "e5360a39ecac101130b1b3ae34b91da249d42377",
+  "scope": "installed-macos-payload-and-targeted-startup-regression",
+  "document_quality_evaluated": false,
+  "image_visual_quality_evaluated": false,
+  "installed_payload": {
+    "main_sha256": "b34fe65c9acc262ff905b4325a84304e82f3fbf23a8d6e1a453eb1001dae2ab7",
+    "sidecar_sha256": "2e1b5ff1b023d7f4040ecbe7692486e52f59e779a2b7375f746a81432030f976",
+    "matches_canonical_macos_manifest": true
+  },
+  "original_png_probe": {
+    "configuration": "isolated copy of the original saved state; clone-only previous_app_version=0.22.46",
+    "path": "assets/candidates/katana/legacy-krr-0.4.19/export_png/sample.png",
+    "dimensions": [
+      1280,
+      19067
+    ],
+    "source_sha256": "2dddc1c54b07e3f1132ea0e269d2106e074b3864b1faafb734110939b3afe66d",
+    "mesh_added": true,
+    "frame_at_mesh": 93,
+    "last_frame": 153,
+    "elapsed_seconds": 9.82,
+    "alive_before_cleanup": true,
+    "diagnostic_process_stopped": true
+  },
+  "real_profile_normal_startup": {
+    "version": "v0.22.46",
+    "alive_observation_seconds": 8.31,
+    "diagnostics_disabled": true,
+    "workspace_selection_preserved": true,
+    "app_left_running": true
+  },
+  "state_preservation": {
+    "tabs_before": 36,
+    "tabs_after": 36,
+    "tabs_unchanged": true,
+    "other_profile_fields_unchanged": true,
+    "global_workspace_unchanged_during_repair": true,
+    "settings_unchanged_during_repair": true,
+    "manual_history_reset": false,
+    "png_source_unchanged": true
+  }
+}

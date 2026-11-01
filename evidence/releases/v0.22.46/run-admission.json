@@ -1,0 +1,1355 @@
+{
+  "run": {
+    "id": 41305568486,
+    "name": "Release",
+    "node_id": "WFR_kwLORm09y88AAAAJngD05g",
+    "head_branch": "release/v0.22.46",
+    "head_sha": "f448bdae083483faa466136ffdcb168541ed1e0e",
+    "path": ".github/workflows/build-and-release.yml",
+    "display_title": "release: v0.22.46 PNG復元時クラッシュとファイル名フィルターを修正",
+    "run_number": 148,
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "success",
+    "workflow_id": 258272562,
+    "check_suite_id": 111950062180,
+    "check_suite_node_id": "CS_kwDORm09y88AAAAaEL5iZA",
+    "url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486",
+    "html_url": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41305568486",
+    "pull_requests": [],
+    "created_at": "2026-11-01T12:15:00Z",
+    "updated_at": "2026-11-01T13:38:42Z",
+    "actor": {
+      "login": "HiroyukiFuruno",
+      "id": 58550284,
+      "node_id": "MDQ6VXNlcjU4NTUwMjg0",
+      "avatar_url": "https://avatars.githubusercontent.com/u/58550284?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/HiroyukiFuruno",
+      "html_url": "https://github.com/HiroyukiFuruno",
+      "followers_url": "https://api.github.com/users/HiroyukiFuruno/followers",
+      "following_url": "https://api.github.com/users/HiroyukiFuruno/following{/other_user}",
+      "gists_url": "https://api.github.com/users/HiroyukiFuruno/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/HiroyukiFuruno/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/HiroyukiFuruno/subscriptions",
+      "organizations_url": "https://api.github.com/users/HiroyukiFuruno/orgs",
+      "repos_url": "https://api.github.com/users/HiroyukiFuruno/repos",
+      "events_url": "https://api.github.com/users/HiroyukiFuruno/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/HiroyukiFuruno/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "run_attempt": 1,
+    "referenced_workflows": [],
+    "run_started_at": "2026-11-01T12:15:00Z",
+    "triggering_actor": {
+      "login": "HiroyukiFuruno",
+      "id": 58550284,
+      "node_id": "MDQ6VXNlcjU4NTUwMjg0",
+      "avatar_url": "https://avatars.githubusercontent.com/u/58550284?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/HiroyukiFuruno",
+      "html_url": "https://github.com/HiroyukiFuruno",
+      "followers_url": "https://api.github.com/users/HiroyukiFuruno/followers",
+      "following_url": "https://api.github.com/users/HiroyukiFuruno/following{/other_user}",
+      "gists_url": "https://api.github.com/users/HiroyukiFuruno/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/HiroyukiFuruno/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/HiroyukiFuruno/subscriptions",
+      "organizations_url": "https://api.github.com/users/HiroyukiFuruno/orgs",
+      "repos_url": "https://api.github.com/users/HiroyukiFuruno/repos",
+      "events_url": "https://api.github.com/users/HiroyukiFuruno/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/HiroyukiFuruno/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "jobs_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486/jobs",
+    "logs_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486/logs",
+    "check_suite_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/check-suites/111950062180",
+    "artifacts_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486/artifacts",
+    "cancel_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486/cancel",
+    "rerun_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486/rerun",
+    "previous_attempt_url": null,
+    "workflow_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/workflows/258272562",
+    "head_commit": {
+      "id": "f448bdae083483faa466136ffdcb168541ed1e0e",
+      "tree_id": "575474b3768f8d11f9b41494fbc53b9986c8c587",
+      "message": "docs: 単語一致の指摘修正と解決を記録 (#406)",
+      "timestamp": "2026-11-01T10:25:25Z",
+      "author": {
+        "name": "HiroyukiFuruno",
+        "email": "hfuruno0114@gmail.com"
+      },
+      "committer": {
+        "name": "HiroyukiFuruno",
+        "email": "hfuruno0114@gmail.com"
+      }
+    },
+    "repository": {
+      "id": 1181564363,
+      "node_id": "R_kgDORm09yw",
+      "name": "KatanA",
+      "full_name": "HiroyukiFuruno/KatanA",
+      "private": false,
+      "owner": {
+        "login": "HiroyukiFuruno",
+        "id": 58550284,
+        "node_id": "MDQ6VXNlcjU4NTUwMjg0",
+        "avatar_url": "https://avatars.githubusercontent.com/u/58550284?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/HiroyukiFuruno",
+        "html_url": "https://github.com/HiroyukiFuruno",
+        "followers_url": "https://api.github.com/users/HiroyukiFuruno/followers",
+        "following_url": "https://api.github.com/users/HiroyukiFuruno/following{/other_user}",
+        "gists_url": "https://api.github.com/users/HiroyukiFuruno/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/HiroyukiFuruno/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/HiroyukiFuruno/subscriptions",
+        "organizations_url": "https://api.github.com/users/HiroyukiFuruno/orgs",
+        "repos_url": "https://api.github.com/users/HiroyukiFuruno/repos",
+        "events_url": "https://api.github.com/users/HiroyukiFuruno/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/HiroyukiFuruno/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "html_url": "https://github.com/HiroyukiFuruno/KatanA",
+      "description": "A native Rust + egui workspace for Markdown, PDF, HTML, images, Office documents, and diagrams. Free and open source.",
+      "fork": false,
+      "url": "https://api.github.com/repos/HiroyukiFuruno/KatanA",
+      "forks_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/forks",
+      "keys_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/keys{/key_id}",
+      "collaborators_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/collaborators{/collaborator}",
+      "teams_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/teams",
+      "hooks_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/hooks",
+      "issue_events_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/issues/events{/number}",
+      "events_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/events",
+      "assignees_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/assignees{/user}",
+      "branches_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/branches{/branch}",
+      "tags_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/tags",
+      "blobs_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/git/blobs{/sha}",
+      "git_tags_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/git/tags{/sha}",
+      "git_refs_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/git/refs{/sha}",
+      "trees_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/git/trees{/sha}",
+      "statuses_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/statuses/{sha}",
+      "languages_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/languages",
+      "stargazers_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/stargazers",
+      "contributors_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/contributors",
+      "subscribers_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/subscribers",
+      "subscription_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/subscription",
+      "commits_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/commits{/sha}",
+      "git_commits_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/git/commits{/sha}",
+      "comments_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/comments{/number}",
+      "issue_comment_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/issues/comments{/number}",
+      "contents_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/contents/{+path}",
+      "compare_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/compare/{base}...{head}",
+      "merges_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/merges",
+      "archive_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/{archive_format}{/ref}",
+      "downloads_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/downloads",
+      "issues_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/issues{/number}",
+      "pulls_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/pulls{/number}",
+      "milestones_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/milestones{/number}",
+      "notifications_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/notifications{?since,all,participating}",
+      "labels_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/labels{/name}",
+      "releases_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/releases{/id}",
+      "deployments_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/deployments"
+    },
+    "head_repository": {
+      "id": 1181564363,
+      "node_id": "R_kgDORm09yw",
+      "name": "KatanA",
+      "full_name": "HiroyukiFuruno/KatanA",
+      "private": false,
+      "owner": {
+        "login": "HiroyukiFuruno",
+        "id": 58550284,
+        "node_id": "MDQ6VXNlcjU4NTUwMjg0",
+        "avatar_url": "https://avatars.githubusercontent.com/u/58550284?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/HiroyukiFuruno",
+        "html_url": "https://github.com/HiroyukiFuruno",
+        "followers_url": "https://api.github.com/users/HiroyukiFuruno/followers",
+        "following_url": "https://api.github.com/users/HiroyukiFuruno/following{/other_user}",
+        "gists_url": "https://api.github.com/users/HiroyukiFuruno/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/HiroyukiFuruno/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/HiroyukiFuruno/subscriptions",
+        "organizations_url": "https://api.github.com/users/HiroyukiFuruno/orgs",
+        "repos_url": "https://api.github.com/users/HiroyukiFuruno/repos",
+        "events_url": "https://api.github.com/users/HiroyukiFuruno/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/HiroyukiFuruno/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "html_url": "https://github.com/HiroyukiFuruno/KatanA",
+      "description": "A native Rust + egui workspace for Markdown, PDF, HTML, images, Office documents, and diagrams. Free and open source.",
+      "fork": false,
+      "url": "https://api.github.com/repos/HiroyukiFuruno/KatanA",
+      "forks_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/forks",
+      "keys_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/keys{/key_id}",
+      "collaborators_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/collaborators{/collaborator}",
+      "teams_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/teams",
+      "hooks_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/hooks",
+      "issue_events_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/issues/events{/number}",
+      "events_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/events",
+      "assignees_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/assignees{/user}",
+      "branches_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/branches{/branch}",
+      "tags_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/tags",
+      "blobs_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/git/blobs{/sha}",
+      "git_tags_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/git/tags{/sha}",
+      "git_refs_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/git/refs{/sha}",
+      "trees_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/git/trees{/sha}",
+      "statuses_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/statuses/{sha}",
+      "languages_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/languages",
+      "stargazers_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/stargazers",
+      "contributors_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/contributors",
+      "subscribers_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/subscribers",
+      "subscription_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/subscription",
+      "commits_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/commits{/sha}",
+      "git_commits_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/git/commits{/sha}",
+      "comments_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/comments{/number}",
+      "issue_comment_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/issues/comments{/number}",
+      "contents_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/contents/{+path}",
+      "compare_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/compare/{base}...{head}",
+      "merges_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/merges",
+      "archive_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/{archive_format}{/ref}",
+      "downloads_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/downloads",
+      "issues_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/issues{/number}",
+      "pulls_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/pulls{/number}",
+      "milestones_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/milestones{/number}",
+      "notifications_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/notifications{?since,all,participating}",
+      "labels_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/labels{/name}",
+      "releases_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/releases{/id}",
+      "deployments_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/deployments"
+    }
+  },
+  "jobs": [
+    {
+      "id": 124845134738,
+      "run_id": 41305568486,
+      "workflow_name": "Release",
+      "head_branch": "release/v0.22.46",
+      "run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORm09y88AAAAdEVmTkg",
+      "head_sha": "f448bdae083483faa466136ffdcb168541ed1e0e",
+      "url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/jobs/124845134738",
+      "html_url": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41305568486/job/124845134738",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-01T12:15:01Z",
+      "started_at": "2026-11-01T12:15:03Z",
+      "completed_at": "2026-11-01T12:50:55Z",
+      "name": "Preflight Check",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-01T12:15:03Z",
+          "completed_at": "2026-11-01T12:15:05Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-01T12:15:05Z",
+          "completed_at": "2026-11-01T12:15:09Z"
+        },
+        {
+          "name": "Determine version",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-01T12:15:09Z",
+          "completed_at": "2026-11-01T12:15:09Z"
+        },
+        {
+          "name": "Verify CI gate for version bump merge",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-01T12:15:09Z",
+          "completed_at": "2026-11-01T12:39:23Z"
+        },
+        {
+          "name": "Install Rust toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-01T12:39:23Z",
+          "completed_at": "2026-11-01T12:39:25Z"
+        },
+        {
+          "name": "Install release validation tools",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-01T12:39:25Z",
+          "completed_at": "2026-11-01T12:39:27Z"
+        },
+        {
+          "name": "Install native hook contract tools",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-01T12:39:27Z",
+          "completed_at": "2026-11-01T12:39:31Z"
+        },
+        {
+          "name": "Cache Cargo registry & build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-01T12:39:31Z",
+          "completed_at": "2026-11-01T12:39:31Z"
+        },
+        {
+          "name": "Bump version and push",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-11-01T12:39:31Z",
+          "completed_at": "2026-11-01T12:39:31Z"
+        },
+        {
+          "name": "Run release preflight logic",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-01T12:39:31Z",
+          "completed_at": "2026-11-01T12:50:51Z"
+        },
+        {
+          "name": "Extract release notes from CHANGELOG.md",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-01T12:50:51Z",
+          "completed_at": "2026-11-01T12:50:51Z"
+        },
+        {
+          "name": "Upload Release Notes",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-01T12:50:51Z",
+          "completed_at": "2026-11-01T12:50:51Z"
+        },
+        {
+          "name": "Post Cache Cargo registry & build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-11-01T12:50:52Z",
+          "completed_at": "2026-11-01T12:50:53Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-11-01T12:50:53Z",
+          "completed_at": "2026-11-01T12:50:53Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-11-01T12:50:53Z",
+          "completed_at": "2026-11-01T12:50:53Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/check-runs/124845134738",
+      "labels": [
+        "macos-latest"
+      ],
+      "runner_id": 1000026220,
+      "runner_name": "GitHub Actions 1000026220",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 124853532953,
+      "run_id": 41305568486,
+      "workflow_name": "Release",
+      "head_branch": "release/v0.22.46",
+      "run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORm09y88AAAAdEdm5GQ",
+      "head_sha": "f448bdae083483faa466136ffdcb168541ed1e0e",
+      "url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/jobs/124853532953",
+      "html_url": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41305568486/job/124853532953",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-01T12:50:55Z",
+      "started_at": "2026-11-01T12:50:57Z",
+      "completed_at": "2026-11-01T13:09:06Z",
+      "name": "Build Windows",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-01T12:50:58Z",
+          "completed_at": "2026-11-01T12:50:59Z"
+        },
+        {
+          "name": "Preserve source bytes for artifact provenance",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-01T12:50:59Z",
+          "completed_at": "2026-11-01T12:51:00Z"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-01T12:51:00Z",
+          "completed_at": "2026-11-01T12:51:06Z"
+        },
+        {
+          "name": "Run dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-01T12:51:06Z",
+          "completed_at": "2026-11-01T12:51:11Z"
+        },
+        {
+          "name": "Run actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-01T12:51:11Z",
+          "completed_at": "2026-11-01T12:51:12Z"
+        },
+        {
+          "name": "Build release (Windows)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-01T12:51:12Z",
+          "completed_at": "2026-11-01T13:07:39Z"
+        },
+        {
+          "name": "Install cargo-binstall",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-01T13:07:39Z",
+          "completed_at": "2026-11-01T13:07:43Z"
+        },
+        {
+          "name": "Package Windows Artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-01T13:07:43Z",
+          "completed_at": "2026-11-01T13:08:26Z"
+        },
+        {
+          "name": "Verify Windows asset contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-01T13:08:26Z",
+          "completed_at": "2026-11-01T13:08:27Z"
+        },
+        {
+          "name": "Record generated Windows payload identity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-01T13:08:27Z",
+          "completed_at": "2026-11-01T13:08:32Z"
+        },
+        {
+          "name": "Upload generated Windows payload identity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-01T13:08:32Z",
+          "completed_at": "2026-11-01T13:08:34Z"
+        },
+        {
+          "name": "Smoke launch packaged Windows app",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-01T13:08:34Z",
+          "completed_at": "2026-11-01T13:08:41Z"
+        },
+        {
+          "name": "Upload failed Windows comparison payload",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-11-01T13:08:41Z",
+          "completed_at": "2026-11-01T13:08:41Z"
+        },
+        {
+          "name": "Trace failed packaged Windows startup",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14,
+          "started_at": "2026-11-01T13:08:41Z",
+          "completed_at": "2026-11-01T13:08:41Z"
+        },
+        {
+          "name": "Upload Windows startup diagnostics",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-11-01T13:08:41Z",
+          "completed_at": "2026-11-01T13:08:43Z"
+        },
+        {
+          "name": "Upload Windows Artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-11-01T13:08:43Z",
+          "completed_at": "2026-11-01T13:08:49Z"
+        },
+        {
+          "name": "Post Run actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-11-01T13:08:49Z",
+          "completed_at": "2026-11-01T13:09:02Z"
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 32,
+          "started_at": "2026-11-01T13:09:02Z",
+          "completed_at": "2026-11-01T13:09:04Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 33,
+          "started_at": "2026-11-01T13:09:04Z",
+          "completed_at": "2026-11-01T13:09:04Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/check-runs/124853532953",
+      "labels": [
+        "windows-latest"
+      ],
+      "runner_id": 1000026233,
+      "runner_name": "GitHub Actions 1000026233",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 124853532960,
+      "run_id": 41305568486,
+      "workflow_name": "Release",
+      "head_branch": "release/v0.22.46",
+      "run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORm09y88AAAAdEdm5IA",
+      "head_sha": "f448bdae083483faa466136ffdcb168541ed1e0e",
+      "url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/jobs/124853532960",
+      "html_url": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41305568486/job/124853532960",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-01T12:50:55Z",
+      "started_at": "2026-11-01T12:50:59Z",
+      "completed_at": "2026-11-01T13:34:15Z",
+      "name": "Build macOS",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-01T12:51:00Z",
+          "completed_at": "2026-11-01T12:51:02Z"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-01T12:51:02Z",
+          "completed_at": "2026-11-01T12:51:08Z"
+        },
+        {
+          "name": "Run dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-01T12:51:08Z",
+          "completed_at": "2026-11-01T12:51:12Z"
+        },
+        {
+          "name": "Run actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-01T12:51:13Z",
+          "completed_at": "2026-11-01T12:51:14Z"
+        },
+        {
+          "name": "Install cargo-bundle",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-01T12:51:14Z",
+          "completed_at": "2026-11-01T12:54:54Z"
+        },
+        {
+          "name": "Install DMG tooling",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-01T12:54:54Z",
+          "completed_at": "2026-11-01T12:55:09Z"
+        },
+        {
+          "name": "Clean stale DMG files",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-01T12:55:09Z",
+          "completed_at": "2026-11-01T12:55:09Z"
+        },
+        {
+          "name": "Build macOS .app",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-01T12:55:09Z",
+          "completed_at": "2026-11-01T13:31:22Z"
+        },
+        {
+          "name": "Codesign .app",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-01T13:31:22Z",
+          "completed_at": "2026-11-01T13:31:25Z"
+        },
+        {
+          "name": "Build .dmg installer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-01T13:31:25Z",
+          "completed_at": "2026-11-01T13:32:34Z"
+        },
+        {
+          "name": "Build .zip archive",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-01T13:32:34Z",
+          "completed_at": "2026-11-01T13:32:59Z"
+        },
+        {
+          "name": "Verify macOS asset contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-01T13:32:59Z",
+          "completed_at": "2026-11-01T13:33:03Z"
+        },
+        {
+          "name": "Record generated macOS payload identity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-01T13:33:03Z",
+          "completed_at": "2026-11-01T13:33:13Z"
+        },
+        {
+          "name": "Upload generated macOS payload identity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-01T13:33:13Z",
+          "completed_at": "2026-11-01T13:33:15Z"
+        },
+        {
+          "name": "Upload macOS Artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-11-01T13:33:15Z",
+          "completed_at": "2026-11-01T13:33:32Z"
+        },
+        {
+          "name": "Post Run actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-01T13:33:32Z",
+          "completed_at": "2026-11-01T13:34:09Z"
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-11-01T13:34:09Z",
+          "completed_at": "2026-11-01T13:34:10Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-11-01T13:34:10Z",
+          "completed_at": "2026-11-01T13:34:13Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/check-runs/124853532960",
+      "labels": [
+        "macos-latest"
+      ],
+      "runner_id": 1000026234,
+      "runner_name": "GitHub Actions 1000026234",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 124853532998,
+      "run_id": 41305568486,
+      "workflow_name": "Release",
+      "head_branch": "release/v0.22.46",
+      "run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORm09y88AAAAdEdm5Rg",
+      "head_sha": "f448bdae083483faa466136ffdcb168541ed1e0e",
+      "url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/jobs/124853532998",
+      "html_url": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41305568486/job/124853532998",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-01T12:50:55Z",
+      "started_at": "2026-11-01T12:50:57Z",
+      "completed_at": "2026-11-01T13:08:43Z",
+      "name": "Build Linux",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-01T12:50:58Z",
+          "completed_at": "2026-11-01T12:50:59Z"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-01T12:50:59Z",
+          "completed_at": "2026-11-01T12:51:03Z"
+        },
+        {
+          "name": "Run dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-01T12:51:03Z",
+          "completed_at": "2026-11-01T12:51:04Z"
+        },
+        {
+          "name": "Run actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-01T12:51:04Z",
+          "completed_at": "2026-11-01T12:51:05Z"
+        },
+        {
+          "name": "Install dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-01T12:51:05Z",
+          "completed_at": "2026-11-01T12:51:15Z"
+        },
+        {
+          "name": "Verify software Vulkan adapter",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-01T12:51:15Z",
+          "completed_at": "2026-11-01T12:51:15Z"
+        },
+        {
+          "name": "Build release (Linux)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-01T12:51:15Z",
+          "completed_at": "2026-11-01T13:07:49Z"
+        },
+        {
+          "name": "Package Linux Artifact",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-01T13:07:49Z",
+          "completed_at": "2026-11-01T13:08:02Z"
+        },
+        {
+          "name": "Verify Linux asset contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-01T13:08:02Z",
+          "completed_at": "2026-11-01T13:08:06Z"
+        },
+        {
+          "name": "Record generated Linux payload identity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-01T13:08:06Z",
+          "completed_at": "2026-11-01T13:08:15Z"
+        },
+        {
+          "name": "Upload generated Linux payload identity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-01T13:08:15Z",
+          "completed_at": "2026-11-01T13:08:16Z"
+        },
+        {
+          "name": "Smoke launch packaged Linux app",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-01T13:08:16Z",
+          "completed_at": "2026-11-01T13:08:24Z"
+        },
+        {
+          "name": "Upload Linux startup diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-11-01T13:08:24Z",
+          "completed_at": "2026-11-01T13:08:24Z"
+        },
+        {
+          "name": "Upload Linux Artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-01T13:08:24Z",
+          "completed_at": "2026-11-01T13:08:29Z"
+        },
+        {
+          "name": "Post Run actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-01T13:08:29Z",
+          "completed_at": "2026-11-01T13:08:41Z"
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-01T13:08:41Z",
+          "completed_at": "2026-11-01T13:08:41Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-01T13:08:41Z",
+          "completed_at": "2026-11-01T13:08:41Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/check-runs/124853532998",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000026232,
+      "runner_name": "GitHub Actions 1000026232",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 124857752797,
+      "run_id": 41305568486,
+      "workflow_name": "Release",
+      "head_branch": "release/v0.22.46",
+      "run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORm09y88AAAAdEhoc3Q",
+      "head_sha": "f448bdae083483faa466136ffdcb168541ed1e0e",
+      "url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/jobs/124857752797",
+      "html_url": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41305568486/job/124857752797",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-11-01T13:09:06Z",
+      "started_at": "2026-11-01T13:09:06Z",
+      "completed_at": "2026-11-01T13:09:06Z",
+      "name": "Compare Windows packaged startup (Server 2022)",
+      "steps": [],
+      "check_run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/check-runs/124857752797",
+      "labels": [
+        "windows-2022"
+      ],
+      "runner_id": null,
+      "runner_name": null,
+      "runner_group_id": null,
+      "runner_group_name": null
+    },
+    {
+      "id": 124863831708,
+      "run_id": 41305568486,
+      "workflow_name": "Release",
+      "head_branch": "release/v0.22.46",
+      "run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORm09y88AAAAdEnbenA",
+      "head_sha": "f448bdae083483faa466136ffdcb168541ed1e0e",
+      "url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/jobs/124863831708",
+      "html_url": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41305568486/job/124863831708",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-01T13:34:16Z",
+      "started_at": "2026-11-01T13:34:18Z",
+      "completed_at": "2026-11-01T13:35:00Z",
+      "name": "Smoke macOS (arm64)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-01T13:34:19Z",
+          "completed_at": "2026-11-01T13:34:20Z"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-01T13:34:20Z",
+          "completed_at": "2026-11-01T13:34:25Z"
+        },
+        {
+          "name": "Download universal macOS artifact",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-01T13:34:25Z",
+          "completed_at": "2026-11-01T13:34:43Z"
+        },
+        {
+          "name": "Native clean-runner startup smoke",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-01T13:34:43Z",
+          "completed_at": "2026-11-01T13:34:56Z"
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-01T13:34:56Z",
+          "completed_at": "2026-11-01T13:34:57Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-01T13:34:57Z",
+          "completed_at": "2026-11-01T13:34:58Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/check-runs/124863831708",
+      "labels": [
+        "macos-15"
+      ],
+      "runner_id": 1000026235,
+      "runner_name": "GitHub Actions 1000026235",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 124863831740,
+      "run_id": 41305568486,
+      "workflow_name": "Release",
+      "head_branch": "release/v0.22.46",
+      "run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORm09y88AAAAdEnbevA",
+      "head_sha": "f448bdae083483faa466136ffdcb168541ed1e0e",
+      "url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/jobs/124863831740",
+      "html_url": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41305568486/job/124863831740",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-01T13:34:16Z",
+      "started_at": "2026-11-01T13:34:19Z",
+      "completed_at": "2026-11-01T13:35:27Z",
+      "name": "Smoke macOS (x86_64)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-01T13:34:20Z",
+          "completed_at": "2026-11-01T13:34:22Z"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-01T13:34:22Z",
+          "completed_at": "2026-11-01T13:34:31Z"
+        },
+        {
+          "name": "Download universal macOS artifact",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-01T13:34:31Z",
+          "completed_at": "2026-11-01T13:35:04Z"
+        },
+        {
+          "name": "Native clean-runner startup smoke",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-01T13:35:04Z",
+          "completed_at": "2026-11-01T13:35:23Z"
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-01T13:35:23Z",
+          "completed_at": "2026-11-01T13:35:24Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-01T13:35:24Z",
+          "completed_at": "2026-11-01T13:35:24Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/check-runs/124863831740",
+      "labels": [
+        "macos-15-intel"
+      ],
+      "runner_id": 1000026236,
+      "runner_name": "GitHub Actions 1000026236",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 124864124571,
+      "run_id": 41305568486,
+      "workflow_name": "Release",
+      "head_branch": "release/v0.22.46",
+      "run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORm09y88AAAAdEntWmw",
+      "head_sha": "f448bdae083483faa466136ffdcb168541ed1e0e",
+      "url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/jobs/124864124571",
+      "html_url": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41305568486/job/124864124571",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-01T13:35:28Z",
+      "started_at": "2026-11-01T13:35:30Z",
+      "completed_at": "2026-11-01T13:37:49Z",
+      "name": "Publish Release",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-01T13:35:30Z",
+          "completed_at": "2026-11-01T13:35:33Z"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-01T13:35:33Z",
+          "completed_at": "2026-11-01T13:35:38Z"
+        },
+        {
+          "name": "Download all artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-01T13:35:38Z",
+          "completed_at": "2026-11-01T13:36:00Z"
+        },
+        {
+          "name": "Normalize generated payload identity filenames",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-01T13:36:00Z",
+          "completed_at": "2026-11-01T13:36:00Z"
+        },
+        {
+          "name": "Organize Artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-01T13:36:00Z",
+          "completed_at": "2026-11-01T13:36:06Z"
+        },
+        {
+          "name": "Install publication identity tools",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-01T13:36:06Z",
+          "completed_at": "2026-11-01T13:36:16Z"
+        },
+        {
+          "name": "Verify generated publication identities",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-01T13:36:16Z",
+          "completed_at": "2026-11-01T13:36:50Z"
+        },
+        {
+          "name": "Verify downloaded publication executable identities",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-11-01T13:36:50Z",
+          "completed_at": "2026-11-01T13:36:50Z"
+        },
+        {
+          "name": "Create or Update GitHub Release",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-01T13:36:50Z",
+          "completed_at": "2026-11-01T13:37:09Z"
+        },
+        {
+          "name": "Attest Artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-01T13:37:09Z",
+          "completed_at": "2026-11-01T13:37:16Z"
+        },
+        {
+          "name": "Sync External Registries",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-01T13:37:16Z",
+          "completed_at": "2026-11-01T13:37:43Z"
+        },
+        {
+          "name": "Preserve external registry sync results",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-01T13:37:43Z",
+          "completed_at": "2026-11-01T13:37:44Z"
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-11-01T13:37:44Z",
+          "completed_at": "2026-11-01T13:37:45Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-11-01T13:37:45Z",
+          "completed_at": "2026-11-01T13:37:47Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/check-runs/124864124571",
+      "labels": [
+        "macos-latest"
+      ],
+      "runner_id": 1000026237,
+      "runner_name": "GitHub Actions 1000026237",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 124864692125,
+      "run_id": 41305568486,
+      "workflow_name": "Release",
+      "head_branch": "release/v0.22.46",
+      "run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/runs/41305568486",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORm09y88AAAAdEoP_nQ",
+      "head_sha": "f448bdae083483faa466136ffdcb168541ed1e0e",
+      "url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/actions/jobs/124864692125",
+      "html_url": "https://github.com/HiroyukiFuruno/KatanA/actions/runs/41305568486/job/124864692125",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-01T13:37:50Z",
+      "started_at": "2026-11-01T13:37:51Z",
+      "completed_at": "2026-11-01T13:38:41Z",
+      "name": "Audit and clean published release branches",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-01T13:37:52Z",
+          "completed_at": "2026-11-01T13:37:53Z"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-01T13:37:53Z",
+          "completed_at": "2026-11-01T13:37:56Z"
+        },
+        {
+          "name": "Run dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-01T13:37:56Z",
+          "completed_at": "2026-11-01T13:37:57Z"
+        },
+        {
+          "name": "Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-01T13:37:57Z",
+          "completed_at": "2026-11-01T13:37:59Z"
+        },
+        {
+          "name": "Run taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-01T13:37:59Z",
+          "completed_at": "2026-11-01T13:37:59Z"
+        },
+        {
+          "name": "Install pinned cleanup tool",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-01T13:37:59Z",
+          "completed_at": "2026-11-01T13:38:22Z"
+        },
+        {
+          "name": "Install normal hook dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-01T13:38:22Z",
+          "completed_at": "2026-11-01T13:38:33Z"
+        },
+        {
+          "name": "Resolve and clean the published target",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-01T13:38:33Z",
+          "completed_at": "2026-11-01T13:38:39Z"
+        },
+        {
+          "name": "Preserve cleanup receipts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-01T13:38:39Z",
+          "completed_at": "2026-11-01T13:38:40Z"
+        },
+        {
+          "name": "Post Run oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-11-01T13:38:40Z",
+          "completed_at": "2026-11-01T13:38:40Z"
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-11-01T13:38:40Z",
+          "completed_at": "2026-11-01T13:38:40Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-11-01T13:38:40Z",
+          "completed_at": "2026-11-01T13:38:40Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/HiroyukiFuruno/KatanA/check-runs/124864692125",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000026239,
+      "runner_name": "GitHub Actions 1000026239",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ],
+  "optional_job_results": {
+    "Audit and clean published release branches": {
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "Compare Windows packaged startup (Server 2022)": {
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  },
+  "source_binding": {
+    "kind": "merged_pull_request",
+    "product_commit": "e5360a39ecac101130b1b3ae34b91da249d42377",
+    "tag": "v0.22.46",
+    "run_head_sha": "f448bdae083483faa466136ffdcb168541ed1e0e",
+    "head_branch": "release/v0.22.46",
+    "event": "pull_request",
+    "pull_request_number": 407,
+    "merged_at": "2026-11-01T12:14:57+00:00"
+  }
+}
