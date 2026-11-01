@@ -151,6 +151,9 @@ fi
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-acceptance-evidence.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-acceptance.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-provenance-publication.py
+"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-v47.py
+"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-observation.py
+"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-version.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-published-artifact-identity.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/check-document-fidelity-release-gate.py "$VERSION" "$TASK_GATE_MODE"
 VERSION_DASHED=$(echo "$VERSION" | tr '.' '-')

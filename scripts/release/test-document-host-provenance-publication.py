@@ -8,6 +8,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from document_host_acceptance import provenance
 from document_host_io import HostEvidenceError, digest, legacy, write_new
@@ -90,6 +91,64 @@ class ActualSourceCommitBoundaryTests(unittest.TestCase):
 
 
 class PublicationMetadataBoundaryTests(unittest.TestCase):
+    def test_v47_binding_is_explicit_and_other_versions_rejected(self):
+        from document_host_publication import allowed_publication_version
+        self.assertEqual(allowed_publication_version("v0.22.47"), "v0.22.47")
+        self.assertEqual(allowed_publication_version("v0.22.42"), "v0.22.42")
+        for version in ("v0.22.46", "v0.22.48", "0.22.47"):
+            with self.subTest(version=version), self.assertRaises(HostEvidenceError):
+                allowed_publication_version(version)
+
+    def test_v47_download_rejects_unpublished_or_draft_before_downloading(self):
+        recorder = module("_unit_v47_download_recorder", "record-published-artifact-download-v47.py")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for release in ({}, {"tag_name": "v0.22.47", "draft": True, "published_at": "2026-01-01"}):
+                with self.subTest(release=release), patch.object(recorder, "api", return_value=release), \
+                     patch.object(recorder.subprocess, "run") as command, self.assertRaises(HostEvidenceError):
+                    recorder.record(root, root / "new-download", root / "manifests")
+                command.assert_not_called()
+
+    def test_v47_receipt_requires_exact_tag_manifest_and_committed_version(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            receipt, bundle, source, records, path = self.fixture(root)
+            producer = root / "scripts/release/record-published-artifact-download-v47.py"
+            producer.write_bytes(Path(__file__).with_name(producer.name).read_bytes())
+            receipt["producer_sha256"] = digest(producer.read_bytes())
+            old, new = "v0.22.42", "v0.22.47"
+            old_dmg, new_dmg = "KatanA-Desktop-0.22.42.dmg", "KatanA-Desktop-0.22.47.dmg"
+            receipt["assets"][new_dmg] = receipt["assets"].pop(old_dmg)
+            for item in receipt["assets"].values():
+                item["download_url"] = item["download_url"].replace(old, new).replace(old_dmg, new_dmg)
+            receipt.update(tag=new, release_url=receipt["release_url"].replace(old, new))
+            for platform, record in records.items():
+                record["version"] = new
+                if old_dmg in record["assets"]:
+                    record["assets"][new_dmg] = record["assets"].pop(old_dmg)
+                target = root / receipt["build_manifests"][platform]["path"]
+                target.write_text(json.dumps(record)+"\n")
+                receipt["build_manifests"][platform]["sha256"] = digest(target.read_bytes())
+            def verify():
+                raw = (json.dumps(receipt)+"\n").encode()
+                path.write_bytes(raw)
+                verify_download_receipt(root, {"status": "published_macos_host_accepted", "receipt": {
+                    "path": path.relative_to(root).as_posix(), "sha256": digest(raw)}}, source, bundle, new)
+            with patch("published_git_source.git_workspace_version", return_value=new):
+                verify()
+                receipt["draft"] = True
+                with self.assertRaises(HostEvidenceError):
+                    verify()
+                receipt["draft"] = False
+                receipt["source_commit"] = "b"*40
+                receipt["provenance"] = dict(receipt["provenance"], source_commit="b"*40)
+                with self.assertRaises(HostEvidenceError):
+                    verify()
+                receipt["source_commit"] = source["source_commit"]
+                receipt["provenance"] = source
+            with patch("published_git_source.git_workspace_version", return_value=old), self.assertRaises(HostEvidenceError):
+                verify()
+
     def fixture(self, root):
         source = {"source_commit": "a"*40, "source_tree_sha256": unit_sha("source"), "cargo_lock_sha256": unit_sha("lock"),
                   "published_dependencies": {}}
