@@ -85,6 +85,8 @@ sourceと既存実行入口を照合済み。group/updaterと書込範囲を分�
 - [x] 3.5 Windows cold/warm計測入口とmacOS normal/coverage inventory差・完全性・理由/digestの比較契約を実装する（実CI計測結果の回収は6.3）。
 - [x] 3.6 v0.22.47の段階別task/artifact gateと公開後records scopeを登録し、CI前/公開前の循環を解消する。1〜5の事前検証は免除せず、push/review/CI/公開後にしか完了しない6.xだけを各段階のexact allowlistで扱い、誤branch/版/段階/追加未完項目を拒否する回帰を通す。
 
+- [x] 3.7 通常pushで検出した旧CI契約の固定event検査を、同一SHAのmaster push/信頼済dispatch選択とverified consumerへ揃える。待機360/30・本体のsource/repo/master/actor/full8jobs/step検証を維持し、対象契約と17件の受入/拒否回帰を通す。
+
 ## 4. 実行環境・依存・受入準備（#372、#354、#339、#338）
 
 ### Definition of Ready
@@ -188,3 +190,5 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - 正式capture source43fc8d04の前後clean HEADをsource_identityで確認。canonical-candidate-v47-fixedは1280x2400/sha256 6b5ece9d9d3548e4f0250d9126535e10daf90768029f77e9b2ed46c8c3d26527、source609の修正前PreviewOnly候補と同hash、geometry/clean interaction条件も成功。採用は6.6で公開後に行う。
 - README実画像はassets/readme/workspace.pngへ無加工で複製し日英rootREADMEへ掲載。3200x2000/436273bytes/sha256 ac48c9cc563e5a6db50ec04045b0d849a7427759be482448b7244d5c20a17825。source/request/fixture/imageのhashをworkspace.capture.jsonへ記録、上部/tree/statusの実画素が非単色で全体を描画。actual KatanaApp in-processでありpackaged受入の代用にしない。旧黒覆い画像は採用しない。
 - 最終self-reviewはcommit-self-review.mdと各独立High review。6.1はlocal/対象検査とsource整合を確認した範囲、通常push正式gate・Draft review回収以降は6.2〜6.7のまま未完。
+
+- 1回目の通常push（normal-pr405-push.log）は送信前検査で停止、remote未更新。791tests/331.730s・版契約は成功後、旧shell契約が廃止済み--event push literalを要求してstep3で失敗。gate本体を弱めずselector/consumer契約へ追従し、version-bump-ci-contract-final.logとadmission17件が成功。通常pushを再実行して正式gateを完遂するまで6.2は未完。
