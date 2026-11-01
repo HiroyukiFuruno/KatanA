@@ -11,6 +11,10 @@ fn wildcard_filter_matches_png_basenames_and_preserves_parent_directories() {
     let nested_png = images.join("nested.PNG");
     let not_png = images.join("notes.txt");
     let png_backup = images.join("nested.png.bak");
+    let copied_assets = root.join("assets (copy)");
+    let copied_png = copied_assets.join("icon.png");
+    let hyphenated_assets = root.join("assets-");
+    let hyphenated_png = hyphenated_assets.join("icon.png");
     let entries = vec![
         TreeEntry::File {
             path: root_png.clone(),
@@ -25,6 +29,18 @@ fn wildcard_filter_matches_png_basenames_and_preserves_parent_directories() {
                 TreeEntry::File { path: png_backup },
             ],
         },
+        TreeEntry::Directory {
+            path: copied_assets.clone(),
+            children: vec![TreeEntry::File {
+                path: copied_png.clone(),
+            }],
+        },
+        TreeEntry::Directory {
+            path: hyphenated_assets.clone(),
+            children: vec![TreeEntry::File {
+                path: hyphenated_png.clone(),
+            }],
+        },
     ];
     let mut search = SearchState::new();
     search.filter_enabled = true;
@@ -36,13 +52,17 @@ fn wildcard_filter_matches_png_basenames_and_preserves_parent_directories() {
     assert!(visible.contains(&root_png));
     assert!(visible.contains(&nested_png));
     assert!(visible.contains(&images));
-    assert_eq!(visible.len(), 3);
+    assert_eq!(visible.len(), 7);
 
     search.filter.match_word = true;
     ExplorerLogicOps::update_search_filter_cache(&mut search, root, &entries, 1);
     let visible = &search.filter_cache.as_ref().unwrap().1;
     assert!(visible.contains(&root_png));
     assert!(visible.contains(&nested_png));
+    assert!(visible.contains(&copied_assets));
+    assert!(visible.contains(&copied_png));
+    assert!(visible.contains(&hyphenated_assets));
+    assert!(visible.contains(&hyphenated_png));
 }
 
 #[test]

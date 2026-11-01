@@ -83,7 +83,7 @@ OpenSpec は `./scripts/openspec`、検証は既存の `just` ターゲットを
 
 - [x] 5.1 self-review、Markdown整合、CHANGELOG日英同期、version同期。
 - [x] 5.2 通常pushでpre-pushを通しDraft PRを作成する。
-- [x] 5.3 reviewを実行・取得し、指摘修正・thread reply/resolve・P0/P1ゼロを確認する。
+- [ ] 5.3 reviewを実行・取得し、指摘修正・thread reply/resolve・P0/P1ゼロを確認する。
 - [ ] 5.4 Ready昇格、required checks成功後にmergeする。
 - [ ] 5.5 GitHub Release成果物を検証し、既存appを公開版へ直接更新して元PNGの自動復元を検証した後、OpenSpecをarchiveする。
 - [ ] 5.6 branch-hygieneでstash/master/ahead-behind/worktreeを再確認する。
@@ -125,3 +125,7 @@ OpenSpec は `./scripts/openspec`、検証は既存の `just` ターゲットを
 - Codex Windows P2と独立reviewのUnix filename互換P2を修正。MAIN_SEPARATORをprivate boundaryとして、Unixは/だけ・Windowsは両sepでglobを生成。通常literal/regexは無変更。portable両OSの実Regex + Unix cache + cfgWindows nativePathJoin/cacheを回帰。windows-glob-unix-red.logでRED、windows-glob-unix-green.log Explorer28成功。独立High再reviewで残P0/P1/P2なし。修正pushとthread reply/resolveは次段で回収する。
 
 - 修正a1edf428の通常pushもexit0。署名Verifiedとremote一致を確認。PR407 comment4434972135へreply4435076494を直接投稿しthread PRRT_kwDORm09y86yYr30をresolve、取得した全threadは未解決0・P0/P1なし。Draftを維持して最新コードのCodex再レビューも依頼済み（comment6556181760）。Ready前に結果を再取得する。
+
+- [/] 最新Codex P2: 単語一致+basename wildcardの境界をprefix後に適用し、assets (copy)/icon.png / assets-/icon.pngの表示漏れを修正する（PR407 thread PRRT_kwDORm09y86yZJrc / comment4435168015）。追加レビュー取得後Draftへ戻した。旧e624のCI結果は別途回収し、修正後の検査成功と混同しない。
+
+- 単語境界P2: word-boundary-red.logで実cacheのassets (copy)親directoryが消えるREDを確認。normalglob本体にだけ境界を置く修正後、word-boundary-green.logでExplorer29件/fmt/clippy成功。両OS separatorの回帰とliteral/regex既存境界を維持。独立High最終reviewは残P0/P1/P2なし。thread reply/resolveと修正後CIは後段で回収する。旧e624の全3OSlint・供給網・Readinessはsuccess、Draft復帰により実行中test/CodeQLが自動cancelledとなった（first-ready-ci-result.json）。

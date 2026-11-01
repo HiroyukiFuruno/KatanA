@@ -14,9 +14,9 @@ impl FilterPattern {
         let pattern = if params.use_regex {
             query.to_string()
         } else {
-            Self::normal_mode_pattern(query, std::path::MAIN_SEPARATOR)
+            Self::normal_mode_pattern(query, std::path::MAIN_SEPARATOR, params.match_word)
         };
-        let pattern = if params.match_word {
+        let pattern = if params.match_word && (params.use_regex || !query.contains('*')) {
             format!(r"\b{pattern}\b")
         } else {
             pattern
@@ -27,13 +27,13 @@ impl FilterPattern {
         Ok(Self { regex, is_negated })
     }
 
-    fn normal_mode_pattern(query: &str, separator: char) -> String {
+    fn normal_mode_pattern(query: &str, separator: char, match_word: bool) -> String {
         let escaped = regex::escape(query);
         if !query.contains('*') {
             return escaped;
         }
 
-        let wildcard = Self::wildcard_pattern(query, separator);
+        let wildcard = Self::wildcard_pattern(query, separator, match_word);
         let has_path_separator = query.contains('/') || (separator == '\\' && query.contains('\\'));
         let separator_pattern = if separator == '\\' { r"[/\\]" } else { r"/" };
         if has_path_separator {
@@ -43,7 +43,7 @@ impl FilterPattern {
         }
     }
 
-    fn wildcard_pattern(query: &str, separator: char) -> String {
+    fn wildcard_pattern(query: &str, separator: char, match_word: bool) -> String {
         let separator_pattern = if separator == '\\' { r"[/\\]" } else { r"/" };
         let wildcard_pattern = if separator == '\\' {
             r"[^/\\]*"
@@ -61,7 +61,11 @@ impl FilterPattern {
             }
         }
 
-        pattern
+        if match_word {
+            format!(r"\b{pattern}\b")
+        } else {
+            pattern
+        }
     }
 }
 

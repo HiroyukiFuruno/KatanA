@@ -25,3 +25,5 @@
 ## Draft後の再レビュー
 
 CodexのWindows path P2と独立reviewのUnix filename P2を採用した。OSのMAIN_SEPARATORでwildcard生成だけを切り替え、通常literal/regexの既存挙動を保持。28回帰が成功し、High再reviewで残指摘なし。GitHub threadは修正push後に個別返信・resolveして再取得する。
+
+最新Codexの単語境界P2も採用。normalglob本体へ境界を移しbasenameprefix/anchorの外側適用を解消した。actualcacheのRED→Explorer29GREEN/fmt/clippy成功、独立Highレビューで追加指摘なし。literal/regex・match_word無効時・OS区切りは維持。修正後のpushとthread reply/resolve・必須CIはtasksで未完として追跡する。
