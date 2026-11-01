@@ -3809,7 +3809,7 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.45"
+version = "0.22.46"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -3883,7 +3883,7 @@ dependencies = [
 
 [[package]]
 name = "katana-linter"
-version = "0.22.45"
+version = "0.22.46"
 dependencies = [
  "ignore",
  "katana-ast-lint",
@@ -3927,7 +3927,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.45"
+version = "0.22.46"
 dependencies = [
  "anyhow",
  "cc",
@@ -3992,7 +3992,7 @@ checksum = "729af5d660bb6f439ced0a7c56d86ad1cd15b6f1092becc70afd97d41c5a6073"
 
 [[package]]
 name = "katana-ui"
-version = "0.22.45"
+version = "0.22.46"
 dependencies = [
  "anyhow",
  "arboard",
@@ -8229,9 +8229,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-properties"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7df058c713841ad818f1dc5d3fd88063241cc61f49f5fbea4b951e8cf5a8d71d"
+checksum = "993ad287eb20e8ba755312801cfe1413e0f25d604075863acaddca10b04c1833"
 
 [[package]]
 name = "unicode-script"
@@ -9615,9 +9615,9 @@ dependencies = [
 
 [[package]]
 name = "yazi"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e01738255b5a16e78bbb83e7fbba0a1e7dd506905cfc53f4622d89015a03fbb5"
+checksum = "ac366ea532fa8ee6a992cec9dea525b1dc284e69702f36c2ab5fbebadc81ec86"
 
 [[package]]
 name = "yoke"
