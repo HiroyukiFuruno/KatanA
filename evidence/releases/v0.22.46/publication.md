@@ -28,7 +28,7 @@
 
 ## 配布経路と整理
 
-公開jobのexternal-registry-sync receiptはHomebrew/Linuxbrewをupdated、WinGetをsubmission_completedと記録している。tapのcurrent/version-pinned各4ファイルを読取確認し、0.22.46・実公開SHA・URLの一致とRuby構文を確認した。これはbrew installの受入ではなく、WinGetのcatalog反映やMicrosoft側のmerge済みとも主張しない。
+公開jobのexternal-registry-sync receiptはHomebrew/Linuxbrewをupdated、WinGetをsubmission_completedと記録している。tapのcurrent/version-pinned Cask・Formula計4ファイルを読取確認し、0.22.46・実公開SHA・URLの一致とRuby構文を確認した。これはbrew installの受入ではなく、WinGetのcatalog反映やMicrosoft側のmerge済みとも主張しない。
 
 ローカルの実装branch `release/v0.22.46` は正式mergeと公開を確認して通常削除した。既存公開Actionsの自動cleanupがremoteの同branchを削除したため、元の検証済み `f448bdae` への参照を復元し、独立したAPI読取で一致を確認した。リモート削除の明示opt-in化は[後続Issue408](https://github.com/HiroyukiFuruno/KatanA/issues/408)で追跡する。追加のremote削除は行わない。
 
