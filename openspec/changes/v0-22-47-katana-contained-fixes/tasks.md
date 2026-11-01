@@ -95,9 +95,9 @@ sourceと既存実行入口を照合済み。group/updaterと書込範囲を分�
 - [x] 4.2 direct/transitive/全lockの最新互換候補・MSRV・実APIを評価する。pending glam0.34.2/zip9.2.1も採否を正式に解決する。
 - [x] 4.3 ZIP例外の根拠・期限2026-11-07・実利用と3manifestのstrict gateを再評価し、例外を勝手に延長しない。
 - [x] 4.4 KDV/KRRの現行公開registry graphを確認し、必要な原本入力・Office/HTML受入と10 mixed cyclesの事前検査を完了する。
-- [ ] 4.5 canonical sample_diagramsの1280x2400 capture request・候補検査・exactsource/hash再現記録を整える。
-- [ ] 4.6 公開fixtureを使った実KatanaAppのtree/editor/preview画像を取得し、画像bytes・寸法・source/入力hashを確認してroot README.mdとREADME.ja.mdへ掲載する。
-- [ ] 4.7 README取得で判明した分割表示の背景による上部UI/tree/statusの上書き（#413）を残余content範囲に限定して修正する。実先行panel・縦横split・dark/lightのRED→GREENと、実App全画面の描画・canonical幾何の維持を確認する。
+- [x] 4.5 canonical sample_diagramsの1280x2400 capture request・候補検査・exactsource/hash再現記録を整える。
+- [x] 4.6 公開fixtureを使った実KatanaAppのtree/editor/preview画像を取得し、画像bytes・寸法・source/入力hashを確認してroot README.mdとREADME.ja.mdへ掲載する。
+- [x] 4.7 README取得で判明した分割表示の背景による上部UI/tree/statusの上書き（#413）を残余content範囲に限定して修正する。実先行panel・縦横split・dark/lightのRED→GREENと、実App全画面の描画・canonical幾何の維持を確認する。
 
 ## 5. User Review Phase
 
@@ -116,7 +116,7 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 
 ## 6. Final Verification & Release Work
 
-- [ ] 6.1 self-review/独立High review、日英CHANGELOG・version/全lock同期、strict OpenSpec/KML検証。
+- [x] 6.1 self-review/独立High review、日英CHANGELOG・version/全lock同期、strict OpenSpec/KML検証。
 - [ ] 6.2 通常pushを正式gateとして通し、PR405をDraftのまま最新内容へ更新してreviewを取得、指摘修正/reply/resolve、P0/P1ゼロを確認する。
 - [ ] 6.3 Ready化して必須全checksと追加検査を回収し、Windows cold/warm同条件実測・macOS inventory同等性を実runで確認後、通常mergeする（admin/delete-branchなし）。
 - [ ] 6.4 merge sourceのCI結果を回収後、v0.22.47を一度だけ明示公開する。tag・実bytes・署名来歴・identityの不一致は拒否する。
@@ -183,3 +183,8 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - 最終pipeline sourceのactionlint v1.7.12 exit0、release test_*.py 791件/325.624s exit0（release-unittest-v47-with-host.log）。新host hyphen testsは別回収し、v47 6/observation7/version1/legacy acceptance34/publication9が全成功（host-parent-verification-*.log）。実140open/closeの完了には読み替えない。
 
 - 4.4の事前検査: 原本Office7件+HTMLのprivate isolatedcopy/hash、source実workerのOffice typed first-frame/PPTX操作/HTMLの3対象（host-original-fixtures-isolated.log）とinflight/ready-close回帰を確認。registryは21:18 UTC時点でKDV0.5.12/KRR0.4.23のまま。10 mixed-cycleの実データは6.5で公開物へ結合するため、前段では7pair/140open-close・必要操作・実PID/epoch/seq/開始前closed/終了idle・性能閾値の記録導線と拒否契約を検査済み。host-acceptance-plan.mdに実行手順を固定。実cycle成功・実配布acceptanceとは主張しない。独立Highの版誤記/旧PPTX免除流用/時間過小計測3P1とcanonical事前作成P2は修正・回帰済み。
+
+- #413は通常署名commit43fc8d04に記録。旧max_rectの実panel REDから残余範囲のGREEN、bottom/top/left+縦横+明暗4組（対象2tests）、AST30/Clippy成功。独立High追加P0/P1/P2なし。
+- 正式capture source43fc8d04の前後clean HEADをsource_identityで確認。canonical-candidate-v47-fixedは1280x2400/sha256 6b5ece9d9d3548e4f0250d9126535e10daf90768029f77e9b2ed46c8c3d26527、source609の修正前PreviewOnly候補と同hash、geometry/clean interaction条件も成功。採用は6.6で公開後に行う。
+- README実画像はassets/readme/workspace.pngへ無加工で複製し日英rootREADMEへ掲載。3200x2000/436273bytes/sha256 ac48c9cc563e5a6db50ec04045b0d849a7427759be482448b7244d5c20a17825。source/request/fixture/imageのhashをworkspace.capture.jsonへ記録、上部/tree/statusの実画素が非単色で全体を描画。actual KatanaApp in-processでありpackaged受入の代用にしない。旧黒覆い画像は採用しない。
+- 最終self-reviewはcommit-self-review.mdと各独立High review。6.1はlocal/対象検査とsource整合を確認した範囲、通常push正式gate・Draft review回収以降は6.2〜6.7のまま未完。

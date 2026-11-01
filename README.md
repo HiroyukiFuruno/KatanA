@@ -1,28 +1,22 @@
-<p align="center">
-  <img src="assets/icon.iconset/icon_128x128.png" width="128" alt="KatanA Desktop">
-</p>
+![KatanA Desktop](assets/icon.iconset/icon_128x128.png)
 
-<h1 align="center">KatanA Desktop</h1>
+# KatanA Desktop
 
-<p align="center">
-  A fast, lightweight Markdown workspace for macOS, Windows, and Linux — built with Rust and egui.
-</p>
+A fast, lightweight Markdown workspace for macOS, Windows, and Linux — built with Rust and egui.
 
-<p align="center">
-  <strong><a href="https://katana-desktop.katana-projects.org/">🌐 Official Website</a></strong> | <strong><a href="https://katana-desktop.katana-projects.org/docs/getting-started">📚 Documentation</a></strong>
-</p>
+**[🌐 Official Website](https://katana-desktop.katana-projects.org/)** | **[📚 Documentation](https://katana-desktop.katana-projects.org/docs/getting-started)**
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml"><img src="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/HiroyukiFuruno/KatanA/releases/latest"><img src="https://img.shields.io/github/v/release/HiroyukiFuruno/KatanA" alt="Latest Release"></a>
-  <a href="https://github.com/HiroyukiFuruno/homebrew-katana"><img src="https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew" alt="Homebrew"></a>
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey" alt="Platform: macOS | Windows | Linux">
-</p>
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml/badge.svg)](https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml)
+[![Latest Release](https://img.shields.io/github/v/release/HiroyukiFuruno/KatanA)](https://github.com/HiroyukiFuruno/KatanA/releases/latest)
+[![Homebrew](https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew)](https://github.com/HiroyukiFuruno/homebrew-katana)
+![Platform: macOS | Windows | Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 
-<p align="center">
-  English | <a href="README.ja.md">日本語</a>
-</p>
+English | [日本語](README.ja.md)
+
+![KatanA workspace with a file tree, Markdown editor, and live preview](assets/readme/workspace.png)
+
+Browse files, edit Markdown, and preview your document side by side.
 
 ---
 
@@ -63,7 +57,7 @@ However, existing Markdown tools are often either:
 - general-purpose editors not optimized for technical documentation workflows, or
 - heavy knowledge-management tools with unnecessary complexity.
 
-# KatanA Desktop was created to solve this problem
+## KatanA Desktop was created to solve this problem
 
 The goal of KatanA is to provide a **simple, fast, and workspace-oriented Markdown environment** where developers can easily **browse and edit documentation used in SDD workflows**.
 
@@ -254,7 +248,7 @@ just check
 
 If you find KatanA useful and would like to support its development, you can do so through sponsorship.
 
-<a href="https://github.com/sponsors/HiroyukiFuruno"><img src="https://img.shields.io/badge/Sponsor-❤️-ea4aaa?style=for-the-badge&logo=github-sponsors" alt="Sponsor"></a>
+[![Sponsor](https://img.shields.io/badge/Sponsor-❤️-ea4aaa?style=for-the-badge&logo=github-sponsors)](https://github.com/sponsors/HiroyukiFuruno)
 
 Support helps cover:
 
