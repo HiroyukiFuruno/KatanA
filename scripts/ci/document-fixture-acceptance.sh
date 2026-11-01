@@ -15,6 +15,12 @@ cd "$ROOT_DIR"
     exit 1
 }
 
+# WHY: 実アプリの既定リポジトリを使う検査でも、個人の設定や履歴を参照させない。
+mkdir -p "$ROOT_DIR/tmp"
+KATANA_CONFIG_DIR=$(mktemp -d "$ROOT_DIR/tmp/document-fixture-config.XXXXXX")
+export KATANA_CONFIG_DIR
+printf 'ISOLATED_FIXTURE_PROFILE=%s\n' "$KATANA_CONFIG_DIR"
+
 TARGET_DIR=${CARGO_TARGET_DIR:-"$ROOT_DIR/target"}
 if [[ "$TARGET_DIR" != /* ]]; then
     TARGET_DIR="$ROOT_DIR/$TARGET_DIR"

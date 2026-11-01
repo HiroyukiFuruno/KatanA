@@ -11,6 +11,8 @@ use std::time::{Duration, Instant};
 mod assertions;
 #[path = "png_explorer/fixture.rs"]
 mod fixture;
+#[path = "png_explorer/inflight_close_tests.rs"]
+mod inflight_close_tests;
 #[path = "png_explorer/input.rs"]
 mod input;
 #[path = "png_explorer/mixed_directory_tests.rs"]
