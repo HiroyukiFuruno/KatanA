@@ -18,6 +18,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 ### 🔧 System
 
 - Improve update reliability and maintain compatibility with current dependencies.
+- Isolate automated checks from saved app settings and workspace history.
 
 ## [0.22.46] - 2026-11-01 07:49:00 (UTC)
 

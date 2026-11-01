@@ -162,3 +162,7 @@ impl KatanaApp {
 
 #[cfg(test)]
 include!("shell_tests.rs");
+
+#[cfg(test)]
+#[path = "profile_isolation_regression_tests.rs"]
+mod profile_isolation_regression_tests;

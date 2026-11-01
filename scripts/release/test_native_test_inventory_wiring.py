@@ -91,7 +91,8 @@ class InventoryWiringTests(unittest.TestCase):
         self.assertIn('export KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER"', source)
         self.assertIn('"$1" == \'cargo test --workspace\'', source)
         self.assertIn('--kind test -- cargo test --workspace', source)
-        self.assertIn('exec bash -c "$1"', source)
+        self.assertIn('exec python3 -B scripts/ci/isolated-test-config.py -- bash -c "$1"', source)
+        self.assertIn('scripts/ci/isolated-test-config.py -- python3 scripts/release/record-test-invocation.py', source)
         self.assertLess(source.index("export KATANA_KDV_OFFICE_WORKER"),
                         source.index("record-test-invocation.py"))
 

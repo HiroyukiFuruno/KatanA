@@ -176,24 +176,25 @@ jobs:
             export KATANA_GUARD_BASH_EXECUTABLE
           fi
           python3 -B -m unittest discover -s scripts/ci -p 'test_cargo_*guard.py' -v
+          python3 -B -m unittest discover -s scripts/ci -p 'test_isolated_test_config.py' -v
 
       - name: Measure cold real-font lookup (Windows)
         if: runner.os == 'Windows'
         env:
           DEBUG: 'true'
         run: >-
-          cargo test --locked -p katana-ui --lib
+          python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked -p katana-ui --lib
           preview_pane::document_surface::font_lookup::tests::real_background_worker_returns_result_with_identity_while_ui_paints
           -- --exact --nocapture
 
       - name: Test CommonMark cache contracts
-        run: cargo test --locked -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
+        run: python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
 
       - name: Test CommonMark HTML trace bounds
         run: just test-commonmark-html-trace
 
       - name: Test patched custom cursor cache
-        run: cargo test --locked -p katana-ui -p egui-winit --lib cursor_cache::tests
+        run: python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked -p katana-ui -p egui-winit --lib cursor_cache::tests
 
       - name: Test patched native surface size contracts
         run: just test-wgpu-native-surface-size
@@ -247,7 +248,7 @@ jobs:
         shell: bash
         env:
           CARGO_TARGET_DIR: target/screenshot-harness
-        run: cargo test --locked --release --manifest-path scripts/screenshot/Cargo.toml
+        run: python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked --release --manifest-path scripts/screenshot/Cargo.toml
 
       - name: Run multi-format headless acceptance
         if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')

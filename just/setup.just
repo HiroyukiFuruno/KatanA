@@ -20,7 +20,7 @@ run: sweep build
 
 # Watch file changes & auto check (requires cargo-watch)
 watch: sweep
-    {{CARGO}} watch -x 'check --workspace' -x 'test --workspace'
+    {{RTK_CMD}}python3 -B scripts/ci/isolated-test-config.py -- env {{CARGO}} watch -x 'check --workspace' -x 'test --workspace'
 
 # Watch file changes & auto restart (requires cargo-watch)
 watch-run: sweep

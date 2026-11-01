@@ -19,11 +19,11 @@ test-commonmark-html-trace:
 
 # root lockとUIのfeature集合で、workspace外の既存patched backendを検査する。
 test-commonmark-backend:
-    {{CARGO}} test --locked -j {{JOBS}} -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
+    {{RTK_CMD}}python3 -B scripts/ci/isolated-test-config.py -- env {{CARGO}} test --locked -j {{JOBS}} -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
 
 # workspace外のcursor修正も、UIと同じfeature集合で通常検査へ含める。
 test-custom-cursor-cache:
-    {{CARGO}} test --locked -j {{JOBS}} -p katana-ui -p egui-winit --lib cursor_cache::tests
+    {{RTK_CMD}}python3 -B scripts/ci/isolated-test-config.py -- env {{CARGO}} test --locked -j {{JOBS}} -p katana-ui -p egui-winit --lib cursor_cache::tests
 
 # 実描画に使う寸法判定moduleを、追加のGPU環境なしで全OSの通常検査へ含める。
 test-wgpu-native-surface-size:
@@ -31,6 +31,7 @@ test-wgpu-native-surface-size:
 
 # デバッグ情報の容量対策で全test・coverage・受入を削減していないことを確認する。
 test-ci-resource-contract:
+    {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_isolated_test_config.py -v
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_native_profiler_job_contract.py -v
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/runner -p test_impacted.py -v
@@ -50,7 +51,7 @@ test-core:
 
 # Run tests for katana-ui only
 test-ui:
-    {{CARGO}} test -p katana-ui
+    {{RTK_CMD}}python3 -B scripts/ci/isolated-test-config.py -- env {{CARGO}} test -p katana-ui
 
 # Run the supplied Office and HTML fixtures through the explicit acceptance gate.
 test-document-fixtures: test-html-host-contract
@@ -58,7 +59,7 @@ test-document-fixtures: test-html-host-contract
 
 # WHY: テーマ設定値だけではPDFの実色を保証できないため、明示Popplerで実出力を検査する。
 test-pdf-theme:
-    {{CARGO}} test --locked -j {{JOBS}} -p katana-ui --lib --features external-fixture-acceptance shell_ui::pdf_theme_tests -- --test-threads=1 --nocapture
+    {{RTK_CMD}}python3 -B scripts/ci/isolated-test-config.py -- env {{CARGO}} test --locked -j {{JOBS}} -p katana-ui --lib --features external-fixture-acceptance shell_ui::pdf_theme_tests -- --test-threads=1 --nocapture
 
 # Execute paint-metrics coordinate extraction independently from Office/V8 integration checks.
 test-paint-metrics:
@@ -66,16 +67,16 @@ test-paint-metrics:
 
 # Run tests with verbose output
 test-verbose:
-    {{CARGO}} test --workspace -- --nocapture
+    {{RTK_CMD}}python3 -B scripts/ci/isolated-test-config.py -- env {{CARGO}} test --workspace -- --nocapture
 
 # Run a specific test (e.g., just T=test_name test-specific)
 test-specific:
-    {{CARGO}} test --workspace -- {{T}}
+    {{RTK_CMD}}python3 -B scripts/ci/isolated-test-config.py -- env {{CARGO}} test --workspace -- {{T}}
 
 # WHY: 採取環境の成否を製品の必須検査に混ぜず、同じ実採取回帰を明示実行する。
 test-native-html-diagnostics:
     @if [ "$(uname -s)" != "Darwin" ]; then printf '%s\n' 'Native HTML sampling requires macOS'; exit 1; fi
-    {{CARGO}} test --locked -p katana-ui --lib --features native-profiler-diagnostics app::action::html_navigation::diagnostics::tests::sample_captures_owned_child_pid_to_workspace_failure_directory -- --exact --nocapture
+    {{RTK_CMD}}python3 -B scripts/ci/isolated-test-config.py -- env {{CARGO}} test --locked -p katana-ui --lib --features native-profiler-diagnostics app::action::html_navigation::diagnostics::tests::sample_captures_owned_child_pid_to_workspace_failure_directory -- --exact --nocapture
 
 # Run integration tests - fixture tests only (requires: egui_kittest)
 test-integration: check-native-office-worker-contract
@@ -99,7 +100,7 @@ check-docker-volume-lifecycle:
 
 # Verify test execution in isolated Linux environment
 check-linux: check-linux-office-worker-contract check-docker-volume-lifecycle
-    {{DOCKER}} compose -f platforms/linux/ci/compose.yml run --rm -e RUST_TEST_THREADS="{{RUST_TEST_THREADS}}" -e RUSTFLAGS="{{RUSTFLAGS}} -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "ulimit -c 0 && cargo sweep --time 7 --dry-run && python3 scripts/ci/test_html_fixture_host_contract.py && python3 scripts/ci/test_html_host_process_group.py && cargo build --locked -p katana-ui --bin kdv-office-worker && KATANA_KDV_OFFICE_WORKER=/app/target/debug/kdv-office-worker cargo test --locked -q --workspace"
+    {{DOCKER}} compose -f platforms/linux/ci/compose.yml run --rm -e RUST_TEST_THREADS="{{RUST_TEST_THREADS}}" -e RUSTFLAGS="{{RUSTFLAGS}} -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "ulimit -c 0 && cargo sweep --time 7 --dry-run && python3 scripts/ci/test_html_fixture_host_contract.py && python3 scripts/ci/test_html_host_process_group.py && cargo build --locked -p katana-ui --bin kdv-office-worker && python3 -B scripts/ci/isolated-test-config.py -- env KATANA_KDV_OFFICE_WORKER=/app/target/debug/kdv-office-worker cargo test --locked -q --workspace"
 
 # Verify Windows cross-compilation without running tests
 check-windows:
@@ -114,7 +115,7 @@ coverage:
 
 # WHY: 同等性を測る候補を既存の必須検査から分離し、未証明の省略を防ぐ。
 nextest-shadow:
-    CARGO={{quote(CARGO)}} {{RTK_CMD}}python3 -B scripts/release/run-nextest-shadow.py
+    {{RTK_CMD}}python3 -B scripts/ci/isolated-test-config.py -- env CARGO={{quote(CARGO)}} python3 -B scripts/release/run-nextest-shadow.py
 
 # WHY: 比較候補の安全契約だけを、製品の重い再ビルド無しで検証する。
 test-nextest-shadow-contract:
@@ -122,7 +123,7 @@ test-nextest-shadow-contract:
 
 # Quick verification (skip slow fixture tests; ast-lint runs inside cargo test)
 check-light: sweep fmt-check biome-js-lint lint-impacted
-    {{RTK_CMD}}scripts/runner/impacted.py test -- --skip fixture
+    {{RTK_CMD}}python3 -B scripts/ci/isolated-test-config.py -- {{RTK_CMD}}scripts/runner/impacted.py test -- --skip fixture
     @echo "✅ Light checks passed"
 
 # Fast impacted verification (local default)

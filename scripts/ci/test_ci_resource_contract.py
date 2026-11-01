@@ -25,7 +25,7 @@ class CiResourceContractTest(unittest.TestCase):
         job = current_test_job()
         cache_tests = step_block(job, "Test patched custom cursor cache")
         command = "cargo test --locked -p katana-ui -p egui-winit --lib cursor_cache::tests"
-        self.assertIn(f"run: {command}", cache_tests)
+        self.assertIn(f"run: python3 -B scripts/ci/isolated-test-config.py -- {command}", cache_tests)
         self.assertNotIn("continue-on-error", cache_tests)
         self.assertNotIn("--manifest-path", cache_tests)
         tests_just = (Path(__file__).resolve().parents[2] / "just/tests.just").read_text(
@@ -39,7 +39,7 @@ class CiResourceContractTest(unittest.TestCase):
         job = current_test_job()
         cache_tests = step_block(job, "Test CommonMark cache contracts")
         command = "cargo test --locked -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests"
-        self.assertIn(f"run: {command}", cache_tests)
+        self.assertIn(f"run: python3 -B scripts/ci/isolated-test-config.py -- {command}", cache_tests)
         self.assertNotIn("continue-on-error", cache_tests)
         self.assertNotIn("--manifest-path", cache_tests)
         tests_just = (Path(__file__).resolve().parents[2] / "just/tests.just").read_text(

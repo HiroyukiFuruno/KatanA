@@ -43,6 +43,7 @@
 ## DoD・検証境界
 
 - 原本/設定/group/tab/historyを保持し、独立fixture/profileで自動入力とnative操作を検証する。
+- テスト用アプリの構築前に保存先を隔離し、公式test・integration・coverage・CI入口でも毎回専用profileを使う。通常profile不変を実process回帰で確認する（#414）。
 - 既存build/test/lint/coverage/CodeQL/供給網/文書QAを維持し、未実行を成功と記載しない。
 - Draft→review取得→指摘修正/reply/resolve→P0/P1ゼロ→Ready→必須CI→通常merge。
 - v0.22.47は一度だけ公開。PR headはDependabotのため自動release/v起点と区別し、merge済masterからreuse_existing_version=trueの明示dispatchを使う。
@@ -87,6 +88,7 @@ sourceと既存実行入口を照合済み。group/updaterと書込範囲を分�
 
 - [x] 3.7 通常pushで検出した旧CI契約の固定event検査を、同一SHAのmaster push/信頼済dispatch選択とverified consumerへ揃える。待機360/30・本体のsource/repo/master/actor/full8jobs/step検証を維持し、対象契約と17件の受入/拒否回帰を通す。
 - [x] 3.8 通常pushで検出した未タグtargetの安全拒否を保持し、screenshotの生成前初期化・実行中leaseと、Cargo外の単独rustc検査の専用生成先を整える。既存18GB生成物を後付けで所有済みにせず保持し、実fixture・実rustcと拒否回帰を確認する。
+- [x] 3.9 通常quality検査のUI suite中にworkspace履歴が変化した実writerを特定し、通常設定を使わない公式検査入口・fixtureへ修正する（#414）。厳密before hash一致の保存済みデータからworkspaceを復旧し、合成2/14workspaceと実processによる回帰・入口契約・独立reviewを確認する。隔離後の全gateと通常profile保持の再確認は6.2/6.3で回収する。
 
 ## 4. 実行環境・依存・受入準備（#372、#354、#339、#338）
 
@@ -112,6 +114,7 @@ sourceと既存実行入口を照合済み。group/updaterと書込範囲を分�
 - [/] グループ名を入力できない退行、空欄Enter、作成後closeの指摘。
 - [/] Cancel/Esc不能と、以前動いていた操作を本番経路で確認する指摘。
 - [/] KatanAで完結するIssueを一回のreleaseへグルーピングする指摘。
+- [/] 検査中に通常workspace履歴が変化した事故について、同じ原因の再発を防ぐ仕組みを求める指摘。
 
 ## KatanA CLI Entry Point
 
@@ -195,3 +198,9 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - 1回目の通常push（normal-pr405-push.log）は送信前検査で停止、remote未更新。791tests/331.730s・版契約は成功後、旧shell契約が廃止済み--event push literalを要求してstep3で失敗。gate本体を弱めずselector/consumer契約へ追従し、version-bump-ci-contract-final.logとadmission17件が成功。通常pushを再実行して正式gateを完遂するまで6.2は未完。
 
 - 通常push retry1は未タグ非空targetを意図どおり安全拒否。独立rustc検査を専用の正規tag/lease cacheへ分離し、screenshotは生成前から正規親targetとCargo子harnessを固定順で保護。fixtureは旧pathを維持し、子を無断tagせず親leaseで保護、dir/leafのlink・共有file・特殊fileを生成前に拒否する。既定の外部拒否と未知データ保持を維持し、明示opt-inだけ外部絶対cacheと実在macOS標準aliasを許可する。guard31（Windows固有1skip）、screenshot13、実rustc4+3、CI契約12、shellcheck/bash構文/strictOpenSpec/diffcheck成功。tmp/pr405-resolution/target-producer-*.log、target-screenshot-env-tests.log、target-unowned-preservation.json。正例は実fixture生成後に実Cargoの不正optionで意図的に停止しており、screenshot runner完走の証明には使わない。既存target直下stat/通常filehash一致、tag後付けなし。未tag fixtureへの直接clean拒否は実CargoによるものでPython guard自身の判定とは区別する。独立Highの互換・子lease・link指摘を修正し、追加P0/P1/P2なし（target-producer-independent-review.md）。
+
+- 通常push retry2はnative Cargo 48 suite/2430passed/0failedまで進行後、UI suite中に通常workspaceのhistories/persisted末尾2件とactiveの変化を検出し、親が正確なowned-check PID58370へSIGINT。strict130/push1、remote実headは旧2e665のまま。検査前の実SHAが既存snapshotのbytesと一致することを確認し、workspaceのみatomicに厳密復旧、settings不変（personal-profile-push-incident/recovery.json）。この復旧は今回の厳密baselineに限り、以前のQA事故前baseline欠落を補った主張ではない。
+- #414の原因は既存3testsの実JSON workspace repository保持。合成14workspaceと実binaryで同じ履歴順/選択状態の変化を再現し、構築前in-memory注入と公式品質入口の専用CONFIGで対策する。手動の実3test×2/14profileはwrapper有り/無し各6成功、実Cargo test/llvm-cov、wrapper5process回帰、inventory8/CI契約/AST30/Clippy成功。再発防止の実test-binary自動回帰を追加中。Windowsは通常profileを使わず専用OS tempを保持し、子tree収束は主張しない。独立Highは確認済み差分の追加P0/P1/P2なし、最終自動回帰と全gateは未回収。
+
+- #414の実CI回帰を追加。実UI test binary自身から原因3testsをexactで子起動し、2/14各profileでworkspace.jsonと有効なterms未承認settings.jsonの両bytes不変・各child実1件成功を検査する。profile-isolation-ci-regression.log（内部6children）/同-ast.log 30/同-clippy.log成功、独立Highのsettings漏れP2を改善後に追加P0/P1/P2なし。親もwrapper5実processと既存fmt-checkを再実行して成功。included test fileの無関係な整形は除きconstructor前memory注入12追加3削除に限定。
+- 容量復旧は許可済みprivate just clean-allが未tag root/別active cacheを安全拒否し2.1→4.8GiB、未使用の正規tag付き独立screenshot-harnessだけ既存clean guardで6531files/3.2GiBを回収し7.6GiB。rootの未tag cacheは保持し所有タグを後付けしない。中断したDocker run固有containerも不在を確認。
