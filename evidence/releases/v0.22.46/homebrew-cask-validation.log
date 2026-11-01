@@ -1,0 +1,23 @@
+Homebrew tap downstream metadata check (read-only)
+Date: 2026-11-01
+Repository: https://github.com/HiroyukiFuruno/homebrew-katana
+Observed default branch: master
+Retrieval: GitHub Contents API GET only. No sibling checkout edits or write operations.
+
+Source files and local copies (under ignored tmp/v0-22-46/homebrew-files):
+- Casks/katana-desktop.rb -> Casks/katana-desktop.rb
+- Casks/katana-desktop@0.22.46.rb -> Casks/katana-desktop@0.22.46.rb
+- Formula/katana-desktop.rb -> Formula/katana-desktop.rb
+- Formula/katana-desktop@0.22.46.rb -> Formula/katana-desktop@0.22.46.rb
+
+Observed metadata (both current and version-pinned files match):
+- Cask version: 0.22.46
+- Cask URL: https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.46/KatanA-Desktop-0.22.46.dmg
+- Cask SHA256: f5b986ead638576d235ada642e5f3d2687d5761fa52ad5c2670fb7f400ddd8ae
+- Formula version: 0.22.46
+- Formula URL: https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.46/KatanA-linux-x86_64.tar.gz
+- Formula SHA256: aa9dd4db23aa9cba66e916066672f6872df30a5a6f14c5a93efb3810523da58a
+
+Syntax validation: ruby -c returned exit 0 / Syntax OK for all four copied Ruby files.
+
+Scope: validates current tap metadata and Ruby syntax only. No brew install, app execution, artifact byte download/checksum, or WinGet catalog propagation was tested or inferred.

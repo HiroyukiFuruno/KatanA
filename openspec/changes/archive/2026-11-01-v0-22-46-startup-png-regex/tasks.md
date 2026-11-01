@@ -84,9 +84,9 @@ OpenSpec は `./scripts/openspec`、検証は既存の `just` ターゲットを
 - [x] 5.1 self-review、Markdown整合、CHANGELOG日英同期、version同期。
 - [x] 5.2 通常pushでpre-pushを通しDraft PRを作成する。
 - [x] 5.3 reviewを実行・取得し、指摘修正・thread reply/resolve・P0/P1ゼロを確認する。
-- [ ] 5.4 Ready昇格、required checks成功後にmergeする。
-- [ ] 5.5 GitHub Release成果物を検証し、既存appを公開版へ直接更新して元PNGの自動復元を検証した後、OpenSpecをarchiveする。
-- [ ] 5.6 branch-hygieneでstash/master/ahead-behind/worktreeを再確認する。
+- [x] 5.4 Ready昇格、required checks成功後にmergeする。
+- [x] 5.5 GitHub Release成果物を検証し、既存appを公開版へ直接更新して元PNGの自動復元を検証した後、OpenSpecをarchiveする。
+- [x] 5.6 branch-hygieneでstash/master/ahead-behind/worktreeを再確認する。
 
 ## 調査証跡
 

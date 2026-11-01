@@ -1,0 +1,90 @@
+{
+  "schema": "katana-published-asset-identity-v1",
+  "version": "v0.22.46",
+  "scope": "asset-identity-only",
+  "document_qa": "not_evaluated",
+  "github_run_id": "41305568486",
+  "github_run_attempt": "1",
+  "provenance": {
+    "source_commit": "e5360a39ecac101130b1b3ae34b91da249d42377",
+    "source_tree_sha256": "b1df4043bfbdc436141cf72914e01c1494b1085b1a744fdbbb0914b328910d69",
+    "cargo_lock_sha256": "c4d51c1d01078cea22e986dc7395c12c0484d0b42a51322508bd1e9927b0f17d",
+    "published_dependencies": {
+      "katana-document-viewer": {
+        "version": "0.5.12",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635"
+      },
+      "katana-render-runtime": {
+        "version": "0.4.23",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "8e5e0803f343d781dc015d1fe21b052492d67579ba303cf86203f60455852e00"
+      },
+      "katana-ui-core": {
+        "version": "0.4.1",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "f8fd7856249d96c0ce65e68151a327d82511af70a8fbe7416058a1a0ba8e9d5c"
+      }
+    }
+  },
+  "release_id": 430607799,
+  "assets": {
+    "checksums.txt": {
+      "asset_id": 698445889,
+      "size": 453,
+      "sha256": "4f71a186d9cc416e0e2623048ec9128056c544a4e49a448c292e334e70b32bfc",
+      "downloaded_at": "2026-11-01T13:39:12.889496+00:00",
+      "download_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.46/checksums.txt"
+    },
+    "KatanA-Desktop-0.22.46.dmg": {
+      "asset_id": 698445891,
+      "size": 223176553,
+      "sha256": "f5b986ead638576d235ada642e5f3d2687d5761fa52ad5c2670fb7f400ddd8ae",
+      "downloaded_at": "2026-11-01T13:39:13.067128+00:00",
+      "download_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.46/KatanA-Desktop-0.22.46.dmg"
+    },
+    "KatanA-linux-x86_64.tar.gz": {
+      "asset_id": 698445882,
+      "size": 120604557,
+      "sha256": "aa9dd4db23aa9cba66e916066672f6872df30a5a6f14c5a93efb3810523da58a",
+      "downloaded_at": "2026-11-01T13:39:13.144753+00:00",
+      "download_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.46/KatanA-linux-x86_64.tar.gz"
+    },
+    "KatanA-macOS.zip": {
+      "asset_id": 698445892,
+      "size": 223472293,
+      "sha256": "f489e6f977daad33d732e5e60860f751ee5a27c98c2b86835d4d5c32eccfb437",
+      "downloaded_at": "2026-11-01T13:39:13.343986+00:00",
+      "download_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.46/KatanA-macOS.zip"
+    },
+    "KatanA-windows-x86_64.msi": {
+      "asset_id": 698445893,
+      "size": 109199360,
+      "sha256": "37be1baa77b1ef178c32345374e93d7fcea5df849255f15cf9f4fe59a74f6470",
+      "downloaded_at": "2026-11-01T13:39:13.424383+00:00",
+      "download_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.46/KatanA-windows-x86_64.msi"
+    },
+    "KatanA-windows-x86_64.zip": {
+      "asset_id": 698445912,
+      "size": 105874168,
+      "sha256": "3c313f705702e49c058f80eccd32c1c5068b697021c30360be4e92e9387eb44b",
+      "downloaded_at": "2026-11-01T13:39:13.503517+00:00",
+      "download_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.46/KatanA-windows-x86_64.zip"
+    }
+  },
+  "controller_commit": "e5360a39ecac101130b1b3ae34b91da249d42377",
+  "build_manifests": {
+    "macos": {
+      "path": "manifests/artifacts-identity-macos/identity.json",
+      "sha256": "7663a296daaf9b93f88d9f3311467744a3f56466ccb57a30952e7544ec558bee"
+    },
+    "linux": {
+      "path": "manifests/artifacts-identity-linux/identity.json",
+      "sha256": "8834609f875b9f2fd3bf4d30e1d68c4ef3556b4a5cb3da2df658613e986b3b6b"
+    },
+    "windows": {
+      "path": "manifests/artifacts-identity-windows/identity.json",
+      "sha256": "18231519f2d80cf47655f0206a9a5de0b5e595d514fa48e35e02780303d9935a"
+    }
+  }
+}
