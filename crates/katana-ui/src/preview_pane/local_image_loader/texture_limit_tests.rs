@@ -5,9 +5,13 @@ fn repository_png_that_crashed_startup_fits_the_real_device_limit() {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../assets/candidates/katana/legacy-krr-0.4.19/export_png/sample.png");
     let cancellation = super::super::cancellable_read::ReadCancellation::new(|| false);
-    let image =
-        super::decode::ImageDecodeOps::load_image(&path, crate::theme_bridge::WHITE, &cancellation, None)
-            .expect("decode the actual reported PNG");
+    let image = super::decode::ImageDecodeOps::load_image(
+        &path,
+        crate::theme_bridge::WHITE,
+        &cancellation,
+        None,
+    )
+    .expect("decode the actual reported PNG");
     assert_eq!(image.size, [1280, 19067]);
     let context = egui::Context::default();
     context.input_mut(|input| input.max_texture_side = 8192);
