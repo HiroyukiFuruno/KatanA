@@ -22,6 +22,7 @@ impl Default for ViewerState {
             zoom: 1.0,
             pan: egui::Vec2::ZERO,
             texture: None,
+            texture_source_size: None,
             texture_background: None,
             texture_identity: None,
             closing_since: None,
@@ -71,12 +72,14 @@ impl ViewerState {
             self.zoom = 1.0;
             self.pan = egui::Vec2::ZERO;
             self.texture = None;
+            self.texture_source_size = None;
             self.texture_background = None;
             self.texture_identity = Some(identity);
             return;
         }
         if self.texture_background != Some(background) {
             self.texture = None;
+            self.texture_source_size = None;
             self.texture_background = None;
         }
     }

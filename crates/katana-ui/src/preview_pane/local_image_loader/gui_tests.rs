@@ -79,7 +79,7 @@ fn wait_ready_texture(
         if let LocalTextureStatus::Ready(texture) =
             loader.texture(context, path, crate::theme_bridge::WHITE, 0)
         {
-            return texture;
+            return texture.handle;
         }
         frame += 1;
         std::thread::yield_now();

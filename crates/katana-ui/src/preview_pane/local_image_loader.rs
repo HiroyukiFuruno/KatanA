@@ -17,7 +17,12 @@ mod retry;
 mod revision;
 mod revision_cache;
 mod texture;
+mod texture_image;
+#[cfg(test)]
+mod texture_limit_tests;
 mod watcher;
+
+pub(crate) use texture_image::LocalImageTexture;
 
 use pool::{GlobalPool, ResultMessage, Work};
 use watcher::WatchEvent;
@@ -37,9 +42,9 @@ struct RequestKey {
 
 struct Cache {
     ready: HashMap<RequestKey, decode_retry::CachedResult>,
-    textures: HashMap<RequestKey, egui::TextureHandle>,
+    textures: HashMap<RequestKey, LocalImageTexture>,
     active_images: HashMap<RequestKey, (decode_retry::CachedResult, u64)>,
-    active_textures: HashMap<RequestKey, (egui::TextureHandle, u64)>,
+    active_textures: HashMap<RequestKey, (LocalImageTexture, u64)>,
     bytes: usize,
 }
 
@@ -74,7 +79,7 @@ pub(crate) enum LocalImageStatus {
 
 pub(crate) enum LocalTextureStatus {
     Pending,
-    Ready(egui::TextureHandle),
+    Ready(LocalImageTexture),
     Failed(String),
 }
 

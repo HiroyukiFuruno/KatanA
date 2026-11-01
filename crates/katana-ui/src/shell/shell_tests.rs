@@ -544,6 +544,7 @@ mod tests {
                     zoom: 1.0,
                     pan: egui::Vec2::ZERO,
                     texture: Some(texture.clone()),
+                    texture_source_size: None,
                     texture_background: None,
                     texture_identity: None,
                     closing_since: None,

@@ -194,7 +194,13 @@ fn active_display_entries_keep_same_frame_ownership_and_prune_afterward() {
             egui::TextureOptions::LINEAR,
         );
         textures.push((key.clone(), texture.clone()));
-        loader.store_active_texture(key, texture);
+        loader.store_active_texture(
+            key,
+            LocalImageTexture {
+                source_size: texture.size_vec2(),
+                handle: texture,
+            },
+        );
     }
     assert_eq!(
         loader
@@ -233,7 +239,13 @@ fn active_display_entries_keep_same_frame_ownership_and_prune_afterward() {
         egui::ColorImage::new([1, 1], vec![TEST_BACKGROUND]),
         egui::TextureOptions::LINEAR,
     );
-    loader.store_active_texture(next_key.clone(), next_texture.clone());
+    loader.store_active_texture(
+        next_key.clone(),
+        LocalImageTexture {
+            source_size: next_texture.size_vec2(),
+            handle: next_texture.clone(),
+        },
+    );
     for (key, expected) in &textures {
         let LocalTextureStatus::Ready(actual) = loader.texture(&ctx, &key.path, key.background, 1)
         else {

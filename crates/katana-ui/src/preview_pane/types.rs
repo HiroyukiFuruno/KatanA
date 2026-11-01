@@ -146,6 +146,7 @@ pub struct ViewerState {
     pub zoom: f32,
     pub pan: egui::Vec2,
     pub texture: Option<egui::TextureHandle>,
+    pub texture_source_size: Option<egui::Vec2>,
     pub texture_background: Option<egui::Color32>,
     pub texture_identity: Option<ViewerTextureIdentity>,
     pub closing_since: Option<f64>,

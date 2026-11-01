@@ -40,11 +40,7 @@ impl LocalImageLoader {
         id: usize,
     ) -> super::LocalTextureStatus {
         let bytes = image.pixels.len() * std::mem::size_of::<egui::Color32>();
-        let texture = ctx.load_texture(
-            format!("local_image_{id}"),
-            image,
-            egui::TextureOptions::LINEAR,
-        );
+        let texture = super::LocalImageTexture::load(ctx, format!("local_image_{id}"), image);
         self.trace_texture_queued(&key.path, texture.id());
         self.store_active_texture(key.clone(), texture.clone());
         if bytes <= IMAGE_CACHE_LIMIT {
@@ -118,7 +114,7 @@ impl LocalImageLoader {
         store_cached(&mut cache, key, image, bytes, frame);
     }
 
-    pub(super) fn store_texture(&self, key: RequestKey, texture: egui::TextureHandle) {
+    pub(super) fn store_texture(&self, key: RequestKey, texture: super::LocalImageTexture) {
         let Ok(mut cache) = self.inner.cache.lock() else {
             return;
         };
@@ -126,7 +122,7 @@ impl LocalImageLoader {
         trim_cache(&mut cache, &key);
     }
 
-    pub(super) fn store_active_texture(&self, key: RequestKey, texture: egui::TextureHandle) {
+    pub(super) fn store_active_texture(&self, key: RequestKey, texture: super::LocalImageTexture) {
         let Ok(mut cache) = self.inner.cache.lock() else {
             return;
         };
