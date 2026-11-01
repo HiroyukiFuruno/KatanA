@@ -152,7 +152,7 @@ fn permission_and_unexpected_metadata_errors_remain_path_scoped_errors() {
         let error = result
             .expect("metadata error event")
             .expect_err("error preserved");
-        assert_eq!(error.paths, [path.clone()]);
+        assert_eq!(error.paths.as_slice(), std::slice::from_ref(&path));
         assert!(matches!(error.kind, notify::ErrorKind::Io(error) if error.kind() == kind));
     }
 }
