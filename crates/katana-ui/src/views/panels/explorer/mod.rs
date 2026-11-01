@@ -19,6 +19,8 @@ pub mod root_drop_area;
 pub mod shared;
 pub mod tree_entry;
 pub mod types;
+#[cfg(test)]
+mod wildcard_tests;
 
 pub(crate) use breadcrumb::*;
 pub(crate) use panel::*;

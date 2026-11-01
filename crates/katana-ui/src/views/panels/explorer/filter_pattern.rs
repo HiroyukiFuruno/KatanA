@@ -14,7 +14,7 @@ impl FilterPattern {
         let pattern = if params.use_regex {
             query.to_string()
         } else {
-            regex::escape(query)
+            Self::normal_mode_pattern(query)
         };
         let pattern = if params.match_word {
             format!(r"\b{pattern}\b")
@@ -25,5 +25,19 @@ impl FilterPattern {
             .case_insensitive(!params.match_case)
             .build()?;
         Ok(Self { regex, is_negated })
+    }
+
+    fn normal_mode_pattern(query: &str) -> String {
+        let escaped = regex::escape(query);
+        if !query.contains('*') {
+            return escaped;
+        }
+
+        let wildcard = escaped.replace(r"\*", "[^/]*");
+        if query.contains('/') {
+            format!(r"^{wildcard}$")
+        } else {
+            format!(r"(?:^|/){wildcard}$")
+        }
     }
 }

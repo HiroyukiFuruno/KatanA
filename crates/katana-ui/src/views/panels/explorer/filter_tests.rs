@@ -33,6 +33,25 @@ fn regex_filter_matches_relative_paths_and_preserves_ancestors() {
 }
 
 #[test]
+fn regex_mode_keeps_regex_syntax_and_marks_wildcard_regex_invalid() {
+    let root = Path::new("/workspace");
+    let png = root.join("image.png");
+    let entries = vec![TreeEntry::File { path: png.clone() }];
+    let mut search = SearchState::new();
+    search.filter_enabled = true;
+    search.filter.query = r".*\.png$".into();
+    search.filter.use_regex = true;
+
+    ExplorerLogicOps::update_search_filter_cache(&mut search, root, &entries, 1);
+    assert!(search.filter_cache.as_ref().unwrap().1.contains(&png));
+
+    search.filter.query = "*.png".into();
+    ExplorerLogicOps::update_search_filter_cache(&mut search, root, &entries, 1);
+    assert!(search.filter_cache.is_none());
+    assert!(super::filter_pattern::FilterPattern::compile(&search.filter).is_err());
+}
+
+#[test]
 fn invalid_regex_clears_existing_cache() {
     let root = Path::new("/workspace");
     let entries = vec![TreeEntry::File {
