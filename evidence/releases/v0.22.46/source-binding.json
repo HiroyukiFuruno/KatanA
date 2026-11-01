@@ -1,0 +1,36 @@
+{
+  "version": "v0.22.46",
+  "source": {
+    "source_commit": "e5360a39ecac101130b1b3ae34b91da249d42377",
+    "source_tree_sha256": "b1df4043bfbdc436141cf72914e01c1494b1085b1a744fdbbb0914b328910d69",
+    "cargo_lock_sha256": "c4d51c1d01078cea22e986dc7395c12c0484d0b42a51322508bd1e9927b0f17d",
+    "published_dependencies": {
+      "katana-document-viewer": {
+        "version": "0.5.12",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635"
+      },
+      "katana-render-runtime": {
+        "version": "0.4.23",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "8e5e0803f343d781dc015d1fe21b052492d67579ba303cf86203f60455852e00"
+      },
+      "katana-ui-core": {
+        "version": "0.4.1",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "f8fd7856249d96c0ce65e68151a327d82511af70a8fbe7416058a1a0ba8e9d5c"
+      }
+    }
+  },
+  "source_pr": {
+    "number": 407,
+    "head": "f448bdae083483faa466136ffdcb168541ed1e0e",
+    "merge": "e5360a39ecac101130b1b3ae34b91da249d42377"
+  },
+  "ready_ci_run": 41298051115,
+  "ready_readiness_run": 41298050975,
+  "merged_source_ci_run": 41305567734,
+  "release_run": 41305568486,
+  "release_attempt": 1,
+  "canonical_identity_run": 41312259460
+}
