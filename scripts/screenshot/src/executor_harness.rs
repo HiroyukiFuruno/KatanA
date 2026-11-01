@@ -508,13 +508,10 @@ pub fn run(
                         let previous_document_frame = document_frame_identity(&mut harness);
                         let previous_document_failure =
                             harness.state_mut().document_failure_for_test();
+                        validate_open_file_waits(s)?;
                         harness
                             .state_mut()
-                            .trigger_action(AppAction::SelectDocument(p));
-                        ensure!(
-                            !(s.wait_for_html_frame && s.wait_for_document_frame),
-                            "open_file cannot wait for both HTML and document frames"
-                        );
+                            .trigger_action(AppAction::SelectDocument(p.clone()));
                         if s.wait_for_html_frame {
                             let elapsed = wait_for_html_browser_frame(
                                 &mut harness,
@@ -548,6 +545,13 @@ pub fn run(
                                 &frame,
                             )?;
                             observed_frames.document = observed_frames.document.saturating_add(1);
+                        } else if s.wait_for_local_image_texture {
+                            wait_for_local_image_frame(
+                                &mut harness,
+                                recording.as_mut(),
+                                &p,
+                                s.wait_seconds,
+                            )?;
                         } else {
                             let fps = recording.as_ref().map(|r| r.fps as f64).unwrap_or(60.0);
                             let frames = ((s.wait_seconds * fps) as usize).max(30);
@@ -3363,6 +3367,105 @@ fn normalize_relative_path(path: &Path) -> PathBuf {
     }
     normalized
 }
+
+fn validate_open_file_waits(step: &crate::request::OpenFileStep) -> Result<()> {
+    ensure!(
+        [
+            step.wait_for_html_frame,
+            step.wait_for_document_frame,
+            step.wait_for_local_image_texture
+        ]
+        .into_iter()
+        .filter(|enabled| *enabled)
+        .count()
+            <= 1,
+        "open_file cannot wait for multiple frame types"
+    );
+    Ok(())
+}
+
+fn local_image_frame_size(
+    ctx: &egui::Context,
+    shapes: &[egui::epaint::ClippedShape],
+) -> Result<Option<[usize; 2]>> {
+    let manager = ctx.tex_manager();
+    let manager = manager.read();
+    for clipped in shapes {
+        if !clipped.clip_rect.is_positive() {
+            continue;
+        }
+        let texture_id = match &clipped.shape {
+            egui::Shape::Mesh(mesh)
+                if !mesh.indices.is_empty() && clipped.clip_rect.intersects(mesh.calc_bounds()) =>
+            {
+                Some(mesh.texture_id)
+            }
+            egui::Shape::Rect(rect)
+                if rect.rect.is_positive() && clipped.clip_rect.intersects(rect.rect) =>
+            {
+                rect.brush.as_ref().map(|brush| brush.fill_texture_id)
+            }
+            _ => None,
+        };
+        if let Some(texture_id) = texture_id {
+            if let Some(meta) = manager.meta(texture_id) {
+                if meta.name.starts_with("local_image_") {
+                    let limit = ctx.input(|input| input.max_texture_side);
+                    ensure!(
+                        meta.size.iter().all(|side| *side > 0 && *side <= limit),
+                        "local image texture {:?} exceeds device limit {limit}",
+                        meta.size
+                    );
+                    return Ok(Some(meta.size));
+                }
+            }
+        }
+    }
+    Ok(None)
+}
+
+fn wait_for_local_image_frame(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    path: &Path,
+    timeout_seconds: f64,
+) -> Result<()> {
+    ensure!(
+        timeout_seconds <= DOCUMENT_SCREENSHOT_SETTLE_TIMEOUT_SECONDS,
+        "local image timeout exceeds 30 seconds"
+    );
+    let deadline = async_assert_deadline(timeout_seconds)?;
+    let started = Instant::now();
+    loop {
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        if harness
+            .state_mut()
+            .app_state_for_test()
+            .active_path()
+            .as_deref()
+            == Some(path)
+        {
+            if let Some(size) = local_image_frame_size(&harness.ctx, &harness.output().shapes)? {
+                println!(
+                    "  local image frame ready in {:.3}s: {}x{}",
+                    started.elapsed().as_secs_f64(),
+                    size[0],
+                    size[1]
+                );
+                return Ok(());
+            }
+        }
+        if Instant::now() >= deadline {
+            bail!("local image did not appear within {timeout_seconds:.2}s");
+        }
+        sleep_frame(60.0);
+    }
+}
+
+#[cfg(test)]
+#[path = "executor_image_tests.rs"]
+mod executor_image_tests;
 
 #[cfg(test)]
 mod tests {

@@ -223,6 +223,8 @@ pub struct OpenFileStep {
     #[serde(default)]
     pub wait_for_document_frame: bool,
     #[serde(default)]
+    pub wait_for_local_image_texture: bool,
+    #[serde(default)]
     pub max_first_frame_seconds: Option<f64>,
     #[serde(default)]
     pub expected_document_format: Option<String>,

@@ -38,12 +38,12 @@ impl LocalImageLoader {
         }
     }
 
-    fn cached_texture(&self, key: &RequestKey) -> Option<egui::TextureHandle> {
+    fn cached_texture(&self, key: &RequestKey) -> Option<super::LocalImageTexture> {
         let cache = self.inner.cache.lock().ok()?;
         cache.textures.get(key).cloned()
     }
 
-    fn active_texture(&self, key: &RequestKey) -> Option<egui::TextureHandle> {
+    fn active_texture(&self, key: &RequestKey) -> Option<super::LocalImageTexture> {
         let mut cache = self.inner.cache.lock().ok()?;
         let (texture, seen) = cache.active_textures.get_mut(key)?;
         *seen = self.inner.active_frame.load(Ordering::Acquire);

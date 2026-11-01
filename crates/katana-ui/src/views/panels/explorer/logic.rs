@@ -1,3 +1,4 @@
+use super::filter_pattern::FilterPattern;
 use super::types::*;
 use crate::app_state::{SearchState, WorkspaceState};
 use katana_core::workspace::TreeEntry;
@@ -27,35 +28,8 @@ impl ExplorerLogicOps {
         workspace_revision: u64,
     ) {
         if search.filter_enabled && !search.filter.query.is_empty() {
-            let is_negated = search.filter.query.starts_with('!');
-            let query_str = if is_negated {
-                &search.filter.query[1..]
-            } else {
-                &search.filter.query
-            };
-
-            let (pattern, case_insensitive) = if search.filter.use_regex {
-                let p = if search.filter.match_word {
-                    format!(r"\b{}\b", query_str)
-                } else {
-                    query_str.to_string()
-                };
-                (p, !search.filter.match_case)
-            } else {
-                let p = regex::escape(query_str);
-                let p = if search.filter.match_word {
-                    format!(r"\b{}\b", p)
-                } else {
-                    p
-                };
-                (p, !search.filter.match_case)
-            };
-
-            match regex::RegexBuilder::new(&pattern)
-                .case_insensitive(case_insensitive)
-                .build()
-            {
-                Ok(regex) => {
+            match FilterPattern::compile(&search.filter) {
+                Ok(pattern) => {
                     let cache_matches = search.filter_cache.as_ref().map(|(q, _)| q)
                         == Some(&search.filter)
                         && search.filter_cache_workspace_revision == Some(workspace_revision);
@@ -63,8 +37,8 @@ impl ExplorerLogicOps {
                         let mut visible = HashSet::new();
                         crate::views::panels::tree::TreeLogicOps::gather_visible_paths(
                             entries,
-                            &regex,
-                            is_negated,
+                            &pattern.regex,
+                            pattern.is_negated,
                             ws_root,
                             &mut visible,
                         );

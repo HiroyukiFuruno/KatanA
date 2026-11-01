@@ -12,7 +12,7 @@ impl ExplorerHeaderFilter {
             return;
         }
 
-        let text_color = Self::filter_text_color(ui, &search.filter.query);
+        let text_color = Self::filter_text_color(ui, &search.filter);
         /* WHY: filter bar does not show the search icon - icon is only for the file-name tab. */
         let resp = crate::widgets::SearchBar::new(&mut search.filter)
             .text_color(text_color)
@@ -29,8 +29,11 @@ impl ExplorerHeaderFilter {
         }
     }
 
-    fn filter_text_color(ui: &egui::Ui, query: &str) -> egui::Color32 {
-        if Self::is_valid_regex(query) {
+    fn filter_text_color(
+        ui: &egui::Ui,
+        params: &crate::state::search::SearchParams,
+    ) -> egui::Color32 {
+        if super::filter_pattern::FilterPattern::compile(params).is_ok() {
             return ui.visuals().text_color();
         }
         ui.ctx()
@@ -43,12 +46,29 @@ impl ExplorerHeaderFilter {
                 crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.system.error_text)
             })
     }
+}
 
-    fn is_valid_regex(query: &str) -> bool {
-        query.is_empty()
-            || regex::RegexBuilder::new(query)
-                .case_insensitive(true)
-                .build()
-                .is_ok()
+#[cfg(test)]
+mod tests {
+    use super::super::filter_pattern::FilterPattern;
+    use crate::state::search::SearchParams;
+
+    #[test]
+    fn literal_filter_bracket_is_valid() {
+        let params = SearchParams {
+            query: "[".into(),
+            ..Default::default()
+        };
+        assert!(FilterPattern::compile(&params).is_ok());
+    }
+
+    #[test]
+    fn negated_regex_validates_the_stripped_pattern() {
+        let params = SearchParams {
+            query: "!*".into(),
+            use_regex: true,
+            ..Default::default()
+        };
+        assert!(FilterPattern::compile(&params).is_err());
     }
 }

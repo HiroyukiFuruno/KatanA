@@ -32,6 +32,16 @@ fn local_png_controls_follow_image_in_narrow_viewport() {
     assert_local_png_layout([640, 24], egui::vec2(160.0, 480.0));
 }
 
+#[test]
+fn local_png_taller_than_device_limit_remains_displayable_with_controls() {
+    assert_local_png_layout([16, 19067], egui::vec2(800.0, 480.0));
+}
+
+#[test]
+fn local_png_wider_than_device_limit_remains_displayable_with_controls() {
+    assert_local_png_layout([19067, 16], egui::vec2(800.0, 480.0));
+}
+
 fn assert_local_png_layout(size: [u32; 2], viewport: egui::Vec2) {
     let _guard = crate::test_render_env::RenderEnvLock::lock();
     let directory = tempfile::tempdir().expect("PNG fixture directory");

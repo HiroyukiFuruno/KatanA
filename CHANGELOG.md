@@ -2,6 +2,17 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.46] - 2026-11-01 07:49:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Large images and startup**: Prevent crashes when opening very tall or wide local images, including images restored automatically at startup. Keep their original display size and proportions.
+- **Explorer filters**: Support filename wildcards such as `*.png` in normal search mode, and validate input consistently with the selected search mode.
+
+### 🔧 System
+
+- Updated compatible dependencies to improve text and font handling.
+
 ## [0.22.45] - 2026-10-30 10:47:40 (UTC)
 
 ### 🐛 Bug Fixes

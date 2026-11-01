@@ -39,6 +39,14 @@ PHASE_ALLOWLISTS = {
         "release-artifact-pending": {"3.2", "3.3", "3.4", "3.5"},
         "post-release-evidence": {"3.5"},
     },
+    ("0.22.46", "v0-22-46-startup-png-regex"): {
+        "strict": set(),
+        # WHY: push結果とPR・公開の証跡は、それぞれの操作後に回収する。
+        "pr-bootstrap": {"5.2", "5.3", "5.4", "5.5", "5.6"},
+        # WHY: 5.4はmergeを含む集約項目のため、公開前の検査時点では完了できない。
+        "release-artifact-pending": {"5.4", "5.5", "5.6"},
+        "post-release-evidence": {"5.6"},
+    },
 }
 
 

@@ -1,0 +1,35 @@
+{
+  "schema_version": "1",
+  "name": "v0-22-46-large-local-image",
+  "fixture": {
+    "settings": { "theme": "dark", "locale": "ja", "explorer_visible": true },
+    "workspace_files": [
+      {
+        "name": "sample.png",
+        "source": "assets/candidates/katana/legacy-krr-0.4.19/export_png/sample.png"
+      },
+      {
+        "name": "README.md",
+        "content": "# 縦長PNGの表示\n\n![縦長PNG](sample.png)\n"
+      }
+    ]
+  },
+  "steps": [
+    { "type": "launch", "viewport": { "width": 1280, "height": 800 } },
+    {
+      "type": "open_file",
+      "file_name": "sample.png",
+      "wait_for_local_image_texture": true,
+      "wait_seconds": 30
+    },
+    { "type": "screenshot", "output_name": "large-image-viewer" },
+    {
+      "type": "open_file",
+      "file_name": "README.md",
+      "wait_for_local_image_texture": true,
+      "wait_seconds": 30
+    },
+    { "type": "screenshot", "output_name": "large-image-markdown" },
+    { "type": "quit" }
+  ]
+}

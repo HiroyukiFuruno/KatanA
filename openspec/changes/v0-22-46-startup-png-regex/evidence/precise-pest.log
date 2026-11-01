@@ -1,0 +1,23 @@
+    Blocking waiting for file lock on package cache
+    Updating crates.io index
+error: failed to select a version for `psm`.
+    ... required by package `pest_stack_guard v1.0.0`
+    ... which satisfies dependency `pest_stack_guard = "^1"` of package `pest v2.9.5`
+    ... which satisfies dependency `pest = "^2.5.7"` of package `html_parser v0.7.0`
+    ... which satisfies dependency `html_parser = "^0.7.0"` (locked to 0.7.0) of package `umya-spreadsheet v2.3.3`
+    ... which satisfies dependency `umya-spreadsheet = "^2"` (locked to 2.3.3) of package `office2pdf v0.8.1`
+    ... which satisfies dependency `office2pdf = "=0.8.1"` (locked to 0.8.1) of package `katana-document-viewer v0.5.12`
+    ... which satisfies dependency `katana-document-viewer = "=0.5.12"` (locked to 0.5.12) of package `katana-ui v0.22.45 (/Users/hiroyuki_furuno/works/private/katana/crates/katana-ui)`
+versions that meet the requirements `=0.1.24` are: 0.1.24
+
+all possible versions conflict with previously selected packages
+
+  previously selected package `psm v0.1.32`
+    ... which satisfies dependency `psm = "^0.1.7"` (locked to 0.1.32) of package `stacker v0.1.25`
+    ... which satisfies dependency `stacker = "^0.1.19"` (locked to 0.1.25) of package `typst-eval v0.15.1`
+    ... which satisfies dependency `typst-eval = "^0.15.1"` (locked to 0.15.1) of package `typst v0.15.1`
+    ... which satisfies dependency `typst = "^0.15"` (locked to 0.15.1) of package `office2pdf v0.8.1`
+    ... which satisfies dependency `office2pdf = "=0.8.1"` (locked to 0.8.1) of package `katana-document-viewer v0.5.12`
+    ... which satisfies dependency `katana-document-viewer = "=0.5.12"` (locked to 0.5.12) of package `katana-ui v0.22.45 (/Users/hiroyuki_furuno/works/private/katana/crates/katana-ui)`
+
+failed to select a version for `psm` which could resolve this conflict

@@ -1,0 +1,12 @@
+    Blocking waiting for file lock on package cache
+    Updating crates.io index
+error: failed to select a version for the requirement `generic-array = "=0.14.7"`
+candidate versions found which didn't match: 0.14.9
+location searched: crates.io index
+required by package `crypto-common v0.1.7`
+    ... which satisfies dependency `crypto-common = "^0.1.6"` (locked to 0.1.7) of package `cipher v0.4.4`
+    ... which satisfies dependency `cipher = "^0.4.2"` (locked to 0.4.4) of package `aes v0.8.4`
+    ... which satisfies dependency `aes = "^0.8.4"` (locked to 0.8.4) of package `umya-spreadsheet v2.3.3`
+    ... which satisfies dependency `umya-spreadsheet = "^2"` (locked to 2.3.3) of package `office2pdf v0.8.1`
+    ... which satisfies dependency `office2pdf = "=0.8.1"` (locked to 0.8.1) of package `katana-document-viewer v0.5.12`
+    ... which satisfies dependency `katana-document-viewer = "=0.5.12"` (locked to 0.5.12) of package `katana-ui v0.22.45 (/Users/hiroyuki_furuno/works/private/katana/crates/katana-ui)`

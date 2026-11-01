@@ -37,13 +37,14 @@ impl ImageLogicOps {
             if state.texture.is_none() || state.texture_background != Some(preview_background) {
                 match loader.request(path, preview_background) {
                     super::local_image_loader::LocalImageStatus::Ready(image) => {
-                        let texture = ui.ctx().load_texture(
+                        let texture = super::local_image_loader::LocalImageTexture::load(
+                            ui.ctx(),
                             format!("local_image_{id}"),
                             image,
-                            egui::TextureOptions::LINEAR,
                         );
                         loader.trace_texture_queued(path, texture.id());
-                        state.texture = Some(texture);
+                        state.texture_source_size = Some(texture.source_size);
+                        state.texture = Some(texture.handle);
                         state.texture_background = Some(preview_background);
                         loader.release_active_image(path, preview_background);
                     }
@@ -69,10 +70,17 @@ impl ImageLogicOps {
             } else {
                 loader.retry_watch(path);
             }
-            state.texture.clone()
+            state.texture.clone().map(|texture| {
+                let size = state
+                    .texture_source_size
+                    .unwrap_or_else(|| texture.size_vec2());
+                (texture, size)
+            })
         } else {
             match loader.texture(ui.ctx(), path, preview_background, id) {
-                super::local_image_loader::LocalTextureStatus::Ready(texture) => Some(texture),
+                super::local_image_loader::LocalTextureStatus::Ready(texture) => {
+                    Some((texture.handle, texture.source_size))
+                }
                 super::local_image_loader::LocalTextureStatus::Pending => {
                     ui.ctx()
                         .request_repaint_after(std::time::Duration::from_millis(
@@ -96,22 +104,19 @@ impl ImageLogicOps {
         };
 
         let (texture_handle, width, height) = match texture_handle {
-            Some(t) => {
-                let size = t.size();
-                (t, size[0], size[1])
-            }
+            Some((texture, size)) => (texture, size.x, size.y),
             None => {
                 return None;
             }
         };
 
         let max_w = ui.available_width();
-        let base_scale = (max_w / width as f32).min(1.0);
+        let base_scale = (max_w / width).min(1.0);
 
         let zoom = viewer_state.as_ref().map_or(1.0, |s| s.zoom);
         let pan = viewer_state.as_ref().map_or(egui::Vec2::ZERO, |s| s.pan);
 
-        let base_size = Vec2::new(width as f32 * base_scale, height as f32 * base_scale);
+        let base_size = Vec2::new(width * base_scale, height * base_scale);
         let zoomed_size = base_size * zoom;
 
         let (container_rect, response) = ui.allocate_exact_size(

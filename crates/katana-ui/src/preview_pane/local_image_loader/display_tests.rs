@@ -3,6 +3,37 @@ use super::*;
 const TEST_BACKGROUND: egui::Color32 = crate::theme_bridge::WHITE;
 
 #[test]
+fn local_textures_fit_the_active_device_limit_on_both_axes() {
+    for size in [[2, 19067], [19067, 2], [32, 32], [31, 1]] {
+        let loader = LocalImageLoader::default();
+        let context = egui::Context::default();
+        context.input_mut(|input| input.max_texture_side = 32);
+        let key = RequestKey {
+            path: PathBuf::from(format!("device-limit-{size:?}.png")),
+            background: TEST_BACKGROUND,
+        };
+        loader.store_result(
+            key.clone(),
+            Ok(egui::ColorImage::filled(size, TEST_BACKGROUND)),
+        );
+        let LocalTextureStatus::Ready(texture) =
+            loader.texture(&context, &key.path, key.background, 0)
+        else {
+            panic!("image must remain displayable")
+        };
+        assert!(
+            texture
+                .size()
+                .into_iter()
+                .all(|side| (1..=32).contains(&side))
+        );
+        if size.into_iter().all(|side| side <= 32) {
+            assert_eq!(texture.size(), size);
+        }
+    }
+}
+
+#[test]
 fn small_displayed_textures_survive_reuse_cache_eviction() {
     let loader = LocalImageLoader::default();
     let context = egui::Context::default();
