@@ -83,7 +83,7 @@ OpenSpec は `./scripts/openspec`、検証は既存の `just` ターゲットを
 
 - [x] 5.1 self-review、Markdown整合、CHANGELOG日英同期、version同期。
 - [x] 5.2 通常pushでpre-pushを通しDraft PRを作成する。
-- [ ] 5.3 reviewを実行・取得し、指摘修正・thread reply/resolve・P0/P1ゼロを確認する。
+- [x] 5.3 reviewを実行・取得し、指摘修正・thread reply/resolve・P0/P1ゼロを確認する。
 - [ ] 5.4 Ready昇格、required checks成功後にmergeする。
 - [ ] 5.5 GitHub Release成果物を検証し、既存appを公開版へ直接更新して元PNGの自動復元を検証した後、OpenSpecをarchiveする。
 - [ ] 5.6 branch-hygieneでstash/master/ahead-behind/worktreeを再確認する。
@@ -123,3 +123,5 @@ OpenSpec は `./scripts/openspec`、検証は既存の `just` ターゲットを
 - 通常push exit0、8コミットVerified、Draft PR407を作成し@codex review実行・取得済み。Draft由来SKIPPEDはCI成功扱いしない。
 
 - Codex Windows P2と独立reviewのUnix filename互換P2を修正。MAIN_SEPARATORをprivate boundaryとして、Unixは/だけ・Windowsは両sepでglobを生成。通常literal/regexは無変更。portable両OSの実Regex + Unix cache + cfgWindows nativePathJoin/cacheを回帰。windows-glob-unix-red.logでRED、windows-glob-unix-green.log Explorer28成功。独立High再reviewで残P0/P1/P2なし。修正pushとthread reply/resolveは次段で回収する。
+
+- 修正a1edf428の通常pushもexit0。署名Verifiedとremote一致を確認。PR407 comment4434972135へreply4435076494を直接投稿しthread PRRT_kwDORm09y86yYr30をresolve、取得した全threadは未解決0・P0/P1なし。Draftを維持して最新コードのCodex再レビューも依頼済み（comment6556181760）。Ready前に結果を再取得する。
