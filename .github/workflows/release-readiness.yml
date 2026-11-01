@@ -62,6 +62,8 @@ jobs:
             ./scripts/release/check-pr-ready.sh "$version" --post-release-evidence
           elif [[ "${GITHUB_HEAD_REF}" == release/v0.22.44-public-release-evidence && "$version" == "0.22.44" ]]; then
             ./scripts/release/check-pr-ready.sh "$version" --post-release-evidence
+          elif [[ "${GITHUB_HEAD_REF}" == release/v0.22.46-public-release-evidence && "$version" == "0.22.46" ]]; then
+            ./scripts/release/check-pr-ready.sh "$version" --post-release-evidence
           elif [[ "${GITHUB_HEAD_REF}" == docs/v*-public-release-evidence ]]; then
             ./scripts/release/check-pr-ready.sh "$version" --post-release-evidence
           elif [[ "$version" == "0.22.42" ]]; then

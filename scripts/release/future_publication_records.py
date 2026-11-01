@@ -1,4 +1,4 @@
-"""v45公開後の記録だけを実tag・読取専用CI証跡・不変の製品sourceへ結合する。"""
+"""許可済み版の公開後記録を実tag・CI証跡・不変の製品sourceへ結合する。"""
 
 import argparse
 from datetime import date
@@ -24,6 +24,10 @@ BRANCH = "release/" + TAG + "-public-release-evidence"
 EVIDENCE = "evidence/releases/" + TAG + "/"
 CHANGES = {"v0-22-45-update-storage-preflight": "update-storage-preflight",
            "v0-22-45-build-identity": "generated-release-identity"}
+POLICIES = {
+    "0.22.45": {change: (capability,) for change, capability in CHANGES.items()},
+    "0.22.46": {"v0-22-46-startup-png-regex": ("local-asset-preview", "workspace-file-filter")},
+}
 MANIFESTS = {platform: f"manifests/artifacts-identity-{platform}/identity.json"
              for platform in ("macos", "linux", "windows")}
 RECORD_FILES = EVIDENCE_FILES | {"publication-identity.json", "run-admission.json", *MANIFESTS.values()}
@@ -36,8 +40,8 @@ def paths(raw):
 
 
 def validate_route(branch, version, repository):
-    require((branch, version, repository) == (BRANCH, VERSION, REPOSITORY),
-            "exact v45 records branch/version/repository required")
+    require(version in POLICIES and branch == f"release/v{version}-public-release-evidence"
+            and repository == REPOSITORY, "exact supported records branch/version/repository required")
 
 
 def task_inventory(text):
@@ -46,52 +50,56 @@ def task_inventory(text):
     return rows
 
 
-def archive_change(path):
+def archive_change(path, version=VERSION):
     match = re.fullmatch(r"openspec/changes/archive/(\d{4}-\d{2}-\d{2})-([^/]+)/(.+)", path)
-    if match is None or match[2] not in CHANGES:
+    if match is None or match[2] not in POLICIES[version]:
         return None
     date.fromisoformat(match[1])
     return match[2], match[3]
 
 
-def allowed_path(path, inventory):
+def allowed_path(path, inventory, version=VERSION):
     parsed = PurePosixPath(path)
     if parsed.is_absolute() or ".." in parsed.parts or "\\" in path or str(parsed) != path:
         return False
-    if path.startswith(EVIDENCE):
-        return path[len(EVIDENCE):] in RECORD_FILES
-    if path in {f"openspec/specs/{capability}/spec.md" for capability in CHANGES.values()}:
+    evidence = f"evidence/releases/v{version}/"
+    if path.startswith(evidence):
+        return path[len(evidence):] in RECORD_FILES
+    if path in {f"openspec/specs/{capability}/spec.md" for capabilities in POLICIES[version].values()
+                for capability in capabilities}:
         return True
     if path in inventory:
         return True
-    archived = archive_change(path)
+    archived = archive_change(path, version)
     return archived is not None and f"openspec/changes/{archived[0]}/{archived[1]}" in inventory
 
 
-def verify_scope(root, source):
+def verify_scope(root, source, version=VERSION):
+    require(version in POLICIES, "unsupported records version")
+    changes = POLICIES[version]
     require(COMMIT_PATTERN.fullmatch(source) is not None, "actual published source required")
-    require(git_workspace_version(root, source) == TAG, "published source version differs")
+    require(git_workspace_version(root, source) == "v" + version, "published source version differs")
     git(root, "merge-base", "--is-ancestor", source, "HEAD")
     require(not git(root, "diff", "--name-only", "-z", source, "HEAD", "--", *SOURCE_ROOTS),
             "published production tree must remain unchanged")
     validate_worktree_clean(git(root, "diff", "--name-only", "-z", "HEAD"),
                             git(root, "ls-files", "--others", "--exclude-standard", "-z"))
     inventory = set(paths(git(root, "ls-tree", "-r", "--name-only", "-z", source, "--",
-                              *(f"openspec/changes/{change}" for change in CHANGES))))
+                              *(f"openspec/changes/{change}" for change in changes))))
     changed = paths(git(root, "diff", "--name-only", "--no-renames", "-z", source, "HEAD"))
-    require(all(allowed_path(path, inventory) for path in changed), "outside exact v45 records scope")
+    require(all(allowed_path(path, inventory, version) for path in changed), f"outside exact v{version[-2:]} records scope")
     tree = git(root, "ls-tree", "-r", "-z", "HEAD", "--", *changed) if changed else b""
     require(all(record.startswith((b"100644 blob ", b"100755 blob "))
                 for record in tree.split(b"\0") if record), "nonregular records tree entry")
     locations = {}
     current = set(paths(git(root, "ls-tree", "-r", "--name-only", "-z", "HEAD", "--", "openspec/changes")))
-    for change, capability in CHANGES.items():
+    for change, capabilities in changes.items():
         prefix = f"openspec/changes/{change}/"
         originals = {path for path in inventory if path.startswith(prefix)}
         require(prefix + "tasks.md" in originals, "published task inventory missing")
         roots = {prefix if path.startswith(prefix) else path.rsplit(change + "/", 1)[0] + change + "/"
                  for path in current if path.startswith(prefix) or
-                 (archive_change(path) is not None and archive_change(path)[0] == change)}
+                 (archive_change(path, version) is not None and archive_change(path, version)[0] == change)}
         require(len(roots) == 1, "exactly one complete active/archive change required")
         location = roots.pop()
         actual = {path for path in current if path.startswith(location)}
@@ -104,30 +112,36 @@ def verify_scope(root, source):
                 require(task_inventory(before.decode()) == task_inventory(after.decode()),
                         "task ID/text inventory changed")
                 checker = "check-openspec-task-phase.py" if location == prefix else "check-openspec-task-completion.py"
-                arguments = [VERSION, change, "post-release-evidence"] if location == prefix else []
+                arguments = [version, change, "post-release-evidence"] if location == prefix else []
                 subprocess.run([sys.executable, "-B", str(root / "scripts/release" / checker),
                                 *arguments, str(root / target)], check=True, timeout=60)
             else:
                 require(before == after, "published change content changed")
-        spec = f"openspec/specs/{capability}/spec.md"
-        if spec in changed:
-            delta = git(root, "show", f"{source}:{prefix}specs/{capability}/spec.md").decode()
-            require(delta.startswith("## ADDED Requirements\n"), "only published added requirements may sync")
-            synced = git(root, "show", f"HEAD:{spec}").decode()
-            parts = synced.split("## Requirements\n")
-            require(len(parts) == 2 and "## Purpose\n" in parts[0]
-                    and parts[1].strip() == delta.removeprefix("## ADDED Requirements\n").strip(),
-                    "spec sync differs from published added requirements")
+        for capability in capabilities:
+            spec = f"openspec/specs/{capability}/spec.md"
+            if spec in changed:
+                delta = git(root, "show", f"{source}:{prefix}specs/{capability}/spec.md").decode()
+                require(delta.startswith("## ADDED Requirements\n"), "only published added requirements may sync")
+                synced = git(root, "show", f"HEAD:{spec}").decode()
+                parts = synced.split("## Requirements\n")
+                previous = git(root, "ls-tree", "--name-only", source, "--", spec)
+                old = git(root, "show", f"{source}:{spec}").decode() if previous else None
+                expected = (old.rstrip() + "\n\n" if old else "") + delta.removeprefix("## ADDED Requirements\n").strip()
+                require(len(parts) == 2 and "## Purpose\n" in parts[0]
+                        and (synced.strip() == expected.strip() if old else parts[1].strip() == expected),
+                        "spec sync differs from published added requirements")
         locations[change] = location + "tasks.md"
     return changed, locations
 
 
-def verify_receipt(root, receipt, release, source, build_run, build_attempt, manifests):
+def verify_receipt(root, receipt, release, source, build_run, build_attempt, manifests, version=VERSION):
+    require(version in POLICIES, "unsupported records version")
+    tag = "v" + version
     fields(receipt, {"schema", "version", "scope", "document_qa", "github_run_id", "github_run_attempt",
                      "provenance", "release_id", "assets", "controller_commit", "build_manifests"}, "identity receipt")
-    require(receipt["schema"] == "katana-published-asset-identity-v1" and receipt["version"] == TAG
+    require(receipt["schema"] == "katana-published-asset-identity-v1" and receipt["version"] == tag
             and receipt["scope"] == "asset-identity-only" and receipt["document_qa"] == "not_evaluated",
-            "actual v45 identity-only receipt required")
+            "actual version-bound identity-only receipt required")
     require(run_identity(receipt["github_run_id"], receipt["github_run_attempt"]) == (build_run, build_attempt),
             "receipt run/attempt differs from admission")
     expected = git_source_identity(root, source)
@@ -139,7 +153,7 @@ def verify_receipt(root, receipt, release, source, build_run, build_attempt, man
             "receipt controller uses different production input")
     require(integer(receipt["release_id"], "receipt Release id", minimum=1)
             == integer(release["id"], "Release id", minimum=1), "receipt Release id differs")
-    selected = selected_assets(release, TAG)
+    selected = selected_assets(release, tag)
     fields(receipt["assets"], set(selected), "receipt assets")
     fields(receipt["build_manifests"], set(MANIFESTS), "receipt build manifests")
     for name, item in selected.items():
@@ -149,7 +163,7 @@ def verify_receipt(root, receipt, release, source, build_run, build_attempt, man
                 and integer(record["size"], "receipt asset size", minimum=1) == integer(item["size"], "asset size", minimum=1)
                 and item.get("digest") == "sha256:" + actual_sha
                 and record["download_url"] == item.get("browser_download_url")
-                == f"https://github.com/{REPOSITORY}/releases/download/{TAG}/{name}",
+                == f"https://github.com/{REPOSITORY}/releases/download/{tag}/{name}",
                 "receipt asset was replaced or differs from actual API bytes")
         require(moment(record["downloaded_at"], "download time") >= moment(release["published_at"], "publication time"),
                 "receipt predates publication")
@@ -158,7 +172,7 @@ def verify_receipt(root, receipt, release, source, build_run, build_attempt, man
         require(descriptor["path"] == filename and descriptor["sha256"] == file_digest(manifests / filename),
                 "receipt manifest path/hash differs")
         record = decode(read(manifests / filename))
-        _, identity = manifest_metadata(platform, record, TAG)
+        _, identity = manifest_metadata(platform, record, tag)
         require(identity == (build_run, build_attempt) and record["provenance"] == expected,
                 "raw manifest source/run/attempt differs")
         for name, descriptor in record["assets"].items():
@@ -217,31 +231,32 @@ def canonical_identity(root, source, directory, api_reader=api):
 
 def verify(root, branch, version, repository):
     validate_route(branch, version, repository)
+    tag_name = "v" + version
     actual_branch = os.environ.get("GITHUB_HEAD_REF") or git(root, "branch", "--show-current").decode().strip()
-    require(actual_branch == BRANCH, "checkout is not exact v45 records branch")
-    release = api(f"repos/{REPOSITORY}/releases/tags/{TAG}")
-    selected_assets(release, TAG)
-    tag = api(f"repos/{REPOSITORY}/commits/{TAG}")
+    require(actual_branch == branch, "checkout is not exact records branch")
+    release = api(f"repos/{REPOSITORY}/releases/tags/{tag_name}")
+    selected_assets(release, tag_name)
+    tag = api(f"repos/{REPOSITORY}/commits/{tag_name}")
     require(isinstance(tag, dict), "actual published tag missing")
     source = tag.get("sha")
     verify_tag_source(tag, source)
     git(root, "fetch", "--no-tags", f"https://github.com/{REPOSITORY}.git",
-        f"refs/tags/{TAG}:refs/tags/{TAG}", "refs/heads/master")
-    require(git(root, "rev-parse", "--verify", TAG + "^{commit}").decode().strip() == source,
+        f"refs/tags/{tag_name}:refs/tags/{tag_name}", "refs/heads/master")
+    require(git(root, "rev-parse", "--verify", tag_name + "^{commit}").decode().strip() == source,
             "local tag differs from actual published tag")
-    changed, tasks = verify_scope(root, source)
-    with tempfile.TemporaryDirectory(prefix="katana-v45-records-") as temporary:
+    changed, tasks = verify_scope(root, source, version)
+    with tempfile.TemporaryDirectory(prefix=f"katana-v{version}-records-") as temporary:
         work = Path(temporary)
-        run, attempt, admitted = admit(source, TAG, work / "admission.json")
+        run, attempt, admitted = admit(source, tag_name, work / "admission.json")
         require(admitted == source, "admitted source differs")
         canonical = work / "canonical"
         receipt = canonical_identity(root, source, canonical)
-        verify_receipt(root, receipt, release, source, str(run), str(attempt), canonical)
-        evidence = root / EVIDENCE
+        verify_receipt(root, receipt, release, source, str(run), str(attempt), canonical, version)
+        evidence = root / f"evidence/releases/{tag_name}/"
         for filename in ("publication-identity.json", *MANIFESTS.values()):
             require(read(evidence / filename) == read(canonical / filename), "committed evidence differs from canonical CI artifact")
-        verify_unchanged(release, api(f"repos/{REPOSITORY}/releases/tags/{TAG}"), TAG)
-        verify_tag_source(api(f"repos/{REPOSITORY}/commits/{TAG}"), source)
+        verify_unchanged(release, api(f"repos/{REPOSITORY}/releases/tags/{tag_name}"), tag_name)
+        verify_tag_source(api(f"repos/{REPOSITORY}/commits/{tag_name}"), source)
     return {"published_source": source, "scoped_paths": changed, "task_files": tasks}
 
 
@@ -259,4 +274,4 @@ if __name__ == "__main__":
     try:
         main()
     except (OSError, ValueError, TypeError, KeyError, subprocess.SubprocessError) as error:
-        raise SystemExit(f"v45 publication records refused: {error}") from error
+        raise SystemExit(f"publication records refused: {error}") from error
