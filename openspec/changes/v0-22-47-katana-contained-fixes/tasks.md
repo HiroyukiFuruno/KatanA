@@ -86,6 +86,7 @@ sourceと既存実行入口を照合済み。group/updaterと書込範囲を分�
 - [x] 3.6 v0.22.47の段階別task/artifact gateと公開後records scopeを登録し、CI前/公開前の循環を解消する。1〜5の事前検証は免除せず、push/review/CI/公開後にしか完了しない6.xだけを各段階のexact allowlistで扱い、誤branch/版/段階/追加未完項目を拒否する回帰を通す。
 
 - [x] 3.7 通常pushで検出した旧CI契約の固定event検査を、同一SHAのmaster push/信頼済dispatch選択とverified consumerへ揃える。待機360/30・本体のsource/repo/master/actor/full8jobs/step検証を維持し、対象契約と17件の受入/拒否回帰を通す。
+- [x] 3.8 通常pushで検出した未タグtargetの安全拒否を保持し、screenshotの生成前初期化・実行中leaseと、Cargo外の単独rustc検査の専用生成先を整える。既存18GB生成物を後付けで所有済みにせず保持し、実fixture・実rustcと拒否回帰を確認する。
 
 ## 4. 実行環境・依存・受入準備（#372、#354、#339、#338）
 
@@ -192,3 +193,5 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - 最終self-reviewはcommit-self-review.mdと各独立High review。6.1はlocal/対象検査とsource整合を確認した範囲、通常push正式gate・Draft review回収以降は6.2〜6.7のまま未完。
 
 - 1回目の通常push（normal-pr405-push.log）は送信前検査で停止、remote未更新。791tests/331.730s・版契約は成功後、旧shell契約が廃止済み--event push literalを要求してstep3で失敗。gate本体を弱めずselector/consumer契約へ追従し、version-bump-ci-contract-final.logとadmission17件が成功。通常pushを再実行して正式gateを完遂するまで6.2は未完。
+
+- 通常push retry1は未タグ非空targetを意図どおり安全拒否。独立rustc検査を専用の正規tag/lease cacheへ分離し、screenshotは生成前から正規親targetとCargo子harnessを固定順で保護。fixtureは旧pathを維持し、子を無断tagせず親leaseで保護、dir/leafのlink・共有file・特殊fileを生成前に拒否する。既定の外部拒否と未知データ保持を維持し、明示opt-inだけ外部絶対cacheと実在macOS標準aliasを許可する。guard31（Windows固有1skip）、screenshot13、実rustc4+3、CI契約12、shellcheck/bash構文/strictOpenSpec/diffcheck成功。tmp/pr405-resolution/target-producer-*.log、target-screenshot-env-tests.log、target-unowned-preservation.json。正例は実fixture生成後に実Cargoの不正optionで意図的に停止しており、screenshot runner完走の証明には使わない。既存target直下stat/通常filehash一致、tag後付けなし。未tag fixtureへの直接clean拒否は実CargoによるものでPython guard自身の判定とは区別する。独立Highの互換・子lease・link指摘を修正し、追加P0/P1/P2なし（target-producer-independent-review.md）。

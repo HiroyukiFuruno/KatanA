@@ -13,9 +13,9 @@ type-check:
 # Run impacted unit tests (local default)
 test: test-docker-volume-lifecycle test-cargo-sweep-contract test-ci-resource-contract test-html-host-contract test-commonmark-html-trace test-commonmark-backend test-custom-cursor-cache test-wgpu-native-surface-size test-impacted
 
-# vendor workspaceの別lockを更新せず、依存なしの実要約moduleを直接検査する。
+# vendor workspaceの別lockを更新せず、Cargo成果物とは独立したcacheで実要約moduleを直接検査する。
 test-commonmark-html-trace:
-    {{RTK_CMD}}python3 -B scripts/ci/cargo_target_init.py --run bash -euc 'mkdir -p target/contract-tests && {{RTK_CMD}}rustc --edition 2024 -D warnings --test vendor/egui_commonmark_upstream/egui_commonmark/src/parsers/pulldown/html_trace_summary.rs -o target/contract-tests/commonmark-html-trace.exe && {{RTK_CMD}}target/contract-tests/commonmark-html-trace.exe'
+    {{RTK_CMD}}python3 -B scripts/ci/cargo_target_init.py tmp/contract-test-cache --run bash -euc '{{RTK_CMD}}rustc --edition 2024 -D warnings --test vendor/egui_commonmark_upstream/egui_commonmark/src/parsers/pulldown/html_trace_summary.rs -o tmp/contract-test-cache/commonmark-html-trace.exe && {{RTK_CMD}}tmp/contract-test-cache/commonmark-html-trace.exe'
 
 # root lockとUIのfeature集合で、workspace外の既存patched backendを検査する。
 test-commonmark-backend:
@@ -27,7 +27,7 @@ test-custom-cursor-cache:
 
 # 実描画に使う寸法判定moduleを、追加のGPU環境なしで全OSの通常検査へ含める。
 test-wgpu-native-surface-size:
-    {{RTK_CMD}}python3 -B scripts/ci/cargo_target_init.py --run bash -euc 'mkdir -p target/contract-tests && {{RTK_CMD}}rustc --edition 2024 -D warnings --test vendor/egui-wgpu/src/native_surface_size.rs -o target/contract-tests/wgpu-native-surface-size.exe && {{RTK_CMD}}target/contract-tests/wgpu-native-surface-size.exe'
+    {{RTK_CMD}}python3 -B scripts/ci/cargo_target_init.py tmp/contract-test-cache --run bash -euc '{{RTK_CMD}}rustc --edition 2024 -D warnings --test vendor/egui-wgpu/src/native_surface_size.rs -o tmp/contract-test-cache/wgpu-native-surface-size.exe && {{RTK_CMD}}tmp/contract-test-cache/wgpu-native-surface-size.exe'
 
 # デバッグ情報の容量対策で全test・coverage・受入を削減していないことを確認する。
 test-ci-resource-contract:
