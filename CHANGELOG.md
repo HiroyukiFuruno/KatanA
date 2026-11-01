@@ -2,6 +2,22 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.47] - 2026-11-01 19:08:39 (UTC)
+
+### ✨ Improvements
+
+- **Tab groups**: Prevent duplicate combinations of group name and color when creating or editing a group. Names remain optional; different names can share a color, and the same name can use different colors.
+
+### 🐛 Bug Fixes
+
+- **Tab groups**: Restore group name input, confirmation with Enter, and cancellation. Confirming a new group, including an empty name, closes the editing window.
+- **Group destinations**: Restore each group's selected color in the tab and Explorer menus, including groups without a name.
+- **Application updates**: Keep the app open and show an error when the update helper cannot start, so you can retry.
+
+### 🔧 System
+
+- Improve update reliability and maintain compatibility with current dependencies.
+
 ## [0.22.46] - 2026-11-01 07:49:00 (UTC)
 
 ### 🐛 Bug Fixes
