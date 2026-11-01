@@ -114,3 +114,5 @@ OpenSpec は `./scripts/openspec`、検証は既存の `just` ターゲットを
 - 画像記録: image-harness-green.logでrunner58件成功、image-harness-run.logで実画像ready（0.238秒/0.215秒）を待って両経路撮影。tmp/v0-22-46/image-harness-output/ の2PNGを確認。検査contextの上限2048によりtexture137x2048、画質評価ではなく安全な描画完了の記録として扱う。実nativeの8192上限は別回帰で検証。
 
 - releaseゲート最終: postpublication-final.log 7件成功。独立review再確認でP2解消、残P0/P1/P2なし。3.2未完を拒否するphase regressionを維持。
+
+- preflight初回はsafe ZIP9.2.0→local katana-core0.22.46の未登録で停止。core/srcは公開v0.22.45から完全同一（git diff exit0）。既存safe edgeへexact1組だけ追加し、未知v0.22.47/別manifest/git source/orphan拒否を維持。zip-edge-red.log 1error→zip-edge-green.log 27件成功。独立High reviewでP0/P1/P2なし。just supply-chainは実3manifestのadvisories/bans/licenses/sourcesを実行してexit0。旧ZIP経路・advisory ID・2026-11-07期限は変更しない。

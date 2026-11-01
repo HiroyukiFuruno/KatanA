@@ -16,6 +16,8 @@
 - 配布時の上限超過はGPUでfatalになるため、unitのupload寸法に加えnative保存タブ復元でも検査した。
 - ユーザーの実入力 *.png の不一致を再現し通常検索のwildcard照合へ修正。標準regexの仕様は維持し、regex modeでは無効な *.png をエラーとして扱う。
 
+- preflightで停止した既存safe ZIP edgeのhost版登録をexact v0.22.46へ追加。未知の版は拒否、旧脆弱版の例外・期限は不変、core source不変と実3manifest supply-chain成功を確認し、独立レビューで指摘なし。
+
 ## 判定
 
 差分レビューはPASS。通常commit/push、必須CI、公開後asset確認はtasks.mdで実結果を回収し、未実施を成功扱いしない。

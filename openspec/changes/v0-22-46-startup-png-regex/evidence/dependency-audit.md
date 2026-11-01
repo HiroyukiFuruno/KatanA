@@ -52,3 +52,9 @@ v0.22.45で更新済みの `zip 9.2.0`、`fs4 1.1.0`、`encoding_rs 0.8.44`、`l
 ### 判断材料
 
 0.13は少数API利用という理由だけで拒否する必要はないが、現在は上流KDVとの依存境界で解決できず、今回すぐ更新する案は採れない。KDVの公開版がlibc .191以降に追随した後、KatanAの両direct pinを一緒に更新し、0.12/0.13並存のlock graphとconcurrency回帰を確認するのが実行可能な再評価条件。
+
+## v0.22.46の既存safe ZIP edgeの確認
+
+preflightはZIP9.2.0のlocal katana-core0.22.46からの直接依存が未登録として停止した。公開v0.22.45からcore/srcの差分はなく、archive/更新処理も変更していない。SAFE_ZIP_EDGESへexact1組だけ追加し、未来v0.22.47・別manifest・registry以外のsource・orphan routeの拒否を維持した。unit27件成功、実3manifestの供給網全検査もexit0。
+
+既存の旧ZIP経路・対象advisory・2026-11-07期限は変更しない。この日付は既存エージェント設定の運用期限であり、本人が具体的日付を承認したという意味ではない。根拠は既存zip-risk-acceptance-2026-10-24.ja.md。今回のsafe ZIP9.2.0のhost version登録は旧依存の脆弱性が解消したという主張ではない。
