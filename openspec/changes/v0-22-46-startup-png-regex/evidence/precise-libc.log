@@ -1,0 +1,6 @@
+    Updating crates.io index
+error: failed to select a version for the requirement `libc = "=0.2.190"`
+candidate versions found which didn't match: 0.2.191
+location searched: crates.io index
+required by package `katana-document-viewer v0.5.12`
+    ... which satisfies dependency `katana-document-viewer = "=0.5.12"` (locked to 0.5.12) of package `katana-core v0.22.45 (/Users/hiroyuki_furuno/works/private/katana/crates/katana-core)`

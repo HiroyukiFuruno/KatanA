@@ -1,0 +1,113 @@
+# cargo update dry-run results
+
+## Root workspace: cargo update --dry-run --locked --verbose --manifest-path Cargo.toml; exit 0
+
+```text
+    Blocking waiting for file lock on package cache
+    Updating crates.io index
+     Locking 2 packages to latest compatible versions
+   Unchanged eframe v0.36.2 (available: v0.37.0)
+   Unchanged egui v0.36.2 (available: v0.37.0)
+   Unchanged egui_extras v0.36.2 (available: v0.37.0)
+   Unchanged egui_kittest v0.36.2 (available: v0.37.0)
+   Unchanged epaint_default_fonts v0.36.2 (available: v0.37.0)
+   Unchanged generic-array v0.14.7 (available: v0.14.9)
+   Unchanged katana-ui-core v0.4.1 (available: v0.4.4)
+   Unchanged libc v0.2.190 (available: v0.2.191)
+   Unchanged parking_lot v0.12.5 (available: v0.13.0)
+   Unchanged pest v2.9.2 (available: v2.9.5)
+   Unchanged pest_derive v2.9.2 (available: v2.9.5)
+   Unchanged pest_generator v2.9.2 (available: v2.9.5)
+   Unchanged pest_meta v2.9.2 (available: v2.9.5)
+    Updating unicode-properties v0.1.4 -> v0.1.5
+    Updating yazi v0.2.1 -> v0.2.2
+note: to see how you depend on a package, run `cargo tree --invert <dep>@<ver>`
+warning: not updating lockfile due to dry run
+```
+
+## Screenshot workspace: cargo update --dry-run --locked --verbose --manifest-path scripts/screenshot/Cargo.toml; exit 0
+
+```text
+    Updating crates.io index
+     Locking 2 packages to latest compatible versions
+   Unchanged egui v0.36.2 (available: v0.37.0)
+   Unchanged egui_kittest v0.36.2 (available: v0.37.0)
+   Unchanged generic-array v0.14.7 (available: v0.14.9)
+   Unchanged katana-ui-core v0.4.1 (available: v0.4.4)
+   Unchanged libc v0.2.190 (available: v0.2.191)
+   Unchanged pest v2.9.2 (available: v2.9.5)
+   Unchanged pest_derive v2.9.2 (available: v2.9.5)
+   Unchanged pest_generator v2.9.2 (available: v2.9.5)
+   Unchanged pest_meta v2.9.2 (available: v2.9.5)
+    Updating unicode-properties v0.1.4 -> v0.1.5
+    Updating yazi v0.2.1 -> v0.2.2
+note: to see how you depend on a package, run `cargo tree --invert <dep>@<ver>`
+warning: not updating lockfile due to dry run
+```
+
+## Precise constraint probes (read-only dry-run)
+
+```text
+    Updating crates.io index
+error: failed to select a version for the requirement `libc = "=0.2.190"`
+candidate versions found which didn't match: 0.2.191
+location searched: crates.io index
+required by package `katana-document-viewer v0.5.12`
+    ... which satisfies dependency `katana-document-viewer = "=0.5.12"` (locked to 0.5.12) of package `katana-core v0.22.45 (/Users/hiroyuki_furuno/works/private/katana/crates/katana-core)`
+```
+
+## precise-generic-array.log
+
+```text
+    Blocking waiting for file lock on package cache
+    Updating crates.io index
+error: failed to select a version for the requirement `generic-array = "=0.14.7"`
+candidate versions found which didn't match: 0.14.9
+location searched: crates.io index
+required by package `crypto-common v0.1.7`
+    ... which satisfies dependency `crypto-common = "^0.1.6"` (locked to 0.1.7) of package `cipher v0.4.4`
+    ... which satisfies dependency `cipher = "^0.4.2"` (locked to 0.4.4) of package `aes v0.8.4`
+    ... which satisfies dependency `aes = "^0.8.4"` (locked to 0.8.4) of package `umya-spreadsheet v2.3.3`
+    ... which satisfies dependency `umya-spreadsheet = "^2"` (locked to 2.3.3) of package `office2pdf v0.8.1`
+    ... which satisfies dependency `office2pdf = "=0.8.1"` (locked to 0.8.1) of package `katana-document-viewer v0.5.12`
+    ... which satisfies dependency `katana-document-viewer = "=0.5.12"` (locked to 0.5.12) of package `katana-ui v0.22.45 (/Users/hiroyuki_furuno/works/private/katana/crates/katana-ui)`
+```
+
+## precise-katana-ui-core.log
+
+```text
+    Updating crates.io index
+error: failed to select a version for the requirement `katana-ui-core = "=0.4.1"`
+candidate versions found which didn't match: 0.4.4
+location searched: crates.io index
+required by package `katana-document-viewer v0.5.12`
+    ... which satisfies dependency `katana-document-viewer = "=0.5.12"` (locked to 0.5.12) of package `katana-core v0.22.45 (/Users/hiroyuki_furuno/works/private/katana/crates/katana-core)`
+```
+
+## precise-pest.log
+
+```text
+    Blocking waiting for file lock on package cache
+    Updating crates.io index
+error: failed to select a version for `psm`.
+    ... required by package `pest_stack_guard v1.0.0`
+    ... which satisfies dependency `pest_stack_guard = "^1"` of package `pest v2.9.5`
+    ... which satisfies dependency `pest = "^2.5.7"` of package `html_parser v0.7.0`
+    ... which satisfies dependency `html_parser = "^0.7.0"` (locked to 0.7.0) of package `umya-spreadsheet v2.3.3`
+    ... which satisfies dependency `umya-spreadsheet = "^2"` (locked to 2.3.3) of package `office2pdf v0.8.1`
+    ... which satisfies dependency `office2pdf = "=0.8.1"` (locked to 0.8.1) of package `katana-document-viewer v0.5.12`
+    ... which satisfies dependency `katana-document-viewer = "=0.5.12"` (locked to 0.5.12) of package `katana-ui v0.22.45 (/Users/hiroyuki_furuno/works/private/katana/crates/katana-ui)`
+versions that meet the requirements `=0.1.24` are: 0.1.24
+
+all possible versions conflict with previously selected packages
+
+  previously selected package `psm v0.1.32`
+    ... which satisfies dependency `psm = "^0.1.7"` (locked to 0.1.32) of package `stacker v0.1.25`
+    ... which satisfies dependency `stacker = "^0.1.19"` (locked to 0.1.25) of package `typst-eval v0.15.1`
+    ... which satisfies dependency `typst-eval = "^0.15.1"` (locked to 0.15.1) of package `typst v0.15.1`
+    ... which satisfies dependency `typst = "^0.15"` (locked to 0.15.1) of package `office2pdf v0.8.1`
+    ... which satisfies dependency `office2pdf = "=0.8.1"` (locked to 0.8.1) of package `katana-document-viewer v0.5.12`
+    ... which satisfies dependency `katana-document-viewer = "=0.5.12"` (locked to 0.5.12) of package `katana-ui v0.22.45 (/Users/hiroyuki_furuno/works/private/katana/crates/katana-ui)`
+
+failed to select a version for `psm` which could resolve this conflict
+```
