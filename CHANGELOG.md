@@ -12,6 +12,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 - **Tab groups**: Restore group name input, confirmation with Enter, and cancellation. Confirming a new group, including an empty name, closes the editing window.
 - **Group destinations**: Restore each group's selected color in the tab and Explorer menus, including groups without a name.
+- **Split view**: Keep the file tree and toolbars visible when editing alongside the preview.
 - **Application updates**: Keep the app open and show an error when the update helper cannot start, so you can retry.
 
 ### 🔧 System

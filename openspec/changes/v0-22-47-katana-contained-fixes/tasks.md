@@ -97,6 +97,7 @@ sourceと既存実行入口を照合済み。group/updaterと書込範囲を分�
 - [x] 4.4 KDV/KRRの現行公開registry graphを確認し、必要な原本入力・Office/HTML受入と10 mixed cyclesの事前検査を完了する。
 - [ ] 4.5 canonical sample_diagramsの1280x2400 capture request・候補検査・exactsource/hash再現記録を整える。
 - [ ] 4.6 公開fixtureを使った実KatanaAppのtree/editor/preview画像を取得し、画像bytes・寸法・source/入力hashを確認してroot README.mdとREADME.ja.mdへ掲載する。
+- [ ] 4.7 README取得で判明した分割表示の背景による上部UI/tree/statusの上書き（#413）を残余content範囲に限定して修正する。実先行panel・縦横split・dark/lightのRED→GREENと、実App全画面の描画・canonical幾何の維持を確認する。
 
 ## 5. User Review Phase
 

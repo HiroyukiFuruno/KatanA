@@ -7,6 +7,7 @@
 - グループ作成・名前編集を本番アプリ全体の入力経路で修復し、名前あり/空欄のEnter確定、作成後のサブウィンドウclose、Cancel/Escを回帰検証する（#412）。
 - 追加先menuに選択色を復旧する。名前は任意のまま、作成・後からの名前/色変更で「名前＋色」の重複だけを拒否する（#412）。
 - rootの日英READMEへ公開fixtureを表示した実アプリ画像を掲載する。
+- 分割表示の背景が先行panelまで覆う描画不具合を残余content範囲に限定して修正し、実App全画面を再検証する（#413）。
 - PR405のGitHub Actions更新と契約検査を正式統合する（#411）。CI-only版番号例外の未承認な追加は行わず、製品修正と同じ次patch・全CIを通す。
 - 更新helper起動失敗時にエラーを表示してアプリを維持し、不要な一時ファイルを残さない（#409）。
 - 公開後のremote削除を明示opt-inだけに限定し、manual bumpのsource結合を検証可能にする（#408、#403）。
@@ -29,6 +30,7 @@
 - `release-ci-integrity`: remote削除の明示指定、入力同等性に基づくCI再利用・測定。
 - `multi-format-document-preview`: host側closeの分離と現行公開依存による受入。
 - `oss-repository-security`: KatanA所有環境の整備・依存と期限例外の再評価。
+- `workspace-shell`: 分割表示が先行する上部UI・tree・statusの描画を保持する。
 
 ## Impact
 

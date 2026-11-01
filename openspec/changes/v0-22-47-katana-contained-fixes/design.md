@@ -28,6 +28,7 @@ Open IssueのKatanA側残件は#403/#408/#409/#343/#372/#386/#339/#338、既存�
 6. **一回の公開へ集約する。** release/v0.22.47でPR405の差分と今回の修正をまとめ、既存PRの最終title/bodyを実内容へ更新する。通常push→Draft review→指摘対応→Ready→必須CI→merge後、masterのv0.22.47をreuse_existing_version=trueの明示dispatchで一度だけ公開する。PR headはDependabotなので自動release/v経路には一致しない。既存成果物やtagを上書きしない。
 7. **名前と色の組を一つの変更として扱う。** 空名を許可し、同一workspaceの別groupとの組の重複だけを拒否する。作成・rename・recolor・直接actionで共通検証し、自分自身は除外する。新規popupは未保存draftとし、確定前はmember移動・cleanup・永続化を行わない。既存編集も名前/色を一括確定し、失敗時は状態を変えず編集を継続する。Cancel/Escはdraftを破棄する。有効な名前付き直接作成は維持し、競合時は修正可能なdraftを開く。既存legacy重複はload時に破壊せず、無変更は保存せず終了できる。空白だけの名前は空名として比較し、それ以外のcase/Unicode/名前の値を勝手に正規化しない。色はRGBA値で比較する。
 8. **実アプリの画像をREADMEへ掲載する。** 公開fixture・隔離profileを既存capture runnerで表示し、tree/editor/previewが分かる実描画をrootの日英READMEに掲載する。最終sourceと入力・画像hashを記録し、私有文書や推測した画面を使わない。
+9. **分割表示の背景を残余領域へ限定する。** 先行panelはroot UIのcursorを狭めてもmax_rectを狭めないため、共有UIを受けるsplit背景にmax_rectを使わない。残余content矩形だけを塗り、top/side/statusを覆わない。実panelsを通した縦横・light/darkの境界回帰と、実App描画で再確認する。待機時間の追加・画像加工で隠さない。
 
 ## Risks / Trade-offs
 
