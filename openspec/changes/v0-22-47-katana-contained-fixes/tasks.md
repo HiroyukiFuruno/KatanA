@@ -204,3 +204,5 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 
 - #414の実CI回帰を追加。実UI test binary自身から原因3testsをexactで子起動し、2/14各profileでworkspace.jsonと有効なterms未承認settings.jsonの両bytes不変・各child実1件成功を検査する。profile-isolation-ci-regression.log（内部6children）/同-ast.log 30/同-clippy.log成功、独立Highのsettings漏れP2を改善後に追加P0/P1/P2なし。親もwrapper5実processと既存fmt-checkを再実行して成功。included test fileの無関係な整形は除きconstructor前memory注入12追加3削除に限定。
 - 容量復旧は許可済みprivate just clean-allが未tag root/別active cacheを安全拒否し2.1→4.8GiB、未使用の正規tag付き独立screenshot-harnessだけ既存clean guardで6531files/3.2GiBを回収し7.6GiB。rootの未tag cacheは保持し所有タグを後付けしない。中断したDocker run固有containerも不在を確認。
+
+- 通常push retry3は明示CONFIG内cacheへの保存を既存testが固定folder名で誤拒否したため停止（platform118passed/1failed、strict101/push1、remote旧2e）。production resolverは正しく指定CONFIG/cacheを使っており、testを既定serviceのcache_root/kv契約へ限定修正。隔離したplatform全119passed/fmt/diffcheck成功（profile-cache-path-contract-green.log）。retry3中は通常settings/workspaceのSHA・mtime・sizeが常にbeforeと一致（push-retry3-progress.jsonl）。全gateは未完のまま6.2で再実行する。
