@@ -79,7 +79,7 @@ def read(path: Path, *, maximum: int = 64 * 1024 * 1024) -> bytes:
     return raw
 
 
-def reference(root: Path, value: object, label: str) -> tuple[bytes, object]:
+def reference(root: Path, value: object, label: str, *, allowed_paths: frozenset[str] | None = None) -> tuple[bytes, object]:
     ref = fields(value, {"path", "sha256"}, label)
     relative = ref["path"]
     require(isinstance(relative, str) and "\\" not in relative and ":" not in relative,
@@ -87,7 +87,10 @@ def reference(root: Path, value: object, label: str) -> tuple[bytes, object]:
     path = Path(relative)
     require(not path.is_absolute() and path.parts and all(part not in {".", "..", "tmp"} for part in path.parts),
             f"{label}: private/traversing path forbidden")
-    require(path.parts[0] == "openspec" and "evidence" in path.parts, f"{label}: public evidence path required")
+    if allowed_paths is None:
+        require(path.parts[0] == "openspec" and "evidence" in path.parts, f"{label}: public evidence path required")
+    else:
+        require(relative in allowed_paths, f"{label}: unexpected public evidence path")
     current = root
     for component in path.parts:
         current = current / component

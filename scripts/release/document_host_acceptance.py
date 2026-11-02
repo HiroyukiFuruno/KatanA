@@ -8,6 +8,7 @@ from pathlib import Path
 
 from document_host_io import decode, digest, fields, legacy, read, reference, require, sha
 from document_host_transcript import verify as verify_transcript
+from v047_evidence_paths import HOST_ACCEPTANCE, HOST_BUNDLE, HOST_RUNS
 
 VERSION = "v0.22.42"
 SCOPE = "katana-host"
@@ -17,8 +18,7 @@ EVIDENCE_RELATIVE = ("openspec/changes/post-v0-22-41-document-fidelity-regressio
                      "document-host-acceptance-v0.22.42.json")
 PUBLISHED_EVIDENCE_RELATIVE = ("openspec/changes/post-v0-22-41-document-fidelity-regressions/evidence/"
                                "document-host-published-acceptance-v0.22.42.json")
-PUBLISHED_V47_EVIDENCE_RELATIVE = ("openspec/changes/v0-22-47-katana-contained-fixes/evidence/"
-                                   "document-host-published-acceptance-v0.22.47.json")
+PUBLISHED_V47_EVIDENCE_RELATIVE = HOST_ACCEPTANCE
 APPROVAL = ("openspec/changes/post-v0-22-41-document-fidelity-regressions/evidence/"
             "release-goal-2026-10-24.ja.md")
 MANIFEST = {"schema", "version", "scope", "policy", "approval_sha256", "phase", "claim",
@@ -135,7 +135,8 @@ def verify_payload(root: Path, evidence: dict, *, phase: str, publication_versio
     bundle = fields(evidence["candidate"], {"target", "bundle_manifest", "main_sha256", "sidecar_sha256", "archive_sha256"}, "host bundle")
     require(bundle["target"] in {"macos-arm64", "macos-x86_64"}, "host evidence must name its real Mac target")
     main_sha, worker_sha = sha(bundle["main_sha256"], "main"), sha(bundle["sidecar_sha256"], "worker")
-    _, bundle_manifest = reference(root, bundle["bundle_manifest"], "host actual bundle manifest")
+    allowed_bundle = frozenset({HOST_BUNDLE}) if publication_version == "v0.22.47" else None
+    _, bundle_manifest = reference(root, bundle["bundle_manifest"], "host actual bundle manifest", allowed_paths=allowed_bundle)
     fields(bundle_manifest, {"schema", "target", "provenance", "main_sha256", "sidecar_sha256", "archive_sha256"}, "host bundle manifest")
     require(bundle_manifest.get("schema") == "katana-host-bundle-v1"
             and bundle_manifest.get("provenance") == source and bundle_manifest.get("main_sha256") == main_sha
@@ -147,10 +148,14 @@ def verify_payload(root: Path, evidence: dict, *, phase: str, publication_versio
     require(producer_sha == digest(read(root / "scripts/release" / producer_name)), "producer hash stale")
     records = evidence["transcripts"]
     require(isinstance(records, list) and len(records) == len(helper.SUPPLIED_OFFICE_FIXTURES), "exactly seven Office pair transcripts required")
+    if publication_version == "v0.22.47":
+        require(all(isinstance(ref, dict) for ref in records)
+                and {ref.get("path") for ref in records} == set(HOST_RUNS), "v47 transcript paths differ")
     seen_inputs, seen_runs, seen_processes, seen_refs = set(), set(), set(), set()
     operations = []
     for ref in records:
-        raw, transcript = reference(root, ref, "host public transcript")
+        raw, transcript = reference(root, ref, "host public transcript",
+                                    allowed_paths=frozenset(HOST_RUNS) if publication_version == "v0.22.47" else None)
         require(digest(raw) not in seen_refs, "same transcript aliased across fixtures")
         seen_refs.add(digest(raw))
         run = verify_transcript(transcript, fixtures=helper.SUPPLIED_OFFICE_FIXTURES,

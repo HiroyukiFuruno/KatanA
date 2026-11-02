@@ -8,6 +8,7 @@ from pathlib import Path
 from document_host_io import decode, digest, fields, integer, read, reference, require, sha
 import generated_asset_identity as generated
 from generated_asset_identity import TARGETS, file_digest, module
+from v047_evidence_paths import HOST_MANIFESTS, HOST_RECEIPT
 
 ASSETS = generated.assets_for("v0.22.42")
 
@@ -90,7 +91,8 @@ def verify_download_receipt(root: Path, value: object, source: dict, bundle: dic
     version = allowed_publication_version(version)
     record = fields(value, {"status", "receipt"}, "postpublication")
     require(record["status"] == "published_macos_host_accepted", "postpublication remains pending")
-    _, receipt = reference(root, record["receipt"], "actual Release download receipt")
+    _, receipt = reference(root, record["receipt"], "actual Release download receipt",
+                           allowed_paths=frozenset({HOST_RECEIPT}) if version == "v0.22.47" else None)
     fields(receipt, {"schema", "release_url", "release_id", "tag", "draft", "published_at", "source_commit",
                      "provenance", "assets", "downloaded_macos", "main_sha256", "sidecar_sha256", "build_manifests",
                      "producer_sha256"}, "Release receipt")
@@ -126,7 +128,8 @@ def verify_download_receipt(root: Path, value: object, source: dict, bundle: dic
     fields(receipt["build_manifests"], set(assets), "public build manifests")
     build_identity = None
     for platform, ref in receipt["build_manifests"].items():
-        _, manifest = reference(root, ref, "actual build identity manifest")
+        _, manifest = reference(root, ref, "actual build identity manifest",
+                                allowed_paths=frozenset({HOST_MANIFESTS[platform]}) if version == "v0.22.47" else None)
         targets, identity = manifest_metadata(platform, manifest, source, version)
         require(build_identity is None or identity == build_identity, "published build manifests came from different workflow runs")
         build_identity = identity

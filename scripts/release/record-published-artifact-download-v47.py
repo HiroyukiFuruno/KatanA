@@ -14,6 +14,7 @@ from document_host_publication import allowed_publication_version, file_digest, 
 from generated_asset_identity import assets_for
 from postpublication_controller_scope import verify_controller_scope
 from published_git_source import git_source_identity, git_workspace_version
+from v047_evidence_paths import HOST_RECEIPT
 
 REPOSITORY = "HiroyukiFuruno/KatanA"
 TAG = "v0.22.47"
@@ -110,9 +111,10 @@ def main() -> int:
     parser.add_argument("--version", default=TAG, choices=(TAG,))
     args = parser.parse_args()
     try:
-        root, output = args.root.resolve(), args.output.resolve()
-        require(output.is_relative_to(root) and "evidence" in output.relative_to(root).parts and "tmp" not in output.relative_to(root).parts,
-                "public download receipt must be in repository evidence")
+        root = args.root.resolve()
+        output = args.output.absolute()
+        require(output == root / HOST_RECEIPT and output.resolve() == output,
+                "canonical v47 download receipt required")
         require(not output.exists(), "refusing to replace an earlier Release receipt")
         value, manifests = record(root, args.download_directory.resolve(), args.build_manifests.resolve(), args.version)
         refs = {}

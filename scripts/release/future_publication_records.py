@@ -17,6 +17,7 @@ from postpublication_run_admission import admit
 from postpublication_source_binding import COMMIT_PATTERN, REPOSITORY, verify_tag_source
 from published_git_source import SOURCE_ROOTS, git_source_identity, git_workspace_version
 from v043_postpublication_scope import EVIDENCE_FILES
+from v047_evidence_paths import HOST_FILES, CANONICAL_FILES, HOST_RECEIPT, HOST_MANIFESTS
 
 VERSION = "0.22.45"
 TAG = "v" + VERSION
@@ -28,7 +29,7 @@ POLICIES = {
     "0.22.47": {"v0-22-47-katana-contained-fixes": (
         "tab-group-dialog-interaction", "multi-format-document-preview",
         "generated-release-identity", "release-ci-integrity", "canonical-diagram-reference",
-        "oss-repository-security", "auto-update")},
+        "oss-repository-security", "auto-update", "workspace-shell")},
     "0.22.45": {change: (capability,) for change, capability in CHANGES.items()},
     "0.22.46": {"v0-22-46-startup-png-regex": ("local-asset-preview", "workspace-file-filter")},
 }
@@ -68,7 +69,7 @@ def allowed_path(path, inventory, version=VERSION):
         return False
     evidence = f"evidence/releases/v{version}/"
     if path.startswith(evidence):
-        return path[len(evidence):] in RECORD_FILES
+        return path[len(evidence):] in RECORD_FILES or (version == "0.22.47" and path in HOST_FILES | CANONICAL_FILES)
     if path in {f"openspec/specs/{capability}/spec.md" for capabilities in POLICIES[version].values()
                 for capability in capabilities}:
         return True
@@ -124,6 +125,14 @@ def verify_scope(root, source, version=VERSION):
                 require(before == after, "published change content changed")
         for capability in capabilities:
             spec = f"openspec/specs/{capability}/spec.md"
+            if version == "0.22.47":
+                delta = git(root, "show", f"{source}:{prefix}specs/{capability}/spec.md").decode()
+                require(delta.startswith("## ADDED Requirements\n"), "only published added requirements may sync")
+                old = git(root, "show", f"{source}:{spec}").decode()
+                require(old.count(delta.removeprefix("## ADDED Requirements\n").strip()) == 1,
+                        "published main spec must already contain its delta exactly once")
+                require(spec not in changed, "published main spec must remain unchanged")
+                continue
             if spec in changed:
                 delta = git(root, "show", f"{source}:{prefix}specs/{capability}/spec.md").decode()
                 require(delta.startswith("## ADDED Requirements\n"), "only published added requirements may sync")
@@ -234,6 +243,30 @@ def canonical_identity(root, source, directory, api_reader=api):
     return receipt
 
 
+def verify_v47_host_binding(root, release, source, run, attempt, canonical):
+    host = decode(read(root / HOST_RECEIPT))
+    identity = decode(read(canonical / "publication-identity.json"))
+    require(host["source_commit"] == source and host["release_id"] == release["id"] == identity["release_id"],
+            "host receipt differs from admitted public release")
+    require(set(host["assets"]) == set(identity["assets"]), "host asset set differs from published identity")
+    for name, item in host["assets"].items():
+        actual = identity["assets"][name]
+        require(all(item[key] == actual[key] for key in ("asset_id", "size", "sha256", "download_url")),
+                "host download differs from admitted public asset")
+    for platform, path in HOST_MANIFESTS.items():
+        host_manifest = decode(read(root / path))
+        admitted = decode(read(canonical / MANIFESTS[platform]))
+        require(host_manifest == admitted, "host build manifest differs from admitted publication")
+        _, actual_run = manifest_metadata(platform, host_manifest, "v0.22.47")
+        require(actual_run == (run, attempt), "host build manifest run or attempt differs")
+
+
+def verify_v47_record_inventory(root):
+    expected = HOST_FILES | CANONICAL_FILES
+    tracked = set(paths(git(root, "ls-tree", "-r", "--name-only", "-z", "HEAD", "--", *sorted(expected))))
+    require(tracked == expected, "complete v47 host and canonical records required")
+
+
 def verify(root, branch, version, repository):
     validate_route(branch, version, repository)
     tag_name = "v" + version
@@ -250,6 +283,8 @@ def verify(root, branch, version, repository):
     require(git(root, "rev-parse", "--verify", tag_name + "^{commit}").decode().strip() == source,
             "local tag differs from actual published tag")
     changed, tasks = verify_scope(root, source, version)
+    if version == "0.22.47":
+        verify_v47_record_inventory(root)
     with tempfile.TemporaryDirectory(prefix=f"katana-v{version}-records-") as temporary:
         work = Path(temporary)
         run, attempt, admitted = admit(source, tag_name, work / "admission.json")
@@ -257,6 +292,12 @@ def verify(root, branch, version, repository):
         canonical = work / "canonical"
         receipt = canonical_identity(root, source, canonical)
         verify_receipt(root, receipt, release, source, str(run), str(attempt), canonical, version)
+        if version == "0.22.47":
+            from document_host_acceptance import verify as verify_host
+            from v047_canonical_reference import verify as verify_canonical
+            verify_host(root, phase="postpublication", publication_version=tag_name)
+            verify_canonical(root, source, release)
+            verify_v47_host_binding(root, release, source, str(run), str(attempt), canonical)
         evidence = root / f"evidence/releases/{tag_name}/"
         for filename in ("publication-identity.json", *MANIFESTS.values()):
             require(read(evidence / filename) == read(canonical / filename), "committed evidence differs from canonical CI artifact")

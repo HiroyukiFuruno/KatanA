@@ -110,9 +110,12 @@ class PublicationMetadataBoundaryTests(unittest.TestCase):
                 command.assert_not_called()
 
     def test_v47_receipt_requires_exact_tag_manifest_and_committed_version(self):
+        from v047_evidence_paths import HOST_MANIFESTS, HOST_RECEIPT
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             receipt, bundle, source, records, path = self.fixture(root)
+            path = root / HOST_RECEIPT
+            path.parent.mkdir(parents=True)
             producer = root / "scripts/release/record-published-artifact-download-v47.py"
             producer.write_bytes(Path(__file__).with_name(producer.name).read_bytes())
             receipt["producer_sha256"] = digest(producer.read_bytes())
@@ -126,8 +129,9 @@ class PublicationMetadataBoundaryTests(unittest.TestCase):
                 record["version"] = new
                 if old_dmg in record["assets"]:
                     record["assets"][new_dmg] = record["assets"].pop(old_dmg)
-                target = root / receipt["build_manifests"][platform]["path"]
+                target = root / HOST_MANIFESTS[platform]
                 target.write_text(json.dumps(record)+"\n")
+                receipt["build_manifests"][platform]["path"] = HOST_MANIFESTS[platform]
                 receipt["build_manifests"][platform]["sha256"] = digest(target.read_bytes())
             def verify():
                 raw = (json.dumps(receipt)+"\n").encode()

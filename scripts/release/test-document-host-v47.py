@@ -12,11 +12,26 @@ from unittest.mock import patch
 from document_host_io import HostEvidenceError, write_new
 from document_host_acceptance import APPROVAL, MANIFEST, PUBLISHED_V47_EVIDENCE_RELATIVE, PUBLISHED_EVIDENCE_RELATIVE, verify, verify_v47_timing
 from document_host_boundaries import validate_case
-from document_host_io import digest
+from document_host_io import digest, reference
+from v047_evidence_paths import HOST_BUNDLE, HOST_RUNS
 from generated_asset_identity import module
 
 
 class HostV47BatchTests(unittest.TestCase):
+    def test_v47_reference_accepts_only_the_exact_expected_public_file(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            record = write_new(root / HOST_BUNDLE, {"schema": "synthetic"})
+            record["path"] = HOST_BUNDLE
+            self.assertEqual(reference(root, record, "bundle", allowed_paths=frozenset({HOST_BUNDLE}))[1],
+                             {"schema": "synthetic"})
+            with self.assertRaises(HostEvidenceError):
+                reference(root, record, "legacy")
+            for invalid in (HOST_RUNS[0], HOST_BUNDLE.replace("v0.22.47", "v0.22.46"), HOST_BUNDLE + ".extra"):
+                changed = dict(record, path=invalid)
+                with self.subTest(path=invalid), self.assertRaises(HostEvidenceError):
+                    reference(root, changed, "bundle", allowed_paths=frozenset({HOST_BUNDLE}))
+
     def test_failed_final_validation_does_not_create_canonical_record(self):
         producer = module("_unit_v47_output_producer", "produce-document-host-evidence-v47.py")
         with tempfile.TemporaryDirectory() as temporary:

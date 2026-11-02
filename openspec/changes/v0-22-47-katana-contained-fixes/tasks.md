@@ -16,6 +16,7 @@
 > 名前なしも一種の名前がないという名前という捉え方に出来るから、名前なし同色を許容しない。
 > 名前は必須じゃねーよ。
 > グループの名前はあとからも変えることが可能なのでヌケモレなきようにね。
+> 再発しない？
 
 ### この要件から導くMUST
 
@@ -48,6 +49,7 @@
 - Draft→review取得→指摘修正/reply/resolve→P0/P1ゼロ→Ready→必須CI→通常merge。
 - v0.22.47は一度だけ公開。PR headはDependabotのため自動release/v起点と区別し、merge済masterからreuse_existing_version=trueの明示dispatchを使う。
 - actual tag/5assets/checksums/manifest/source/run/attestationを照合し、公開後の操作/受入/capture、Issue・OpenSpec・localcleanupを完了する。remote refsは保持。
+- 実archive・公開後records PRのDraft/review/指摘対応/CI/merge・Issue整理・local cleanupは、[Issue415](https://github.com/HiroyukiFuruno/KatanA/issues/415)と終了台帳でも実行結果を追跡する。source内の成果物準備の完了は、これらの実操作の完了を意味しない。最終完了条件は全実操作を含むまま維持する。
 - 外部修正/公開が必要な#336、#386のKDV #70、#354のKDV #69は独立残件。本人操作/本人承認はClose/公開条件にしない。
 
 ## 1. グループ操作退行（#412、最優先）
@@ -89,6 +91,7 @@ sourceと既存実行入口を照合済み。group/updaterと書込範囲を分�
 - [x] 3.7 通常pushで検出した旧CI契約の固定event検査を、同一SHAのmaster push/信頼済dispatch選択とverified consumerへ揃える。待機360/30・本体のsource/repo/master/actor/full8jobs/step検証を維持し、対象契約と17件の受入/拒否回帰を通す。
 - [x] 3.8 通常pushで検出した未タグtargetの安全拒否を保持し、screenshotの生成前初期化・実行中leaseと、Cargo外の単独rustc検査の専用生成先を整える。既存18GB生成物を後付けで所有済みにせず保持し、実fixture・実rustcと拒否回帰を確認する。
 - [x] 3.9 通常quality検査のUI suite中にworkspace履歴が変化した実writerを特定し、通常設定を使わない公式検査入口・fixtureへ修正する（#414）。厳密before hash一致の保存済みデータからworkspaceを復旧し、合成2/14workspaceと実processによる回帰・入口契約・独立reviewを確認する。隔離後の全gateと通常profile保持の再確認は6.2/6.3で回収する。
+- [x] 3.10 公開後のhost13件・canonical2件の正確な記録先と実検証を、旧版の閾値・同一source条件を維持して公開前に固定する。main spec8件を同期し、tag後の記録PRの改変拒否と一度だけの公開を実Git回帰で確認する。実archive・records merge・cleanupは#415に未完追跡し、成果物準備の成功だけで完了にしない。
 
 ## 4. 実行環境・依存・受入準備（#372、#354、#339、#338）
 
@@ -127,8 +130,8 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - [ ] 6.3 Ready化して必須全checksと追加検査を回収し、Windows cold/warm同条件実測・macOS inventory同等性を実runで確認後、通常mergeする（admin/delete-branchなし）。
 - [ ] 6.4 merge sourceのCI結果を回収後、v0.22.47を一度だけ明示公開する。tag・実bytes・署名来歴・identityの不一致は拒否する。
 - [ ] 6.5 実公開版のgroup操作、起動・保存・再起動、packaged文書10-cycle受入、actual metadata receiptの正常/拒否検証を回収する。実経路とfixtureの主張を区別する。
-- [ ] 6.6 final sourceのcanonical referenceを検証・採用し公開handoff記録を残す。specを同期・archive、担当範囲のIssueを証跡付きで整理し#388を同期する。
-- [ ] 6.7 公開後記録を通常Draft review/CI/mergeで正式履歴へ統合し、branch-hygieneでstash0/masterclean/0ahead0behind/既存worktree確認・不要local枝整理・remote保持を完了する。
+- [ ] 6.6 公開tag直後のclean exact sourceでcanonical referenceを検証・採用し、公開handoff記録と同期済み8main specの一致、archive対象の実成果物・検査結果を整える。実archive・担当Issue整理・#388同期は#415と終了台帳で未完追跡し、実施後のみ完了とする。
+- [ ] 6.7 公開後recordsの固定範囲・完全性・同一source・実公開assetとの結合検査を通し、通常Draft review/CI/mergeへ渡せる差分と証跡を整える。実records PRのreview/指摘対応/mergeと、branch-hygieneによるstash0/masterclean/0ahead0behind/既存worktree確認・不要local枝整理・remote保持は#415と終了台帳で実施結果を確認するまで未完とする。
 
 ## 検証証跡
 
@@ -208,3 +211,22 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - 通常push retry3は明示CONFIG内cacheへの保存を既存testが固定folder名で誤拒否したため停止（platform118passed/1failed、strict101/push1、remote旧2e）。production resolverは正しく指定CONFIG/cacheを使っており、testを既定serviceのcache_root/kv契約へ限定修正。隔離したplatform全119passed/fmt/diffcheck成功（profile-cache-path-contract-green.log）。retry3中は通常settings/workspaceのSHA・mtime・sizeが常にbeforeと一致（push-retry3-progress.jsonl）。全gateは未完のまま6.2で再実行する。
 
 - 通常push retry4は実UI suite1525passed/1failedまで実行し、3原因testsと新しいprofile不変回帰は全て成功、両通常JSONはSHA/mtime/size不変。残1件はlinter global pathの固定KatanA末尾assertが明示CONFIGに非対応のため、factory-wiring契約へ限定修正。未指定/空指定の既定fallback純粋回帰を追加し12passed/fmt/diffcheck（profile-linter-path-contract-green.log）。全cratesの同種KatanA path assertionを限定auditし、残りはlabel/固定純粋入力等の正当な比較と確認。production処理変更や条件skipは行わず、次の通常gateへ継続。
+
+- 通常push retry5はnative UI suite後のDocker段階でcheck-linux exit125/push1。host容量不足の後、guest vdb1のI/O error・journal abortとcontainerd metadata I/O errorを実ログで確認。remote headは旧2e665のまま。通常settings/workspaceは厳密beforeとSHA・mtime・size一致（push-retry5-progress.jsonl）。検査失敗を成功扱いせず、実行環境復旧と正式gate再実行を継続する。
+- tag後の自己archive/records merge/cleanupを先取りで[x]にしないため、source6.6/6.7を実行可能な成果物準備へ分離し、実操作はIssue415と終了台帳で未完追跡する。全体DoDを維持し、公開前3.10でclosed scope・host13/canonical2件・main8spec同期と拒否契約を検証する。
+
+- Linux環境復旧: private既存just clean-allで正規所有・非稼働cacheのみ回収しhost空き3.5→64GiB（capacity-clean-after-docker-io.log、未tag/activeは拒否保持）。Colima内の他稼働job無しを確認しDocker停止、data filesystemをunmountしてe2fsck -fnでorphan/bitmap不整合を確認。対話repairの各構造修復を実行し、再度read-only検査で収束を確認中。volume/source/個人設定の削除は行わない。
+
+- data fs修復後のread-only e2fsck -fnはexit0（colima-data-fsck-verified.log）。通常Colima再起動後のdmesgにdata fs I/O/journalエラーなし、実Compose containerからtarget volumeへwrite/fsync/read一致（colima-data-container-health.log）。4既存volumesは保持、通常settings/workspaceはbefore SHA/mtime/bytes全一致（personal-profile-after-docker-recovery.json）。全quality gateは未完のまま。
+
+### 公開後記録の独立レビュー追加指摘
+
+- [/] P1: canonicalの公開後capture時刻をfile mtimeから推定せず、collector自身の実行前後時計と同一processによる正規runner起動へ結合する。公開前候補のcopy/touchによる再利用を拒否し、実process回帰で確認する。
+- [/] P2: 公開canonicalのpreview_geometry/interaction_state内もexact key/schemaにし、未知fieldへ原本内容やprivate pathが混入する経路を拒否する。
+- [/] P2: 公開canonical PNGへtEXt等のmetadataで原本内容/private pathが混入しないよう、正規generatorが出すchunk集合を検証し、文字metadata追加を拒否する。画像の完全decode/寸法/hash検査も維持する。
+- [/] P1: main spec同期の回帰がactive changeだけを参照していたため、実archive後のrecords PRでも同じ必須検査が成立するよう唯一active/archiveを検出し、両正例と欠落/複数を実回帰で確認する。
+- [/] P2: tag前に同期済みのv47 main specへ同じdeltaを二重追記したrecords差分を拒否し、未同期の旧版append互換を保持する。
+
+- canonical先行3指摘はcollector自身の実command/開始終了時計と専用CONFIG、新規output条件、nested exact fields、PNG chunk閉集合/完全decodeで対応。実一時Git・実child processの正常collectorを含む5件が成功（v47-records-canonical-tests.log）。これはcollector契約のfixture検証であり、公開後の実KatanA撮影成功の代用ではない。
+
+- 公開前3.10完了: exact host13+canonical2のscope・全実file検証・live Release/admitted run/attempt/3manifest結合、Pillow固定venv、8main spec同期とv47 recordsでの不変化を実装。real Git14、collector実fixture process含むcanonical5、v47 host7、旧v42 acceptance34/provenance9、v45 records10/v46 records7、release flow27、strict OpenSpec67が成功。独立Highの3先行指摘とarchive固定P1/二重append P2を修正、追加P0/P1/P2なし（v47-finalization-source-independent-review.md）。原本の公開後実受入・公開後実capture・records PR自体は未完のまま#415と6.4以降で継続。

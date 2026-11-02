@@ -142,10 +142,7 @@ scripts/release/check-linuxbrew-formula-contract.sh
 info "14/14 Validating OpenSpec task completion..."
 # WHY（日本語）: v0.22.42のdocument-fidelityはpost-変更名のため、版番号globだけでは公開前必須受入を見落とす。
 EVIDENCE_PYTHON_ENV="tmp/release-evidence-python"
-if [[ ! -x "$EVIDENCE_PYTHON_ENV/bin/python" ]]; then
-    python3 -m venv "$EVIDENCE_PYTHON_ENV"
-fi
-"$EVIDENCE_PYTHON_ENV/bin/python" -m pip install --disable-pip-version-check --only-binary=:all: -r scripts/release/evidence-requirements.txt
+bash scripts/release/prepare-evidence-python.sh
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-release-gate.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-divergence.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-acceptance-evidence.py
@@ -154,6 +151,7 @@ fi
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-v47.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-observation.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-version.py
+"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-v047-canonical-reference.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-published-artifact-identity.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/check-document-fidelity-release-gate.py "$VERSION" "$TASK_GATE_MODE"
 VERSION_DASHED=$(echo "$VERSION" | tr '.' '-')

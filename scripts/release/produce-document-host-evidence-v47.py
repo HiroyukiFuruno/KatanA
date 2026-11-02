@@ -10,6 +10,7 @@ from document_host_io import decode, digest, fields, read, require, write_new
 from document_host_publication import verify_download_receipt
 from generated_asset_identity import module
 from document_host_boundaries import validate_case
+from v047_evidence_paths import HOST, HOST_RECEIPT
 
 
 def produce(root: Path, run_map: Path, output: Path, receipt: Path) -> None:
@@ -21,9 +22,9 @@ def produce(root: Path, run_map: Path, output: Path, receipt: Path) -> None:
     require(bundle["provenance"] == source, "actual bundle source differs")
     require(helper.input_digest(Path(bundle["main_path"])) == bundle["main_sha256"]
             and helper.input_digest(Path(bundle["worker_path"])) == bundle["sidecar_sha256"], "actual executable bytes changed")
-    require(output.is_relative_to(root) and "evidence" in output.relative_to(root).parts
-            and "tmp" not in output.relative_to(root).parts and not output.exists(), "new public evidence directory required")
-    require(receipt.is_relative_to(root), "public release receipt required")
+    require(output == root / HOST / "observations" and output.resolve() == output
+            and not output.exists(), "new canonical v47 observations directory required")
+    require(receipt == root / HOST_RECEIPT and receipt.resolve() == receipt, "canonical v47 release receipt required")
     require(not (root / PUBLISHED_V47_EVIDENCE_RELATIVE).exists(), "refusing to overwrite existing v47 evidence")
     receipt_ref = {"path": receipt.relative_to(root).as_posix(), "sha256": digest(read(receipt))}
     verify_download_receipt(root, {"status": "published_macos_host_accepted", "receipt": receipt_ref},

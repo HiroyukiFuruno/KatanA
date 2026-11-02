@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import copy
+import json
 import runpy
 import shutil
 import subprocess
@@ -13,15 +14,57 @@ import future_publication_records as records
 from generated_asset_identity import file_digest
 from generated_identity_fixtures import bundle, git, repository
 from published_git_source import git_source_identity
+from v047_evidence_paths import HOST_FILES, CANONICAL_FILES, HOST_RECEIPT, HOST_MANIFESTS
 
 ROOT = Path(__file__).resolve().parents[2]
 VERSION = "0.22.47"
 BRANCH = "release/v0.22.47-public-release-evidence"
 CHANGE = "v0-22-47-katana-contained-fixes"
-CAPABILITIES = ("tab-group-dialog-interaction", "multi-format-document-preview", "generated-release-identity", "release-ci-integrity", "canonical-diagram-reference", "oss-repository-security", "auto-update")
+CAPABILITIES = ("tab-group-dialog-interaction", "multi-format-document-preview", "generated-release-identity", "release-ci-integrity", "canonical-diagram-reference", "oss-repository-security", "auto-update", "workspace-shell")
+
+
+def assert_delta_sync(test, root):
+    changes = root / "openspec/changes"
+    active = changes / CHANGE
+    archives = [path for path in (changes / "archive").glob("*-" + CHANGE)
+                if path.is_dir() and records.archive_change((path.relative_to(root) / "tasks.md").as_posix(), VERSION)]
+    locations = ([active] if active.is_dir() else []) + archives
+    test.assertEqual(len(locations), 1, "exactly one active or archived change is required")
+    deltas = {path.parent.name: path for path in (locations[0] / "specs").glob("*/spec.md")}
+    test.assertEqual(set(deltas), set(records.POLICIES[VERSION][CHANGE]))
+    for capability, path in deltas.items():
+        delta = path.read_text().removeprefix("## ADDED Requirements\n").strip()
+        main = (root / "openspec/specs" / capability / "spec.md").read_text()
+        test.assertEqual(main.count(delta), 1, capability)
 
 
 class Publication47Tests(unittest.TestCase):
+    def test_all_published_delta_capabilities_are_in_exact_scope_and_synced(self):
+        assert_delta_sync(self, ROOT)
+
+    def test_sync_check_accepts_active_or_archive_and_rejects_missing_or_duplicate(self):
+        assert_delta_sync(self, self.root)
+        active = self.root / "openspec/changes" / CHANGE
+        archived = self.root / "openspec/changes/archive" / ("2026-11-02-" + CHANGE)
+        archived.parent.mkdir(parents=True)
+        active.rename(archived)
+        self.commit()
+        assert_delta_sync(self, self.root)
+        archived.rename(active)
+        self.commit()
+        (active / "specs" / CAPABILITIES[0] / "spec.md").rename(active / "missing-spec.md")
+        with self.assertRaises(AssertionError):
+            assert_delta_sync(self, self.root)
+        (active / "missing-spec.md").rename(active / "specs" / CAPABILITIES[0] / "spec.md")
+        import shutil
+        shutil.copytree(active, archived)
+        with self.assertRaises(AssertionError):
+            assert_delta_sync(self, self.root)
+        active.rename(active.with_name("missing-change"))
+        archived.rename(archived.with_name("missing-archive"))
+        with self.assertRaises(AssertionError):
+            assert_delta_sync(self, self.root)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
@@ -32,7 +75,7 @@ class Publication47Tests(unittest.TestCase):
             self.write(f"openspec/changes/{CHANGE}/specs/{cap}/spec.md",
                        "## ADDED Requirements\n\n### Requirement: New\n\nNew behavior.\n")
             self.write(f"openspec/specs/{cap}/spec.md",
-                       "## Purpose\n\nPurpose.\n\n## Requirements\n\n### Requirement: Old\n\nOld behavior.\n")
+                       "## Purpose\n\nPurpose.\n\n## Requirements\n\n### Requirement: Old\n\nOld behavior.\n\n### Requirement: New\n\nNew behavior.\n")
         for name in ("check-openspec-task-phase.py", "check-openspec-task-completion.py"):
             self.write("scripts/release/" + name, (ROOT / "scripts/release" / name).read_text())
         self.commit()
@@ -66,6 +109,56 @@ class Publication47Tests(unittest.TestCase):
         with self.assertRaisesRegex(HostEvidenceError, "production tree"):
             records.verify_scope(self.root, self.source, VERSION)
 
+    def test_exact_v47_record_paths_survive_archive_and_reject_unknown_names(self):
+        allowed = HOST_FILES | CANONICAL_FILES
+        self.assertEqual(len(allowed), 15)
+        for name in allowed:
+            self.assertTrue(records.allowed_path(name, set(), VERSION))
+            self.assertFalse(records.allowed_path(name, set(), "0.22.46"))
+            self.write(name, "synthetic unit record\n")
+        self.commit()
+        records.verify_scope(self.root, self.source, VERSION)
+        records.verify_v47_record_inventory(self.root)
+        active = self.root / "openspec/changes" / CHANGE
+        archived = self.root / "openspec/changes/archive" / ("2026-11-02-" + CHANGE)
+        archived.parent.mkdir(parents=True)
+        active.rename(archived)
+        (archived / "tasks.md").write_text("- [x] 1.1 Impl\n- [x] 6.7 Archive\n")
+        self.commit()
+        records.verify_scope(self.root, self.source, VERSION)
+        self.write("evidence/releases/v0.22.47/document-host/unknown.json", "unknown\n")
+        self.commit()
+        with self.assertRaisesRegex(HostEvidenceError, "outside exact"):
+            records.verify_scope(self.root, self.source, VERSION)
+
+    def test_missing_committed_v47_record_is_rejected(self):
+        for name in HOST_FILES | CANONICAL_FILES:
+            self.write(name, "synthetic unit record\n")
+        self.commit()
+        records.verify_v47_record_inventory(self.root)
+        (self.root / next(iter(HOST_FILES))).unlink()
+        git(self.root, "add", "-u")
+        git(self.root, "commit", "-q", "-m", "unit remove record")
+        with self.assertRaisesRegex(HostEvidenceError, "complete v47 host"):
+            records.verify_v47_record_inventory(self.root)
+
+    def test_unsynced_published_main_spec_is_rejected(self):
+        path = self.root / f"openspec/specs/{CAPABILITIES[0]}/spec.md"
+        path.write_text(path.read_text().replace("### Requirement: New\n\nNew behavior.\n", ""))
+        self.commit()
+        source = git(self.root, "rev-parse", "HEAD")
+        with self.assertRaisesRegex(HostEvidenceError, "already contain its delta"):
+            records.verify_scope(self.root, source, VERSION)
+
+    def test_records_paths_are_ignored_by_release_trigger_without_ignoring_assets(self):
+        workflow = (ROOT / ".github/workflows/build-and-release.yml").read_text()
+        trigger = workflow.split("  pull_request:\n", 1)[1].split("  push:\n", 1)[0]
+        self.assertIn("      - 'evidence/**'", trigger)
+        self.assertIn("      - 'openspec/**'", trigger)
+        self.assertNotIn("      - 'assets/**'", trigger)
+        self.assertTrue(all(name.startswith("evidence/") for name in HOST_FILES | CANONICAL_FILES))
+        self.assertFalse(records.allowed_path("assets/reference/sample-diagrams-top.png", set(), VERSION))
+
     def test_staged_change_hidden_by_unstaged_reversal_is_rejected(self):
         path = self.root / "Cargo.lock"
         original = path.read_bytes()
@@ -75,21 +168,18 @@ class Publication47Tests(unittest.TestCase):
         with self.assertRaises(HostEvidenceError):
             records.verify_scope(self.root, self.source, VERSION)
 
-    def test_archival_sync_preserves_both_existing_and_added_requirements(self):
+    def test_archive_rejects_any_main_spec_edit_including_duplicate_delta(self):
         active = self.root / "openspec/changes" / CHANGE
         archived = self.root / "openspec/changes/archive" / ("2026-11-01-" + CHANGE)
         archived.parent.mkdir(parents=True)
         active.rename(archived)
         (archived / "tasks.md").write_text("- [x] 1.1 Impl\n- [x] 6.7 Archive\n")
-        for cap in CAPABILITIES:
-            path = self.root / f"openspec/specs/{cap}/spec.md"
-            path.write_text(path.read_text().rstrip() + "\n\n### Requirement: New\n\nNew behavior.\n")
         self.commit()
         records.verify_scope(self.root, self.source, VERSION)
         path = self.root / f"openspec/specs/{CAPABILITIES[0]}/spec.md"
-        path.write_text(path.read_text().replace("Old behavior.", "Altered behavior."))
+        path.write_text(path.read_text() + "\n### Requirement: New\n\nNew behavior.\n")
         self.commit()
-        with self.assertRaisesRegex(HostEvidenceError, "spec sync"):
+        with self.assertRaisesRegex(HostEvidenceError, "main spec must remain unchanged"):
             records.verify_scope(self.root, self.source, VERSION)
 
     def test_route_selection_is_exact(self):
@@ -126,6 +216,42 @@ class Publication47Tests(unittest.TestCase):
 
 
 class Publication47ReceiptTests(unittest.TestCase):
+    def test_host_binding_requires_admitted_release_assets_and_all_manifests(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, assets, manifests, builds, _ = bundle(root, "v0.22.47")
+            canonical = root / "canonical"
+            shutil.copytree(manifests, canonical / "manifests")
+            asset_records = {path.name: {"asset_id": index + 1, "size": path.stat().st_size,
+                             "sha256": file_digest(path), "download_url": "https://example.invalid/" + path.name}
+                             for index, path in enumerate(sorted(assets.iterdir())) if path.name != "checksums.txt"}
+            identity = {"release_id": 10, "assets": asset_records}
+            (canonical / "publication-identity.json").write_text(json.dumps(identity))
+            host = {"source_commit": source, "release_id": 10, "assets": asset_records}
+            (root / HOST_RECEIPT).parent.mkdir(parents=True)
+            (root / HOST_RECEIPT).write_text(json.dumps(host))
+            for platform, name in HOST_MANIFESTS.items():
+                (root / name).write_text(json.dumps(builds[platform]))
+            records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
+            with self.assertRaisesRegex(HostEvidenceError, "run or attempt"):
+                records.verify_v47_host_binding(root, {"id": 10}, source, "123", "1", canonical)
+            changed_host = copy.deepcopy(host)
+            changed_host["assets"][next(iter(changed_host["assets"]))]["sha256"] = "0" * 64
+            (root / HOST_RECEIPT).write_text(json.dumps(changed_host))
+            with self.assertRaisesRegex(HostEvidenceError, "public asset"):
+                records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
+            (root / HOST_RECEIPT).write_text(json.dumps(host))
+            changed_manifest = copy.deepcopy(builds["windows"])
+            changed_manifest["provenance"]["source_commit"] = "0" * 40
+            (root / HOST_MANIFESTS["windows"]).write_text(json.dumps(changed_manifest))
+            with self.assertRaisesRegex(HostEvidenceError, "build manifest"):
+                records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
+            (root / HOST_MANIFESTS["windows"]).write_text(json.dumps(builds["windows"]))
+            host["release_id"] = 11
+            (root / HOST_RECEIPT).write_text(json.dumps(host))
+            with self.assertRaisesRegex(HostEvidenceError, "public release"):
+                records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
+
     def test_all_three_platform_manifests_bind_to_v47_public_assets(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
