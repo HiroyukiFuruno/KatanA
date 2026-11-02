@@ -17,6 +17,7 @@
 > 名前は必須じゃねーよ。
 > グループの名前はあとからも変えることが可能なのでヌケモレなきようにね。
 > 再発しない？
+> 全検査を実行し、計測結果を記録して公開（推奨）
 
 ### この要件から導くMUST
 
@@ -27,6 +28,7 @@
 - root README.mdへ実アプリ画像を含める。日本語版も同じ実画像に同期する。
 - 本番全体の入力経路と配布版で操作し、単体部品の成功だけで完了扱いしない。
 - 既存DoD・品質条件を下げず、他repoの修正/公開依存は根拠付きで分離する。
+- CI計測は、全検査を実行して実測・差分・未証明部分を記録したうえで公開する。計測だけから完全な実行・環境同等性や高速化を証明したとはせず、汎用test skip/reuseは採用しない（2026-11-02の人間による範囲確定）。
 
 ## Definition of Ready
 
@@ -128,7 +130,7 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 
 - [x] 6.1 self-review/独立High review、日英CHANGELOG・version/全lock同期、strict OpenSpec/KML検証。
 - [x] 6.2 通常pushを正式gateとして通し、PR405をDraftのまま最新内容へ更新してreviewを取得、指摘修正/reply/resolve、P0/P1ゼロを確認する。
-- [ ] 6.3 Ready化して必須全checksと追加検査を回収し、Windows cold/warm同条件実測・macOS inventory同等性を実runで確認後、通常mergeする（admin/delete-branchなし）。
+- [ ] 6.3 Ready化してCI全8job・Release Readinessと設定された追加検査を省略なく実行・回収し、観測対象の入力identityを一致確認した同条件でのWindows cold/warm計測、およびmacOS normal/coverage inventoryの実測・差分・完全性と未証明部分をsource/run/attempt/digestに結び付けて記録した後、通常mergeする（admin/delete-branchなし）。完全な同等性や高速化を証明済みとは扱わず、汎用test skip/reuseは認可しない。
 - [ ] 6.4 merge sourceのCI結果を回収後、v0.22.47を一度だけ明示公開する。tag・実bytes・署名来歴・identityの不一致は拒否する。
 - [ ] 6.5 実公開版のgroup操作、起動・保存・再起動、packaged文書10-cycle受入、actual metadata receiptの正常/拒否検証を回収する。実経路とfixtureの主張を区別する。
 - [ ] 6.6 公開tag直後のclean exact sourceでcanonical referenceを検証・採用し、公開handoff記録と同期済み8main specの一致、archive対象の実成果物・検査結果を整える。実archive・担当Issue整理・#388同期は#415と終了台帳で未完追跡し、実施後のみ完了とする。
@@ -243,3 +245,5 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - Readiness41382462028/attempt1は798件中、test_bump_version_hooks.test_failed_cargo_resolution_stops_before_commitのerror:生文字列assertだけがANSI色付けで失敗。親もCARGO_TERM_COLOR=alwaysでREDを実再現（ci-color-hooks-red.log）。失敗の本来の原因failed to parse manifest/no targetsを具体検証し、fixture/実子processのUTF-8を明示。color通常localeとcolor強制US-ASCIIで各5件GREEN（ci-color-hooks-green.log、ci-locale-color-hooks-green.log）。
 - 先行6.2はsource506のDraft review完了を示す。今回CI修正の次headは別途Draftへ戻してreviewを取得し、指摘ゼロと全CIを確認するまで6.3/公開を進めない。6.3のinventory同等性表現とcollect-only実装の差は人間へ確認中。全既存test/coverage/受入条件を維持する。
 - 3.11の対象修正と実legacy locale/color回帰（12件×2環境、5件×2環境）は成功し、独立High追加P0/P1/P2なし（ci-portability-independent-review.md）。これは対象契約の事前検証完了であり、次sourceのDraft review/通常push/全OS CIの完了ではない。6.3は未完のまま継続する。
+
+- 2026-11-02 人間の範囲確定: Task6.3の計測/差分記録と完全同等証明の表現差について確認したところ、「全検査を実行し、計測結果を記録して公開（推奨）」と明示回答。6.3を全8CI/Readiness/追加検査の実行と、実結果・差分・未証明の記録へ正確化した。既存test/coverage/品質/文書受入閾値と6.4以降は維持し、falseの同等性/reuse認可や完全高速化をtrueにしない。Issue343の未証明部分はOpenで追跡を継続する。
