@@ -2,6 +2,7 @@
 import copy
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -56,7 +57,7 @@ class MeasurementTests(unittest.TestCase):
 
     def test_real_workflow_shell_fails_when_comparison_fails(self):
         root = Path(__file__).resolve().parents[2]
-        workflow = (root / ".github/workflows/windows-cache-measurement.yml").read_text()
+        workflow = (root / ".github/workflows/windows-cache-measurement.yml").read_text(encoding="utf-8")
         block = workflow.split("      - name: Compare matched measurements\n", 1)[1].split("\n      - ", 1)[0]
         self.assertIn("        shell: bash\n", block)
         shell = "\n".join(line[10:] for line in block.split("        run: |\n", 1)[1].splitlines())
@@ -73,8 +74,11 @@ class MeasurementTests(unittest.TestCase):
             result = subprocess.run(["bash", "--noprofile", "--norc", "-e", "-o", "pipefail", "-c", shell],
                                     cwd=fixture, env=os.environ | {"RUNNER_TEMP": directory},
                                     capture_output=True, text=True)
-            self.assertNotEqual(result.returncode, 0)
-            self.assertTrue((fixture / "windows-cache-comparison.json").exists())
+            detail = (f"bash={shutil.which('bash')!r} RUNNER_TEMP={directory!r} "
+                      f"status={result.returncode} stdout={result.stdout!r} stderr={result.stderr!r}")
+            self.assertNotEqual(result.returncode, 0, detail)
+            self.assertTrue((fixture / "windows-cache-comparison.json").exists(), detail)
+            self.assertIn("compiled cache identity is unavailable", result.stderr, detail)
 
 
 if __name__ == "__main__":
