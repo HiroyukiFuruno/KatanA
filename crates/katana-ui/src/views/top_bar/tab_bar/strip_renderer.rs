@@ -32,6 +32,7 @@ impl<'a> DrawItemRenderer<'a> {
             items::DrawItem::GroupHeader(g) => {
                 group_header::GroupHeader {
                     g,
+                    groups: self.tab_groups,
                     inline_rename_group: self.inline_rename_group.as_ref(),
                 }
                 .show(ui, tab_action);

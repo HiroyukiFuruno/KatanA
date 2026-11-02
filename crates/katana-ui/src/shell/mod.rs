@@ -144,6 +144,7 @@ impl KatanaApp {
             || self.state.layout.show_history_panel
             || self.state.layout.show_slideshow
             || self.state.layout.show_search_modal
+            || self.state.layout.group_draft.is_some()
             || self.state.layout.create_fs_node_modal.is_some()
             || self.state.layout.rename_modal.is_some()
             || self.state.layout.delete_modal.is_some()
@@ -161,3 +162,7 @@ impl KatanaApp {
 
 #[cfg(test)]
 include!("shell_tests.rs");
+
+#[cfg(test)]
+#[path = "profile_isolation_regression_tests.rs"]
+mod profile_isolation_regression_tests;

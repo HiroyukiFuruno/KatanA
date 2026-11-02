@@ -990,12 +990,15 @@ mod tests_extra {
 
     fn make_app_with_failing_repo() -> KatanaApp {
         let settings = katana_platform::SettingsService::new(Box::new(FailingRepository));
-        let state = AppState::new(
+        let mut state = AppState::new(
             AiProviderRegistry::new(),
             PluginRegistry::new(),
             settings,
             std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
         );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::default(),
+        ));
         KatanaApp::new(state)
     }
 
@@ -1145,12 +1148,15 @@ mod tests_extra {
 
     #[test]
     fn test_poll_explorer_load_disconnect() {
-        let state = AppState::new(
+        let mut state = AppState::new(
             katana_core::ai::AiProviderRegistry::default(),
             katana_core::plugin::PluginRegistry::default(),
             katana_platform::SettingsService::default(),
             std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
         );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::default(),
+        ));
         let mut app = KatanaApp::new(state);
 
         let (tx, rx) = std::sync::mpsc::channel();

@@ -21,7 +21,10 @@ pub enum AppAction {
     OpenDroppedFiles(Vec<PathBuf>),
     SelectWorkspaceTab(PathBuf),
     CloseWorkspaceTab(PathBuf),
-    ReorderWorkspaceTab { from: usize, to: usize },
+    ReorderWorkspaceTab {
+        from: usize,
+        to: usize,
+    },
     SelectDocument(PathBuf),
     SelectDocumentAndJump {
         path: PathBuf,
@@ -167,7 +170,7 @@ pub enum AppAction {
     },
     FinishInlineRename {
         group_id: String,
-        new_name: Option<String>,
+        new_identity: Option<(String, String)>,
     },
     RecolorTabGroup {
         group_id: String,

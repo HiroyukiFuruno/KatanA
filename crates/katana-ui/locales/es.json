@@ -482,6 +482,7 @@
     "unpin": "Desanclar",
     "restore_closed": "Restaurar pestaña cerrada",
     "group_name_placeholder": "Nombre grupo",
+    "group_identity_duplicate": "Ya existe un grupo con este nombre y color.",
     "create_group_button": "Crear",
     "close_group": "Cerrar grupo",
     "ungroup": "Desagrupar",

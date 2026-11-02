@@ -185,11 +185,14 @@ mod tests {
                 .try_init()
                 .expect("child tracing subscriber must initialize");
             let ctx = test_context();
-            let app_state = AppState::new(
+            let mut app_state = AppState::new(
                 Default::default(),
                 Default::default(),
                 Default::default(),
                 Arc::new(katana_platform::InMemoryCacheService::default()),
+            );
+            app_state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(
+                Box::new(katana_platform::workspace::InMemoryWorkspaceRepository::default()),
             );
             let mut app = KatanaApp::new(app_state);
             let mut frame = eframe::Frame::_new_kittest();

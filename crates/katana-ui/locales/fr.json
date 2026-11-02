@@ -482,6 +482,7 @@
     "unpin": "Désépingler",
     "restore_closed": "Restaurer l'onglet fermé",
     "group_name_placeholder": "Nom groupe",
+    "group_identity_duplicate": "Un groupe portant ce nom et cette couleur existe déjà.",
     "create_group_button": "Créer",
     "close_group": "Fermer le groupe",
     "ungroup": "Dégrouper",

@@ -4,6 +4,7 @@ use eframe::egui;
 pub(super) struct GroupHeaderPopupState {
     pub(super) popup_id: egui::Id,
     pub(super) name_draft_id: egui::Id,
+    pub(super) color_draft_id: egui::Id,
     name_focus_id: egui::Id,
     opened_for_inline_rename_id: egui::Id,
 }
@@ -17,6 +18,7 @@ impl GroupHeaderPopupState {
         Self {
             popup_id,
             name_draft_id: popup_id.with("group_name_draft"),
+            color_draft_id: popup_id.with("group_color_draft"),
             name_focus_id: popup_id.with("group_name_focus_requested"),
             opened_for_inline_rename_id: popup_id.with("opened_for_inline_rename"),
         }
@@ -54,6 +56,7 @@ impl GroupHeaderPopupState {
     pub(super) fn clear_editor_state(self, ctx: &egui::Context) {
         ctx.data_mut(|data| {
             data.remove_temp::<String>(self.name_draft_id);
+            data.remove_temp::<String>(self.color_draft_id);
             data.remove_temp::<bool>(self.name_focus_id);
         });
     }

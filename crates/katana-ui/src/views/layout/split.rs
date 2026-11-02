@@ -5,6 +5,9 @@ use crate::shell::KatanaApp;
 use crate::theme_bridge;
 use crate::views::panels::preview::PreviewContent;
 use katana_platform::PaneOrder;
+#[cfg(test)]
+#[path = "split_background_regression_tests.rs"]
+mod background_regression_tests;
 pub(crate) struct SplitMode<'a> {
     pub _ctx: &'a egui::Context,
     pub app: &'a mut KatanaApp,
@@ -52,8 +55,11 @@ fn is_markdown_path(path: &std::path::Path) -> bool {
 
 fn paint_split_background(ui: &egui::Ui, is_markdown: bool) {
     if is_markdown {
-        ui.painter()
-            .rect_filled(ui.max_rect(), 0.0, ui.visuals().window_fill());
+        ui.painter().rect_filled(
+            ui.available_rect_before_wrap(),
+            0.0,
+            ui.visuals().window_fill(),
+        );
     }
 }
 

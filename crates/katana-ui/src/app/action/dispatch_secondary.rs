@@ -68,13 +68,7 @@ impl KatanaApp {
             AppAction::StartUpdateDownload => self.handle_action_install_update(),
             AppAction::InstallUpdate => self.handle_action_install_update(),
             AppAction::InstallUpdateAndRestart => {
-                if let Some(_prep) = self.pending_relaunch.take() {
-                    #[cfg(all(not(test), not(coverage)))]
-                    {
-                        let _ = katana_core::update::UpdateInstallerOps::execute_relauncher(_prep);
-                        std::process::exit(0);
-                    }
-                }
+                self.handle_update_relaunch(ctx);
             }
             AppAction::DocSearchQueryChanged => self.handle_action_doc_search_changed(),
             AppAction::DocSearchNext => self.handle_action_doc_search_next(ctx),
@@ -115,8 +109,27 @@ impl KatanaApp {
             _ => self.dispatch_tertiary(ctx, action),
         }
     }
+
+    pub(super) fn handle_update_relaunch(&mut self, ctx: &egui::Context) {
+        let Some(prep) = self.pending_relaunch.take() else {
+            return;
+        };
+        if let Err(error) = katana_core::update::UpdateInstallerOps::execute_relauncher(prep) {
+            tracing::warn!(%error, "update relaunch helper failed to start");
+            self.state.update.phase = None;
+            self.state.update.checking = false;
+            self.state.update.install_error =
+                Some(katana_core::update::CheckUpdateError::from_preparation_error(error));
+            self.show_update_dialog = true;
+            ctx.request_repaint();
+        }
+    }
 }
 
 #[cfg(test)]
 #[path = "dispatch_secondary_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "dispatch_update_tests.rs"]
+mod update_tests;

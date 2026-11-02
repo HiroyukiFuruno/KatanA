@@ -85,6 +85,17 @@ class WindowsTargetCacheIdentityTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             build_cache_key(root2, _environment(root2), "dev", (), ("workspace",))
 
+    def test_diagnostic_payload_records_inputs_without_environment_values(self):
+        temporary, root = _fixture()
+        self.addCleanup(temporary.cleanup)
+        environment = _environment(root) | {"RUSTFLAGS": "secret-environment-value"}
+        result = cache_identity(root, environment, "dev", (), ("workspace",), diagnostic_payload=True)
+        self.assertTrue(result["cache_eligible"])
+        self.assertEqual(result["environment_encoding"], "sha256-per-value")
+        self.assertEqual(len(result["inputs"]["environment"]["RUSTFLAGS"]), 64)
+        self.assertNotIn("secret-environment-value", json.dumps(result))
+        self.assertNotIn(str(root), json.dumps(result))
+
     def test_untracked_and_invalid_options_fail_closed(self):
         temporary, root = _fixture()
         self.addCleanup(temporary.cleanup)

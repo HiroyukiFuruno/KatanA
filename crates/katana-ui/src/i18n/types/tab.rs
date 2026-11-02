@@ -13,6 +13,7 @@ pub struct TabMessages {
     pub unpin: String,
     pub restore_closed: String,
     pub group_name_placeholder: String,
+    pub group_identity_duplicate: String,
     pub create_group_button: String,
     pub close_group: String,
     pub ungroup: String,

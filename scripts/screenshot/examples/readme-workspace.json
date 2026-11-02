@@ -1,0 +1,29 @@
+{
+  "schema_version": "1",
+  "name": "readme-workspace",
+  "fixture": {
+    "settings": {
+      "theme": "dark",
+      "preset": "KatanaDark",
+      "locale": "en",
+      "explorer_visible": true,
+      "linter_enabled": false,
+      "preview_show_diagram_controls": false
+    },
+    "workspace_files": [
+      { "name": "project-atlas.md", "source": "assets/fixtures/readme-showcase.md" },
+      {
+        "name": "decisions.md",
+        "content": "# Decisions\n\nRecord the decisions behind the work.\n"
+      },
+      { "name": "notes.md", "content": "# Notes\n\nKeep project notes together.\n" }
+    ]
+  },
+  "steps": [
+    { "type": "launch", "viewport": { "width": 1600, "height": 1000 }, "wait_seconds": 3.0 },
+    { "type": "open_file", "file_name": "project-atlas.md", "wait_seconds": 2.0 },
+    { "type": "action", "action": { "set_view_mode": { "mode": "split" } } },
+    { "type": "screenshot", "output_name": "readme-workspace" },
+    { "type": "quit" }
+  ]
+}

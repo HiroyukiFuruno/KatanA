@@ -26,7 +26,7 @@ OFFICE_WORKER="$TARGET_DIR/debug/$OFFICE_WORKER_NAME"
 export KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER"
 # 通常workspace検査の同じ実行から収集し、別no-run buildやtarget走査で補完しない。
 if [[ -n "${KATANA_TEST_INVENTORY_OUTPUT:-}" && "$1" == 'cargo test --workspace' ]]; then
-    exec python3 scripts/release/record-test-invocation.py \
+    exec python3 -B scripts/ci/isolated-test-config.py -- python3 scripts/release/record-test-invocation.py \
         --output "$KATANA_TEST_INVENTORY_OUTPUT" --kind test -- cargo test --workspace
 fi
-exec bash -c "$1"
+exec python3 -B scripts/ci/isolated-test-config.py -- bash -c "$1"

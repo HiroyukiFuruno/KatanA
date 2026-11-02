@@ -25,6 +25,7 @@ mod process_document;
 mod process_fs_nodes;
 mod process_group_lifecycle;
 mod process_groups;
+mod process_groups_identity;
 mod process_helpers;
 mod process_linter;
 mod process_markdown_formatting;

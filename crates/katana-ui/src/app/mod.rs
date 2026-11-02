@@ -42,3 +42,6 @@ pub(crate) use workspace::WorkspaceOps;
 mod doc_close_latency_tests;
 #[cfg(test)]
 mod doc_close_tests;
+
+#[cfg(test)]
+mod group_popup_regression_tests;

@@ -786,15 +786,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
     def test_preflight_runs_self_test_and_binding_before_version_glob(self) -> None:
         preflight = SCRIPT.parents[2] / "scripts" / "release" / "preflight.sh"
         source = preflight.read_text(encoding="utf-8")
-        install = '"$EVIDENCE_PYTHON_ENV/bin/python" -m pip install --disable-pip-version-check --only-binary=:all: -r scripts/release/evidence-requirements.txt'
+        helper = (preflight.parent / "prepare-evidence-python.sh").read_text(encoding="utf-8")
+        bootstrap = 'bash scripts/release/prepare-evidence-python.sh'
+        install = '"$environment/bin/python" -m pip install --disable-pip-version-check --only-binary=:all: -r scripts/release/evidence-requirements.txt'
         self_test = '"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-release-gate.py'
         gate = '"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/check-document-fidelity-release-gate.py "$VERSION" "$TASK_GATE_MODE"'
-        self.assertIn(install, source)
-        self.assertIn(self_test, source)
-        self.assertIn(gate, source)
-        self.assertLess(source.index(install), source.index(self_test))
-        self.assertLess(source.index(self_test), source.index("for CHANGE_DIR in"))
-        self.assertLess(source.index(gate), source.index("for CHANGE_DIR in"))
+
+        def verify_contract(preflight_source: str, helper_source: str) -> None:
+            lines = preflight_source.splitlines()
+            helper_lines = helper_source.splitlines()
+            self.assertIn('EVIDENCE_PYTHON_ENV="tmp/release-evidence-python"', lines)
+            self.assertIn('environment="tmp/release-evidence-python"', helper_lines)
+            self.assertIn('set -euo pipefail', helper_lines)
+            self.assertIn(install, helper_lines)
+            self.assertLess(lines.index(bootstrap), lines.index(self_test))
+            self.assertLess(lines.index(self_test), lines.index(gate))
+            self.assertLess(lines.index(gate), next(i for i, line in enumerate(lines) if line.startswith("for CHANGE_DIR in")))
+
+        verify_contract(source, helper)
+        for bad_source, bad_helper in (
+            (source.replace(bootstrap, "# " + bootstrap), helper),
+            (source.replace(bootstrap, "TEMP_BOOTSTRAP", 1).replace(self_test, bootstrap, 1).replace("TEMP_BOOTSTRAP", self_test, 1), helper),
+            (source, helper.replace(install, "# " + install)),
+            (source, helper.replace("--only-binary=:all:", "")),
+        ):
+            with self.subTest(source=bad_source != source, helper=bad_helper != helper), self.assertRaises((AssertionError, ValueError)):
+                verify_contract(bad_source, bad_helper)
 
     def test_preflight_evidence_environment_does_not_disable_cargo_sweep(self) -> None:
         repository = SCRIPT.parents[2]

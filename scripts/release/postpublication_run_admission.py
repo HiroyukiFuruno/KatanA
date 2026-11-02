@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import re
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+from manual_bump_artifact import (download_artifact, manual_steps_succeeded, validate_artifact,
+                                  validate_commit_metadata)
+from manual_bump_transition import git as transition_git, verify_transition
 from postpublication_source_binding import (
     PreMergePullRequestRun,
     REPOSITORY,
@@ -233,6 +237,15 @@ def _api_object(endpoint: str) -> dict:
     return value
 
 
+def _is_release_pull_request(pull_request: dict, source: str) -> bool:
+    if pull_request.get("merge_commit_sha") != source:
+        return False
+    head = pull_request.get("head")
+    if isinstance(head, dict) and isinstance(head.get("ref"), str):
+        return head["ref"].startswith("release/")
+    return True
+
+
 def _verified_pull_request(source: str, version: str) -> SourceBinding | None:
     pages = _api_json(f"repos/{REPOSITORY}/commits/{source}/pulls?per_page=100")
     pull_requests = []
@@ -240,9 +253,8 @@ def _verified_pull_request(source: str, version: str) -> SourceBinding | None:
         pull_request = _api_object(f"repos/{REPOSITORY}/pulls/{number}")
         if pull_request.get("number") != number:
             raise ValueError("associated pull request detail identity differs")
-        if pull_request.get("merge_commit_sha") != source:
-            continue
-        pull_requests.append(pull_request)
+        if _is_release_pull_request(pull_request, source):
+            pull_requests.append(pull_request)
     return select_merged_pull_request(pull_requests, source, version)
 
 
@@ -303,7 +315,62 @@ def _newest_candidate(candidates: list[tuple[dict, SourceBinding]]) -> tuple[dic
     return max(candidates, key=lambda item: _run_sort_key(item[0], item[1].run_head_sha))
 
 
-def admit(source: str, version: str, output: Path) -> tuple[int, int, str]:
+def bind_generated_transition(root: Path, run: dict, artifact: dict, archive: bytes,
+                              trigger: str, source: str, version: str) -> tuple[SourceBinding, dict]:
+    bind_workflow_run(run, trigger, version)
+    trusted = (WORKFLOW, "scripts/release/bump-version.sh", "scripts/release/manual_bump_transition.py",
+               "scripts/release/manual_bump_graphql.py")
+    for path in trusted:
+        transition_git(root, "cat-file", "-e", f"{trigger}:{path}")
+        transition_git(root, "cat-file", "-e", f"HEAD:{path}")
+    if transition_git(root, "diff", "--name-only", "-z", trigger, "HEAD", "--", *trusted):
+        raise ValueError("manual transition producer differs from the trusted controller")
+    record, raw = validate_artifact(artifact, run, archive)
+    commits = verify_transition(root, record, trigger, source, version, run["id"], run["run_attempt"])
+    binding = SourceBinding("generated_manual_bump", source, version, trigger, "master", "workflow_dispatch")
+    return binding, {"artifact": artifact, "transition": record,
+                     "transition_raw_base64": base64.b64encode(raw).decode("ascii"), "commits": commits}
+
+
+def _generated_candidates(root: Path, source: str, version: str) -> list[tuple[dict, SourceBinding, dict]]:
+    result = []
+    for distance in (1, 2, 3):
+        result.extend(_generated_candidates_at_distance(root, source, version, distance))
+    return result
+
+
+def _generated_candidates_at_distance(root: Path, source: str, version: str,
+                                      distance: int) -> list[tuple[dict, SourceBinding, dict]]:
+    try:
+        trigger = transition_git(root, "rev-parse", "--verify", f"{source}~{distance}").decode().strip()
+    except subprocess.CalledProcessError:
+        return []
+    pages = _pages(_api_json(
+        f"repos/{REPOSITORY}/actions/workflows/build-and-release.yml/runs?head_sha={trigger}&per_page=100"
+    ))
+    result = []
+    for run in _candidate_runs(pages, trigger):
+        if run.get("event") != "workflow_dispatch" or run.get("head_branch") != "master":
+            continue
+        bind_workflow_run(run, trigger, version)
+        artifact_pages = _pages(_api_json(f"repos/{REPOSITORY}/actions/runs/{run['id']}/artifacts?per_page=100"))
+        artifacts = [artifact for page in artifact_pages for artifact in page.get("artifacts", [])
+                     if artifact.get("name") == f"manual-bump-transition-{run['run_attempt']}"]
+        if not artifacts:
+            continue
+        if len(artifacts) != 1:
+            raise ValueError("duplicate manual transition artifacts")
+        artifact = artifacts[0]
+        archive = download_artifact(artifact)
+        advertised, _ = validate_artifact(artifact, run, archive)
+        if advertised.get("source") != source or advertised.get("version") != version:
+            continue
+        binding, evidence = bind_generated_transition(root, run, artifact, archive, trigger, source, version)
+        result.append((run, binding, evidence))
+    return result
+
+
+def admit(source: str, version: str, output: Path, root: Path | None = None) -> tuple[int, int, str]:
     if not isinstance(output, Path):
         raise ValueError("output path must be a Path")
     if not isinstance(source, str) or not FULL_COMMIT_PATTERN.fullmatch(source):
@@ -311,6 +378,8 @@ def admit(source: str, version: str, output: Path) -> tuple[int, int, str]:
     version = validate_version(version)
     verify_tag_source(_api_object(f"repos/{REPOSITORY}/commits/{version}"), source)
     candidates = _direct_candidates(source, version) + _pull_request_candidates(source, version)
+    generated = _generated_candidates(root or Path.cwd(), source, version) if not candidates else []
+    candidates += [(run, binding) for run, binding, _ in generated]
 
     newest, binding = _newest_candidate(candidates)
     jobs_value = _api_json(
@@ -318,6 +387,12 @@ def admit(source: str, version: str, output: Path) -> tuple[int, int, str]:
     )
     admitted = verify_run(newest, _pages(jobs_value), source, binding.run_head_sha)
     admitted["source_binding"] = _source_binding_record(binding)
+    if binding.kind == "generated_manual_bump":
+        manual_steps_succeeded(admitted["jobs"])
+        evidence = next(evidence for run, _, evidence in generated if run["id"] == newest["id"])
+        metadata = [_api_object(f"repos/{REPOSITORY}/commits/{commit}") for commit in evidence["commits"]]
+        validate_commit_metadata(metadata, evidence["commits"], binding.run_head_sha)
+        admitted["manual_bump"] = evidence | {"commit_metadata": metadata}
     _write_new_output(output, admitted)
     return newest["id"], newest["run_attempt"], source
 

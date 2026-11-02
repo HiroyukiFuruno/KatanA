@@ -88,23 +88,21 @@ pub(super) fn wait_for_scheduled_repaint(
     repaint_rx: &mpsc::Receiver<(Instant, Duration)>,
     deadline: Instant,
 ) {
+    let remaining = deadline.saturating_duration_since(Instant::now());
+    assert!(!remaining.is_zero(), "no repaint before recovery deadline");
+    let (requested_at, delay) = repaint_rx
+        .recv_timeout(remaining)
+        .expect("wait for completion or visible pending repaint");
+    let mut due = requested_at + delay;
     loop {
-        let remaining = deadline.saturating_duration_since(Instant::now());
-        assert!(!remaining.is_zero(), "no repaint before recovery deadline");
-        let (requested_at, delay) = repaint_rx
-            .recv_timeout(remaining)
-            .expect("wait for completion or visible pending repaint");
-        let mut due = requested_at + delay;
-        loop {
-            let until_due = due.saturating_duration_since(Instant::now());
-            if until_due.is_zero() {
-                return;
-            }
-            match repaint_rx.recv_timeout(until_due) {
-                Ok((next_request, next_delay)) => due = due.min(next_request + next_delay),
-                Err(mpsc::RecvTimeoutError::Timeout) => return,
-                Err(error) => panic!("repaint callback disconnected: {error}"),
-            }
+        let until_due = due.saturating_duration_since(Instant::now());
+        if until_due.is_zero() {
+            return;
+        }
+        match repaint_rx.recv_timeout(until_due) {
+            Ok((next_request, next_delay)) => due = due.min(next_request + next_delay),
+            Err(mpsc::RecvTimeoutError::Timeout) => return,
+            Err(error) => panic!("repaint callback disconnected: {error}"),
         }
     }
 }

@@ -1,6 +1,10 @@
 use crate::shell_ui::TreeRenderContext;
 use eframe::egui;
 
+#[cfg(test)]
+#[path = "tab_group_menu_color_tests.rs"]
+mod color_tests;
+
 pub(crate) struct TabGroupMenu;
 
 impl TabGroupMenu {
@@ -27,7 +31,9 @@ impl TabGroupMenu {
                 if g.is_demo() {
                     continue;
                 }
-                if ui.button(&g.name).clicked() {
+                if crate::views::top_bar::tab_bar::group_menu_entry::GroupMenuEntry::show(ui, g)
+                    .clicked()
+                {
                     Self::handle_add_to_group_click(ctx, path, g.id.clone(), is_dir, children);
                     ui.close();
                 }

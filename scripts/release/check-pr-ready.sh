@@ -150,6 +150,13 @@ if [[ -z "$TASK_GATE_MODE" ]]; then
 fi
 
 # 5. Version increment or published-release guard
+if [[ "$TARGET_VERSION" == "0.22.47" &&
+      ( "$TASK_GATE_MODE" == "post-release-host" || "$TASK_GATE_MODE" == "post-release-automated" ||
+        ( "$TASK_GATE_MODE" == "post-release-evidence" &&
+          "$CURRENT_BRANCH" != "release/v0.22.47-public-release-evidence" ) ) ]]; then
+    error "v0.22.47 post-release evidence requires the exact records branch."
+    exit 1
+fi
 if [[ "$TARGET_VERSION" == "0.22.46" &&
       ( "$TASK_GATE_MODE" == "post-release-host" || "$TASK_GATE_MODE" == "post-release-automated" ||
         ( "$TASK_GATE_MODE" == "post-release-evidence" &&
@@ -194,10 +201,16 @@ if [[ "$CURRENT_BRANCH" == "release/v0.22.44-public-release-evidence" &&
 fi
 
 # WHY: 指定版の公開後記録を実tag/run/公開identity証跡へ結合し、製品sourceを変更させない。
-if [[ ( "$CURRENT_BRANCH" == "release/v0.22.45-public-release-evidence" && "$TARGET_VERSION" == "0.22.45" ) ||
+if [[ ( "$CURRENT_BRANCH" == "release/v0.22.47-public-release-evidence" && "$TARGET_VERSION" == "0.22.47" ) ||
+      ( "$CURRENT_BRANCH" == "release/v0.22.45-public-release-evidence" && "$TARGET_VERSION" == "0.22.45" ) ||
       ( "$CURRENT_BRANCH" == "release/v0.22.46-public-release-evidence" && "$TARGET_VERSION" == "0.22.46" ) ]] &&
       [[ "$TASK_GATE_MODE" == "post-release-evidence" ]]; then
-    python3 -B scripts/release/future_publication_records.py \
+    RECORDS_PYTHON=python3
+    if [[ "$TARGET_VERSION" == "0.22.47" ]]; then
+        bash scripts/release/prepare-evidence-python.sh
+        RECORDS_PYTHON=tmp/release-evidence-python/bin/python
+    fi
+    "$RECORDS_PYTHON" -B scripts/release/future_publication_records.py \
         --root "$PWD" --branch "$CURRENT_BRANCH" --version "$TARGET_VERSION" \
         --repository "${KATANA_RELEASE_REPO:-HiroyukiFuruno/KatanA}"
 fi

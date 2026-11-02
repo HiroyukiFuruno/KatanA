@@ -148,3 +148,17 @@ TBD - created by archiving change v0-22-11-update-auto-relauncher-asset-fix. Upd
 - **WHEN** ユーザーがアプリ内の「アップデート＆再起動」を 1 回クリックする
 - **THEN** 更新、差し替え、再起動が自動で完了する
 - **AND** ユーザーに追加の復旧手順は表示されない
+
+### Requirement: Relaunch helper startup failure preserves the application
+
+Both restart actions SHALL display a helper process startup error and keep the application running; they SHALL terminate only after successful helper startup.
+
+#### Scenario: Helper cannot be spawned
+
+- **WHEN** either restart action encounters a real process startup failure
+- **THEN** the error is visible, the application remains usable and temporary resources have a verified lifecycle
+
+#### Scenario: Helper startup succeeds
+
+- **WHEN** the helper starts successfully
+- **THEN** the established replacement, parent-exit and relaunch behavior is maintained

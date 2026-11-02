@@ -36,8 +36,7 @@ fn build_source(
 fn assert_rejected(source: &mut DocumentSurfaceSource) {
     let error = source
         .take_viewer_source()
-        .err()
-        .expect("unsafe embedded font name must be rejected");
+        .expect_err("unsafe embedded font name must be rejected");
     assert_eq!(error.operation, "validate_embedded_fonts");
 }
 fn assert_accepted(source: &mut DocumentSurfaceSource, format: BinaryDocumentFormat) {

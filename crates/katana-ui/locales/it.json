@@ -482,6 +482,7 @@
     "unpin": "Rimuovi fisso",
     "restore_closed": "Ripristina tab chiuso",
     "group_name_placeholder": "Nome gruppo",
+    "group_identity_duplicate": "Esiste già un gruppo con questo nome e colore.",
     "create_group_button": "Crea",
     "close_group": "Chiudi gruppo",
     "ungroup": "Separa gruppo",

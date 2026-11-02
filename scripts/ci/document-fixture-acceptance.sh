@@ -30,12 +30,12 @@ cargo build --locked --release -p katana-ui --bin kdv-office-worker
     exit 1
 }
 
-KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER" cargo test --locked -p katana-ui --lib --features external-fixture-acceptance \
+KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER" python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked -p katana-ui --lib --features external-fixture-acceptance \
     preview_pane::document_surface::tests::external_document_fixture_dir_reports_typed_first_frame_results \
     -- --exact --nocapture
-KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER" cargo test --locked -p katana-ui --lib --features external-fixture-acceptance \
+KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER" python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked -p katana-ui --lib --features external-fixture-acceptance \
     views::panels::preview::side_panels::slideshow_tests::pptx_ready_tests::external_pptx_ready_slideshow_accepts_active_frame_and_rejects_stale_tab \
     -- --exact --nocapture
-cargo test --locked -p katana-ui --lib --features external-fixture-acceptance \
+python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked -p katana-ui --lib --features external-fixture-acceptance \
     preview_pane::image_html_surface::tests::external_requirements_fragment_keeps_the_sticky_sidebar_in_the_first_frame \
     -- --exact --nocapture

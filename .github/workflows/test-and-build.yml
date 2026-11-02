@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [master]
     paths:
@@ -15,7 +16,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'gate' }}
   cancel-in-progress: true
 
 # Restrict default GITHUB_TOKEN permissions (Task 7.3 hardening).
@@ -31,7 +32,9 @@ jobs:
   test:
     name: Test and Build
     # WHY: Draft PRでは重い検査を起動せず、pushとReady PRだけを実行する。
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.draft)
+    if: >-
+      github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.draft) ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
     # 全テストを維持し、巨大なOffice/V8依存のデバッグ情報だけでrunnerを満杯にしない。
     env:
       RUST_TEST_THREADS: 2
@@ -59,17 +62,17 @@ jobs:
 
       - name: Install Python for Windows inventory
         if: runner.os == 'Windows'
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.14'
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
 
       - name: Install just
-        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
+        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: just
           fallback: none
@@ -146,6 +149,7 @@ jobs:
           python3 -B -m unittest discover -s scripts/ci -p test_native_profiler_job_contract.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_observe_ci_command.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_windows_ci_observation_contract.py -v
+          python3 -B -m unittest discover -s scripts/ci -p test_compare_windows_cache_measurements.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_windows_compiled_cache_contract.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_windows_shell_entry_contract.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_observe_compiled_cache.py -v
@@ -168,27 +172,29 @@ jobs:
         shell: bash
         run: |
           if [[ "${RUNNER_OS}" == "Windows" ]]; then
-            export KATANA_GUARD_BASH_EXECUTABLE="$(cygpath -w "$BASH")"
+            KATANA_GUARD_BASH_EXECUTABLE="$(cygpath -w "$BASH")"
+            export KATANA_GUARD_BASH_EXECUTABLE
           fi
           python3 -B -m unittest discover -s scripts/ci -p 'test_cargo_*guard.py' -v
+          python3 -B -m unittest discover -s scripts/ci -p 'test_isolated_test_config.py' -v
 
       - name: Measure cold real-font lookup (Windows)
         if: runner.os == 'Windows'
         env:
           DEBUG: 'true'
         run: >-
-          cargo test --locked -p katana-ui --lib
+          python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked -p katana-ui --lib
           preview_pane::document_surface::font_lookup::tests::real_background_worker_returns_result_with_identity_while_ui_paints
           -- --exact --nocapture
 
       - name: Test CommonMark cache contracts
-        run: cargo test --locked -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
+        run: python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
 
       - name: Test CommonMark HTML trace bounds
         run: just test-commonmark-html-trace
 
       - name: Test patched custom cursor cache
-        run: cargo test --locked -p katana-ui -p egui-winit --lib cursor_cache::tests
+        run: python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked -p katana-ui -p egui-winit --lib cursor_cache::tests
 
       - name: Test patched native surface size contracts
         run: just test-wgpu-native-surface-size
@@ -219,7 +225,7 @@ jobs:
 
       - name: Upload original HTML failure sample (macOS)
         if: failure() && runner.os == 'macOS' && steps.workspace_tests.outcome == 'failure'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: original-html-failure-sample-${{ runner.os }}
           path: target/html-startup-failures
@@ -238,14 +244,14 @@ jobs:
           -- --exact --nocapture'
 
       - name: Test screenshot harness contracts
-        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
         shell: bash
         env:
           CARGO_TARGET_DIR: target/screenshot-harness
-        run: cargo test --locked --release --manifest-path scripts/screenshot/Cargo.toml
+        run: python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked --release --manifest-path scripts/screenshot/Cargo.toml
 
       - name: Run multi-format headless acceptance
-        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
         shell: bash
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
@@ -259,22 +265,22 @@ jobs:
             --output "target/multi-format-headless-${{ runner.os }}"
 
       - name: Upload multi-format headless evidence
-        if: always() && github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always() && (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: multi-format-headless-${{ runner.os }}
           path: target/multi-format-headless-${{ runner.os }}
           if-no-files-found: error
 
       - name: Install coverage tool
-        if: runner.os == 'macOS' && github.event_name == 'pull_request'
-        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
+        if: runner.os == 'macOS' && (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
+        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: cargo-llvm-cov@0.9.1
           fallback: none
 
       - name: Run coverage
-        if: runner.os == 'macOS' && github.event_name == 'pull_request'
+        if: runner.os == 'macOS' && (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
         env:
           KATANA_TEST_INVENTORY_DIRECTORY: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/coverage
         run: |
@@ -287,7 +293,7 @@ jobs:
 
       - name: Upload observed test inventory diagnostics
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-inventory-${{ runner.os }}
           path: ${{ env.KATANA_TEST_INVENTORY_ROOT }}
@@ -295,7 +301,7 @@ jobs:
 
   lint:
     name: Lint
-    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
     strategy:
       fail-fast: false
       matrix:
@@ -311,13 +317,13 @@ jobs:
           sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev
 
       - name: Install Rust toolchain with clippy and rustfmt
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
           components: clippy, rustfmt
 
       - name: Install just
-        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
+        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: just
           fallback: none
@@ -360,13 +366,13 @@ jobs:
 
   supply-chain:
     name: Dependency Supply Chain
-    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install cargo-deny
-        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
+        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: cargo-deny@0.20.2
           fallback: none
@@ -377,7 +383,7 @@ jobs:
   # CodeQL security scanning (Task 7.2 / 7.3).
   codeql:
     name: CodeQL Security Scan
-    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     permissions:
       security-events: write  # Required to upload SARIF results.
@@ -387,7 +393,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           languages: rust
           queries: security-extended
@@ -398,7 +404,7 @@ jobs:
           sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
 
@@ -415,7 +421,7 @@ jobs:
             ${{ runner.os }}-cargo-codeql-
 
       - name: Auto-build
-        uses: github/codeql-action/autobuild@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
+        uses: github/codeql-action/autobuild@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1

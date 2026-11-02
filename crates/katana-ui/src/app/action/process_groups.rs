@@ -1,6 +1,10 @@
 use crate::app::*;
 use crate::shell::*;
 
+#[cfg(test)]
+#[path = "process_groups_identity_tests.rs"]
+mod identity_tests;
+
 impl KatanaApp {
     fn prepare_members_for_group(&mut self, members: &[std::path::PathBuf]) -> Vec<String> {
         let member_strs: Vec<String> = members
@@ -30,6 +34,42 @@ impl KatanaApp {
         color_hex: String,
         initial_members: Vec<std::path::PathBuf>,
     ) {
+        let direct = !name.trim().is_empty();
+        self.state.layout.group_draft = Some(crate::state::layout::GroupDraft {
+            name,
+            color_hex,
+            members: initial_members,
+        });
+        if direct {
+            self.commit_tab_group_draft();
+        }
+    }
+
+    pub(crate) fn commit_tab_group_draft(&mut self) {
+        let Some(draft) = self.state.layout.group_draft.as_ref() else {
+            return;
+        };
+        if crate::state::group_identity::GroupIdentity::conflicts(
+            &self.state.document.tab_groups,
+            None,
+            &draft.name,
+            &draft.color_hex,
+        ) {
+            self.show_group_identity_error();
+            return;
+        }
+        let Some(draft) = self.state.layout.group_draft.take() else {
+            return;
+        };
+        self.create_valid_tab_group(draft.name, draft.color_hex, draft.members);
+    }
+
+    fn create_valid_tab_group(
+        &mut self,
+        name: String,
+        color_hex: String,
+        initial_members: Vec<std::path::PathBuf>,
+    ) {
         let id = format!("group_{}", chrono::Utc::now().timestamp_micros());
         let member_strs = self.prepare_members_for_group(&initial_members);
         self.state
@@ -46,23 +86,8 @@ impl KatanaApp {
                 collapsed: false,
                 members: member_strs,
             });
-        self.state.layout.inline_rename_group = Some(id);
         self.save_workspace_state();
-        let mut to_open = Vec::new();
-        for m in initial_members {
-            if !self
-                .state
-                .document
-                .open_documents
-                .iter()
-                .any(|d| d.path == m)
-            {
-                to_open.push(m);
-            }
-        }
-        if !to_open.is_empty() {
-            self.handle_action_open_multiple(to_open);
-        }
+        self.open_missing_group_members(initial_members);
     }
 
     pub(super) fn handle_action_add_tabs_to_group(
@@ -91,18 +116,21 @@ impl KatanaApp {
                 .retain(|g| g.id == target_id || !g.members.is_empty());
         }
         self.save_workspace_state();
-        let mut to_open = Vec::new();
-        for m in members {
-            if !self
-                .state
-                .document
-                .open_documents
-                .iter()
-                .any(|d| d.path == m)
-            {
-                to_open.push(m);
-            }
-        }
+        self.open_missing_group_members(members);
+    }
+
+    fn open_missing_group_members(&mut self, members: Vec<std::path::PathBuf>) {
+        let to_open = members
+            .into_iter()
+            .filter(|path| {
+                !self
+                    .state
+                    .document
+                    .open_documents
+                    .iter()
+                    .any(|doc| doc.path == *path)
+            })
+            .collect::<Vec<_>>();
         if !to_open.is_empty() {
             self.handle_action_open_multiple(to_open);
         }
@@ -138,31 +166,5 @@ impl KatanaApp {
         {
             self.state.layout.inline_rename_group = None;
         }
-    }
-
-    pub(super) fn handle_action_rename_tab_group(&mut self, group_id: String, new_name: String) {
-        if let Some(g) = self
-            .state
-            .document
-            .tab_groups
-            .iter_mut()
-            .find(|g| g.id == group_id)
-        {
-            g.name = new_name;
-        }
-        self.save_workspace_state();
-    }
-
-    pub(super) fn handle_action_recolor_tab_group(&mut self, group_id: String, new_color: String) {
-        if let Some(g) = self
-            .state
-            .document
-            .tab_groups
-            .iter_mut()
-            .find(|g| g.id == group_id)
-        {
-            g.color_hex = new_color;
-        }
-        self.save_workspace_state();
     }
 }

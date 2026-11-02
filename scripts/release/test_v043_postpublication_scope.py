@@ -6,6 +6,12 @@ import unittest
 import v043_postpublication_scope as policy
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def pull_request_trigger(content):
+    if content.count(b"\n  pull_request:\n") != 1 or content.count(b"\n  push:\n") != 1:
+        raise ValueError("release trigger is missing or duplicated")
+    return content.split(b"\n  pull_request:\n", 1)[1].split(b"\n  push:\n", 1)[0]
 BASE = {policy.ACTIVE + name for name in ("tasks.md", "proposal.md", "evidence/original.json")}
 TASKS = "- [x] 1.1 implemented\n- [x] 8.4 merged\n- [ ] 8.5 publication\n- [ ] 8.6 archive\n"
 
@@ -81,11 +87,11 @@ class ScopePolicyTest(unittest.TestCase):
                                   check=True, capture_output=True).stdout
         current = subprocess.run(["git", "-C", str(ROOT), "show", f"HEAD:{path}"],
                                  check=True, capture_output=True).stdout
-        # WHY: 公開後branchの製品不変性はscope検査が担い、将来版のjob追加で旧版のtrigger契約を固定し直さない。
+        # WHY: 公開後記録のPRがrelease対象外であることを固定し、手動入力の追加は許容する。
         for content in (current, (ROOT / path).read_bytes()):
             self.assertEqual(content.count(b"\njobs:"), 1)
             self.assertEqual(baseline.count(b"\njobs:"), 1)
-            self.assertEqual(content.split(b"\njobs:", 1)[0], baseline.split(b"\njobs:", 1)[0])
+            self.assertEqual(pull_request_trigger(content), pull_request_trigger(baseline))
         block = baseline.decode().split("paths-ignore:", 1)[1].split("  push:", 1)[0]
         for prefix in ("openspec/**", "evidence/**", "scripts/**", ".github/**"):
             self.assertIn(f"- '{prefix}'", block)
@@ -93,6 +99,14 @@ class ScopePolicyTest(unittest.TestCase):
                      *(f"openspec/specs/{name}/spec.md" for name in policy.CAPABILITIES)]
         self.assertTrue(all(path.startswith(("openspec/", "evidence/", "scripts/", ".github/"))
                             for path in permitted))
+
+    def test_release_path_filter_stays_exact_when_manual_inputs_change(self):
+        baseline = b"name: release\non:\n  pull_request:\n    types: [closed]\n    paths-ignore:\n      - 'openspec/**'\n  push:\n    tags: [v*]\n  workflow_dispatch:\n    inputs:\n      version: {}\n"
+        added = baseline.replace(b"      version: {}", b"      cleanup_remote: {}\n      version: {}")
+        self.assertEqual(pull_request_trigger(baseline), pull_request_trigger(added))
+        for changed in (baseline.replace(b"'openspec/**'", b"'source/**'"),
+                        baseline.replace(b"types: [closed]", b"types: [opened]")):
+            self.assertNotEqual(pull_request_trigger(baseline), pull_request_trigger(changed))
 
 
 if __name__ == "__main__":

@@ -63,6 +63,7 @@ impl ShortcutContextResolver {
             || state.layout.delete_modal.is_some()
             || state.layout.pending_close_confirm.is_some()
             || state.layout.rename_tab_group_modal.is_some()
+            || state.layout.group_draft.is_some()
     }
 
     /// WHY: Editor context is active when the text-edit widget within the

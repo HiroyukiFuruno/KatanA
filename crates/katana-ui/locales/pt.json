@@ -482,6 +482,7 @@
     "unpin": "Desafixar",
     "restore_closed": "Restaurar aba fechada",
     "group_name_placeholder": "Nome grupo",
+    "group_identity_duplicate": "Já existe um grupo com este nome e esta cor.",
     "create_group_button": "Criar",
     "close_group": "Fechar grupo",
     "ungroup": "Desagrupar",

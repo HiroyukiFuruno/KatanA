@@ -50,17 +50,16 @@ fn direct_view_tools_dispatch_is_rejected_for_office_and_html_documents() {
 
 #[test]
 fn direct_view_tools_dispatch_remains_available_for_markdown_documents() {
-    for path in ["readme.md"] {
-        let mut split_app = app_with_active_path(path);
-        split_app.state.set_active_view_mode(ViewMode::CodeOnly);
-        split_app.dispatch_secondary(&egui::Context::default(), AppAction::ToggleSplitMode);
-        assert_eq!(split_app.state.active_view_mode(), ViewMode::Split);
+    let path = "readme.md";
+    let mut split_app = app_with_active_path(path);
+    split_app.state.set_active_view_mode(ViewMode::CodeOnly);
+    split_app.dispatch_secondary(&egui::Context::default(), AppAction::ToggleSplitMode);
+    assert_eq!(split_app.state.active_view_mode(), ViewMode::Split);
 
-        let mut preview_app = app_with_active_path(path);
-        preview_app.state.set_active_view_mode(ViewMode::CodeOnly);
-        preview_app.dispatch_secondary(&egui::Context::default(), AppAction::ToggleCodePreview);
-        assert_eq!(preview_app.state.active_view_mode(), ViewMode::PreviewOnly);
-    }
+    let mut preview_app = app_with_active_path(path);
+    preview_app.state.set_active_view_mode(ViewMode::CodeOnly);
+    preview_app.dispatch_secondary(&egui::Context::default(), AppAction::ToggleCodePreview);
+    assert_eq!(preview_app.state.active_view_mode(), ViewMode::PreviewOnly);
 }
 
 #[test]

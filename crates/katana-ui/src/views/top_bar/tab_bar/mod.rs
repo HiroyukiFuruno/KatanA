@@ -1,7 +1,9 @@
 pub mod drag;
 pub mod group_header;
+mod group_header_palette;
 pub mod group_header_popup;
 mod group_header_popup_state;
+pub(crate) mod group_menu_entry;
 pub mod items;
 pub mod nav;
 pub mod strip_renderer;

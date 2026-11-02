@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
 
 from ci_run_admission import verify_identity, verify_run
 
@@ -38,6 +39,7 @@ def main() -> int:
     parser.add_argument("--sha", required=True)
     parser.add_argument("--run-id", required=True, type=int)
     parser.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY"))
+    parser.add_argument("--receipt", type=Path)
     args = parser.parse_args()
     try:
         repository = args.repo or _read(["gh", "repo", "view", "--json", "nameWithOwner"])["nameWithOwner"]
@@ -50,6 +52,18 @@ def main() -> int:
                        f"{endpoint}/jobs?filter=all&per_page=100"])
         after = _read(["gh", "api", endpoint])
         verify_run(before, pages, after, args.sha, args.run_id, repository)
+        if args.receipt:
+            from ci_run_receipt import make_receipt
+            tree = subprocess.run(["git", "rev-parse", f"{args.sha}^{{tree}}"],
+                                  capture_output=True, text=True, check=True, timeout=30).stdout.strip()
+            head = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True,
+                                  text=True, check=True, timeout=30).stdout.strip()
+            dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all"],
+                                   capture_output=True, text=True, check=True, timeout=30).stdout
+            if head != args.sha or dirty:
+                raise ValueError("CI receipt requires the exact clean checked-out source")
+            receipt = make_receipt(before, pages, after, args.sha, args.run_id, repository, tree)
+            args.receipt.write_text(json.dumps(receipt, sort_keys=True, indent=2) + "\n", encoding="utf-8")
         print(f"CI run {args.run_id} snapshot attempt {attempt}: latest three-OS jobs succeeded for {args.sha}")
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
         print(f"CI run admission failed: {error}", file=sys.stderr)

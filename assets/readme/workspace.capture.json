@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "source_commit": "43fc8d04cb6bf616396f3bf0a68093af6dac3e16",
+  "request": "scripts/screenshot/examples/readme-workspace.json",
+  "request_sha256": "33b21587d2bfce03aa87136b6a7cfcd7362af2a48edb0fe88c180940fe457137",
+  "fixture": "assets/fixtures/readme-showcase.md",
+  "fixture_sha256": "401251e61e96336d73e8d4ff52462ddf454c0a80cddac6d137c7319c7f48d66a",
+  "image_sha256": "ac48c9cc563e5a6db50ec04045b0d849a7427759be482448b7244d5c20a17825",
+  "width": 3200,
+  "height": 2000,
+  "execution_mode": "actual_KatanaApp_in_process",
+  "packaged_binary_tested": false
+}

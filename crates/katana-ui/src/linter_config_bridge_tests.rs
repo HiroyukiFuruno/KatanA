@@ -29,7 +29,13 @@ fn make_workspace_state(dir: &tempfile::TempDir) -> crate::app_state::AppState {
 fn target_config_path_uses_global_or_workspace_config() {
     let mut state = make_state();
     let global_path = MarkdownLinterConfigOps::target_config_path(&state);
-    assert!(global_path.ends_with("KatanA/.markdownlint.json"));
+    assert_eq!(
+        global_path,
+        MarkdownLinterConfigOps::resolve_global_config_path(
+            std::env::var_os("KATANA_CONFIG_DIR"),
+            dirs::config_dir(),
+        )
+    );
 
     let dir = tempfile::tempdir().expect("tempdir must be available");
     state
@@ -55,6 +61,24 @@ fn global_config_path_stays_inside_configured_profile() {
     assert_eq!(
         path,
         PathBuf::from("/tmp/katana-isolated/.markdownlint.json")
+    );
+}
+
+#[test]
+fn global_config_path_falls_back_for_missing_or_empty_profile() {
+    let platform_config_dir = Some(PathBuf::from("/fixed/config"));
+    let expected = PathBuf::from("/fixed/config/KatanA/.markdownlint.json");
+
+    assert_eq!(
+        MarkdownLinterConfigOps::resolve_global_config_path(None, platform_config_dir.clone()),
+        expected
+    );
+    assert_eq!(
+        MarkdownLinterConfigOps::resolve_global_config_path(
+            Some(OsString::new()),
+            platform_config_dir,
+        ),
+        expected
     );
 }
 

@@ -7,18 +7,45 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def pinned_installer(source, job, step, tool):
+    job_match = re.search(rf"(?ms)^  {re.escape(job)}:\n(.*?)(?=^  [A-Za-z][\w-]*:\n|\Z)", source)
+    if job_match is None:
+        raise ValueError("installer job missing")
+    body = job_match.group(1)
+    if step is None:
+        pattern = r"(?ms)^      - uses: taiki-e/install-action@([^\s#]+)(?:[^\n]*)\n(.*?)(?=^      - |\Z)"
+    else:
+        pattern = rf"(?ms)^      - name: {re.escape(step)}\n(.*?)(?=^      - |\Z)"
+    matches = list(re.finditer(pattern, body))
+    if len(matches) != 1:
+        raise ValueError("installer step missing or duplicated")
+    block = matches[0].group(0)
+    use = re.findall(r"(?m)^        uses: taiki-e/install-action@([0-9a-f]{40})(?:[ \t]+#.*)?[ \t]*$", block)
+    if step is None:
+        use = re.findall(r"(?m)^      - uses: taiki-e/install-action@([0-9a-f]{40})(?:[ \t]+#.*)?[ \t]*$", block)
+    if len(use) != 1 or f"          tool: {tool}\n" not in block or "          fallback: none\n" not in block:
+        raise ValueError("installer pin, tool, or fallback is invalid")
+    return use[0]
+
+
 class InventoryWiringTests(unittest.TestCase):
     def test_tool_installers_share_the_pinned_coverage_compatible_revision(self) -> None:
-        for filename, expected_count in (("release-readiness.yml", 1),
-                                         ("build-and-release.yml", 2),
-                                         ("test-and-build.yml", 4)):
-            with self.subTest(workflow=filename):
-                source = (ROOT / ".github/workflows" / filename).read_text()
-                revisions = re.findall(r"uses: taiki-e/install-action@([^\s]+)", source)
-                self.assertEqual(revisions, ["1e29709c0ec63babbe8f266397a465f29a825f91"] * expected_count)
+        cases = (("release-readiness.yml", "release-check", "Install release validation tools", "cargo-deny@0.20.2,cargo-llvm-cov@0.9.1"),
+                 ("build-and-release.yml", "preflight", "Install release validation tools", "cargo-deny@0.20.2,cargo-llvm-cov@0.9.1"),
+                 ("build-and-release.yml", "cleanup_default", None, "just,cargo-deny@0.20.2"),
+                 ("test-and-build.yml", "test", "Install just", "just"),
+                 ("test-and-build.yml", "test", "Install coverage tool", "cargo-llvm-cov@0.9.1"),
+                 ("test-and-build.yml", "lint", "Install just", "just"),
+                 ("test-and-build.yml", "supply-chain", "Install cargo-deny", "cargo-deny@0.20.2"))
+        revisions = []
+        for filename, job, step, tool in cases:
+            with self.subTest(workflow=filename, job=job, step=step):
+                source = (ROOT / ".github/workflows" / filename).read_text(encoding="utf-8")
+                revisions.append(pinned_installer(source, job, step, tool))
+        self.assertEqual(len(set(revisions)), 1, "installer revisions must agree across jobs")
 
     def test_windows_native_listing_has_a_bounded_standard_pipe_reader(self) -> None:
-        source = (ROOT / "scripts/release/native_test_inventory_collection.py").read_text()
+        source = (ROOT / "scripts/release/native_test_inventory_collection.py").read_text(encoding="utf-8")
         self.assertIn("from native_test_pipe_reader import read_pipes", source)
         self.assertIn("read_pipes(process, MAX_STREAM_BYTES, TIMEOUT_SECONDS)", source)
         self.assertNotIn("collector requires POSIX selector pipes", source)
@@ -26,7 +53,7 @@ class InventoryWiringTests(unittest.TestCase):
         self.assertIn('if os.name == "posix":', source)
 
     def test_ci_compares_observed_inputs_without_replacing_existing_test_gates(self) -> None:
-        source = (ROOT / ".github/workflows/test-and-build.yml").read_text()
+        source = (ROOT / ".github/workflows/test-and-build.yml").read_text(encoding="utf-8")
         start = source.index("- name: Compare observed test inventory diagnostics")
         end = source.index("- name: Upload observed test inventory diagnostics")
         compare = source[start:end]
@@ -39,7 +66,7 @@ class InventoryWiringTests(unittest.TestCase):
         self.assertNotIn("cargo llvm-cov", compare)
 
     def test_ci_inventory_uses_current_run_and_attempt_not_restored_cache_records(self) -> None:
-        source = (ROOT / ".github/workflows/test-and-build.yml").read_text()
+        source = (ROOT / ".github/workflows/test-and-build.yml").read_text(encoding="utf-8")
         self.assertIn("KATANA_TEST_INVENTORY_ROOT: target/test-inventory/${{ github.run_id }}-${{ github.run_attempt }}", source)
         self.assertIn("KATANA_TEST_INVENTORY_OUTPUT: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/normal.json", source)
         self.assertIn("KATANA_TEST_INVENTORY_DIRECTORY: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/coverage", source)
@@ -50,7 +77,7 @@ class InventoryWiringTests(unittest.TestCase):
         for filename, name in (("release-readiness.yml", "release-check"),
                                ("build-and-release.yml", "preflight")):
             with self.subTest(workflow=filename):
-                source = (ROOT / ".github/workflows" / filename).read_text()
+                source = (ROOT / ".github/workflows" / filename).read_text(encoding="utf-8")
                 body = source.split(f"\n  {name}:\n", 1)[1]
                 job = re.split(r"\n  [a-zA-Z_][\w-]*:\n", body, maxsplit=1)[0]
                 self.assertIn("components: llvm-tools-preview", job)
@@ -60,16 +87,17 @@ class InventoryWiringTests(unittest.TestCase):
                                 job.index("tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1"))
 
     def test_normal_entry_preserves_worker_and_original_nonrecording_command(self) -> None:
-        source = (ROOT / "scripts/ci/with-office-test-worker.sh").read_text()
+        source = (ROOT / "scripts/ci/with-office-test-worker.sh").read_text(encoding="utf-8")
         self.assertIn('export KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER"', source)
         self.assertIn('"$1" == \'cargo test --workspace\'', source)
         self.assertIn('--kind test -- cargo test --workspace', source)
-        self.assertIn('exec bash -c "$1"', source)
+        self.assertIn('exec python3 -B scripts/ci/isolated-test-config.py -- bash -c "$1"', source)
+        self.assertIn('scripts/ci/isolated-test-config.py -- python3 scripts/release/record-test-invocation.py', source)
         self.assertLess(source.index("export KATANA_KDV_OFFICE_WORKER"),
                         source.index("record-test-invocation.py"))
 
     def test_coverage_records_four_distinct_original_test_selections(self) -> None:
-        source = (ROOT / "scripts/ci/coverage.sh").read_text()
+        source = (ROOT / "scripts/ci/coverage.sh").read_text(encoding="utf-8")
         for phase, selection in (
             ("workspace-lib-bin", '--no-report --jobs "$JOBS" --workspace --lib --bins -q'),
             ("workspace-integration", '--no-report --jobs "$JOBS" --workspace --test \'*\' --exclude katana-ui -q'),
@@ -85,7 +113,7 @@ class InventoryWiringTests(unittest.TestCase):
         self.assertIn('cargo llvm-cov report', source)
 
     def test_ci_keeps_original_gate_and_uploads_diagnostics_even_after_failure(self) -> None:
-        source = (ROOT / ".github/workflows/test-and-build.yml").read_text()
+        source = (ROOT / ".github/workflows/test-and-build.yml").read_text(encoding="utf-8")
         self.assertIn("bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'", source)
         self.assertIn("JOBS=1 just coverage", source)
         start = source.index("- name: Upload observed test inventory diagnostics")
