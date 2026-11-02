@@ -206,3 +206,5 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - 容量復旧は許可済みprivate just clean-allが未tag root/別active cacheを安全拒否し2.1→4.8GiB、未使用の正規tag付き独立screenshot-harnessだけ既存clean guardで6531files/3.2GiBを回収し7.6GiB。rootの未tag cacheは保持し所有タグを後付けしない。中断したDocker run固有containerも不在を確認。
 
 - 通常push retry3は明示CONFIG内cacheへの保存を既存testが固定folder名で誤拒否したため停止（platform118passed/1failed、strict101/push1、remote旧2e）。production resolverは正しく指定CONFIG/cacheを使っており、testを既定serviceのcache_root/kv契約へ限定修正。隔離したplatform全119passed/fmt/diffcheck成功（profile-cache-path-contract-green.log）。retry3中は通常settings/workspaceのSHA・mtime・sizeが常にbeforeと一致（push-retry3-progress.jsonl）。全gateは未完のまま6.2で再実行する。
+
+- 通常push retry4は実UI suite1525passed/1failedまで実行し、3原因testsと新しいprofile不変回帰は全て成功、両通常JSONはSHA/mtime/size不変。残1件はlinter global pathの固定KatanA末尾assertが明示CONFIGに非対応のため、factory-wiring契約へ限定修正。未指定/空指定の既定fallback純粋回帰を追加し12passed/fmt/diffcheck（profile-linter-path-contract-green.log）。全cratesの同種KatanA path assertionを限定auditし、残りはlabel/固定純粋入力等の正当な比較と確認。production処理変更や条件skipは行わず、次の通常gateへ継続。
