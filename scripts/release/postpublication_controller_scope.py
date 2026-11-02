@@ -75,6 +75,8 @@ def validate_workflow_prefix(path: str, published: bytes, controller: bytes) -> 
     boundary = WORKFLOW_BOUNDARIES[path]
     require(published.count(boundary) == controller.count(boundary) == 1,
             "post-publication workflow boundary missing or ambiguous")
+    if published == controller:
+        return
     comparison = controller
     if path == ".github/workflows/build-and-release.yml":
         comparison = controller.replace(REGISTRY_RECEIPT_UPLOAD, b"", 1)

@@ -66,6 +66,26 @@ class PublishedControllerScopeTests(unittest.TestCase):
             with self.subTest(mutation=mutated[:80]), self.assertRaises(HostEvidenceError):
                 validate_workflow_prefix(READINESS_WORKFLOW, original, mutated)
 
+    def test_identical_current_workflow_does_not_repeat_legacy_repairs(self):
+        head = git(ROOT, "rev-parse", "HEAD").decode().strip()
+        original = git(ROOT, "show", f"{head}:{BUILD_WORKFLOW}")
+        self.assertIn(NEW_DOCUMENT_FILTER, original)
+        validate_workflow_prefix(BUILD_WORKFLOW, original, original)
+        self.assertEqual(verify_committed_scope(ROOT, head, head), [])
+
+    def test_identical_workflow_still_requires_one_boundary(self):
+        original = git(ROOT, "show", f"HEAD:{BUILD_WORKFLOW}")
+        boundary = b"  cleanup_default:\n"
+        for mutated in (original.replace(boundary, b""), original + boundary):
+            with self.subTest(workflow=mutated[-80:]), self.assertRaises(HostEvidenceError):
+                validate_workflow_prefix(BUILD_WORKFLOW, mutated, mutated)
+
+    def test_current_workflow_rejects_unknown_prefix_and_suffix_changes(self):
+        original = git(ROOT, "show", f"HEAD:{BUILD_WORKFLOW}")
+        for mutated in (b"# unapproved change\n" + original, original + b"\n# unapproved change\n"):
+            with self.subTest(workflow=mutated[-80:]), self.assertRaises(HostEvidenceError):
+                validate_workflow_prefix(BUILD_WORKFLOW, original, mutated)
+
     def test_registry_receipt_cannot_change_publication_or_upload_other_files(self):
         original = self.published(BUILD_WORKFLOW)
         repaired = original.replace(OLD_CLEANUP_INSTALL, NEW_CLEANUP_INSTALL, 1)
