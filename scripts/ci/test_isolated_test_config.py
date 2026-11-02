@@ -97,17 +97,17 @@ class IsolatedTestConfig(unittest.TestCase):
             self.assertEqual(128 + signal.SIGTERM, result.returncode, result.stderr)
 
     def test_quality_entrypoints_use_isolation_without_changing_test_scope(self):
-        just = (ROOT / "just/tests.just").read_text()
+        just = (ROOT / "just/tests.just").read_text(encoding="utf-8")
         for name in ("test-ui", "test-commonmark-backend", "test-custom-cursor-cache", "test-pdf-theme",
                      "test-verbose", "test-specific", "test-native-html-diagnostics", "check-light", "nextest-shadow"):
             section = just.split(f"\n{name}:", 1)[1].split("\n\n", 1)[0]
             self.assertIn("scripts/ci/isolated-test-config.py", section, name)
         for file in ("scripts/ci/coverage.sh", "scripts/ci/with-office-test-worker.sh",
                      "scripts/ci/document-fixture-acceptance.sh", ".github/workflows/test-and-build.yml"):
-            self.assertIn("scripts/ci/isolated-test-config.py", (ROOT / file).read_text(), file)
+            self.assertIn("scripts/ci/isolated-test-config.py", (ROOT / file).read_text(encoding="utf-8"), file)
         self.assertIn("scripts/ci/isolated-test-config.py", just.split("\ncheck-linux:", 1)[1].split("\n\n", 1)[0])
-        self.assertIn("scripts/ci/isolated-test-config.py", (ROOT / "just/setup.just").read_text().split("\nwatch:", 1)[1].split("\n\n", 1)[0])
-        workflow = (ROOT / ".github/workflows/test-and-build.yml").read_text()
+        self.assertIn("scripts/ci/isolated-test-config.py", (ROOT / "just/setup.just").read_text(encoding="utf-8").split("\nwatch:", 1)[1].split("\n\n", 1)[0])
+        workflow = (ROOT / ".github/workflows/test-and-build.yml").read_text(encoding="utf-8")
         for name in ("Measure cold real-font lookup (Windows)", "Test CommonMark cache contracts",
                      "Test patched custom cursor cache", "Test screenshot harness contracts"):
             block = workflow.split(f"      - name: {name}", 1)[1].split("      - name:", 1)[0]
@@ -115,12 +115,12 @@ class IsolatedTestConfig(unittest.TestCase):
         for name in ("Run tests", "Trace failed HTML startup (macOS)"):
             block = workflow.split(f"      - name: {name}\n", 1)[1].split("      - name:", 1)[0]
             self.assertIn("scripts/ci/with-office-test-worker.sh", block, name)
-        worker = (ROOT / "scripts/ci/with-office-test-worker.sh").read_text()
+        worker = (ROOT / "scripts/ci/with-office-test-worker.sh").read_text(encoding="utf-8")
         self.assertIn('isolated-test-config.py -- bash -c "$1"', worker)
         self.assertIn("isolated-test-config.py -- python3 scripts/release/record-test-invocation.py", worker)
-        document = (ROOT / "scripts/ci/document-fixture-acceptance.sh").read_text()
+        document = (ROOT / "scripts/ci/document-fixture-acceptance.sh").read_text(encoding="utf-8")
         self.assertEqual(document.count("isolated-test-config.py -- cargo test"), 3)
-        coverage = (ROOT / "scripts/ci/coverage.sh").read_text()
+        coverage = (ROOT / "scripts/ci/coverage.sh").read_text(encoding="utf-8")
         self.assertEqual(coverage.count("scripts/ci/isolated-test-config.py"), 2)
 
 

@@ -91,14 +91,14 @@ class WindowsCiObservationContractTest(unittest.TestCase):
     def test_inventory_installers_reject_decoys_and_allow_atomic_rotation(self):
         root = Path(__file__).resolve().parents[2]
         names = ("release-readiness.yml", "build-and-release.yml", "test-and-build.yml")
-        workflows = {name: (root / ".github/workflows" / name).read_text() for name in names}
+        workflows = {name: (root / ".github/workflows" / name).read_text(encoding="utf-8") for name in names}
         with tempfile.TemporaryDirectory(prefix="katana-inventory-pin-") as temporary:
             fixture = Path(temporary)
             prepare_pin_fixture(root, fixture)
             for label, variants, accepted in inventory_installer_variants(workflows):
                 with self.subTest(variant=label):
                     for name, contents in variants.items():
-                        (fixture / ".github/workflows" / name).write_text(contents)
+                        (fixture / ".github/workflows" / name).write_text(contents, encoding="utf-8")
                     result = run_pin_contract(
                         fixture, "scripts/release/test_native_test_inventory_wiring.py",
                         "InventoryWiringTests.test_tool_installers_share_the_pinned_coverage_compatible_revision")

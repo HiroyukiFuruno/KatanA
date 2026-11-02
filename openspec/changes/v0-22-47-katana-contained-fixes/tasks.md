@@ -94,7 +94,7 @@ sourceと既存実行入口を照合済み。group/updaterと書込範囲を分�
 - [x] 3.8 通常pushで検出した未タグtargetの安全拒否を保持し、screenshotの生成前初期化・実行中leaseと、Cargo外の単独rustc検査の専用生成先を整える。既存18GB生成物を後付けで所有済みにせず保持し、実fixture・実rustcと拒否回帰を確認する。
 - [x] 3.9 通常quality検査のUI suite中にworkspace履歴が変化した実writerを特定し、通常設定を使わない公式検査入口・fixtureへ修正する（#414）。厳密before hash一致の保存済みデータからworkspaceを復旧し、合成2/14workspaceと実processによる回帰・入口契約・独立reviewを確認する。隔離後の全gateと通常profile保持の再確認は6.2/6.3で回収する。
 - [x] 3.10 公開後のhost13件・canonical2件の正確な記録先と実検証を、旧版の閾値・同一source条件を維持して公開前に固定する。main spec8件を同期し、tag後の記録PRの改変拒否と一度だけの公開を実Git回帰で確認する。実archive・records merge・cleanupは#415に未完追跡し、成果物準備の成功だけで完了にしない。
-- [x] 3.11 Ready後の実Windows CIで判明したworkflow読取の既定文字コード依存と、実Readiness CIで判明した色付きCargo診断へのassert不整合を修正する。同じlegacy locale・color条件のRED→GREEN、既存検査の意味と品質条件の維持、独立reviewを確認する。次headの通常push・Draft review・Ready後の全CIの実回収は6.3で継続する。
+- [x] 3.11 Ready後の実Windows CIで判明したworkflow読取の既定文字コード依存と、実Readiness CIで判明した色付きCargo診断へのassert不整合を修正する。同原因の品質入口・workflow検査と、その実fixture子検査も追跡し、同じlegacy locale・color条件のRED→GREEN、既存検査の意味と品質条件の維持、独立reviewを確認する。次headの通常push・Draft review・Ready後の全CIの実回収は6.3で継続する。
 
 ## 4. 実行環境・依存・受入準備（#372、#354、#339、#338）
 
@@ -247,3 +247,6 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - 3.11の対象修正と実legacy locale/color回帰（12件×2環境、5件×2環境）は成功し、独立High追加P0/P1/P2なし（ci-portability-independent-review.md）。これは対象契約の事前検証完了であり、次sourceのDraft review/通常push/全OS CIの完了ではない。6.3は未完のまま継続する。
 
 - 2026-11-02 人間の範囲確定: Task6.3の計測/差分記録と完全同等証明の表現差について確認したところ、「全検査を実行し、計測結果を記録して公開（推奨）」と明示回答。6.3を全8CI/Readiness/追加検査の実行と、実結果・差分・未証明の記録へ正確化した。既存test/coverage/品質/文書受入閾値と6.4以降は維持し、falseの同等性/reuse認可や完全高速化をtrueにしない。Issue343の未証明部分はOpenで追跡を継続する。
+
+- source902の通常push中、同型監査で品質入口・Windows観測検査の既定文字コード依存を追加発見。実US-ASCIIで各5/6件中1件のdecode errorを再現したため、親が所有preflight PID91258へSIGINTしてgateを停止。push exit1を回収し、残るhook子process不在・remote506不変・通常profileのSHA/mtime/bytes一致を確認した。成功扱いせず追加修正と通常gate再実行を継続する。さらにworkflow fixtureから起動するinventory wiring子検査の同型読取も実再現し、3.11の同原因経路として追跡する（ci-isolation-encoding-red.log、ci-observation-encoding-red.log）。
+- 同原因の追加3filesはtracked UTF-8 text読取とworkflow fixture書込のencoding明示だけで修正。通常/強制US-ASCIIの両環境で品質入口5件・Windows観測6件・子inventory wiring8件が全成功し、独立High追加P0/P1/P2なし（ci-encoding-followup-independent-review.md、*-encoding-green-{ascii,normal}.log）。production挙動・skip・品質閾値は変更せず、次の正式全gateと実Windows CIは未完のまま再実行する。
