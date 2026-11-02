@@ -22,6 +22,60 @@ SIGNATURE = b"Signature: 8a477f597d28d172789f06886806bc55"
 
 
 class CargoTargetInitTest(unittest.TestCase):
+    def test_screenshot_stdin_shell_preserves_arguments_and_cleanup_protection(self):
+        source = (ROOT / "scripts/screenshot/run.sh").read_text(encoding="utf-8")
+        for name in ("screenshot-producer", "screenshot-child"):
+            self.assertIn(f'--run bash -euo pipefail -s {name} "$@"', source)
+        self.assertNotIn("source /dev/stdin", source)
+        self.assertRegex(source, r"<<'PRODUCER'\n(?:#.*\n)?shift\n")
+        self.assertRegex(source, r"<<'CHILD_PRODUCER'\nshift\n")
+        with tempfile.TemporaryDirectory(prefix="screenshot lease spaces ") as directory:
+            root = Path(directory).resolve()
+            initializer = root / "scripts/ci/cargo_target_init.py"
+            initializer.parent.mkdir(parents=True)
+            shutil.copyfile(INITIALIZER, initializer)
+            shutil.copyfile(INITIALIZER.with_name("cargo_target_lease.py"), initializer.with_name("cargo_target_lease.py"))
+            parent, child = root / "target", root / "target/screenshot-harness"
+            (root / "Cargo.toml").write_text('[package]\nname="stdin-probe"\nversion="0.0.0"\nedition="2024"\n')
+            (root / "Cargo.lock").write_text('version = 3\n\n[[package]]\nname = "stdin-probe"\nversion = "0.0.0"\n')
+            (root / "src").mkdir()
+            (root / "src/lib.rs").write_text("pub fn probe() {}\n")
+            bash = os.environ.get("KATANA_GUARD_BASH_EXECUTABLE") if os.name == "nt" else shutil.which("bash")
+            self.assertTrue(bash, "actual Bash is required")
+            environment = os.environ.copy() | {"PROBE_PYTHON": sys.executable, "PROBE_INIT": str(initializer),
+                                               "PROBE_CHILD": str(child), "PROBE_PARENT": str(parent),
+                                               "PROBE_BASH": str(bash), "PROBE_CI": str(ROOT / "scripts/ci"),
+                                               "PROBE_MANIFEST": str(root / "Cargo.toml")}
+            producer = '''shift
+exec "$PROBE_PYTHON" "$PROBE_INIT" "$PROBE_CHILD" --run "$PROBE_BASH" -euo pipefail -s screenshot-child "$@" <<'CHILD'
+shift
+printf 'arg=<%s>\\n' "$@"
+"$PROBE_PYTHON" -c 'import os, subprocess, sys; from pathlib import Path; sys.path.insert(0, str(Path(sys.argv[1]).parent)); from cargo_target_lease import target_lease, LeaseUnavailable
+for path in sys.argv[2:]:
+ if os.name == "nt":
+  env = os.environ.copy() | {"CARGO_TARGET_DIR": path, "CARGO_NET_OFFLINE": "true"}
+  env.pop("CARGO_BUILD_TARGET_DIR", None)
+  guard = Path(os.environ["PROBE_CI"]) / "cargo_clean_guard.py"
+  result = subprocess.run([sys.executable, str(guard), "--manifest-path", os.environ["PROBE_MANIFEST"], "--cargo", "cargo"], env=env, capture_output=True, text=True)
+  if result.returncode != 75 or "unsupported lock filesystem platform: win32" not in result.stderr or not (Path(path) / "CACHEDIR.TAG").is_file(): raise SystemExit(result.stdout + result.stderr)
+  print("clean blocked", flush=True)
+ else:
+  try:
+   with target_lease(Path(path), exclusive=True, nonblocking=True): raise SystemExit("lease not held")
+  except LeaseUnavailable: print("lease blocked", flush=True)' "$PROBE_INIT" "$PROBE_PARENT" "$PROBE_CHILD"
+false | true
+CHILD
+'''
+            command = [sys.executable, str(initializer), str(parent), "--run", str(bash),
+                       "-euo", "pipefail", "-s", "screenshot-producer", "--request", "argument with spaces", "--output", ""]
+            result = subprocess.run(command, input=producer.encode("utf-8"), cwd=root, env=environment,
+                                    capture_output=True, timeout=30)
+            output = result.stdout.decode("utf-8")
+            diagnostics = output + result.stderr.decode("utf-8")
+            self.assertEqual(1, result.returncode, diagnostics)
+            self.assertIn("arg=<--request>\narg=<argument with spaces>\narg=<--output>\narg=<>\n", output)
+            self.assertEqual(2, output.count("clean blocked" if os.name == "nt" else "lease blocked"), diagnostics)
+
     def test_unowned_fixture_child_is_preserved_by_actual_cargo_clean(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()

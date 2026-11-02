@@ -28,7 +28,9 @@ fi
 
 export SCRIPT_DIR REPO_ROOT BUILD_TARGET_DIR SCREENSHOT_TARGET_DIR EXTERNAL_HYPERLINK_FIXTURE FIXTURE_TARGET_DIR
 # WHY: fixture作成前からrunner終了まで同じtarget leaseを保持し、未所有targetを拒否する。
-exec python3 -B "${REPO_ROOT}/scripts/ci/cargo_target_init.py" --allow-external-target "${BUILD_TARGET_DIR}" --run bash -euo pipefail -c 'source /dev/stdin' screenshot-producer "$@" <<'PRODUCER'
+exec python3 -B "${REPO_ROOT}/scripts/ci/cargo_target_init.py" --allow-external-target "${BUILD_TARGET_DIR}" --run bash -euo pipefail -s screenshot-producer "$@" <<'PRODUCER'
+# WHY: 単独の -- が既存の引数解析で拒否されるため、固定引数を先頭に置いてから除く。
+shift
 # WHY: fixtureは親targetのleaseで保護し、既存fixtureを所有cacheと偽らずリンク先への書込みを拒否する。
 python3 -c 'from pathlib import Path; import stat, sys
 for index, item in enumerate(map(Path, sys.argv[1:])):
@@ -56,7 +58,8 @@ if [[ ! -x "${OFFICE_WORKER}" && ! -f "${OFFICE_WORKER}" ]]; then
 fi
 export KATANA_KDV_OFFICE_WORKER="${OFFICE_WORKER}"
 # WHY: 子targetだけのcleanもrunner終了まで拒否できるよう、親→子の順でleaseを保持する。
-exec python3 -B "${REPO_ROOT}/scripts/ci/cargo_target_init.py" --allow-external-target "${SCREENSHOT_TARGET_DIR}" --run bash -euo pipefail -c 'source /dev/stdin' screenshot-child "$@" <<'CHILD_PRODUCER'
+exec python3 -B "${REPO_ROOT}/scripts/ci/cargo_target_init.py" --allow-external-target "${SCREENSHOT_TARGET_DIR}" --run bash -euo pipefail -s screenshot-child "$@" <<'CHILD_PRODUCER'
+shift
 # 別lockfileの生成物を本体のtargetへ混在させず、実ファイル受入と同じ配置にする。
 CARGO_TARGET_DIR="${SCREENSHOT_TARGET_DIR}" cargo build --locked --release --manifest-path "${SCRIPT_DIR}/Cargo.toml" --quiet
 

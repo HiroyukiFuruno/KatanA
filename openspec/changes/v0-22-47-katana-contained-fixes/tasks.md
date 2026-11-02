@@ -99,6 +99,8 @@ sourceと既存実行入口を照合済み。group/updaterと書込範囲を分�
 - [x] 3.13 前回の依存評価後に公開されたZIP9.2.2の互換更新候補を、対象lock・実resolver差分・対象回帰と独立reviewで評価し、厳密な依存経路検査も実際のpatched版のidentityへ追随する。新5GHSAを既存例外と区別し、実3targetのfeatureとZIP consumer/API/親子境界で公表条件を個別照合し、未知を記録する。新例外や期限延長・品質緩和・他repoの無断変更は行わず、全platformを含む正式品質の合格は6.3で確認する。
 - [x] 3.14 source593の実Windowsログから、裸のbash起動がGit Bashの探索結果と異なるWSLを起動したことを確認し、探索した実行fileを絶対pathでargv0へ固定する。未検出はskipせずfailとし、実比較器の拒否・pipefail・JSON出力を維持する。通常/強制ASCIIの対象実Bash各3件、CIの実Python contract block全64件、独立reviewで修正候補を確認する。実WindowsでのGREENと全正式品質は6.3で未完のまま回収する。
 
+- [x] 3.15 sourcec924の実Windows headless起動で判明した `/dev/stdin` 依存を、実Bashの標準入力入口へ限定修正する。親→子target lease、argv・stdin・pipefail・失敗伝播を維持し、実processのRED→GREENと既存runnerで確認する。実Windowsのheadless合格を含む全正式品質は6.3で回収する。
+
 ## 4. 実行環境・依存・受入準備（#372、#354、#339、#338）
 
 ### Definition of Ready
@@ -260,3 +262,5 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - source861の通常pushはpreflight7/14の依存経路検査が新ZIP9.2.2のexact identityを未登録のため停止した（pr405-portability3-push.log、exit1）。更新時の追随漏れとして3.13を未完へ戻し、patched版のexact経路だけの登録と未知版・不正経路拒否を検証する。新たな脆弱性ignore・期限延長は行わない。remote27不変、gate子process不在、通常profileのSHA/mtime/bytes不変を確認した。
 - ZIP9.2.2のexact tupleだけを登録し、正例先行RED→GREENを確認。既存27件・zstd14件・更新後root/screenshot×3targetの実metadata6件の検証が成功し、別親/版・9.2.3・偽registry/path・orphanの拒否を維持した。独立High追加P0/P1/P2なし（zip922-policy-independent-review.md）。既存just supply-chain本体も3manifestすべてadvisories/bans/licenses/sources成功（zip922-full-supply-chain.log）。旧RustSec ID/親/理由/期限は変更していない。次の全ゲートと実Windows根本修正・合格は6.3で未完のまま。
 - source593の正式通常pushは成功し、Draft最新review receipt6570222993は指摘なし・未解決thread0。次のWindowsCI41397186301/job125120940553の追加診断で、PATH探索はGit Bashを示す一方、裸bash起動のstdoutがUTF-16LEのWSL未導入メッセージとなる実REDを取得した（pr405-windows-failed-job125120940553-plugin.log）。WSL起動は実観測だが、旧実行fileの絶対path自体を直接計測したとは扱わない。検出済みGit Bashの絶対pathを明示する限定修正を実施、通常/ASCII各3件・実CI contract block10 suites/64件成功、独立High追加P0/P1/P2なし（windows-shell-gitbash-*.log、windows-contract-block-ascii.json、windows-shell-rootfix-independent-review.md）。既存workerの二段目bashはcargo_target_leaseでWindowsの絶対path化を既に行うことを実装で確認し、同類未対策という先の疑いは撤回した。修正後の実Windows再検査は未完のため6.3を進めない。
+
+- Windows stdin portability: 実c924のheadless起動失敗を -s＋固定marker/shiftへ修正。実parent→child Bashのargv/stdin/pipefailとPOSIX lease・Windows既存clean拒否の契約を維持。独立reviewのstdin CRLF/拒否理由P1も修正し、最終target14件中13成功・Windows専用1skip、screenshot契約13件・shellcheck成功。親actual multi-format runner14.667秒exit0、通常profile不変。実Windowsの再合格を含む正式品質は6.3で未完。既存initializerは単独 `--` を拒否し、この未使用境界は今回変更していない（windows-stdin-old-literal-dash.log）。
