@@ -126,7 +126,7 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 ## 6. Final Verification & Release Work
 
 - [x] 6.1 self-review/独立High review、日英CHANGELOG・version/全lock同期、strict OpenSpec/KML検証。
-- [ ] 6.2 通常pushを正式gateとして通し、PR405をDraftのまま最新内容へ更新してreviewを取得、指摘修正/reply/resolve、P0/P1ゼロを確認する。
+- [x] 6.2 通常pushを正式gateとして通し、PR405をDraftのまま最新内容へ更新してreviewを取得、指摘修正/reply/resolve、P0/P1ゼロを確認する。
 - [ ] 6.3 Ready化して必須全checksと追加検査を回収し、Windows cold/warm同条件実測・macOS inventory同等性を実runで確認後、通常mergeする（admin/delete-branchなし）。
 - [ ] 6.4 merge sourceのCI結果を回収後、v0.22.47を一度だけ明示公開する。tag・実bytes・署名来歴・identityの不一致は拒否する。
 - [ ] 6.5 実公開版のgroup操作、起動・保存・再起動、packaged文書10-cycle受入、actual metadata receiptの正常/拒否検証を回収する。実経路とfixtureの主張を区別する。
@@ -233,3 +233,7 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 
 - 通常push retry6は正式preflightのtest-document-fidelity-release-gate.py 35件中1件失敗で停止（normal-pr405-push-retry6.log:1482）。共通化したprepare-evidence-python.shに対して旧pip install literal直書きを要求する契約が未追随だった。固定依存準備→selftests→binding→versionglobの意味を維持して対象契約を修正・再検査する。remote未送信、通常settings/workspaceはbefore SHA/mtime/bytes一致（push-retry6-progress.jsonl）。heartbeat FAILは拒否fixtureであり実UIの障害と混同しない。
 - retry6の旧literal契約は、固定venv・helper fail-fast・binary-only固定依存準備→selftest→binding→versionglobの実行行順序を維持し、コメント偽装/順序逆転/条件欠落の拒否回帰を追加して対応。対象35件全成功（v47-fidelity-helper-contract-regression.log）、独立High追加P0/P1/P2なし（同-independent-review.md）。本番/準備処理・旧閾値は変更せず、test契約だけ追随。正式全gateは再実行前のまま未完。
+
+- 通常push retry7は同source14fのnative UI1527passed/0failed後、Linux保存済み実行file5件のzero headerでExec format errorとなり停止。445件の実execを調査し破損実体1件をcorrupt-linux-cacheへ保持。既存volume lifecycle guardのowner/用途/全container参照とexact名再入力を通してci_katana-linux-targetのみinvalidateし、shared registry/Windows/xwin/native未tag targetを保持（linux-cache-invalidation-receipt.json）。
+- 通常push retry8はsource14f無変更でfresh Linux compile・実export/UI検査を経てexit0、remote refへの反映を独立ls-remote/APIで確認。成功時のlefthook出力はfailure-onlyのため詳細件数を創作せず、push結果・実process時系列・sourceと通常profileのSHA/mtime/bytes不変をpush-retry8-success-proof.jsonへ記録。検査後も通常設定・履歴はbefore8と完全一致。
+- 6.2完了: PR405はDraftでsource14fへ更新、@codex review（comment6567754978）を実行。bot receipt6567804488が14f5684282の指摘なし完了、summary6567758142のcurrent commit14f/status completed/has_any_findings=false/has_unresolved_findings=falseを回収。formal self-review PRR_kwDORm09y88AAAABVaDZewと統合Highも追加P0/P1/P2なし、最新review threads0（pr405-review14f-completed.json）。完了記録だけの次headもReady前に確認する。Draft全CIのskipは合格と数えず、6.3以降は未完のまま継続。
