@@ -82,6 +82,7 @@ class ZipOverlayTests(unittest.TestCase):
             direct_workspace_zip_metadata(zip_version="9.1.3", parent_version="0.22.45"),
             direct_workspace_zip_metadata(zip_version="9.2.0", parent_version="0.22.45"),
             direct_workspace_zip_metadata(zip_version="9.2.0", parent_version="0.22.46"),
+            direct_workspace_zip_metadata(zip_version="9.2.1", parent_version="0.22.47"),
         ):
             with self.subTest(packages=fixture["packages"]):
                 MODULE.validate_metadata(fixture)
@@ -94,6 +95,9 @@ class ZipOverlayTests(unittest.TestCase):
             direct_workspace_zip_metadata(zip_version="9.1.3", parent_version="0.22.46"),
             direct_workspace_zip_metadata(zip_version="9.2.0", parent_version="0.22.44"),
             direct_workspace_zip_metadata(zip_version="9.2.0", parent_version="0.22.47"),
+            direct_workspace_zip_metadata(zip_version="9.2.1", parent_version="0.22.46"),
+            direct_workspace_zip_metadata(zip_version="9.2.2", parent_version="0.22.47"),
+            direct_workspace_zip_metadata(zip_version="9.2.1", parent_version="0.22.48"),
             direct_workspace_zip_metadata(
                 zip_version="9.1.3", parent="other-root", parent_version="0.22.43"
             ),
@@ -113,6 +117,7 @@ class ZipOverlayTests(unittest.TestCase):
             {"zip_version": "9.1.3", "parent_version": "0.22.45"},
             {"zip_version": "9.2.0", "parent_version": "0.22.45"},
             {"zip_version": "9.2.0", "parent_version": "0.22.46"},
+            {"zip_version": "9.2.1", "parent_version": "0.22.47"},
         ):
             with self.subTest(approved=approved):
                 git_parent = direct_workspace_zip_metadata(**approved)

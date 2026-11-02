@@ -32,12 +32,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
           components: llvm-tools-preview
       - name: Install release validation tools
-        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
+        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1
           fallback: none
@@ -61,6 +61,8 @@ jobs:
           elif [[ "${GITHUB_HEAD_REF}" == release/v0.22.43-public-release-evidence && "$version" == "0.22.43" ]]; then
             ./scripts/release/check-pr-ready.sh "$version" --post-release-evidence
           elif [[ "${GITHUB_HEAD_REF}" == release/v0.22.44-public-release-evidence && "$version" == "0.22.44" ]]; then
+            ./scripts/release/check-pr-ready.sh "$version" --post-release-evidence
+          elif [[ "${GITHUB_HEAD_REF}" == release/v0.22.47-public-release-evidence && "$version" == "0.22.47" ]]; then
             ./scripts/release/check-pr-ready.sh "$version" --post-release-evidence
           elif [[ "${GITHUB_HEAD_REF}" == release/v0.22.46-public-release-evidence && "$version" == "0.22.46" ]]; then
             ./scripts/release/check-pr-ready.sh "$version" --post-release-evidence
@@ -112,7 +114,7 @@ jobs:
           tmp/release-evidence-python/bin/python scripts/release/check-published-artifact-identity.py --root . --assets "$work/assets" --version v0.22.42 --scope automated-release --phase postpublication --build-manifests "$work/manifests"
       - name: Preserve published run admission
         if: always() && github.head_ref == 'release/v0.22.42-public-release-evidence' && steps.actual_published_artifacts.outputs.admission_path != ''
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: published-run-admission
           path: ${{ steps.actual_published_artifacts.outputs.admission_path }}
@@ -147,7 +149,7 @@ jobs:
           python3 -B scripts/release/check-generated-artifact-identity.py --root . --phase postpublication --run-id "$BUILD_RUN" --run-attempt "$BUILD_ATTEMPT" --work "$RUNNER_TEMP/published-identity-$BUILD_RUN-$BUILD_ATTEMPT"
       - name: Preserve publication identity evidence
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: published-asset-identity
           path: |

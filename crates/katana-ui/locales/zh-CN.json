@@ -482,6 +482,7 @@
     "unpin": "取消固定",
     "restore_closed": "恢复关闭的标签",
     "group_name_placeholder": "组名",
+    "group_identity_duplicate": "已存在名称和颜色相同的分组。",
     "create_group_button": "创建",
     "close_group": "关闭组",
     "ungroup": "解散组",

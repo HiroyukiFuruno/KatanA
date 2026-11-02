@@ -31,13 +31,7 @@ impl KatanaApp {
             }
             AppAction::DismissUpdate => self.show_update_dialog = false,
             AppAction::ConfirmRelaunch => {
-                if let Some(_prep) = self.pending_relaunch.take() {
-                    #[cfg(all(not(test), not(coverage)))]
-                    {
-                        let _ = katana_core::update::UpdateInstallerOps::execute_relauncher(_prep);
-                        std::process::exit(0);
-                    }
-                }
+                self.handle_update_relaunch(ctx);
             }
             AppAction::ShowReleaseNotes => self.handle_show_release_notes(),
             AppAction::ClearAllCaches => self.handle_action_clear_all_caches(ctx),
@@ -96,12 +90,18 @@ impl KatanaApp {
             AppAction::RenameTabGroup { group_id, new_name } => {
                 self.handle_action_rename_tab_group(group_id, new_name)
             }
-            AppAction::FinishInlineRename { group_id, new_name } => {
-                if let Some(new_name) = new_name {
-                    self.handle_action_rename_tab_group(group_id.clone(), new_name);
-                }
-                if self.state.layout.inline_rename_group.as_deref() == Some(&group_id) {
-                    self.state.layout.inline_rename_group = None;
+            AppAction::FinishInlineRename {
+                group_id,
+                new_identity,
+            } => {
+                let accepted = new_identity.is_none_or(|(name, color)| {
+                    self.update_tab_group_identity(&group_id, name, color)
+                });
+                if accepted {
+                    egui::Popup::close_id(ctx, egui::Id::new("group_popup").with(&group_id));
+                    if self.state.layout.inline_rename_group.as_deref() == Some(&group_id) {
+                        self.state.layout.inline_rename_group = None;
+                    }
                 }
             }
             AppAction::RecolorTabGroup {

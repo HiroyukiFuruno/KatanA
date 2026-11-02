@@ -66,11 +66,11 @@ llvm_cov() {
     local phase="$1"
     shift
     if [[ -n "${KATANA_TEST_INVENTORY_DIRECTORY:-}" ]]; then
-        RUSTFLAGS="${RUSTFLAGS:-} --cfg coverage" python3 scripts/release/record-test-invocation.py \
+        RUSTFLAGS="${RUSTFLAGS:-} --cfg coverage" python3 -B scripts/ci/isolated-test-config.py -- python3 scripts/release/record-test-invocation.py \
             --output "$KATANA_TEST_INVENTORY_DIRECTORY/$phase.json" --kind coverage \
             -- cargo llvm-cov --no-cfg-coverage "$@"
     else
-        RUSTFLAGS="${RUSTFLAGS:-} --cfg coverage" cargo llvm-cov --no-cfg-coverage "$@"
+        RUSTFLAGS="${RUSTFLAGS:-} --cfg coverage" python3 -B scripts/ci/isolated-test-config.py -- cargo llvm-cov --no-cfg-coverage "$@"
     fi
 }
 

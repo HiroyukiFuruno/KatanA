@@ -329,8 +329,10 @@ mod tests {
     #[test]
     fn test_uncovered_lines_default() {
         let svc = DefaultCacheService::default();
-        let path = svc.persistent_base_path.to_string_lossy();
-        assert!(path.contains(".cache") || path.contains("KatanA"));
+        assert_eq!(
+            svc.persistent_base_path,
+            PlatformCachePathResolver::cache_root().join("kv")
+        );
         assert!(PlatformCachePathResolver::cache_json_path().ends_with("cache.json"));
 
         let tmp = TempDir::new().unwrap();

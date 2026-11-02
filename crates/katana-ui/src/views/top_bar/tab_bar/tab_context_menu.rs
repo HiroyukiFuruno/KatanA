@@ -3,6 +3,10 @@ use crate::state::document::TabGroup;
 use eframe::egui;
 use katana_core::document::Document;
 
+#[cfg(test)]
+#[path = "tab_context_menu_color_tests.rs"]
+mod color_tests;
+
 const DEFAULT_GROUP_COLOR: &str = "#4A90D9";
 
 pub(crate) struct TabContextMenu<'a> {
@@ -153,7 +157,7 @@ impl<'a> TabContextMenu<'a> {
         g: &TabGroup,
         _doc_str: &str,
     ) {
-        if ui.button(&g.name).clicked() {
+        if super::group_menu_entry::GroupMenuEntry::show(ui, g).clicked() {
             *tab_action = Some(AppAction::AddTabToGroup {
                 group_id: g.id.clone(),
                 member: self.doc.path.clone(),

@@ -6,7 +6,6 @@ pub(super) struct ReleaseCiIntegrityOps;
 
 impl ReleaseCiIntegrityOps {
     const CI_BYPASS_MARKERS: [&'static str; 2] = ["[skip ci]", "[ci skip]"];
-    const BUMP_COMMIT_MESSAGE: &'static str = "chore: Release v${TARGET_VERSION}";
     const RELEASE_CI_CAPABILITY: &'static str = "release-ci-integrity";
 
     pub(super) fn lint(root: &Path) -> Vec<Violation> {
@@ -67,16 +66,51 @@ impl ReleaseCiIntegrityOps {
             }
         };
 
-        if Self::line_number(&content, Self::BUMP_COMMIT_MESSAGE).is_none() {
+        if !Self::has_valid_bump_commit(&content) {
             violations.push(Self::violation(
                 script_path,
                 1,
-                format!(
-                    "Release bump commits must use `{}` without CI bypass markers.",
-                    Self::BUMP_COMMIT_MESSAGE
-                ),
+                "Release bump must have exactly one signed version and issue-bound commit with the required paths.".to_string(),
             ));
         }
+    }
+
+    fn has_valid_bump_commit(content: &str) -> bool {
+        let Ok(command) = regex::Regex::new(r"\bgit(?:[ \t]+[^ \t;&|()]+){0,8}[ \t]+commit\b")
+        else {
+            return false;
+        };
+        let mut found = 0;
+        let joined = content.replace("\\\n", " ");
+        for line in joined
+            .lines()
+            .filter(|line| !line.trim_start().starts_with('#'))
+        {
+            for _ in command.find_iter(line) {
+                found += 1;
+                if !Self::valid_commit_line(line.trim()) {
+                    return false;
+                }
+            }
+        }
+        found == 1
+    }
+
+    fn valid_commit_line(line: &str) -> bool {
+        const PREFIX: &str = "git commit -S -m \"chore: v${TARGET_VERSION}";
+        const SUFFIX: &str =
+            " (#${KATANA_RELEASE_ISSUE})\" -- Cargo.toml Cargo.lock \"$INFO_PLIST\"";
+        let Some(message) = line
+            .strip_prefix(PREFIX)
+            .and_then(|rest| rest.strip_suffix(SUFFIX))
+        else {
+            return false;
+        };
+        !message.is_empty()
+            && !message.is_ascii()
+            && !message.chars().any(|character| {
+                matches!(character, '$' | '`' | '\\' | '\"') || character.is_control()
+            })
     }
 
     fn release_automation_files(root: &Path) -> Vec<PathBuf> {
@@ -119,67 +153,5 @@ impl ReleaseCiIntegrityOps {
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::rules::ReleaseScriptOps;
-    use std::path::Path;
-
-    #[test]
-    fn detects_ci_bypass_markers_in_release_automation() {
-        let temp_dir = tempfile::tempdir().expect("Test requirement");
-        write_file(
-            temp_dir.path().join("scripts/release/bump-version.sh"),
-            "git commit -m 'chore: Release v${TARGET_VERSION}'\n# [skip ci]\n",
-        );
-        write_file(
-            temp_dir.path().join(".github/workflows/release.yml"),
-            "message: chore: release [ci skip]\n",
-        );
-
-        let violations = ReleaseScriptOps::lint_ci_integrity(temp_dir.path());
-
-        assert_eq!(violations.len(), 2);
-        assert!(
-            violations
-                .iter()
-                .all(|it| { it.message.contains("release-ci-integrity") })
-        );
-    }
-
-    #[test]
-    fn accepts_release_bump_commit_message_without_bypass_marker() {
-        let temp_dir = tempfile::tempdir().expect("Test requirement");
-        write_file(
-            temp_dir.path().join("scripts/release/bump-version.sh"),
-            "git commit -S -n -m \"chore: Release v${TARGET_VERSION}\"\n",
-        );
-
-        let violations = ReleaseScriptOps::lint_ci_integrity(temp_dir.path());
-
-        assert!(violations.is_empty());
-    }
-
-    #[test]
-    fn rejects_release_bump_commit_message_without_expected_form() {
-        let temp_dir = tempfile::tempdir().expect("Test requirement");
-        write_file(
-            temp_dir.path().join("scripts/release/bump-version.sh"),
-            "git commit -S -n -m \"release ${TARGET_VERSION}\"\n",
-        );
-
-        let violations = ReleaseScriptOps::lint_ci_integrity(temp_dir.path());
-
-        assert_eq!(violations.len(), 1);
-        assert!(
-            violations[0]
-                .message
-                .contains("chore: Release v${TARGET_VERSION}")
-        );
-    }
-
-    fn write_file(path: impl AsRef<Path>, content: &str) {
-        let path = path.as_ref();
-        let parent = path.parent().expect("Test requirement");
-        std::fs::create_dir_all(parent).expect("Test requirement");
-        std::fs::write(path, content).expect("Test requirement");
-    }
-}
+#[path = "ci_integrity_tests.rs"]
+mod tests;

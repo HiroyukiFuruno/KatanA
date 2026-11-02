@@ -7,15 +7,42 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def pinned_installer(source, job, step, tool):
+    job_match = re.search(rf"(?ms)^  {re.escape(job)}:\n(.*?)(?=^  [A-Za-z][\w-]*:\n|\Z)", source)
+    if job_match is None:
+        raise ValueError("installer job missing")
+    body = job_match.group(1)
+    if step is None:
+        pattern = r"(?ms)^      - uses: taiki-e/install-action@([^\s#]+)(?:[^\n]*)\n(.*?)(?=^      - |\Z)"
+    else:
+        pattern = rf"(?ms)^      - name: {re.escape(step)}\n(.*?)(?=^      - |\Z)"
+    matches = list(re.finditer(pattern, body))
+    if len(matches) != 1:
+        raise ValueError("installer step missing or duplicated")
+    block = matches[0].group(0)
+    use = re.findall(r"(?m)^        uses: taiki-e/install-action@([0-9a-f]{40})(?:[ \t]+#.*)?[ \t]*$", block)
+    if step is None:
+        use = re.findall(r"(?m)^      - uses: taiki-e/install-action@([0-9a-f]{40})(?:[ \t]+#.*)?[ \t]*$", block)
+    if len(use) != 1 or f"          tool: {tool}\n" not in block or "          fallback: none\n" not in block:
+        raise ValueError("installer pin, tool, or fallback is invalid")
+    return use[0]
+
+
 class InventoryWiringTests(unittest.TestCase):
     def test_tool_installers_share_the_pinned_coverage_compatible_revision(self) -> None:
-        for filename, expected_count in (("release-readiness.yml", 1),
-                                         ("build-and-release.yml", 2),
-                                         ("test-and-build.yml", 4)):
-            with self.subTest(workflow=filename):
+        cases = (("release-readiness.yml", "release-check", "Install release validation tools", "cargo-deny@0.20.2,cargo-llvm-cov@0.9.1"),
+                 ("build-and-release.yml", "preflight", "Install release validation tools", "cargo-deny@0.20.2,cargo-llvm-cov@0.9.1"),
+                 ("build-and-release.yml", "cleanup_default", None, "just,cargo-deny@0.20.2"),
+                 ("test-and-build.yml", "test", "Install just", "just"),
+                 ("test-and-build.yml", "test", "Install coverage tool", "cargo-llvm-cov@0.9.1"),
+                 ("test-and-build.yml", "lint", "Install just", "just"),
+                 ("test-and-build.yml", "supply-chain", "Install cargo-deny", "cargo-deny@0.20.2"))
+        revisions = []
+        for filename, job, step, tool in cases:
+            with self.subTest(workflow=filename, job=job, step=step):
                 source = (ROOT / ".github/workflows" / filename).read_text()
-                revisions = re.findall(r"uses: taiki-e/install-action@([^\s]+)", source)
-                self.assertEqual(revisions, ["1e29709c0ec63babbe8f266397a465f29a825f91"] * expected_count)
+                revisions.append(pinned_installer(source, job, step, tool))
+        self.assertEqual(len(set(revisions)), 1, "installer revisions must agree across jobs")
 
     def test_windows_native_listing_has_a_bounded_standard_pipe_reader(self) -> None:
         source = (ROOT / "scripts/release/native_test_inventory_collection.py").read_text()
@@ -64,7 +91,8 @@ class InventoryWiringTests(unittest.TestCase):
         self.assertIn('export KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER"', source)
         self.assertIn('"$1" == \'cargo test --workspace\'', source)
         self.assertIn('--kind test -- cargo test --workspace', source)
-        self.assertIn('exec bash -c "$1"', source)
+        self.assertIn('exec python3 -B scripts/ci/isolated-test-config.py -- bash -c "$1"', source)
+        self.assertIn('scripts/ci/isolated-test-config.py -- python3 scripts/release/record-test-invocation.py', source)
         self.assertLess(source.index("export KATANA_KDV_OFFICE_WORKER"),
                         source.index("record-test-invocation.py"))
 

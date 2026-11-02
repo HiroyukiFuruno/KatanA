@@ -20,7 +20,9 @@ impl KatanaApp {
             return;
         }
 
-        self.open_demo_group(demo_assets);
+        if self.can_open_demo_group() {
+            self.open_demo_group(demo_assets);
+        }
     }
 
     pub(super) fn handle_action_open_welcome_screen(&mut self) {

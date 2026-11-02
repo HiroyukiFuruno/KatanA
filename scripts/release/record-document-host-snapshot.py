@@ -37,7 +37,8 @@ def actual_bundle(root: Path, before_path: Path, after_path: Path, archive: Path
             "archive_sha256": file_digest(archive), "provenance": before}
 
 
-def release_bundle(root: Path, receipt_path: Path, archive: Path, main: Path, worker: Path, target: str) -> dict:
+def release_bundle(root: Path, receipt_path: Path, archive: Path, main: Path, worker: Path, target: str,
+                   publication_version: str = "v0.22.42") -> dict:
     require(receipt_path.is_absolute() and receipt_path.is_relative_to(root), "actual public Release receipt required")
     raw = read(receipt_path)
     receipt = decode(raw)
@@ -46,7 +47,7 @@ def release_bundle(root: Path, receipt_path: Path, archive: Path, main: Path, wo
     bundle = {"target": target, "main_path": str(main), "worker_path": str(worker), "main_sha256": file_digest(main),
               "sidecar_sha256": file_digest(worker), "archive_sha256": file_digest(archive), "provenance": source_record}
     verify_download_receipt(root, {"status": "published_macos_host_accepted",
-                                  "receipt": {"path": receipt_path.relative_to(root).as_posix(), "sha256": digest(raw)}}, source_record, bundle)
+                                  "receipt": {"path": receipt_path.relative_to(root).as_posix(), "sha256": digest(raw)}}, source_record, bundle, publication_version)
     identity = module("_actual_published_mac_archive", "check-published-artifact-identity.py")
     prefix = "KatanA Desktop.app/Contents/MacOS/"
     require(identity.zip_digest(archive, prefix+"KatanA") == bundle["main_sha256"]
@@ -121,6 +122,7 @@ def main() -> int:
     for name in ("receipt", "archive", "main", "worker", "output"):
         published.add_argument("--"+name, type=Path, required=True)
     published.add_argument("--target", choices=("macos-arm64", "macos-x86_64"), required=True)
+    published.add_argument("--publication-version", choices=("v0.22.42", "v0.22.47"), default="v0.22.42")
     run = modes.add_parser("run")
     for name in ("run-directory", "package-bundle-manifest", "archive", "profile"):
         run.add_argument("--"+name, type=Path, required=True)
@@ -134,7 +136,7 @@ def main() -> int:
             write_new(args.output, actual_bundle(root, args.package_source_before, args.package_source_after,
                                                 args.archive, args.main, args.worker, args.target))
         elif args.mode == "bundle-from-release":
-            write_new(args.output, release_bundle(root, args.receipt, args.archive, args.main, args.worker, args.target))
+            write_new(args.output, release_bundle(root, args.receipt, args.archive, args.main, args.worker, args.target, args.publication_version))
         else:
             run_snapshot(root, args.run_directory, args.package_bundle_manifest, args.archive, args.profile, args.moment)
     except (ValueError, RuntimeError, OSError, KeyError, TypeError, subprocess.SubprocessError) as error:

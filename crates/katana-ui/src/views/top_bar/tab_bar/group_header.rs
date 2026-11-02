@@ -14,12 +14,16 @@ const GROUP_HEADER_FONT_SIZE: f32 = 11.0;
 
 pub(crate) struct GroupHeader<'a> {
     pub g: &'a TabGroup,
+    pub groups: &'a [TabGroup],
     pub inline_rename_group: Option<&'a String>,
 }
 
 #[cfg(test)]
 #[path = "group_header_tests.rs"]
 mod tests;
+#[cfg(test)]
+#[path = "group_header_visible_tests.rs"]
+mod visible_tests;
 
 impl<'a> GroupHeader<'a> {
     #[allow(deprecated)]
@@ -127,10 +131,12 @@ impl<'a> GroupHeader<'a> {
         let rename = self.inline_rename_group;
         let _popup_response = egui::Popup::from_response(group_response)
             .id(state.popup_id)
+            .open_memory(None)
             .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
             .show(|ui| {
                 super::group_header_popup::GroupHeaderPopup {
                     g: self.g,
+                    groups: self.groups,
                     inline_rename_group: rename,
                     tab_action,
                     popup_id: state.popup_id,
@@ -153,7 +159,7 @@ impl<'a> GroupHeader<'a> {
         {
             *tab_action = Some(AppAction::FinishInlineRename {
                 group_id: self.g.id.clone(),
-                new_name: None,
+                new_identity: None,
             });
         }
     }

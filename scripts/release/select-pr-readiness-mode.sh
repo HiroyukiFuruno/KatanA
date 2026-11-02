@@ -22,6 +22,10 @@ elif [[ "$branch" == "release/v0.22.45-public-release-evidence" &&
       "$target_version" == "0.22.45" &&
       ( -z "$requested_mode" || "$requested_mode" == "pr-bootstrap" ) ]]; then
     printf '%s\n' 'post-release-evidence'
+elif [[ "$branch" == "release/v0.22.47-public-release-evidence" &&
+      "$target_version" == "0.22.47" &&
+      ( -z "$requested_mode" || "$requested_mode" == "pr-bootstrap" ) ]]; then
+    printf '%s\n' 'post-release-evidence'
 elif [[ "$branch" == "release/v0.22.46-public-release-evidence" &&
       "$target_version" == "0.22.46" &&
       ( -z "$requested_mode" || "$requested_mode" == "pr-bootstrap" ) ]]; then

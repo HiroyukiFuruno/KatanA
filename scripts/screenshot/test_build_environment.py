@@ -1,8 +1,12 @@
 """Verify the real shell environment defaults without invoking Cargo."""
 
 import os
+import hashlib
 from pathlib import Path
 import subprocess
+import sys
+import tempfile
+import zipfile
 import unittest
 
 
@@ -63,6 +67,151 @@ class BuildEnvironmentTests(unittest.TestCase):
         self.assertIn('CARGO_TARGET_DIR="${BUILD_TARGET_DIR}" cargo build --locked --release', source)
         self.assertIn('CARGO_TARGET_DIR="${SCREENSHOT_TARGET_DIR}" cargo build --locked --release', source)
         self.assertNotIn('BUILD_TARGET_DIR="${REPO_ROOT}/target"', source)
+
+    def test_runner_rejects_unowned_target_before_creating_fixture(self):
+        root = RUNNER.parents[2]
+        with tempfile.TemporaryDirectory(dir=root / "tmp") as directory:
+            target = Path(directory) / "unowned-target"
+            target.mkdir()
+            marker = target / "keep"
+            marker.write_text("unowned", encoding="utf-8")
+            environment = dict(os.environ) | {"CARGO_TARGET_DIR": str(target)}
+            result = subprocess.run([str(RUNNER), "--help"], cwd=root, env=environment,
+                                    capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("nonempty target has no ownership tag", result.stderr)
+            self.assertEqual(marker.read_text(encoding="utf-8"), "unowned")
+            self.assertEqual(list(target.iterdir()), [marker])
+
+    def test_runner_initializes_target_before_real_fixture_generation(self):
+        root = RUNNER.parents[2]
+        with tempfile.TemporaryDirectory(dir=root / "tmp") as directory:
+            target = Path(directory) / "new-target"
+            environment = dict(os.environ) | {
+                "CARGO_TARGET_DIR": str(target),
+                "RUSTFLAGS": "-C katana_invalid_codegen_option",
+            }
+            environment.pop("CARGO_ENCODED_RUSTFLAGS", None)
+            result = subprocess.run([str(RUNNER), "--help"], cwd=root, env=environment,
+                                    capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("katana_invalid_codegen_option", result.stderr)
+            self.assertTrue((target / "CACHEDIR.TAG").read_bytes().startswith(
+                b"Signature: 8a477f597d28d172789f06886806bc55"))
+            self.assertTrue((target / "screenshot-fixtures/representative-with-external-hyperlink.pptx").is_file())
+
+    def test_legacy_fixture_is_regenerated_without_claiming_its_directory(self):
+        root = RUNNER.parents[2]
+        with tempfile.TemporaryDirectory(dir=root / "tmp") as directory:
+            target = Path(directory) / "target"
+            initializer = root / "scripts/ci/cargo_target_init.py"
+            initialized = subprocess.run([sys.executable, str(initializer), str(target)], cwd=root,
+                                         capture_output=True, text=True)
+            self.assertEqual(0, initialized.returncode, initialized.stderr)
+            old = target / "screenshot-fixtures/representative-with-external-hyperlink.pptx"
+            generator = root / "scripts/screenshot/generate_external_hyperlink_pptx.py"
+            original = root / "scripts/screenshot/fixtures/v0-22-38-multi-format/representative.pptx"
+            generated = subprocess.run([sys.executable, str(generator), "--source", str(original),
+                                        "--output", str(old)], cwd=root, capture_output=True, text=True)
+            self.assertEqual(0, generated.returncode, generated.stderr)
+            before = hashlib.sha256(original.read_bytes()).hexdigest()
+            environment = dict(os.environ) | {"CARGO_TARGET_DIR": str(target),
+                                              "RUSTFLAGS": "-C katana_invalid_codegen_option"}
+            environment.pop("CARGO_ENCODED_RUSTFLAGS", None)
+            result = subprocess.run([str(RUNNER), "--help"], cwd=root, env=environment,
+                                    capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("katana_invalid_codegen_option", result.stderr)
+            self.assertEqual(before, hashlib.sha256(original.read_bytes()).hexdigest())
+            with zipfile.ZipFile(old) as archive:
+                relationships = archive.read("ppt/slides/_rels/slide1.xml.rels")
+            self.assertIn(b"rIdKatanaExternalHyperlink", relationships)
+            self.assertFalse((old.parent / "CACHEDIR.TAG").exists())
+
+    @unittest.skipUnless(sys.platform == "darwin", "macOS system temporary alias")
+    def test_runner_preserves_external_tmp_target_with_spaces(self):
+        root = RUNNER.parents[2]
+        with tempfile.TemporaryDirectory(dir="/tmp") as directory:
+            target = Path(directory) / "external target"
+            environment = dict(os.environ) | {
+                "CARGO_TARGET_DIR": str(target),
+                "RUSTFLAGS": "-C katana_invalid_codegen_option",
+            }
+            environment.pop("CARGO_ENCODED_RUSTFLAGS", None)
+            result = subprocess.run([str(RUNNER), "--help"], cwd=root, env=environment,
+                                    capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("katana_invalid_codegen_option", result.stderr)
+            self.assertTrue((target.resolve() / "CACHEDIR.TAG").is_file())
+            self.assertTrue((target.resolve() / "screenshot-fixtures/representative-with-external-hyperlink.pptx").is_file())
+
+    @unittest.skipUnless(os.name == "posix", "filesystem symlink regression")
+    def test_runner_rejects_linked_fixture_before_writing(self):
+        root = RUNNER.parents[2]
+        with tempfile.TemporaryDirectory(dir=root / "tmp") as directory:
+            parent = Path(directory)
+            target = parent / "target"
+            initializer = root / "scripts/ci/cargo_target_init.py"
+            initialized = subprocess.run(["python3", str(initializer), str(target)], cwd=root,
+                                         capture_output=True, text=True)
+            self.assertEqual(0, initialized.returncode, initialized.stderr)
+            outside = parent / "outside"
+            outside.mkdir()
+            existing = outside / "representative-with-external-hyperlink.pptx"
+            existing.write_bytes(b"existing fixture")
+            before = hashlib.sha256(existing.read_bytes()).hexdigest()
+            (target / "screenshot-fixtures").symlink_to(outside, target_is_directory=True)
+            environment = dict(os.environ) | {"CARGO_TARGET_DIR": str(target)}
+            result = subprocess.run([str(RUNNER), "--help"], cwd=root, env=environment,
+                                    capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("fixture path contains symlink or junction", result.stderr)
+            self.assertEqual(list(outside.iterdir()), [existing])
+            self.assertEqual(before, hashlib.sha256(existing.read_bytes()).hexdigest())
+
+    @unittest.skipUnless(os.name == "posix", "filesystem symlink regression")
+    def test_runner_rejects_linked_fixture_file_without_touching_destination(self):
+        root = RUNNER.parents[2]
+        with tempfile.TemporaryDirectory(dir=root / "tmp") as directory:
+            parent = Path(directory)
+            target = parent / "target"
+            initialized = subprocess.run(["python3", str(root / "scripts/ci/cargo_target_init.py"),
+                                          str(target)], cwd=root, capture_output=True, text=True)
+            self.assertEqual(0, initialized.returncode, initialized.stderr)
+            destination = parent / "original"
+            destination.write_bytes(b"unchanged")
+            before = hashlib.sha256(destination.read_bytes()).hexdigest()
+            fixtures = target / "screenshot-fixtures"
+            fixtures.mkdir()
+            (fixtures / "representative-with-external-hyperlink.pptx").symlink_to(destination)
+            environment = dict(os.environ) | {"CARGO_TARGET_DIR": str(target)}
+            result = subprocess.run([str(RUNNER), "--help"], cwd=root, env=environment,
+                                    capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("fixture path contains symlink or junction", result.stderr)
+            self.assertEqual(before, hashlib.sha256(destination.read_bytes()).hexdigest())
+
+    @unittest.skipUnless(os.name == "posix", "filesystem hardlink regression")
+    def test_runner_rejects_hardlinked_fixture_without_touching_destination(self):
+        root = RUNNER.parents[2]
+        with tempfile.TemporaryDirectory(dir=root / "tmp") as directory:
+            parent = Path(directory)
+            target = parent / "target"
+            initialized = subprocess.run(["python3", str(root / "scripts/ci/cargo_target_init.py"),
+                                          str(target)], cwd=root, capture_output=True, text=True)
+            self.assertEqual(0, initialized.returncode, initialized.stderr)
+            destination = parent / "original"
+            destination.write_bytes(b"unchanged")
+            before = hashlib.sha256(destination.read_bytes()).hexdigest()
+            fixtures = target / "screenshot-fixtures"
+            fixtures.mkdir()
+            os.link(destination, fixtures / "representative-with-external-hyperlink.pptx")
+            environment = dict(os.environ) | {"CARGO_TARGET_DIR": str(target)}
+            result = subprocess.run([str(RUNNER), "--help"], cwd=root, env=environment,
+                                    capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("fixture path is not an unshared regular destination", result.stderr)
+            self.assertEqual(before, hashlib.sha256(destination.read_bytes()).hexdigest())
 
     def flags(self, supplied: str | None, encoded: str = "", platform: str = "darwin") -> tuple[str, str]:
         environment = dict(os.environ)

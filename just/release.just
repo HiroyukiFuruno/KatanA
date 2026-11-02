@@ -18,15 +18,14 @@ package-windows:
 dmg: package-mac
     @FORCE={{FORCE}} scripts/build/dmg.sh {{VERSION}}
 
-# Prepare for release by bumping version in all files (usage: just VERSION=x.y.z release)
+# Prepare a local release (usage: KATANA_RELEASE_ISSUE=123 just VERSION=x.y.z release)
 release: version-required
     @scripts/release/bump-version.sh {{VERSION}}
     @echo ""
     @echo "✅ Version bump completed!"
     @echo "   Next steps:"
     @echo "   1. Review changes (git diff)"
-    @echo "   2. Commit with -S (Verified Commit): git commit -S -m \"release: v{{VERSION}}\""
-    @echo "   3. Create a PR to master"
+    @echo "   2. Create a PR to master"
 
 # Manually trigger the release workflow on GitHub Actions (emergency use only)
 release-trigger: version-required

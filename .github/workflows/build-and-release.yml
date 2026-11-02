@@ -70,6 +70,11 @@ on:
         required: false
         default: false
         type: boolean
+      cleanup_remote:
+        description: 'Opt in to guarded deletion of the published release branch'
+        required: false
+        default: false
+        type: boolean
 
 env:
   CARGO_INCREMENTAL: 0
@@ -80,6 +85,9 @@ jobs:
   preflight:
     name: Preflight Check
     runs-on: macos-latest
+    permissions:
+      contents: write
+      actions: write
     # WHY: For PR merges, only trigger when a release/v* branch is merged into master
     if: |
       github.actor == 'HiroyukiFuruno' && (
@@ -121,13 +129,13 @@ jobs:
         run: scripts/release/verify-version-bump-ci.sh "${{ github.event.pull_request.merge_commit_sha }}"
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
           components: llvm-tools-preview
 
       - name: Install release validation tools
-        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
+        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1
           fallback: none
@@ -151,9 +159,48 @@ jobs:
         id: bump
         # WHY: A failed artifact publication must be replayable without mutating its merged source.
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.reuse_existing_version != 'true')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUMP_VERSION: ${{ steps.version.outputs.version_bare }}
         run: |
-          ./scripts/release/bump-version.sh "${{ steps.version.outputs.version_bare }}"
+          ./scripts/release/bump-version.sh "$BUMP_VERSION"
           echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Record manual bump transition
+        id: manual_bump_transition
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.reuse_existing_version != 'true'
+        env:
+          TRANSITION_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          python3 -B scripts/release/manual_bump_transition.py --version "$TRANSITION_VERSION" --record "$RUNNER_TEMP/transition.json"
+
+      - name: Verify manual release source CI
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REUSE_EXISTING_VERSION: ${{ github.event.inputs.reuse_existing_version }}
+        run: |
+          SOURCE_SHA=$(git rev-parse HEAD)
+          OPTIONS=()
+          if [[ "$REUSE_EXISTING_VERSION" != 'true' ]]; then
+            OPTIONS=(--dispatch-if-missing)
+          fi
+          scripts/release/verify-version-bump-ci.sh "$SOURCE_SHA" --required "$RUNNER_TEMP/manual-ci-receipt.json" "${OPTIONS[@]}"
+      - name: Preserve manual source CI receipt
+        if: always() && github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: manual-source-ci-receipt
+          path: ${{ runner.temp }}/manual-ci-receipt.json
+          if-no-files-found: error
+
+      - name: Upload manual bump transition
+        if: steps.manual_bump_transition.outputs.present == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: manual-bump-transition-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/transition.json
+          if-no-files-found: error
 
       - name: Run release preflight logic
         # WHY: check-pr-ready が preflight を内包するため、同じ公開検査を二重実行しない。
@@ -173,7 +220,7 @@ jobs:
           cat RELEASE_NOTES.md
 
       - name: Upload Release Notes
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-notes
           path: RELEASE_NOTES.md
@@ -188,7 +235,7 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.commit_sha }}
           fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
           targets: aarch64-apple-darwin,x86_64-apple-darwin
@@ -247,13 +294,13 @@ jobs:
         run: |
           python3 scripts/release/record-generated-artifact-identity.py --root . --version "$RELEASE_VERSION" --platform macos --main "target/release/bundle/osx/KatanA Desktop.app/Contents/MacOS/KatanA" --worker "target/release/bundle/osx/KatanA Desktop.app/Contents/MacOS/kdv-office-worker" --asset target/release/KatanA-macOS.zip --asset "target/release/KatanA-Desktop-$RELEASE_VERSION_BARE.dmg" --output tmp/identity-macos.json
       - name: Upload generated macOS payload identity
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-identity-macos
           path: tmp/identity-macos.json
           if-no-files-found: error
       - name: Upload macOS Artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-macos
           path: |
@@ -280,7 +327,7 @@ jobs:
           ref: ${{ needs.preflight.outputs.commit_sha }}
           fetch-depth: 0
       - name: Download universal macOS artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: artifacts-macos
           path: artifacts-macos
@@ -304,7 +351,7 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.commit_sha }}
           fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -341,7 +388,7 @@ jobs:
         run: |
           python3 scripts/release/record-generated-artifact-identity.py --root . --version "$RELEASE_VERSION" --platform linux --main target/release/KatanA --worker target/release/kdv-office-worker --asset target/release/KatanA-linux-x86_64.tar.gz --output tmp/identity-linux.json
       - name: Upload generated Linux payload identity
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-identity-linux
           path: tmp/identity-linux.json
@@ -359,7 +406,7 @@ jobs:
           "$GITHUB_WORKSPACE/scripts/release/smoke-launch-packaged-app.sh" linux-x86_64 "$TEMP_DIR/KatanA"
       - name: Upload Linux startup diagnostics
         if: failure() && steps.linux_startup_smoke.outcome == 'failure'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: linux-startup-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -367,7 +414,7 @@ jobs:
             tmp/trash/*-startup.*/startup.log
           if-no-files-found: error
       - name: Upload Linux Artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-linux
           path: target/release/KatanA-linux-x86_64.tar.gz
@@ -386,7 +433,7 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.commit_sha }}
           fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -404,7 +451,7 @@ jobs:
         run: cargo build --workspace --release
 
       - name: Install cargo-binstall
-        uses: cargo-bins/cargo-binstall@75b4bfae1b2c753a6806bbce6e6cb89b602de33c # main
+        uses: cargo-bins/cargo-binstall@81df5c23b0dc775b009efdfc9895c5965b7a4e40 # main
 
       - name: Package Windows Artifacts
         shell: bash
@@ -420,7 +467,7 @@ jobs:
         run: |
           python scripts/release/record-generated-artifact-identity.py --root . --version "$RELEASE_VERSION" --platform windows --main target/release/KatanA.exe --worker target/release/kdv-office-worker.exe --asset KatanA-windows-x86_64.zip --asset KatanA-windows-x86_64.msi --output tmp/identity-windows.json
       - name: Upload generated Windows payload identity
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-identity-windows
           path: tmp/identity-windows.json
@@ -557,7 +604,7 @@ jobs:
 
       - name: Upload failed Windows comparison payload
         if: failure() && steps.windows_startup_smoke.outcome == 'failure' && needs.preflight.outputs.version_bare == '0.22.42'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows-native-comparison-payload-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -573,7 +620,7 @@ jobs:
 
       - name: Upload Windows startup diagnostics
         if: always() && (steps.windows_startup_smoke.outcome == 'failure' || steps.windows_startup_smoke.outcome == 'success')
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows-startup-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.windows_startup_smoke.outputs.diagnostics_directory }}
@@ -581,7 +628,7 @@ jobs:
           retention-days: 5
 
       - name: Upload Windows Artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifacts-windows
           path: |
@@ -606,7 +653,7 @@ jobs:
           ref: ${{ needs.preflight.outputs.commit_sha }}
           fetch-depth: 0
       - name: Download failed Windows comparison payload
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: windows-native-comparison-payload-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}\windows-native-comparison-payload-${{ github.run_id }}-${{ github.run_attempt }}
@@ -707,7 +754,7 @@ jobs:
           $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $metadata -Encoding utf8
       - name: Upload Windows comparison diagnostics
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows-native-comparison-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -732,7 +779,7 @@ jobs:
           ref: ${{ needs.preflight.outputs.commit_sha }}
           fetch-depth: 0
       - name: Download all artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       - name: Normalize generated payload identity filenames
         run: |
           for platform in macos linux windows; do
@@ -794,7 +841,7 @@ jobs:
       - name: Preserve external registry sync results
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: external-registry-sync
           path: release-files/external-registry-sync.json
@@ -814,12 +861,12 @@ jobs:
         with:
           ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
           components: rustfmt, clippy
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
-      - uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
+      - uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: just,cargo-deny@0.20.2
           fallback: none
@@ -839,7 +886,17 @@ jobs:
           VERSION: ${{ needs.preflight.outputs.version_bare }}
           PUBLISHED: ${{ needs.preflight.outputs.commit_sha }}
           SOURCE_PR: ${{ github.event.pull_request.number }}
+          CLEANUP_REMOTE: ${{ github.event.inputs.cleanup_remote }}
         run: |
+          case "$CLEANUP_REMOTE" in
+            ""|false)
+              python3 -B scripts/release/record-skipped-cleanup.py --controller "$PWD" \
+                --repository "$REPOSITORY" --version "$VERSION" --published "$PUBLISHED"
+              exit 0
+              ;;
+            true) ;;
+            *) echo "Invalid cleanup_remote input" >&2; exit 2 ;;
+          esac
           PR_OPTIONS=()
           if [[ -n "$SOURCE_PR" ]]; then
             PR_OPTIONS=("--pull-request" "$SOURCE_PR")
@@ -856,7 +913,7 @@ jobs:
             --merge-commit "$MERGE_COMMIT" --pull-request "$PULL_REQUEST" --remote
       - name: Preserve cleanup receipts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: published-release-cleanup-receipts
           path: .git/katana-cleanup-receipts/*.jsonl

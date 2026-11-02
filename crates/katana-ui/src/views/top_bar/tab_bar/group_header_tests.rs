@@ -9,13 +9,17 @@ use std::sync::Arc;
 
 const TEST_VIEWPORT: egui::Vec2 = egui::vec2(640.0, 240.0);
 
-fn make_app() -> KatanaApp {
-    KatanaApp::new(AppState::new(
+pub(super) fn make_app() -> KatanaApp {
+    let mut state = AppState::new(
         katana_core::ai::AiProviderRegistry::new(),
         katana_core::plugin::PluginRegistry::new(),
-        katana_platform::SettingsService::default(),
+        katana_platform::SettingsService::new(Box::new(katana_platform::InMemoryRepository)),
         Arc::new(katana_platform::InMemoryCacheService::default()),
-    ))
+    );
+    state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+        katana_platform::workspace::InMemoryWorkspaceRepository::default(),
+    ));
+    KatanaApp::new(state)
 }
 
 fn raw_input(events: Vec<egui::Event>) -> egui::RawInput {
@@ -50,6 +54,7 @@ fn show_frame(
             .content(|ui| {
                 GroupHeader {
                     g: group,
+                    groups: std::slice::from_ref(group),
                     inline_rename_group: inline_rename_group.as_ref(),
                 }
                 .show(ui, &mut action);
@@ -108,10 +113,10 @@ fn inline_rename_keeps_focus_until_enter_and_then_closes() {
         action.as_ref(),
         Some(&AppAction::FinishInlineRename {
             group_id: group.id.clone(),
-            new_name: Some("New group confirmed".to_owned()),
+            new_identity: Some(("New group confirmed".to_owned(), group.color_hex.clone())),
         })
     );
-    assert!(!egui::Popup::is_id_open(&context, popup_id));
+    assert!(egui::Popup::is_id_open(&context, popup_id));
 
     let mut app = make_app();
     app.state.document.tab_groups.push(group.clone());
@@ -120,6 +125,7 @@ fn inline_rename_keeps_focus_until_enter_and_then_closes() {
         &context,
         action.expect("Enter should emit the finish action"),
     );
+    assert!(!egui::Popup::is_id_open(&context, popup_id));
     assert_eq!(app.state.document.tab_groups[0].name, "New group confirmed");
     assert_eq!(app.state.layout.inline_rename_group, None);
 
@@ -128,7 +134,7 @@ fn inline_rename_keeps_focus_until_enter_and_then_closes() {
         &context,
         AppAction::FinishInlineRename {
             group_id: group.id,
-            new_name: None,
+            new_identity: None,
         },
     );
     assert_eq!(
@@ -158,7 +164,7 @@ fn escape_cancels_draft_and_group_interaction_works_after_popup_closes() {
         action.clone(),
         Some(AppAction::FinishInlineRename {
             group_id: group.id.clone(),
-            new_name: None,
+            new_identity: None,
         })
     );
     assert!(!egui::Popup::is_id_open(&context, popup_id));
@@ -216,7 +222,7 @@ fn outside_click_closes_rename_and_next_group_click_is_delivered() {
         action,
         Some(AppAction::FinishInlineRename {
             group_id: group.id.clone(),
-            new_name: None,
+            new_identity: None,
         })
     );
 

@@ -34,6 +34,7 @@ pub struct LayoutState {
     pub pending_close_confirm: Option<usize>,
     pub rename_tab_group_modal: Option<(usize, String)>,
     pub inline_rename_group: Option<String>,
+    pub(crate) group_draft: Option<GroupDraft>,
     pub show_slideshow: bool,
     pub slideshow_page: usize,
     pub was_os_fullscreen_before_slideshow: bool,
@@ -43,6 +44,12 @@ pub struct LayoutState {
     pub slideshow_show_diagram_controls: bool,
     pub active_rail_popup: Option<RailPopup>,
     pub toc_force_open: Option<bool>,
+}
+
+pub(crate) struct GroupDraft {
+    pub name: String,
+    pub color_hex: String,
+    pub members: Vec<PathBuf>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -87,6 +94,7 @@ impl LayoutState {
             pending_close_confirm: None,
             rename_tab_group_modal: None,
             inline_rename_group: None,
+            group_draft: None,
             show_slideshow: false,
             slideshow_page: 0,
             was_os_fullscreen_before_slideshow: false,

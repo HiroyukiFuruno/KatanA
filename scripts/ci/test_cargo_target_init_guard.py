@@ -10,6 +10,7 @@ import sys
 import tempfile
 import threading
 import unittest
+import zipfile
 
 from cargo_target_lease import target_lease
 from test_cargo_clean_guard import run_clean_guard
@@ -21,6 +22,130 @@ SIGNATURE = b"Signature: 8a477f597d28d172789f06886806bc55"
 
 
 class CargoTargetInitTest(unittest.TestCase):
+    def test_unowned_fixture_child_is_preserved_by_actual_cargo_clean(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            manifest = root / "Cargo.toml"
+            manifest.write_text('[package]\nname="fixture-clean"\nversion="0.0.0"\nedition="2024"\n')
+            (root / "Cargo.lock").write_text('version = 3\n\n[[package]]\nname = "fixture-clean"\nversion = "0.0.0"\n')
+            (root / "src").mkdir()
+            (root / "src/lib.rs").write_text("pub fn probe() {}\n")
+            child = root / "target/screenshot-fixtures"
+            child.mkdir(parents=True)
+            fixture = child / "existing.pptx"
+            fixture.write_bytes(b"unchanged")
+            environment = os.environ.copy() | {"CARGO_TARGET_DIR": str(child)}
+            environment.pop("CARGO_BUILD_TARGET_DIR", None)
+            cleaned = run_clean_guard(manifest, environment)
+            self.assertNotEqual(0, cleaned.returncode)
+            self.assertEqual(b"unchanged", fixture.read_bytes())
+            self.assertFalse((child / "CACHEDIR.TAG").exists())
+
+    @unittest.skipUnless(sys.platform == "darwin", "macOS system temporary alias")
+    def test_macos_tmp_alias_shares_real_cache_and_lease_identity(self):
+        from cargo_target_lease import lease_path
+
+        with tempfile.TemporaryDirectory(dir="/tmp") as directory:
+            alias = Path(directory) / "cache with spaces"
+            canonical = alias.resolve()
+            command = [sys.executable, str(INITIALIZER), "--allow-external-target", str(alias),
+                       "--run", sys.executable, "-c", "import pathlib,sys; pathlib.Path(sys.argv[1]).write_text('ok')",
+                       str(alias / "output")]
+            result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            self.assertEqual("ok", (canonical / "output").read_text())
+            self.assertTrue((canonical / "CACHEDIR.TAG").is_file())
+            self.assertEqual(lease_path(alias), lease_path(canonical))
+
+    @unittest.skipUnless(sys.platform == "darwin", "macOS system temporary alias")
+    def test_macos_var_alias_uses_the_same_cache_identity(self):
+        from cargo_target_lease import lease_path
+
+        with tempfile.TemporaryDirectory() as directory:
+            canonical = Path(directory).resolve() / "cache with spaces"
+            try:
+                alias = Path("/var") / canonical.relative_to("/private/var")
+            except ValueError:
+                self.skipTest("temporary directory is not under /private/var")
+            result = subprocess.run([sys.executable, str(INITIALIZER), "--allow-external-target", str(alias)],
+                                    cwd=ROOT, capture_output=True, text=True)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            self.assertTrue((canonical / "CACHEDIR.TAG").is_file())
+            self.assertEqual(lease_path(alias), lease_path(canonical))
+
+    def test_external_cache_requires_opt_in_and_safe_absolute_owned_path(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory).resolve()
+            root = base / "repo"
+            initializer = root / "scripts/ci/cargo_target_init.py"
+            initializer.parent.mkdir(parents=True)
+            shutil.copyfile(INITIALIZER, initializer)
+            shutil.copyfile(INITIALIZER.with_name("cargo_target_lease.py"),
+                            initializer.with_name("cargo_target_lease.py"))
+            target = base / "external cache"
+            prefix = [sys.executable, str(initializer)]
+            default = subprocess.run(prefix + [str(target)], cwd=root, capture_output=True, text=True)
+            self.assertNotEqual(0, default.returncode)
+            self.assertFalse(target.exists())
+            command = prefix + ["--allow-external-target", str(target), "--run", sys.executable,
+                                "-c", "import sys; print(sys.argv[1])", "argument with spaces"]
+            for _ in range(2):
+                result = subprocess.run(command, cwd=root, capture_output=True, text=True)
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+                self.assertEqual("argument with spaces", result.stdout.strip())
+            self.assertTrue((target / "CACHEDIR.TAG").read_bytes().startswith(SIGNATURE))
+            for rejected in (base / "unowned", root / "src/cache", root / ".git/cache",
+                             Path("../relative-cache")):
+                if rejected == base / "unowned":
+                    rejected.mkdir()
+                    (rejected / "keep").write_text("unchanged")
+                result = subprocess.run(prefix + ["--allow-external-target", str(rejected)],
+                                        cwd=root, capture_output=True, text=True)
+                self.assertNotEqual(0, result.returncode, str(rejected))
+            self.assertEqual("unchanged", (base / "unowned/keep").read_text())
+            invalid = base / "invalid"
+            invalid.mkdir()
+            (invalid / "CACHEDIR.TAG").write_text("invalid")
+            result = subprocess.run(prefix + ["--allow-external-target", str(invalid)],
+                                    cwd=root, capture_output=True, text=True)
+            self.assertNotEqual(0, result.returncode)
+            self.assertEqual("invalid", (invalid / "CACHEDIR.TAG").read_text())
+            other_repository = base / "other-repository"
+            (other_repository / ".git").mkdir(parents=True)
+            result = subprocess.run(prefix + ["--allow-external-target", str(other_repository / "target")],
+                                    cwd=root, capture_output=True, text=True)
+            self.assertNotEqual(0, result.returncode)
+            self.assertFalse((other_repository / "target").exists())
+            if os.name == "posix":
+                link = base / "linked"
+                link.symlink_to(target, target_is_directory=True)
+                result = subprocess.run(prefix + ["--allow-external-target", str(link / "nested")],
+                                        cwd=root, capture_output=True, text=True)
+                self.assertNotEqual(0, result.returncode)
+                self.assertFalse((target / "nested").exists())
+
+    def test_screenshot_fixture_is_generated_after_owned_target_initialization(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            initializer = root / "scripts/ci/cargo_target_init.py"
+            initializer.parent.mkdir(parents=True)
+            shutil.copyfile(INITIALIZER, initializer)
+            shutil.copyfile(INITIALIZER.with_name("cargo_target_lease.py"),
+                            initializer.with_name("cargo_target_lease.py"))
+            generator = ROOT / "scripts/screenshot/generate_external_hyperlink_pptx.py"
+            source = ROOT / "scripts/screenshot/fixtures/v0-22-38-multi-format/representative.pptx"
+            target = root / "target"
+            fixture = target / "screenshot-fixtures/linked.pptx"
+            result = subprocess.run(
+                [sys.executable, str(initializer), str(target), "--run", sys.executable,
+                 str(generator), "--source", str(source), "--output", str(fixture)],
+                cwd=root, capture_output=True, text=True, timeout=60)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            self.assertTrue((target / "CACHEDIR.TAG").read_bytes().startswith(SIGNATURE))
+            with zipfile.ZipFile(fixture) as archive:
+                relationships = archive.read("ppt/slides/_rels/slide1.xml.rels")
+            self.assertIn(b"rIdKatanaExternalHyperlink", relationships)
+
     @unittest.skipUnless(os.name == "nt", "Windows CreateProcess executable search regression")
     def test_windows_producer_uses_environment_path_before_system32(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -62,6 +187,52 @@ class CargoTargetInitTest(unittest.TestCase):
 
     def test_producer_runs_under_existing_shared_parent_lease(self):
         self.assert_producer_lifetime(shared_parent=True)
+
+    def test_nested_screenshot_targets_block_both_cleans_until_real_process_exits(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            initializer = root / "scripts/ci/cargo_target_init.py"
+            initializer.parent.mkdir(parents=True)
+            shutil.copyfile(INITIALIZER, initializer)
+            shutil.copyfile(INITIALIZER.with_name("cargo_target_lease.py"),
+                            initializer.with_name("cargo_target_lease.py"))
+            manifest = root / "Cargo.toml"
+            manifest.write_text('[package]\nname="nested-lease"\nversion="0.0.0"\nedition="2024"\n')
+            (root / "src").mkdir()
+            (root / "src/lib.rs").write_text("pub fn probe() {}\n")
+            (root / "Cargo.lock").write_text('version = 3\n\n[[package]]\nname = "nested-lease"\nversion = "0.0.0"\n')
+            parent = root / "target"
+            child = parent / "screenshot-harness"
+            driver = root / "producer.py"
+            source = ('use std::io; fn main() { println!("running"); '
+                      'let mut line = String::new(); io::stdin().read_line(&mut line).unwrap(); }')
+            driver.write_text(
+                "import subprocess,sys\nfrom pathlib import Path\n"
+                f"binary=Path({str(child / 'probe.exe')!r})\n"
+                f"source={source!r}\n"
+                "subprocess.run(['rustc','--edition','2024','-','-o',str(binary)],"
+                "input=source,text=True,check=True)\n"
+                "raise SystemExit(subprocess.run([str(binary)]).returncode)\n")
+            command = [sys.executable, str(initializer), str(parent), "--run",
+                       sys.executable, str(initializer), str(child), "--run", sys.executable, str(driver)]
+            process = subprocess.Popen(command, cwd=root, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                       stderr=subprocess.STDOUT, text=True)
+            try:
+                self.assertEqual("running", self.read_stage(process))
+                for target in (parent, child):
+                    environment = os.environ.copy() | {"CARGO_TARGET_DIR": str(target)}
+                    environment.pop("CARGO_BUILD_TARGET_DIR", None)
+                    cleaned = run_clean_guard(manifest, environment)
+                    self.assertEqual(75, cleaned.returncode, cleaned.stdout + cleaned.stderr)
+                    self.assertTrue((target / "CACHEDIR.TAG").is_file())
+                process.stdin.write("continue\n")
+                process.stdin.flush()
+                output, _ = process.communicate(timeout=60)
+                self.assertEqual(0, process.returncode, output)
+            finally:
+                if process.poll() is None:
+                    process.terminate()
+                    process.communicate(timeout=15)
 
     def assert_producer_lifetime(self, shared_parent):
         with tempfile.TemporaryDirectory() as directory:
@@ -179,8 +350,10 @@ class CargoTargetInitTest(unittest.TestCase):
                                         capture_output=True, text=True, timeout=60)
                 self.assertEqual(0, result.returncode, result.stdout + result.stderr)
                 target = root / "target"
-                tag = target / "CACHEDIR.TAG"
-                self.assertTrue(tag.is_file(), "contract producer must tag its new target before Cargo runs")
+                contract_target = root / "tmp/contract-test-cache"
+                tag = contract_target / "CACHEDIR.TAG"
+                self.assertFalse(target.exists(), "standalone rustc must not create the Cargo target")
+                self.assertTrue(tag.is_file(), "contract producer must tag its own cache")
                 self.assertTrue(tag.read_bytes().startswith(SIGNATURE))
                 environment["CARGO_TARGET_DIR"] = str(target)
                 built = subprocess.run(["cargo", "build", "--offline", "--manifest-path", str(manifest)],
@@ -192,6 +365,7 @@ class CargoTargetInitTest(unittest.TestCase):
                                      cleaned.returncode, cleaned.stdout + cleaned.stderr)
                 if os.name == "posix":
                     self.assertFalse(target.exists())
+                self.assertTrue(tag.is_file(), "Cargo cleanup must not consume the standalone cache")
 
     def test_initializer_preserves_unowned_invalid_and_linked_paths(self):
         with tempfile.TemporaryDirectory() as directory:

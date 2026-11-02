@@ -482,6 +482,7 @@
     "unpin": "取消釘選",
     "restore_closed": "還原關閉的標籤",
     "group_name_placeholder": "組名",
+    "group_identity_duplicate": "已存在名稱和顏色相同的群組。",
     "create_group_button": "建立",
     "close_group": "關閉群組",
     "ungroup": "解散群組",

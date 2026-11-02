@@ -37,6 +37,10 @@ bash scripts/release/check-git-capability.sh
 # 1. Release flow ownership contract
 info "1/14 Verifying release flow ownership contract..."
 python3 scripts/release/test-release-flow-contract.py
+python3 -B scripts/release/test_ci_run_receipt.py
+python3 -B scripts/release/test_cleanup_opt_in.py
+python3 -B scripts/release/test_check_openspec_phase_47.py
+python3 -B scripts/release/test_publication_records_47.py
 python3 -B scripts/release/test-postpublication-source-binding.py
 python3 -B scripts/release/test-postpublication-run-admission.py
 python3 scripts/release/test-windows-registry-cache-contract.py
@@ -138,18 +142,25 @@ scripts/release/check-linuxbrew-formula-contract.sh
 info "14/14 Validating OpenSpec task completion..."
 # WHY（日本語）: v0.22.42のdocument-fidelityはpost-変更名のため、版番号globだけでは公開前必須受入を見落とす。
 EVIDENCE_PYTHON_ENV="tmp/release-evidence-python"
-if [[ ! -x "$EVIDENCE_PYTHON_ENV/bin/python" ]]; then
-    python3 -m venv "$EVIDENCE_PYTHON_ENV"
-fi
-"$EVIDENCE_PYTHON_ENV/bin/python" -m pip install --disable-pip-version-check --only-binary=:all: -r scripts/release/evidence-requirements.txt
+bash scripts/release/prepare-evidence-python.sh
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-release-gate.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-divergence.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-fidelity-acceptance-evidence.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-acceptance.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-provenance-publication.py
+"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-v47.py
+"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-observation.py
+"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-document-host-version.py
+"$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-v047-canonical-reference.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/test-published-artifact-identity.py
 "$EVIDENCE_PYTHON_ENV/bin/python" scripts/release/check-document-fidelity-release-gate.py "$VERSION" "$TASK_GATE_MODE"
 VERSION_DASHED=$(echo "$VERSION" | tr '.' '-')
+if [[ "$VERSION" == "0.22.47" ]]; then
+    if ! python3 -B scripts/release/check-v047-task-location.py "$TASK_GATE_MODE"; then
+        error "v0.22.47 canonical task location is invalid for $TASK_GATE_MODE."
+        exit 1
+    fi
+fi
 for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
     if [[ -d "$CHANGE_DIR" ]]; then
         CHANGE_NAME=$(basename "$CHANGE_DIR")
@@ -192,6 +203,15 @@ for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
                     "$TASK_GATE_MODE" == "post-release-evidence" ]]; then
                 # v0.22.41 has no deferred task: all release modes enforce strict completion.
                 TASK_GATE_ARGS=()
+            elif [[ "$VERSION" == "0.22.47" && \
+                "$CHANGE_NAME" == "v0-22-47-katana-contained-fixes" ]]; then
+                if ! python3 scripts/release/check-openspec-task-phase.py \
+                    "$VERSION" "$CHANGE_NAME" "$TASK_GATE_MODE" "$CHANGE_DIR/tasks.md"; then
+                    error "OpenSpec change '$CHANGE_NAME' failed its exact $TASK_GATE_MODE phase gate."
+                    exit 1
+                fi
+                success "OpenSpec change '$CHANGE_NAME' satisfies the $TASK_GATE_MODE phase gate."
+                continue
             elif [[ "$VERSION" == "0.22.46" && \
                 "$CHANGE_NAME" == "v0-22-46-startup-png-regex" ]]; then
                 if ! python3 scripts/release/check-openspec-task-phase.py \

@@ -8,6 +8,7 @@ from pathlib import Path
 
 from document_host_io import decode, digest, fields, legacy, read, reference, require, sha
 from document_host_transcript import verify as verify_transcript
+from v047_evidence_paths import HOST_ACCEPTANCE, HOST_BUNDLE, HOST_RUNS
 
 VERSION = "v0.22.42"
 SCOPE = "katana-host"
@@ -17,6 +18,7 @@ EVIDENCE_RELATIVE = ("openspec/changes/post-v0-22-41-document-fidelity-regressio
                      "document-host-acceptance-v0.22.42.json")
 PUBLISHED_EVIDENCE_RELATIVE = ("openspec/changes/post-v0-22-41-document-fidelity-regressions/evidence/"
                                "document-host-published-acceptance-v0.22.42.json")
+PUBLISHED_V47_EVIDENCE_RELATIVE = HOST_ACCEPTANCE
 APPROVAL = ("openspec/changes/post-v0-22-41-document-fidelity-regressions/evidence/"
             "release-goal-2026-10-24.ja.md")
 MANIFEST = {"schema", "version", "scope", "policy", "approval_sha256", "phase", "claim",
@@ -67,6 +69,11 @@ def same_source_content(left: dict, right: dict) -> bool:
     return all(left.get(key) == right.get(key) for key in PROVENANCE - {"source_commit"})
 
 
+def verify_v47_timing(run: dict) -> None:
+    require(all(case["format"] != "pptx" or case["ready_ms"] <= 15000 for case in run["cases"]),
+            "v47 PPTX first frame exceeds 15000ms")
+
+
 def assessments(root: Path, value: object) -> None:
     records = fields(value, set(ISSUES), "upstream assessments")
     for kind, (owner, issue) in ISSUES.items():
@@ -96,14 +103,29 @@ def assessments(root: Path, value: object) -> None:
                 require(number(record["score"], "upstream score") < 95, "independent 95 claim needs strict evidence")
 
 
-def verify(root: Path, evidence_path: Path | None = None, *, phase: str = "prepublish") -> dict:
+def verify(root: Path, evidence_path: Path | None = None, *, phase: str = "prepublish",
+           publication_version: str = "v0.22.42") -> dict:
+    from document_host_publication import allowed_publication_version
+    allowed_publication_version(publication_version)
+    require(publication_version == "v0.22.42" or phase == "postpublication", "v47 requires published evidence")
     require(phase in {"prepublish", "postpublication"}, "unknown host acceptance phase")
-    expected_path = root / (EVIDENCE_RELATIVE if phase == "prepublish" else PUBLISHED_EVIDENCE_RELATIVE)
+    expected_path = root / (EVIDENCE_RELATIVE if phase == "prepublish" else
+                            PUBLISHED_V47_EVIDENCE_RELATIVE if publication_version == "v0.22.47" else PUBLISHED_EVIDENCE_RELATIVE)
     path = evidence_path or expected_path
     require(path.resolve() == expected_path.resolve() and not path.is_symlink(), "host schema has its own canonical path")
     evidence = fields(decode(read(path)), MANIFEST, "host admission")
-    require(evidence["schema"] == "katana-host-acceptance-v1" and evidence["version"] == VERSION
-            and evidence["scope"] == SCOPE and evidence["policy"] == POLICY, "host approval is fixed to v0.22.42 katana-host")
+    return verify_payload(root, evidence, phase=phase, publication_version=publication_version)
+
+
+def verify_payload(root: Path, evidence: dict, *, phase: str, publication_version: str) -> dict:
+    from document_host_publication import allowed_publication_version
+    allowed_publication_version(publication_version)
+    require(phase in {"prepublish", "postpublication"}, "unknown host acceptance phase")
+    require(publication_version == "v0.22.42" or phase == "postpublication", "v47 requires published evidence")
+    evidence = fields(evidence, MANIFEST, "host admission")
+    expected_version = publication_version if phase == "postpublication" else VERSION
+    require(evidence["schema"] == "katana-host-acceptance-v1" and evidence["version"] == expected_version
+            and evidence["scope"] == SCOPE and evidence["policy"] == POLICY, "host version or approval scope differs")
     require(evidence["approval_sha256"] == APPROVAL_SHA256 == digest(read(root / APPROVAL)), "host approval text changed")
     require(evidence["phase"] == phase, "candidate QA cannot satisfy post-publication acceptance")
     expected_claim = "candidate_host_accepted_postpublication_pending" if phase == "prepublish" else "published_macos_host_accepted"
@@ -113,7 +135,8 @@ def verify(root: Path, evidence_path: Path | None = None, *, phase: str = "prepu
     bundle = fields(evidence["candidate"], {"target", "bundle_manifest", "main_sha256", "sidecar_sha256", "archive_sha256"}, "host bundle")
     require(bundle["target"] in {"macos-arm64", "macos-x86_64"}, "host evidence must name its real Mac target")
     main_sha, worker_sha = sha(bundle["main_sha256"], "main"), sha(bundle["sidecar_sha256"], "worker")
-    _, bundle_manifest = reference(root, bundle["bundle_manifest"], "host actual bundle manifest")
+    allowed_bundle = frozenset({HOST_BUNDLE}) if publication_version == "v0.22.47" else None
+    _, bundle_manifest = reference(root, bundle["bundle_manifest"], "host actual bundle manifest", allowed_paths=allowed_bundle)
     fields(bundle_manifest, {"schema", "target", "provenance", "main_sha256", "sidecar_sha256", "archive_sha256"}, "host bundle manifest")
     require(bundle_manifest.get("schema") == "katana-host-bundle-v1"
             and bundle_manifest.get("provenance") == source and bundle_manifest.get("main_sha256") == main_sha
@@ -121,18 +144,25 @@ def verify(root: Path, evidence_path: Path | None = None, *, phase: str = "prepu
             and bundle_manifest.get("archive_sha256") == sha(bundle["archive_sha256"], "host archive"),
             "candidate bundle identity/source not bound")
     producer_sha = sha(evidence["producer_sha256"], "producer")
-    require(producer_sha == digest(read(root / "scripts/release/produce-document-host-evidence.py")), "producer hash stale")
+    producer_name = "produce-document-host-evidence-v47.py" if publication_version == "v0.22.47" else "produce-document-host-evidence.py"
+    require(producer_sha == digest(read(root / "scripts/release" / producer_name)), "producer hash stale")
     records = evidence["transcripts"]
     require(isinstance(records, list) and len(records) == len(helper.SUPPLIED_OFFICE_FIXTURES), "exactly seven Office pair transcripts required")
+    if publication_version == "v0.22.47":
+        require(all(isinstance(ref, dict) for ref in records)
+                and {ref.get("path") for ref in records} == set(HOST_RUNS), "v47 transcript paths differ")
     seen_inputs, seen_runs, seen_processes, seen_refs = set(), set(), set(), set()
     operations = []
     for ref in records:
-        raw, transcript = reference(root, ref, "host public transcript")
+        raw, transcript = reference(root, ref, "host public transcript",
+                                    allowed_paths=frozenset(HOST_RUNS) if publication_version == "v0.22.47" else None)
         require(digest(raw) not in seen_refs, "same transcript aliased across fixtures")
         seen_refs.add(digest(raw))
         run = verify_transcript(transcript, fixtures=helper.SUPPLIED_OFFICE_FIXTURES,
                                 html_sha=helper.ORIGINAL_HTML_SHA256, provenance=source,
                                 main_sha=main_sha, worker_sha=worker_sha, producer_sha=producer_sha)
+        if publication_version == "v0.22.47":
+            verify_v47_timing(run)
         require(run["target"] == bundle["target"], "Mac measurements cannot be transferred to another target")
         require(run["input_sha256"] not in seen_inputs and run["run_id"] not in seen_runs
                 and (run["pid"], run["start_identity"]) not in seen_processes, "fixture/run/process identity reused")
@@ -154,5 +184,5 @@ def verify(root: Path, evidence_path: Path | None = None, *, phase: str = "prepu
         require(evidence["publication"] == {"status": "postpublication_pending"}, "candidate does not establish final Release asset acceptance")
     else:
         from document_host_publication import verify_download_receipt
-        verify_download_receipt(root, evidence["publication"], source, bundle)
+        verify_download_receipt(root, evidence["publication"], source, bundle, publication_version)
     return evidence

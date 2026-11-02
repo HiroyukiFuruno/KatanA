@@ -13,8 +13,14 @@ if ! grep -Fq 'WAIT_SECONDS=${CI_GATE_WAIT_SECONDS:-30}' "$GATE_SCRIPT"; then
     exit 1
 fi
 
-if ! grep -Fq -- '--event push' "$GATE_SCRIPT"; then
-    printf '[ERROR] Version-bump CI gate must verify the post-merge push workflow.\n' >&2
+if ! grep -Fq -- '--workflow test-and-build.yml' "$GATE_SCRIPT" ||
+   ! grep -Fq -- 'select(.headSha == \"${COMMIT_SHA}\" and (.event == \"push\" or .event == \"workflow_dispatch\"))' "$GATE_SCRIPT"; then
+    printf '[ERROR] Version-bump CI gate must select same-source push or dispatch runs.\n' >&2
+    exit 1
+fi
+
+if ! grep -Fq -- 'python3 scripts/release/verify-ci-run.py --sha "$COMMIT_SHA" --run-id "$RUN_ID" "${EXTRA[@]}"' "$GATE_SCRIPT"; then
+    printf '[ERROR] Version-bump CI gate must verify the selected run and source.\n' >&2
     exit 1
 fi
 

@@ -120,12 +120,7 @@ impl UpdateInstallerOps {
         }
     }
 
-    #[cfg(not(test))]
-    #[cfg(not(coverage))]
     pub fn execute_relauncher(prep: UpdatePreparation) -> anyhow::Result<()> {
-        #[allow(deprecated)]
-        let _temp_path = prep.temp_dir.into_path();
-
         #[cfg(target_os = "windows")]
         {
             let parent_pid = std::process::id().to_string();
@@ -154,6 +149,8 @@ impl UpdateInstallerOps {
                 .stderr(std::process::Stdio::null())
                 .spawn()?;
         }
+        /* WHY: 起動に失敗した場合は通常のdropで一時ファイルを削除する。 */
+        let _temp_path = prep.temp_dir.keep();
         std::process::exit(0);
     }
 
