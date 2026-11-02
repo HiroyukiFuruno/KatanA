@@ -96,7 +96,7 @@ sourceと既存実行入口を照合済み。group/updaterと書込範囲を分�
 - [x] 3.10 公開後のhost13件・canonical2件の正確な記録先と実検証を、旧版の閾値・同一source条件を維持して公開前に固定する。main spec8件を同期し、tag後の記録PRの改変拒否と一度だけの公開を実Git回帰で確認する。実archive・records merge・cleanupは#415に未完追跡し、成果物準備の成功だけで完了にしない。
 - [x] 3.11 Ready後の実Windows CIで判明したworkflow読取の既定文字コード依存と、実Readiness CIで判明した色付きCargo診断へのassert不整合を修正する。同原因の品質入口・workflow検査と、その実fixture子検査も追跡し、同じlegacy locale・color条件のRED→GREEN、既存検査の意味と品質条件の維持、独立reviewを確認する。次headの通常push・Draft review・Ready後の全CIの実回収は6.3で継続する。
 - [x] 3.12 source27の実Windows CIで発見した比較workflowの実Bash回帰失敗について、子processのstdout/stderr・実行経路を取得できる診断と、比較器の意図した拒否・pipefail・出力記録を要求する回帰を用意し、対象の実Bash検査を確認する。これは診断の準備であり、未特定のWindows原因の修正完了ではない。実Windowsでの原因特定・限定修正・再検査の合格は6.3と終了台帳で未完追跡する。
-- [x] 3.13 前回の依存評価後に公開されたZIP9.2.2の互換更新候補を、対象lock・実resolver差分・対象回帰と独立reviewで評価する。新5GHSAを既存例外と区別し、実3targetのfeatureとZIP consumer/API/親子境界で公表条件を個別照合し、未知を記録する。新例外や期限延長・品質緩和・他repoの無断変更は行わず、全platformを含む正式品質の合格は6.3で確認する。
+- [x] 3.13 前回の依存評価後に公開されたZIP9.2.2の互換更新候補を、対象lock・実resolver差分・対象回帰と独立reviewで評価し、厳密な依存経路検査も実際のpatched版のidentityへ追随する。新5GHSAを既存例外と区別し、実3targetのfeatureとZIP consumer/API/親子境界で公表条件を個別照合し、未知を記録する。新例外や期限延長・品質緩和・他repoの無断変更は行わず、全platformを含む正式品質の合格は6.3で確認する。
 
 ## 4. 実行環境・依存・受入準備（#372、#354、#339、#338）
 
@@ -256,3 +256,5 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - source27の通常push正式gate成功、Draft最新review receipt6569367903は指摘なし・未解決thread0。ReadyのCI41390904903では先行UTF-8検査は成功したが、Windows比較workflowの実Bash回帰でJSON不在を検出した（job125101854696）。子のstdout/stderrを捨てていたため実原因は未確定。診断準備3.12はMac実Bash3件成功・独立High追加指摘なしであり、Windows原因特定・根本修正・実再検査は6.3と台帳で未完のまま。Readiness41390905002の成功やWindows測定のRust test成功を、この失敗の解消へ読み替えない。
 - ZIP9.2.2は前回02:15UTCの依存評価後、03:44UTCに公開。root/screenshotのCargo解決を更新し、ZIP版/checksum/libc追加に加えて既存9packageの許容範囲内の依存辺が変化したことを独立Highで確認した。ZIPだけのdiffや全platform等価とは記載しない。更新処理48件・Office font/archive20件成功（zip922-*-regressions.log）。正式な全platform品質は6.3で未完。paint-metricsにはZIPがなく更新対象外。
 - 新5GHSAは既存RustSec3件の期限付き例外と別。実3targetのresolveとZIP直接consumer/APIを照合し、legacy feature・password付きAES・旧extract・stream extractionという公表条件が対象経路で満たされない限定結果を記録した（ready27-zip-reachability.md）。他parser連携や動的実行の未知は残し、全programの安全証明や新例外承認とはしない。公開KDV等の依存制約で残る旧ZIP版は別残件として維持し、既存期限・品質gateは変更しない。
+- source861の通常pushはpreflight7/14の依存経路検査が新ZIP9.2.2のexact identityを未登録のため停止した（pr405-portability3-push.log、exit1）。更新時の追随漏れとして3.13を未完へ戻し、patched版のexact経路だけの登録と未知版・不正経路拒否を検証する。新たな脆弱性ignore・期限延長は行わない。remote27不変、gate子process不在、通常profileのSHA/mtime/bytes不変を確認した。
+- ZIP9.2.2のexact tupleだけを登録し、正例先行RED→GREENを確認。既存27件・zstd14件・更新後root/screenshot×3targetの実metadata6件の検証が成功し、別親/版・9.2.3・偽registry/path・orphanの拒否を維持した。独立High追加P0/P1/P2なし（zip922-policy-independent-review.md）。既存just supply-chain本体も3manifestすべてadvisories/bans/licenses/sources成功（zip922-full-supply-chain.log）。旧RustSec ID/親/理由/期限は変更していない。次の全ゲートと実Windows根本修正・合格は6.3で未完のまま。
