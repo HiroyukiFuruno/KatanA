@@ -150,8 +150,8 @@ class CiResourceContractTest(unittest.TestCase):
 
     def test_cache_measurement_is_opt_in_and_does_not_replace_ci(self):
         root = Path(__file__).resolve().parents[2]
-        normal = (root / ".github/workflows/test-and-build.yml").read_text()
-        workflow = (root / ".github/workflows/windows-cache-measurement.yml").read_text()
+        normal = (root / ".github/workflows/test-and-build.yml").read_text(encoding="utf-8")
+        workflow = (root / ".github/workflows/windows-cache-measurement.yml").read_text(encoding="utf-8")
         self.assertNotIn("windows-cache-cold:", normal)
         self.assertIn("workflow_dispatch:", workflow)
         self.assertIn("pull_request:", workflow)
@@ -169,7 +169,9 @@ class CiResourceContractTest(unittest.TestCase):
         self.assertIn("cargo test --workspace", current_test_job())
 
     def test_manual_master_ci_runs_all_release_checks(self):
-        workflow = (Path(__file__).resolve().parents[2] / ".github/workflows/test-and-build.yml").read_text()
+        workflow = (Path(__file__).resolve().parents[2] / ".github/workflows/test-and-build.yml").read_text(
+            encoding="utf-8"
+        )
         manual = "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'"
         for name in ("test", "lint", "supply-chain", "codeql"):
             job = re.search(rf"(?ms)^  {name}:\n(.*?)(?=^  [A-Za-z][\w-]*:\n|\Z)", workflow).group(1)

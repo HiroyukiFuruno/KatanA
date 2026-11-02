@@ -92,6 +92,7 @@ sourceと既存実行入口を照合済み。group/updaterと書込範囲を分�
 - [x] 3.8 通常pushで検出した未タグtargetの安全拒否を保持し、screenshotの生成前初期化・実行中leaseと、Cargo外の単独rustc検査の専用生成先を整える。既存18GB生成物を後付けで所有済みにせず保持し、実fixture・実rustcと拒否回帰を確認する。
 - [x] 3.9 通常quality検査のUI suite中にworkspace履歴が変化した実writerを特定し、通常設定を使わない公式検査入口・fixtureへ修正する（#414）。厳密before hash一致の保存済みデータからworkspaceを復旧し、合成2/14workspaceと実processによる回帰・入口契約・独立reviewを確認する。隔離後の全gateと通常profile保持の再確認は6.2/6.3で回収する。
 - [x] 3.10 公開後のhost13件・canonical2件の正確な記録先と実検証を、旧版の閾値・同一source条件を維持して公開前に固定する。main spec8件を同期し、tag後の記録PRの改変拒否と一度だけの公開を実Git回帰で確認する。実archive・records merge・cleanupは#415に未完追跡し、成果物準備の成功だけで完了にしない。
+- [x] 3.11 Ready後の実Windows CIで判明したworkflow読取の既定文字コード依存と、実Readiness CIで判明した色付きCargo診断へのassert不整合を修正する。同じlegacy locale・color条件のRED→GREEN、既存検査の意味と品質条件の維持、独立reviewを確認する。次headの通常push・Draft review・Ready後の全CIの実回収は6.3で継続する。
 
 ## 4. 実行環境・依存・受入準備（#372、#354、#339、#338）
 
@@ -237,3 +238,8 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - 通常push retry7は同source14fのnative UI1527passed/0failed後、Linux保存済み実行file5件のzero headerでExec format errorとなり停止。445件の実execを調査し破損実体1件をcorrupt-linux-cacheへ保持。既存volume lifecycle guardのowner/用途/全container参照とexact名再入力を通してci_katana-linux-targetのみinvalidateし、shared registry/Windows/xwin/native未tag targetを保持（linux-cache-invalidation-receipt.json）。
 - 通常push retry8はsource14f無変更でfresh Linux compile・実export/UI検査を経てexit0、remote refへの反映を独立ls-remote/APIで確認。成功時のlefthook出力はfailure-onlyのため詳細件数を創作せず、push結果・実process時系列・sourceと通常profileのSHA/mtime/bytes不変をpush-retry8-success-proof.jsonへ記録。検査後も通常設定・履歴はbefore8と完全一致。
 - 6.2完了: PR405はDraftでsource14fへ更新、@codex review（comment6567754978）を実行。bot receipt6567804488が14f5684282の指摘なし完了、summary6567758142のcurrent commit14f/status completed/has_any_findings=false/has_unresolved_findings=falseを回収。formal self-review PRR_kwDORm09y88AAAABVaDZewと統合Highも追加P0/P1/P2なし、最新review threads0（pr405-review14f-completed.json）。完了記録だけの次headもReady前に確認する。Draft全CIのskipは合格と数えず、6.3以降は未完のまま継続。
+
+- Ready source506のCI41382462089/attempt1ではWindows125076021434のVerify CI resource contractが、default cp1252で日本語workflowを読むUnicodeDecodeError2件で失敗。後続の未生成artifact uploadはその結果であり、error設定を緩めない。plugin job logsの実エラーをpr405-windows-failed-job125076021434-plugin.logへ保存。Mac強制US-ASCIIでもREDを再現し、同じlocale/通常locale両方で12件GREEN（ci-resource-locale-{red,green}.log、ci-resource-default-green.log）。
+- Readiness41382462028/attempt1は798件中、test_bump_version_hooks.test_failed_cargo_resolution_stops_before_commitのerror:生文字列assertだけがANSI色付けで失敗。親もCARGO_TERM_COLOR=alwaysでREDを実再現（ci-color-hooks-red.log）。失敗の本来の原因failed to parse manifest/no targetsを具体検証し、fixture/実子processのUTF-8を明示。color通常localeとcolor強制US-ASCIIで各5件GREEN（ci-color-hooks-green.log、ci-locale-color-hooks-green.log）。
+- 先行6.2はsource506のDraft review完了を示す。今回CI修正の次headは別途Draftへ戻してreviewを取得し、指摘ゼロと全CIを確認するまで6.3/公開を進めない。6.3のinventory同等性表現とcollect-only実装の差は人間へ確認中。全既存test/coverage/受入条件を維持する。
+- 3.11の対象修正と実legacy locale/color回帰（12件×2環境、5件×2環境）は成功し、独立High追加P0/P1/P2なし（ci-portability-independent-review.md）。これは対象契約の事前検証完了であり、次sourceのDraft review/通常push/全OS CIの完了ではない。6.3は未完のまま継続する。
