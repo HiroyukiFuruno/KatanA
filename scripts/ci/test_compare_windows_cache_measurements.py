@@ -62,6 +62,9 @@ class MeasurementTests(unittest.TestCase):
         self.assertIn("        shell: bash\n", block)
         shell = "\n".join(line[10:] for line in block.split("        run: |\n", 1)[1].splitlines())
         self.assertIn("set -o pipefail", shell)
+        bash = shutil.which("bash")
+        self.assertIsNotNone(bash, "bash is required to run the actual workflow shell")
+        bash = str(Path(bash).resolve())
         with tempfile.TemporaryDirectory() as directory:
             fixture = Path(directory)
             (fixture / "scripts").mkdir()
@@ -71,10 +74,10 @@ class MeasurementTests(unittest.TestCase):
             for name in ("cold/cold.json", "cold/cold-before.json", "cold/cold-after.json",
                          "warm/warm.json", "warm/warm-before.json", "warm/warm-after.json"):
                 (fixture / name).write_text("{}")
-            result = subprocess.run(["bash", "--noprofile", "--norc", "-e", "-o", "pipefail", "-c", shell],
+            result = subprocess.run([bash, "--noprofile", "--norc", "-e", "-o", "pipefail", "-c", shell],
                                     cwd=fixture, env=os.environ | {"RUNNER_TEMP": directory},
                                     capture_output=True, text=True)
-            detail = (f"bash={shutil.which('bash')!r} RUNNER_TEMP={directory!r} "
+            detail = (f"bash={bash!r} RUNNER_TEMP={directory!r} "
                       f"status={result.returncode} stdout={result.stdout!r} stderr={result.stderr!r}")
             self.assertNotEqual(result.returncode, 0, detail)
             self.assertTrue((fixture / "windows-cache-comparison.json").exists(), detail)
