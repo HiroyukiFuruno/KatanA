@@ -96,10 +96,12 @@ sourceと既存実行入口を照合済み。group/updaterと書込範囲を分�
 - [x] 3.10 公開後のhost13件・canonical2件の正確な記録先と実検証を、旧版の閾値・同一source条件を維持して公開前に固定する。main spec8件を同期し、tag後の記録PRの改変拒否と一度だけの公開を実Git回帰で確認する。実archive・records merge・cleanupは#415に未完追跡し、成果物準備の成功だけで完了にしない。
 - [x] 3.11 Ready後の実Windows CIで判明したworkflow読取の既定文字コード依存と、実Readiness CIで判明した色付きCargo診断へのassert不整合を修正する。同原因の品質入口・workflow検査と、その実fixture子検査も追跡し、同じlegacy locale・color条件のRED→GREEN、既存検査の意味と品質条件の維持、独立reviewを確認する。次headの通常push・Draft review・Ready後の全CIの実回収は6.3で継続する。
 - [x] 3.12 source27の実Windows CIで発見した比較workflowの実Bash回帰失敗について、子processのstdout/stderr・実行経路を取得できる診断と、比較器の意図した拒否・pipefail・出力記録を要求する回帰を用意し、対象の実Bash検査を確認する。これは診断の準備であり、未特定のWindows原因の修正完了ではない。実Windowsでの原因特定・限定修正・再検査の合格は6.3と終了台帳で未完追跡する。
-- [x] 3.13 前回の依存評価後に公開されたZIP9.2.2の互換更新候補を、対象lock・実resolver差分・対象回帰と独立reviewで評価し、厳密な依存経路検査も実際のpatched版のidentityへ追随する。新5GHSAを既存例外と区別し、実3targetのfeatureとZIP consumer/API/親子境界で公表条件を個別照合し、未知を記録する。新例外や期限延長・品質緩和・他repoの無断変更は行わず、全platformを含む正式品質の合格は6.3で確認する。
+- [x] 3.13 前回の依存評価後に公開されたZIP9.2.2の互換更新候補を、対象lock・実resolver差分・対象回帰と独立reviewで評価し、厳密な依存経路検査も実際のpatched版のidentityへ追随する。新5GHSAを既存例外と区別し、実3targetのfeatureとZIP consumer/API/親子境界で公表条件を個別照合し、未知を記録する。この時点では新例外や期限延長・品質緩和・他repoの無断変更を行わず評価を完了した。後からRustSecへ登録された0429の限定追随は3.16で別に扱い、全platformを含む正式品質の合格は6.3で確認する。
 - [x] 3.14 source593の実Windowsログから、裸のbash起動がGit Bashの探索結果と異なるWSLを起動したことを確認し、探索した実行fileを絶対pathでargv0へ固定する。未検出はskipせずfailとし、実比較器の拒否・pipefail・JSON出力を維持する。通常/強制ASCIIの対象実Bash各3件、CIの実Python contract block全64件、独立reviewで修正候補を確認する。実WindowsでのGREENと全正式品質は6.3で未完のまま回収する。
 
 - [x] 3.15 sourcec924の実Windows headless起動で判明した `/dev/stdin` 依存を、実Bashの標準入力入口へ限定修正する。親→子target lease、argv・stdin・pipefail・失敗伝播を維持し、実processのRED→GREENと既存runnerで確認する。実Windowsのheadless合格を含む全正式品質は6.3で回収する。
+
+- [x] 3.16 新検出RUSTSEC-2026-0429を、過去の期限付きZIP判断と同じ固定registry依存経路・期限（2026-11-07 00:00 UTC）に限って評価・管理する。新IDの根拠と有限到達評価・未証明部分を別記し、旧3IDの理由・経路・期限を変更せず、未知ID/依存変更/期限切れの拒否を維持する。対象回帰・全3manifest供給網・独立reviewを通し、正式push/CI/公開は6.2〜6.7で回収する。
 
 ## 4. 実行環境・依存・受入準備（#372、#354、#339、#338）
 
@@ -264,3 +266,7 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 - source593の正式通常pushは成功し、Draft最新review receipt6570222993は指摘なし・未解決thread0。次のWindowsCI41397186301/job125120940553の追加診断で、PATH探索はGit Bashを示す一方、裸bash起動のstdoutがUTF-16LEのWSL未導入メッセージとなる実REDを取得した（pr405-windows-failed-job125120940553-plugin.log）。WSL起動は実観測だが、旧実行fileの絶対path自体を直接計測したとは扱わない。検出済みGit Bashの絶対pathを明示する限定修正を実施、通常/ASCII各3件・実CI contract block10 suites/64件成功、独立High追加P0/P1/P2なし（windows-shell-gitbash-*.log、windows-contract-block-ascii.json、windows-shell-rootfix-independent-review.md）。既存workerの二段目bashはcargo_target_leaseでWindowsの絶対path化を既に行うことを実装で確認し、同類未対策という先の疑いは撤回した。修正後の実Windows再検査は未完のため6.3を進めない。
 
 - Windows stdin portability: 実c924のheadless起動失敗を -s＋固定marker/shiftへ修正。実parent→child Bashのargv/stdin/pipefailとPOSIX lease・Windows既存clean拒否の契約を維持。独立reviewのstdin CRLF/拒否理由P1も修正し、最終target14件中13成功・Windows専用1skip、screenshot契約13件・shellcheck成功。親actual multi-format runner14.667秒exit0、通常profile不変。実Windowsの再合格を含む正式品質は6.3で未完。既存initializerは単独 `--` を拒否し、この未使用境界は今回変更していない（windows-stdin-old-literal-dash.log）。
+
+- 0429継続方針: 3.13時点の「新例外なし」は当時の評価境界。本人から過去のZIP判断との一貫性を指摘され、同じ期限・固定経路で続行する方針を明示して3.16へ移した。新規全般の免除、期限延長、全program安全の承認とはしない。
+
+- 0429限定追随: 先行RED→GREEN、ZIP28件・TLS4件・zstd14件と実3manifest供給網の全項目が成功。既存全validator/期限/旧理由/固定parentはAST比較で不変、独立High追加P0/P1/P2なし。根拠をarchive後も残るdocs/security/zip-0429-risk-assessment-2026-11-03.ja.mdへ記録。通常push・最新headのDraft review・全CI・公開/受入は未完として6.xを継続する。

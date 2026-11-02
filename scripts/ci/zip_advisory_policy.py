@@ -6,7 +6,8 @@ import tomllib
 from pathlib import Path
 
 EXPIRES_ON = dt.date(2026, 11, 7)
-ADVISORIES = ("RUSTSEC-2026-0367", "RUSTSEC-2026-0368", "RUSTSEC-2026-0369")
+ALLOCATION_ADVISORY = "RUSTSEC-2026-0429"
+ADVISORIES = ("RUSTSEC-2026-0367", "RUSTSEC-2026-0368", "RUSTSEC-2026-0369", ALLOCATION_ADVISORY)
 OLD_ZIP_PARENTS = {
     ("0.6.6", "ironcalc", "0.8.3"), ("0.6.6", "office2pdf", "0.8.1"),
     ("2.6.1", "umya-spreadsheet", "2.3.3"), ("8.6.0", "docx-rs", "0.4.22"),
@@ -30,6 +31,17 @@ SAFE_ZIP_MANIFEST = (
     Path(__file__).resolve().parents[2] / "crates" / "katana-core" / "Cargo.toml"
 ).resolve()
 REASON = ("KatanA issue https://github.com/HiroyukiFuruno/KatanA/issues/354 source audit found only in-memory XML/asset reads and no vulnerable ZipArchive::extract or ZipStreamReader::extract use in the checked KDV/parent crates; not proof of whole-program safety; openspec/changes/post-v0-22-41-document-fidelity-regressions/evidence/zip-risk-acceptance-2026-10-24.ja.md; expires 2026-11-07 UTC")
+ALLOCATION_REASON = (
+    "KatanA issue https://github.com/HiroyukiFuruno/KatanA/issues/354; "
+    "registry KDV 0.5.12 and five exact legacy ZIP parents only; "
+    "four targets / three manifests and 2037 consumer-source files audited; "
+    "no legacy ZIP extraction API caller found, not proof of whole-program safety; "
+    "0.6.6 RustSec/GHSA range discrepancy; 2.6.1 / 8.6.0 remain; "
+    "upstream https://github.com/HiroyukiFuruno/katana-document-viewer/issues/69; "
+    "docs/security/"
+    "zip-0429-risk-assessment-2026-11-03.ja.md; "
+    "expires 2026-11-07 UTC, same existing operational deadline"
+)
 
 
 def policy_expired(today: dt.date) -> bool:
@@ -157,6 +169,9 @@ def overlay_config(source: str) -> str:
     match = re.search(r"(?ms)^ignore\s*=\s*\[.*?^\]", section.group(1))
     if not match:
         raise ValueError("deny.toml advisories.ignore list is missing")
-    entries = "\n".join(f'  {{ id = "{advisory}", reason = "{REASON}" }},' for advisory in ADVISORIES)
+    entries = "\n".join(
+        f'  {{ id = "{advisory}", reason = "{ALLOCATION_REASON if advisory == ALLOCATION_ADVISORY else REASON}" }},'
+        for advisory in ADVISORIES
+    )
     end = section.start(1) + match.end()
     return source[: end - 1] + "\n" + entries + "\n" + source[end - 1 :]

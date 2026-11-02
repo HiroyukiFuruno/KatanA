@@ -60,18 +60,49 @@ class ZipOverlayTests(unittest.TestCase):
         self.assertFalse(MODULE.policy_expired(dt.date(2026, 11, 6)))
         self.assertTrue(MODULE.policy_expired(dt.date(2026, 11, 7)))
 
-    def test_overlay_contains_exact_three_ids(self):
+    def test_overlay_contains_exact_four_ids(self):
         result = MODULE.overlay_config("[advisories]\nignore = [\n]\n")
-        self.assertEqual(result.count("RUSTSEC-"), 3)
+        entries = tomllib.loads(result)["advisories"]["ignore"]
+        self.assertEqual([entry["id"] for entry in entries], [
+            "RUSTSEC-2026-0367", "RUSTSEC-2026-0368", "RUSTSEC-2026-0369",
+            "RUSTSEC-2026-0429",
+        ])
         self.assertNotIn("allow =", result)
 
+    def test_0429_has_its_own_evidence_and_preserves_legacy_reasons(self):
+        result = MODULE.overlay_config("[advisories]\nignore = [\n]\n")
+        reasons = {entry["id"]: entry["reason"]
+                   for entry in tomllib.loads(result)["advisories"]["ignore"]}
+        for advisory in ("RUSTSEC-2026-0367", "RUSTSEC-2026-0368", "RUSTSEC-2026-0369"):
+            self.assertEqual(reasons[advisory], zip_policy.REASON)
+        reason = reasons["RUSTSEC-2026-0429"]
+        self.assertNotEqual(reason, zip_policy.REASON)
+        self.assertIn("zip-0429-risk-assessment-2026-11-03.ja.md", reason)
+        self.assertIn("not proof of whole-program safety", reason)
+        self.assertIn("0.6.6 RustSec/GHSA range discrepancy", reason)
+        self.assertIn("2.6.1 / 8.6.0 remain", reason)
+        self.assertIn("expires 2026-11-07 UTC", reason)
+        self.assertEqual(zip_policy.EXPIRES_ON, dt.date(2026, 11, 7))
+
     def test_wrong_advisory_id_is_rejected(self):
-        with self.assertRaises(ValueError):
-            MODULE.validate_policy_ids(("RUSTSEC-2026-0001",))
+        approved = ("RUSTSEC-2026-0367", "RUSTSEC-2026-0368", "RUSTSEC-2026-0369",
+                    "RUSTSEC-2026-0429")
+        MODULE.validate_policy_ids(approved)
+        for ids in (("RUSTSEC-2026-0001",), approved + ("RUSTSEC-2026-0430",),
+                    approved[:-1], approved[:-1] + ("RUSTSEC-2026-0430",)):
+            with self.subTest(ids=ids):
+                with self.assertRaises(ValueError):
+                    MODULE.validate_policy_ids(ids)
 
     def test_new_zip_version_is_rejected(self):
-        with self.assertRaises(ValueError):
-            MODULE.validate_metadata(metadata("0.6.7"))
+        for version, parent, parent_version in (
+            ("0.6.7", "ironcalc", "0.8.3"),
+            ("2.6.2", "umya-spreadsheet", "2.3.3"),
+            ("8.6.1", "docx-rs", "0.4.22"),
+        ):
+            with self.subTest(version=version):
+                with self.assertRaises(ValueError):
+                    MODULE.validate_metadata(metadata(version, parent, parent_version))
 
     def test_exact_current_direct_zip_edge_is_accepted(self):
         for fixture in (
@@ -144,8 +175,10 @@ class ZipOverlayTests(unittest.TestCase):
                             MODULE.validate_metadata(fixture)
 
     def test_new_direct_parent_is_rejected(self):
-        with self.assertRaises(ValueError):
-            MODULE.validate_metadata(metadata(parent="new-parent"))
+        for fixture in (metadata(parent="new-parent"), metadata(parent_version="0.8.4")):
+            with self.subTest(packages=fixture["packages"]):
+                with self.assertRaises(ValueError):
+                    MODULE.validate_metadata(fixture)
 
     def test_missing_metadata_is_rejected(self):
         with self.assertRaises(ValueError):
