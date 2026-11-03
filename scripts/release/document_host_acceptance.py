@@ -72,6 +72,15 @@ def same_source_content(left: dict, right: dict) -> bool:
     return all(left.get(key) == right.get(key) for key in PROVENANCE - {"source_commit"})
 
 
+def published_approval_sha256(root: Path) -> str:
+    from document_host_controller import PUBLISHED_SOURCE
+    # WHY: 公開Pに既に含まれる承認全文へ束縛し、作業treeの変更を新たな承認にしない。
+    blob = subprocess.run(["git", "--no-replace-objects", "-C", str(root), "show", PUBLISHED_SOURCE+":"+APPROVAL],
+                          check=False, capture_output=True, env=legacy().git_environment())
+    require(blob.returncode == 0, "published host approval blob unavailable")
+    return digest(blob.stdout)
+
+
 def verify_v47_timing(run: dict) -> None:
     require(all(case["format"] != "pptx" or case["ready_ms"] <= 15000 for case in run["cases"]),
             "v47 PPTX first frame exceeds 15000ms")
@@ -131,13 +140,17 @@ def verify_payload(root: Path, evidence: dict, *, phase: str, publication_versio
     expected_version = publication_version if phase == "postpublication" else VERSION
     require(evidence["schema"] == "katana-host-acceptance-v1" and evidence["version"] == expected_version
             and evidence["scope"] == SCOPE and evidence["policy"] == POLICY, "host version or approval scope differs")
-    require(evidence["approval_sha256"] == APPROVAL_SHA256 == digest(read(root / APPROVAL)), "host approval text changed")
+    if publication_version == "v0.22.42":
+        require(evidence["approval_sha256"] == APPROVAL_SHA256 == digest(read(root / APPROVAL)), "host approval text changed")
     require(evidence["phase"] == phase, "candidate QA cannot satisfy post-publication acceptance")
     expected_claim = "candidate_host_accepted_postpublication_pending" if phase == "prepublish" else "published_macos_host_accepted"
     require(evidence["claim"] == expected_claim, "host evidence cannot claim full fidelity/goal completion")
     controller = evidence.get("controller") if publication_version == "v0.22.47" else None
     require(publication_version != "v0.22.47" or isinstance(controller, dict), "v47 controller binding required")
     source = provenance(root, evidence["provenance"], controller=controller)
+    if publication_version == "v0.22.47":
+        require(evidence["approval_sha256"] == published_approval_sha256(root) == digest(read(root / APPROVAL)),
+                "host approval text changed")
     helper = legacy()
     bundle = fields(evidence["candidate"], {"target", "bundle_manifest", "main_sha256", "sidecar_sha256", "archive_sha256"}, "host bundle")
     require(bundle["target"] in {"macos-arm64", "macos-x86_64"}, "host evidence must name its real Mac target")
