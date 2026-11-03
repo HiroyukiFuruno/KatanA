@@ -4,8 +4,9 @@
 
 [v0.22.47](https://github.com/HiroyukiFuruno/KatanA/releases/tag/v0.22.47) は2026-11-02 22:52:20 UTCに一度だけ公開した。
 公開製品のcommit Pは `6dabe8531e2b340630887967b63206b59ebc6de3`。
-公開後の検証ツールC10は `3cab1fa28b78dad089365b2961fd6fc794fc1bb4`。
-検証ツールの変更は[PR #416](https://github.com/HiroyukiFuruno/KatanA/pull/416)で通常マージした（`5ee12224d9aaa9c4d0c3152bd1a1b8eed0411da3`）。
+公開後の文書受入に用いた検証ツールC11は `c569d8c9b671bf59882f27fb6103d707a4203573`。
+先行するC10の検査訂正は[PR #416](https://github.com/HiroyukiFuruno/KatanA/pull/416)で通常マージした（`5ee12224d9aaa9c4d0c3152bd1a1b8eed0411da3`）。
+C11では配布物5件とchecksums.txtを含む公開identity6件をそれぞれ厳密に照合する。全descriptor・実API・3manifestの照合を保持し、この訂正と新規受入記録を本記録PRで検証する。
 公開tag・アプリ・5配布payloadは変更していない。
 
 [公開workflow 41531951434](https://github.com/HiroyukiFuruno/KatanA/actions/runs/41531951434/attempts/1)は対象8ジョブ成功、任意のWindows Server 2022比較1ジョブはskip。
@@ -29,6 +30,7 @@ rootのpublication identityと3manifestのcontroller identityはPのまま保持
 公開Mac ZIPのarm64実行で、原本7種類それぞれHTMLとの10 mixed cycles、合計140ケースを新規に実行した。
 形式別の操作、HTML scroll/reload、実worker、最終idle、main/workerの同一性、正常終了、終了後OS上の不在を検証した。
 失敗した過去の試行は不採用として保存し、別controllerへの付け替えや後付け救済はしていない。
+C11の原本06初回はOSのメモリ値を正の値として取得できず拒否した。不明値はnullのまま保存し、同一C11・同一閾値で新規に全20ケースを取り直した正式合格runを採用した。
 
 時間・メモリ・応答の閾値は変更していない。
 HTML ready 60秒、Office ready 15秒、close/Quit各5秒、case内heartbeat 200msを維持。
@@ -36,18 +38,18 @@ RSSとphysical footprintはcold→warm各196608 KiB、warm→final各65536 KiB�
 
 | 7原本の実測最大値 | 結果 | 上限 |
 | --- | ---: | ---: |
-| HTML ready | 6627.756 ms | 60000 ms |
-| Office ready | 5735.511 ms | 15000 ms |
-| close | 950.192 ms | 5000 ms |
-| Quit | 226.507 ms | 5000 ms |
-| case内heartbeat gap（丸め上げ） | 172.383 ms | 200 ms |
-| RSS cold→warm増加 | 173696 KiB | 196608 KiB |
-| RSS warm→final増加 | 52464 KiB | 65536 KiB |
-| physical cold→warm増加 | 128160.727 KiB | 196608 KiB |
-| physical warm→final増加 | 52147.328 KiB | 65536 KiB |
+| HTML ready | 2276.947 ms | 60000 ms |
+| Office ready | 5599.900 ms | 15000 ms |
+| close | 923.527 ms | 5000 ms |
+| Quit | 233.809 ms | 5000 ms |
+| case内heartbeat gap（丸め上げ） | 172.304 ms | 200 ms |
+| RSS cold→warm増加 | 171472 KiB | 196608 KiB |
+| RSS warm→final増加 | 39888 KiB | 65536 KiB |
+| physical cold→warm増加 | 152144.727 KiB | 196608 KiB |
+| physical warm→final増加 | 33763.023 KiB | 65536 KiB |
 
 [host acceptance](document-host/acceptance.json)、[bundle](document-host/observations/bundle.json)、7runとdownload receiptは正規producerで検証した。
-各runのcontrollerはC10、実アプリのprovenanceはPであり、別々に照合している。
+各runのcontrollerはC11、実アプリのprovenanceはPであり、別々に照合している。
 Windows/Linuxのpackaged起動成功は文書操作受入の代用にしない。他targetの文書QAは未実施。
 Chrome HTML比較とOffice独立95点の評価は `not_evaluated`、score/measurementはnullのまま保持した。
 
@@ -73,12 +75,30 @@ Chrome HTML比較とOffice独立95点の評価は `not_evaluated`、score/measur
 補足の全repo Markdown検査は当時の未変更197ファイルに858診断で失敗した。
 重複0は歴史的なWindows stdin修正5ファイルとの比較だけであり、PR #405全体や現在の全体lint成功の主張ではない。変更Markdown3ファイルのscoped検査は成功した。
 
+### 計測artifactへの固定参照
+
+PR計測2runはattempt 1、API headは `2fe7c41d2e11626a7f7bb7e73eee33cc49ce2309`、測定JSONに記録された実際のPR merge checkoutは `16a63caa9261dbfd38fd77b4907b4855fe1c57f7`。
+master計測はattempt 1、API headと実checkoutともP。次の実ZIPのAPIサイズ・SHA256と内部測定JSONを照合した。
+
+| run / artifact | bytes | ZIP SHA256 |
+| --- | ---: | --- |
+| [41501863247 / windows-cache-cold / 13171515517](https://github.com/HiroyukiFuruno/KatanA/actions/runs/41501863247/artifacts/13171515517) | 3730 | `646b299936ee4b12fd379f0229d673cd7130b01fd06ec7186dfcaa34966d9b10` |
+| [41501863247 / windows-cache-warm / 13171463773](https://github.com/HiroyukiFuruno/KatanA/actions/runs/41501863247/artifacts/13171463773) | 3731 | `8718ce53a1fdb20d0948db8e037728abe73b2b85b5a70ce0db0bfad55c6435f7` |
+| [41501863247 / windows-cache-comparison / 13171388639](https://github.com/HiroyukiFuruno/KatanA/actions/runs/41501863247/artifacts/13171388639) | 1804 | `ea8c00c3056f46768826a0c09fe8f8413aa2454e4d0f4c641705ea6316af3a1f` |
+| [41501863454 / test-inventory-macOS / 13172670417](https://github.com/HiroyukiFuruno/KatanA/actions/runs/41501863454/artifacts/13172670417) | 249380 | `a78623e7c68c1faac41a7df95225f4862b25bc5e73a274355e0b1760b5fb7540` |
+| [41515109936 / test-inventory-macOS / 13180994258](https://github.com/HiroyukiFuruno/KatanA/actions/runs/41515109936/artifacts/13180994258) | 249209 | `30d4728f34912b86697f4a3ee03ca7353efe4304ee5456bbbfe5d9eb89b85d12` |
+
+Windowsのmember SHA256はcold.json=`fb85c7d448a9f7d7c7e6f5e8357ceaa8e35b545a71850dca77daacbdb8bca9f5`、warm.json=`f9a9b183634f6f2ec21745da0316652e44877c1c616117610fbc6b082777696c`、比較JSON=`da0307751c2a222e62b33d9af36c5f2843fae6f21a7a362edc7c906bd00f64c1`。
+macOS各ZIPにはnormal.json・coverage4phaseの各JSON・comparison.jsonを含む。comparison.jsonのSHA256はPR=`56a0f167055e88cdad858f409b5db8b6d97555e4e1dffec624e3fdc2f9b87427`、master=`0cb058e2bfe8afa631aee0c0d1fa51393b19ee389728f210785afa9f25c90371`。
+公開アプリ5payloadのdigestと、これらCI計測artifactのdigestは別物として保持する。
+
 C10は13 suite/249 tests/skip0と通常pushを通過した。
+C11も対象13 suite/249 tests/skip0、独立Highレビュー、実際の公開記録を用いた旧RED→新GREENを通過した。C11の正常push・本記録PRのreview/CI/merge実績は#415で追跡する。
 [Ready CI 41687972078 attempt2](https://github.com/HiroyukiFuruno/KatanA/actions/runs/41687972078/attempts/2)は8ジョブ成功、保護対象7チェックも成功。
 attempt1は7成功・Mac Lintのみrunner割当て前キャンセルで、原因は未確定。正常な選択rerunでMac Lintを実行し成功した。
 [Readiness 41687972102](https://github.com/HiroyukiFuruno/KatanA/actions/runs/41687972102)とexact C10向けCodeQLも成功した。
 Windows CIがMac用Python/ShareDelete fixtureまで実行したとは扱わない。
-最新レビューはP0/P1ゼロ、2threadは返信・resolve済み。
+C10の最新レビューはP0/P1ゼロ、2threadは返信・resolve済み。
 正常なworker履歴を失い誤拒否するP2は[独立Issue #417](https://github.com/HiroyukiFuruno/KatanA/issues/417)へ分離した。修正済みとは扱わず、合格rawは同じ必須ガードを通過したことを確認した。
 
 ## 正規画像と残る境界

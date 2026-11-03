@@ -28,8 +28,8 @@
   "controller": {
     "schema": "katana-v47-host-controller-v1",
     "published_source": "6dabe8531e2b340630887967b63206b59ebc6de3",
-    "controller_commit": "3cab1fa28b78dad089365b2961fd6fc794fc1bb4",
-    "controller_source_tree_sha256": "9acdfbb8711467eaf63e435205ef580cb472359f1e585a3ec1aea352984aa432"
+    "controller_commit": "c569d8c9b671bf59882f27fb6103d707a4203573",
+    "controller_source_tree_sha256": "a3b873c2d3d1dffec4887ef8897c5ab62c884436485532ccef8af7fc8f57a692"
   },
   "schema": "katana-host-bundle-v1"
 }

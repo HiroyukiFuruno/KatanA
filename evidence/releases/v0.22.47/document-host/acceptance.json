@@ -35,37 +35,37 @@
     "archive_sha256": "d8ed3e022b4705cd3f32c3768d4189709a699d55672e5927f9ae5a307e4fee83",
     "bundle_manifest": {
       "path": "evidence/releases/v0.22.47/document-host/observations/bundle.json",
-      "sha256": "e797860afc544e8cc6b806c7d167c5419cae90bc4691602abe1566cc24973684"
+      "sha256": "959c25b13a923dacb2f4e2107eae9557475ad720f0895821096c46411ee9bc9f"
     }
   },
   "transcripts": [
     {
       "path": "evidence/releases/v0.22.47/document-host/observations/run-01.json",
-      "sha256": "d49f788fee8a9dc373474a0f42d2c0a4f2e5b50f61177ad70ada639fc2bee37e"
+      "sha256": "be427fc9fddb54f1ad9b24b79982bf368469d9add470cc58eb2362345500f890"
     },
     {
       "path": "evidence/releases/v0.22.47/document-host/observations/run-02.json",
-      "sha256": "5470bcce1fe210d654853ab6a28d6f8176fb241d6067b89649d1585e0a842b54"
+      "sha256": "fcbee0f985f1081b4d9eb935e2c927a707a1a70a1f57fff319d4ba17a36e41bf"
     },
     {
       "path": "evidence/releases/v0.22.47/document-host/observations/run-03.json",
-      "sha256": "634565a7ed2e9987ce7beef87ca33fdc7c251c80c1834ae892d3651c40292f31"
+      "sha256": "86383c690571d4a305032475b77d8e1166d568c8ff9fd86f5407d09905702c18"
     },
     {
       "path": "evidence/releases/v0.22.47/document-host/observations/run-04.json",
-      "sha256": "8716b7938f6a6913f4b544f8ee048e71ea44f696fa6043e4fc5c89748a2f404d"
+      "sha256": "1baae1c6b458f23c37442cc88c3cf564889ce51b2cb0cc3f982b16c18d63df38"
     },
     {
       "path": "evidence/releases/v0.22.47/document-host/observations/run-05.json",
-      "sha256": "61ac300de60f7a8fd78e083a1e5155d0ca1cecb8ed45e4a7a84482c7a38eccc9"
+      "sha256": "2fe860f7cd18311629c524972abe7c203597ba3c031ec258c157a3dc28913ed0"
     },
     {
       "path": "evidence/releases/v0.22.47/document-host/observations/run-06.json",
-      "sha256": "fc983f66cd1974c45328f7f7ab6bb372c6e5127495606f7a6a6abfc92b90f3c7"
+      "sha256": "edc1c51cc4e31859ff1544d068f665f433432c22569cad78c6b35b6f933b400f"
     },
     {
       "path": "evidence/releases/v0.22.47/document-host/observations/run-07.json",
-      "sha256": "51091d402044bcf2b3096411dfb8feb202d691fc285ada8ee2e62b122089c854"
+      "sha256": "dd3311ab389dce8d96b72fd612d3d074ed03170627f54f2054a35852cbe79b3b"
     }
   ],
   "upstream_assessments": {
@@ -87,16 +87,16 @@
     }
   },
   "other_targets": {
+    "windows-x86_64": "document_qa_not_run",
     "macos-x86_64": "document_qa_not_run",
-    "linux-x86_64": "document_qa_not_run",
-    "windows-x86_64": "document_qa_not_run"
+    "linux-x86_64": "document_qa_not_run"
   },
   "producer_sha256": "e0c3a613464ae65b6f5cdf648090ff28a9c4b6b5c6b31458a4ed9412e41262a1",
   "controller": {
     "schema": "katana-v47-host-controller-v1",
     "published_source": "6dabe8531e2b340630887967b63206b59ebc6de3",
-    "controller_commit": "3cab1fa28b78dad089365b2961fd6fc794fc1bb4",
-    "controller_source_tree_sha256": "9acdfbb8711467eaf63e435205ef580cb472359f1e585a3ec1aea352984aa432"
+    "controller_commit": "c569d8c9b671bf59882f27fb6103d707a4203573",
+    "controller_source_tree_sha256": "a3b873c2d3d1dffec4887ef8897c5ab62c884436485532ccef8af7fc8f57a692"
   },
   "publication": {
     "status": "published_macos_host_accepted",
