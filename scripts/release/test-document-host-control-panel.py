@@ -12,7 +12,7 @@ import sys
 import tempfile
 import threading
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import document_host_control_panel as panel_module
 
@@ -120,6 +120,144 @@ class ControlPanelHttpTests(unittest.TestCase):
         status, _, _ = self.request("POST", "/action?path=/tmp", body='{"action":"cold"}',
                                     headers=self.post_headers())
         self.assertEqual(status, 404)
+
+
+class ReadyRaceUnitStatus:
+    def __init__(self, path, _log, stage, _run, label):
+        self.path = path
+        self.row = {"watch_id": "unit-ready-race", "stage": stage, "label": label}
+        self.write("preparing", False)
+
+    def write(self, state, ready, **details):
+        self.row.update(state=state, watcher_ready=ready, **details)
+        self.path.write_text(json.dumps(self.row), encoding="utf-8")
+
+    def close(self):
+        return
+
+
+class WatcherReadyRaceTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix="panel-ready-race-unit-")
+        self.panel = panel_module.DocumentHostPanel.__new__(panel_module.DocumentHostPanel)
+        panel = self.panel
+        panel.condition, panel.action_lock = threading.Condition(), threading.Lock()
+        panel.failed, panel.failure_code, panel.phase = False, "", "open"
+        panel.worker, panel.worker_stage, panel.worker_done = None, None, True
+        panel.watcher_row, panel.watcher_ready, panel.watcher_id = None, False, None
+        panel.current_label, panel.current_cycle, panel.current_kind = "unit-cycle03-html", 3, "html"
+        panel.current_operation, panel.panel_id, panel.position = None, "unit-ready-panel", 0
+        panel.sequence, panel.run, panel.recorder = [(3, "html"), (3, "office")], Path("/unit-only"), object()
+        panel.output = Path(self.temp.name)
+        panel._verify_invariants = lambda: None
+        panel._stage_args = lambda stage: type("Args", (), {
+            "status_file": panel.output/(stage+".json"), "log_file": panel.output/(stage+".log")})()
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def finish_ready(self, _args, _recorder, status, _label):
+        with self.panel.condition:
+            status.write("watching_open" if status.row["stage"] == "open" else "watching_closed", True)
+            status.write("ready_observed" if status.row["stage"] == "open" else "finished", False)
+
+    def complete_before_waiter(self, stage_function, stage="open"):
+        panel = self.panel
+        panel.phase = stage
+        panel.watcher = type("UnitWatcher", (), {"Status": ReadyRaceUnitStatus,
+                             "open_stage": stage_function, "close_stage": stage_function})
+        result, finished = {}, threading.Event()
+        original_start = threading.Thread.start
+        def start_after_worker_completed(thread):
+            is_worker = thread._target == panel._worker_status
+            original_start(thread)
+            if is_worker:
+                thread.join(timeout=2)
+                self.assertFalse(thread.is_alive(), "unit watcher did not finish before waiter")
+        caller = threading.Thread(target=self.run_action, args=(stage, result, finished), daemon=True)
+        with patch.object(threading.Thread, "start", start_after_worker_completed):
+            caller.start()
+            returned = finished.wait(2)
+        if not returned:
+            with panel.condition:
+                panel._fail_locked()
+        caller.join(timeout=2)
+        self.assertFalse(caller.is_alive(), "unit action did not stop after cleanup")
+        self.assertTrue(returned, "completed watcher stranded the action waiter")
+        return result
+
+    def run_action(self, stage, result, finished):
+        try:
+            result["view"] = self.panel.action(stage)
+        except BaseException as error:
+            result["error"] = error
+        finally:
+            finished.set()
+
+    def assert_failed_and_unlocked(self, result):
+        self.assertIsInstance(result.get("error"), panel_module.PanelError)
+        self.assertEqual(str(result["error"]), "case_failed")
+        self.assertTrue(self.panel.failed)
+        self.assertFalse(self.panel.view()["actual_watcher_ready"])
+        self.assertTrue(self.panel.action_lock.acquire(blocking=False))
+        self.panel.action_lock.release()
+        with self.assertRaisesRegex(panel_module.PanelError, "case_failed"):
+            self.panel.action("status")
+
+    def test_ready_then_open_completion_before_waiter_returns_current_completed_state(self):
+        result = self.complete_before_waiter(self.finish_ready)
+        self.assertNotIn("error", result)
+        self.assertEqual(result["view"]["state"], "close/ready_observed")
+        self.assertFalse(result["view"]["actual_watcher_ready"])
+        self.assertEqual(self.panel.action("status")["state"], "close/ready_observed")
+
+    def test_ready_then_close_completion_before_waiter_returns_finished_state(self):
+        result = self.complete_before_waiter(self.finish_ready, "close")
+        self.assertNotIn("error", result)
+        self.assertEqual(result["view"]["state"], "finished/finished")
+        self.assertFalse(result["view"]["actual_watcher_ready"])
+        self.assertEqual(self.panel.action("status")["state"], "finished/finished")
+
+    def test_completed_open_preserves_required_operation_phase(self):
+        self.panel.current_cycle = 1
+        self.panel._choose_operation = lambda: "scroll"
+        result = self.complete_before_waiter(self.finish_ready)
+        self.assertNotIn("error", result)
+        self.assertEqual(result["view"]["state"], "operation_before/ready_observed")
+        self.assertEqual(result["view"]["operation"], "scroll")
+
+    def test_completion_without_real_ready_notification_is_finite_failure(self):
+        def no_ready(_args, _recorder, status, _label):
+            status.write("ready_observed", False)
+        self.assert_failed_and_unlocked(self.complete_before_waiter(no_ready))
+
+    def test_failed_status_after_ready_cannot_be_successful_completion(self):
+        def fail_after_ready(_args, _recorder, status, _label):
+            with self.panel.condition:
+                status.write("watching_open", True)
+                status.write("failed", False)
+        self.assert_failed_and_unlocked(self.complete_before_waiter(fail_after_ready))
+
+    def test_ready_notification_from_prior_stage_is_finite_failure(self):
+        def stale_stage(_args, _recorder, status, label):
+            self.panel.notify_status({"stage": "close", "label": label, "watch_id": "prior-stage",
+                                      "state": "watching_closed", "watcher_ready": True})
+            status.write("ready_observed", False)
+        self.assert_failed_and_unlocked(self.complete_before_waiter(stale_stage))
+
+    def test_ready_notification_from_prior_case_is_finite_failure(self):
+        def stale_label(_args, _recorder, status, _label):
+            self.panel.notify_status({"stage": "open", "label": "prior-case", "watch_id": "prior-case",
+                                      "state": "watching_open", "watcher_ready": True})
+            status.write("ready_observed", False)
+        self.assert_failed_and_unlocked(self.complete_before_waiter(stale_label))
+
+    def test_prior_ready_latch_cannot_replace_current_stage_notification(self):
+        self.panel.watcher_ready_seen = True
+        self.panel.watcher_ready = True
+        def no_ready(_args, _recorder, status, _label):
+            status.write("ready_observed", False)
+        self.assert_failed_and_unlocked(self.complete_before_waiter(no_ready))
 
 
 class FixedInputAndFailureTests(unittest.TestCase):

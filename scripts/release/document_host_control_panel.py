@@ -133,6 +133,7 @@ class DocumentHostPanel:
         self.worker_done = True
         self.watcher_row = None
         self.watcher_ready = False
+        self.watcher_ready_seen = False
         self.watcher_id = None
         self.sequence = [(cycle, kind) for cycle in range(1, 11) for kind in ("html", "office")]
         self.position = -1
@@ -221,8 +222,13 @@ class DocumentHostPanel:
 
     def notify_status(self, row):
         with self.condition:
+            if (row.get("stage"), row.get("label")) != (self.worker_stage, self.current_label):
+                self._fail_locked()
+                return
             self.watcher_row = row
             self.watcher_ready = bool(row.get("watcher_ready"))
+            if self.watcher_ready:
+                self.watcher_ready_seen = True
             self.watcher_id = row.get("watch_id")
             if row.get("state") == "failed":
                 self._fail_locked()
@@ -298,17 +304,21 @@ class DocumentHostPanel:
 
     def _start_watch(self, stage):
         label = self.current_label
+        self.worker_stage = stage
         self.worker_done = False
         self.watcher_ready = False
+        self.watcher_ready_seen = False
         self.watcher_id = None
         self.watcher_row = None
         self.worker = threading.Thread(target=self._worker_status, args=(stage, label), daemon=True)
         self.worker.start()
         with self.condition:
-            while not self.watcher_ready and not self.failed:
+            while not self.watcher_ready_seen and not self.failed and not self.worker_done:
                 self.condition.wait()
-            if self.failed:
+            if self.failed or not self.watcher_ready_seen:
+                self._fail_locked()
                 raise PanelError("case_failed")
+            return self.worker_done
 
     def _wait_worker(self):
         with self.condition:
@@ -399,8 +409,10 @@ class DocumentHostPanel:
                     raise PanelError("action_not_available")
             self._ensure_phase("open")
             self.worker_stage = "open"
-            self._start_watch("open")
             self.phase = "native_open"
+            completed = self._start_watch("open")
+            if completed:
+                self._wait_worker()
         elif name == "operation-before":
             if self.phase == "native_open":
                 self._wait_worker()
@@ -430,8 +442,10 @@ class DocumentHostPanel:
                 raise PanelError("action_not_available")
             self._ensure_phase("close")
             self.worker_stage = "close"
-            self._start_watch("close")
             self.phase = "native_close"
+            completed = self._start_watch("close")
+            if completed:
+                self._wait_worker()
         elif name == "quit-start":
             if self.phase == "finished" and self.position == len(self.sequence) - 1:
                 self.phase = "quit_start"
