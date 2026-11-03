@@ -119,6 +119,12 @@ def verify_committed_scope(root: Path, published: str, controller: str) -> list[
 
 def verify_controller_scope(root: Path, published: str) -> dict:
     controller = git(root, "rev-parse", "HEAD").decode().strip()
+    from document_host_controller import PUBLISHED_SOURCE
+    if published == PUBLISHED_SOURCE:
+        verify_host_controller(root, published, controller)
+        changed = git(root, "diff", "--name-only", "--no-renames", "-z", published, controller)
+        return {"published_source": published, "controller_commit": controller,
+                "controller_only_changes": [path.decode("utf-8") for path in changed.split(b"\0") if path]}
     paths = verify_committed_scope(root, published, controller)
     dirty = git(root, "diff", "--name-only", "-z", "HEAD", "--", *legacy().SOURCE_ROOTS)
     untracked = git(root, "ls-files", "--others", "--exclude-standard", "-z", "--", *legacy().SOURCE_ROOTS)
@@ -129,3 +135,8 @@ def verify_controller_scope(root: Path, published: str) -> dict:
 
 def validate_worktree_clean(dirty: bytes, untracked: bytes) -> None:
     require(not dirty and not untracked, "post-publication controller source must be committed")
+
+
+def verify_host_controller(root: Path, published: str, controller: str | None = None) -> dict:
+    from document_host_controller import verify_controller
+    return verify_controller(root, published, controller)

@@ -174,8 +174,10 @@ def operation(value: object, transcript: dict, used: set[tuple[str, int | None, 
 
 
 def verify(value: object, *, fixtures: dict[str, str], html_sha: str, provenance: dict,
-           main_sha: str, worker_sha: str, producer_sha: str) -> dict:
-    record = fields(value, TRANSCRIPT, "host transcript")
+           main_sha: str, worker_sha: str, producer_sha: str, controller: dict | None = None) -> dict:
+    record = fields(value, TRANSCRIPT | ({"controller"} if controller is not None else set()), "host transcript")
+    if controller is not None:
+        require(record["controller"] == controller, "run controller differs from admission")
     require(record["schema"] == "katana-host-transcript-v1", "wrong transcript schema")
     require(record["provenance"] == provenance, "run source/registry differs from admission")
     require(record["target"] in {"macos-arm64", "macos-x86_64"}, "host run cannot claim other OS")

@@ -5,8 +5,18 @@ branch=${1-}
 target_version=${2-}
 requested_mode=${3-}
 
+# WHY: v0.22.47のcontroller修復だけは公開元と検証条件をgate本体で確認する。
+if [[ "$requested_mode" == "postpublication-controller-repair" ]]; then
+    printf '%s\n' 'controller repair mode cannot be requested directly' >&2
+    exit 2
+fi
+
+if [[ "$branch" == "release/v0.22.47-postpublication-controller" &&
+      "$target_version" == "0.22.47" &&
+      ( -z "$requested_mode" || "$requested_mode" == "pr-bootstrap" ) ]]; then
+    printf '%s\n' 'postpublication-controller-repair'
 # WHY: 公開後の自動検証へ切り替える対象を完全一致に限定し、他経路のstrict条件を保持する。
-if [[ "$branch" == "release/v0.22.42-public-release-evidence" &&
+elif [[ "$branch" == "release/v0.22.42-public-release-evidence" &&
       "$target_version" == "0.22.42" &&
       ( -z "$requested_mode" || "$requested_mode" == "pr-bootstrap" ) ]]; then
     printf '%s\n' 'post-release-automated'

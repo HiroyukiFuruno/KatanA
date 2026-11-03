@@ -43,9 +43,15 @@ def release_bundle(root: Path, receipt_path: Path, archive: Path, main: Path, wo
     raw = read(receipt_path)
     receipt = decode(raw)
     require(isinstance(receipt, dict) and target in {"macos-arm64", "macos-x86_64"}, "actual Release target required")
-    source_record = provenance(root, receipt["provenance"])
+    controller = None
+    if publication_version == "v0.22.47":
+        from postpublication_controller_scope import verify_host_controller
+        controller = verify_host_controller(root, receipt["provenance"]["source_commit"])
+    source_record = provenance(root, receipt["provenance"], controller=controller)
     bundle = {"target": target, "main_path": str(main), "worker_path": str(worker), "main_sha256": file_digest(main),
               "sidecar_sha256": file_digest(worker), "archive_sha256": file_digest(archive), "provenance": source_record}
+    if controller is not None:
+        bundle["controller"] = controller
     verify_download_receipt(root, {"status": "published_macos_host_accepted",
                                   "receipt": {"path": receipt_path.relative_to(root).as_posix(), "sha256": digest(raw)}}, source_record, bundle, publication_version)
     identity = module("_actual_published_mac_archive", "check-published-artifact-identity.py")
@@ -62,8 +68,15 @@ def run_snapshot(root: Path, directory: Path, bundle_path: Path, archive: Path, 
     require(profile.is_absolute() and profile.is_dir() and not profile.is_symlink()
             and profile.resolve().is_relative_to((root / "tmp").resolve()), "existing isolated QA profile only; personal profile forbidden")
     bundle = decode(read(bundle_path))
-    require(isinstance(bundle, dict) and bundle.get("provenance") == source(root), "run source differs from actual package source")
-    provenance(root, bundle["provenance"])
+    require(isinstance(bundle, dict), "actual run bundle required")
+    controller = bundle.get("controller")
+    if controller is None:
+        require(bundle.get("provenance") == source(root), "run source differs from actual package source")
+    else:
+        from postpublication_controller_scope import git
+        require(git(root, "rev-parse", "HEAD").decode().strip() == controller["controller_commit"],
+                "actual native run HEAD differs from selected controller")
+    provenance(root, bundle["provenance"], controller=controller)
     require(file_digest(Path(bundle["main_path"])) == bundle["main_sha256"]
             and file_digest(Path(bundle["worker_path"])) == bundle["sidecar_sha256"]
             and file_digest(archive) == bundle["archive_sha256"], "actual bundle/archive changed")
@@ -103,9 +116,12 @@ def run_snapshot(root: Path, directory: Path, bundle_path: Path, archive: Path, 
     else:
         require(False, "unknown run snapshot moment")
     write_new(directory / f"source-identity.{when}.json", bundle["provenance"])
+    if controller is not None:
+        write_new(directory / f"controller-identity.{when}.json", controller)
     write_new(directory / f"bundle-identity.{when}.json", bundle)
     with (directory / f"head.{when}").open("x") as handle:
-        handle.write(bundle["provenance"]["source_commit"]+"\n")
+        handle.write((controller["controller_commit"] if controller is not None
+                      else bundle["provenance"]["source_commit"])+"\n")
 
 
 def main() -> int:

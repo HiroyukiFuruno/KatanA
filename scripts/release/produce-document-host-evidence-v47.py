@@ -17,8 +17,8 @@ def produce(root: Path, run_map: Path, output: Path, receipt: Path) -> None:
     helper = module("_host_v47_pair_producer", "produce-document-host-evidence.py")
     mapping = fields(decode(read(run_map)), {"schema", "provenance", "bundle", "runs", "upstream_assessments"}, "private run map")
     require(mapping["schema"] == "katana-host-private-run-map-v1", "wrong private run-map schema")
-    source = provenance(root, mapping["provenance"])
-    bundle = fields(mapping["bundle"], {"target", "main_path", "worker_path", "main_sha256", "sidecar_sha256", "archive_sha256", "provenance"}, "actual bundle")
+    bundle = fields(mapping["bundle"], {"target", "main_path", "worker_path", "main_sha256", "sidecar_sha256", "archive_sha256", "provenance", "controller"}, "actual bundle")
+    source = provenance(root, mapping["provenance"], controller=bundle["controller"])
     require(bundle["provenance"] == source, "actual bundle source differs")
     require(helper.input_digest(Path(bundle["main_path"])) == bundle["main_sha256"]
             and helper.input_digest(Path(bundle["worker_path"])) == bundle["sidecar_sha256"], "actual executable bytes changed")
@@ -32,7 +32,8 @@ def produce(root: Path, run_map: Path, output: Path, receipt: Path) -> None:
     assessments(root, mapping["upstream_assessments"])
     require(isinstance(mapping["runs"], list) and len(mapping["runs"]) == 7, "seven actual pair runs required")
     producer_sha = digest(read(Path(__file__)))
-    transcripts = [helper.pair(root, item, source, bundle, producer_sha) for item in mapping["runs"]]
+    transcripts = [helper.pair(root, item, source, bundle, producer_sha, controller=bundle["controller"])
+                   for item in mapping["runs"]]
     for entry, transcript in zip(mapping["runs"], transcripts, strict=True):
         validate_boundaries(helper, entry, transcript)
     validate_batch(transcripts, helper.legacy().SUPPLIED_OFFICE_FIXTURES)
@@ -60,8 +61,8 @@ def validate_batch(transcripts: list[dict], fixtures: dict) -> None:
         require(any(op["kind"] == "office" and op["name"] in {name, "single_item"} for op in ops),
                 "Office navigation operation missing")
         operations.extend(ops)
-    require({"scroll", "reload", "dirty_source"}.issubset({op["name"] for op in operations if op["kind"] == "html"}),
-            "HTML operations missing")
+    from document_host_html_policy import validate_html_operations
+    validate_html_operations(operations, publication_version="v0.22.47", phase="postpublication")
 
 
 def write_evidence(root: Path, output: Path, receipt_ref: dict, mapping: dict, bundle: dict,
@@ -74,6 +75,7 @@ def write_evidence(root: Path, output: Path, receipt_ref: dict, mapping: dict, b
         ref["path"] = path.relative_to(root).as_posix()
         refs.append(ref)
     bundle_public = {key: bundle[key] for key in ("target", "main_sha256", "sidecar_sha256", "archive_sha256", "provenance")}
+    bundle_public["controller"] = bundle["controller"]
     bundle_public["schema"] = "katana-host-bundle-v1"
     bundle_ref = write_new(output / "bundle.json", bundle_public)
     bundle_ref["path"] = (output / "bundle.json").relative_to(root).as_posix()
@@ -83,8 +85,9 @@ def write_evidence(root: Path, output: Path, receipt_ref: dict, mapping: dict, b
                 "sidecar_sha256": bundle["sidecar_sha256"], "archive_sha256": bundle["archive_sha256"], "bundle_manifest": bundle_ref},
                 "transcripts": refs, "upstream_assessments": mapping["upstream_assessments"],
                 "other_targets": {target: "document_qa_not_run" for target in helper.legacy().SUPPORTED_TARGETS - {bundle["target"]}},
-                "producer_sha256": producer_sha, "publication": {"status": "published_macos_host_accepted", "receipt": receipt_ref}}
-    provenance(root, source)
+                "producer_sha256": producer_sha, "controller": bundle["controller"],
+                "publication": {"status": "published_macos_host_accepted", "receipt": receipt_ref}}
+    provenance(root, source, controller=bundle["controller"])
     require(helper.input_digest(Path(bundle["main_path"])) == bundle["main_sha256"]
             and helper.input_digest(Path(bundle["worker_path"])) == bundle["sidecar_sha256"], "actual executable bytes changed")
     canonical = root / PUBLISHED_V47_EVIDENCE_RELATIVE

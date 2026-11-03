@@ -85,15 +85,25 @@ def verify_scope(root, source, version=VERSION):
     require(COMMIT_PATTERN.fullmatch(source) is not None, "actual published source required")
     require(git_workspace_version(root, source) == "v" + version, "published source version differs")
     git(root, "merge-base", "--is-ancestor", source, "HEAD")
-    require(not git(root, "diff", "--name-only", "-z", source, "HEAD", "--", *SOURCE_ROOTS),
-            "published production tree must remain unchanged")
+    controller = None
+    source_changes = paths(git(root, "diff", "--name-only", "-z", source, "HEAD", "--", *SOURCE_ROOTS))
+    if source_changes:
+        from document_host_controller import HOST_CONTROLLER_PATHS, verify_binding
+        require(version == "0.22.47" and set(source_changes) <= HOST_CONTROLLER_PATHS,
+                "published production tree must remain unchanged")
+        from v047_evidence_paths import HOST_ACCEPTANCE
+        acceptance = decode(read(root / HOST_ACCEPTANCE))
+        controller = verify_binding(root, git_source_identity(root, source), acceptance.get("controller"))
     validate_worktree_clean(git(root, "diff", "--name-only", "-z")
                             + git(root, "diff", "--cached", "--name-only", "-z", "HEAD"),
                             git(root, "ls-files", "--others", "--exclude-standard", "-z"))
     inventory = set(paths(git(root, "ls-tree", "-r", "--name-only", "-z", source, "--",
                               *(f"openspec/changes/{change}" for change in changes))))
     changed = paths(git(root, "diff", "--name-only", "--no-renames", "-z", source, "HEAD"))
-    require(all(allowed_path(path, inventory, version) for path in changed), f"outside exact v{version[-2:]} records scope")
+    from document_host_controller import HOST_CONTROLLER_PATHS
+    require(all(allowed_path(path, inventory, version)
+                or (controller is not None and path in HOST_CONTROLLER_PATHS) for path in changed),
+            f"outside exact v{version[-2:]} records scope")
     tree = git(root, "ls-tree", "-r", "-z", "HEAD", "--", *changed) if changed else b""
     require(all(record.startswith((b"100644 blob ", b"100755 blob "))
                 for record in tree.split(b"\0") if record), "nonregular records tree entry")

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import errno
 import hashlib
 from pathlib import Path
 import subprocess
@@ -62,7 +63,12 @@ class ProcessObserver:
         output = subprocess.run(["ps", "-axo", "pid=,ppid=,%cpu="], check=True,
                                 capture_output=True, text=True, timeout=10).stdout
         table = process_table(output)
-        actual_main_alive = self.main_pid in table and process_identity(self.main_pid) == self.main_identity
+        if self.main_pid not in table and main_alive:
+            raise ProcessLookupError(errno.ESRCH, "actual main process is absent from the OS table")
+        actual_main_alive = False
+        if self.main_pid in table:
+            require(process_identity(self.main_pid) == self.main_identity, "actual main PID/start/path changed")
+            actual_main_alive = True
         if main_alive:
             require(actual_main_alive,
                     "actual main PID/start/path changed")

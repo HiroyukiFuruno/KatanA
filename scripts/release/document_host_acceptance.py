@@ -33,8 +33,11 @@ ISSUES = {
 }
 
 
-def provenance(root: Path, value: object) -> dict:
+def provenance(root: Path, value: object, *, controller: object = None) -> dict:
     record = fields(value, PROVENANCE, "provenance")
+    if controller is not None:
+        from document_host_controller import published_provenance
+        return published_provenance(root, record, controller)
     helper = legacy()
     require(isinstance(record["source_commit"], str) and re.fullmatch(r"[0-9a-f]{40}", record["source_commit"]) is not None,
             "host evidence actual build commit is required")
@@ -113,7 +116,8 @@ def verify(root: Path, evidence_path: Path | None = None, *, phase: str = "prepu
                             PUBLISHED_V47_EVIDENCE_RELATIVE if publication_version == "v0.22.47" else PUBLISHED_EVIDENCE_RELATIVE)
     path = evidence_path or expected_path
     require(path.resolve() == expected_path.resolve() and not path.is_symlink(), "host schema has its own canonical path")
-    evidence = fields(decode(read(path)), MANIFEST, "host admission")
+    expected = MANIFEST | ({"controller"} if publication_version == "v0.22.47" else set())
+    evidence = fields(decode(read(path)), expected, "host admission")
     return verify_payload(root, evidence, phase=phase, publication_version=publication_version)
 
 
@@ -122,7 +126,8 @@ def verify_payload(root: Path, evidence: dict, *, phase: str, publication_versio
     allowed_publication_version(publication_version)
     require(phase in {"prepublish", "postpublication"}, "unknown host acceptance phase")
     require(publication_version == "v0.22.42" or phase == "postpublication", "v47 requires published evidence")
-    evidence = fields(evidence, MANIFEST, "host admission")
+    expected = MANIFEST | ({"controller"} if publication_version == "v0.22.47" else set())
+    evidence = fields(evidence, expected, "host admission")
     expected_version = publication_version if phase == "postpublication" else VERSION
     require(evidence["schema"] == "katana-host-acceptance-v1" and evidence["version"] == expected_version
             and evidence["scope"] == SCOPE and evidence["policy"] == POLICY, "host version or approval scope differs")
@@ -130,14 +135,18 @@ def verify_payload(root: Path, evidence: dict, *, phase: str, publication_versio
     require(evidence["phase"] == phase, "candidate QA cannot satisfy post-publication acceptance")
     expected_claim = "candidate_host_accepted_postpublication_pending" if phase == "prepublish" else "published_macos_host_accepted"
     require(evidence["claim"] == expected_claim, "host evidence cannot claim full fidelity/goal completion")
-    source = provenance(root, evidence["provenance"])
+    controller = evidence.get("controller") if publication_version == "v0.22.47" else None
+    require(publication_version != "v0.22.47" or isinstance(controller, dict), "v47 controller binding required")
+    source = provenance(root, evidence["provenance"], controller=controller)
     helper = legacy()
     bundle = fields(evidence["candidate"], {"target", "bundle_manifest", "main_sha256", "sidecar_sha256", "archive_sha256"}, "host bundle")
     require(bundle["target"] in {"macos-arm64", "macos-x86_64"}, "host evidence must name its real Mac target")
     main_sha, worker_sha = sha(bundle["main_sha256"], "main"), sha(bundle["sidecar_sha256"], "worker")
     allowed_bundle = frozenset({HOST_BUNDLE}) if publication_version == "v0.22.47" else None
     _, bundle_manifest = reference(root, bundle["bundle_manifest"], "host actual bundle manifest", allowed_paths=allowed_bundle)
-    fields(bundle_manifest, {"schema", "target", "provenance", "main_sha256", "sidecar_sha256", "archive_sha256"}, "host bundle manifest")
+    fields(bundle_manifest, {"schema", "target", "provenance", "main_sha256", "sidecar_sha256", "archive_sha256"}
+           | ({"controller"} if controller is not None else set()), "host bundle manifest")
+    require(controller is None or bundle_manifest["controller"] == controller, "bundle controller differs from admission")
     require(bundle_manifest.get("schema") == "katana-host-bundle-v1"
             and bundle_manifest.get("provenance") == source and bundle_manifest.get("main_sha256") == main_sha
             and bundle_manifest.get("sidecar_sha256") == worker_sha and bundle_manifest.get("target") == bundle["target"]
@@ -160,7 +169,7 @@ def verify_payload(root: Path, evidence: dict, *, phase: str, publication_versio
         seen_refs.add(digest(raw))
         run = verify_transcript(transcript, fixtures=helper.SUPPLIED_OFFICE_FIXTURES,
                                 html_sha=helper.ORIGINAL_HTML_SHA256, provenance=source,
-                                main_sha=main_sha, worker_sha=worker_sha, producer_sha=producer_sha)
+                                main_sha=main_sha, worker_sha=worker_sha, producer_sha=producer_sha, controller=controller)
         if publication_version == "v0.22.47":
             verify_v47_timing(run)
         require(run["target"] == bundle["target"], "Mac measurements cannot be transferred to another target")
@@ -174,8 +183,8 @@ def verify_payload(root: Path, evidence: dict, *, phase: str, publication_versio
         require(any(item["kind"] == "office" and item["name"] in {name, "single_item"} for item in run["operations"]),
                 "Office input lacks its actual navigation operation")
     require(seen_inputs == set(helper.SUPPLIED_OFFICE_FIXTURES), "missing fixed Office input")
-    require({"scroll", "reload", "dirty_source"}.issubset({item["name"] for item in operations if item["kind"] == "html"}),
-            "HTML scroll/reload/dirty source was not observed")
+    from document_host_html_policy import validate_html_operations
+    validate_html_operations(operations, publication_version=publication_version, phase=phase)
     assessments(root, evidence["upstream_assessments"])
     other = evidence["other_targets"]
     require(isinstance(other, dict) and set(other) == helper.SUPPORTED_TARGETS - {bundle["target"]}
