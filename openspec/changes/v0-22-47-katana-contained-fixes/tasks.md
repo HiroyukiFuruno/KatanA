@@ -137,8 +137,8 @@ OpenSpecは `./scripts/openspec`、UI記録は既存 `scripts/screenshot/run.sh 
 
 - [x] 6.1 self-review/独立High review、日英CHANGELOG・version/全lock同期、strict OpenSpec/KML検証。
 - [x] 6.2 通常pushを正式gateとして通し、PR405をDraftのまま最新内容へ更新してreviewを取得、指摘修正/reply/resolve、P0/P1ゼロを確認する。
-- [ ] 6.3 Ready化してCI全8job・Release Readinessと設定された追加検査を省略なく実行・回収し、全必須品質の合格を確認する。Windows実Bash検査の原因特定・限定修正と実再検査の合格も必須とし、診断追加のみでは進めない。観測対象の入力identityを一致確認した同条件でのWindows cold/warm計測、およびmacOS normal/coverage inventoryの実測・差分・完全性と未証明部分をsource/run/attempt/digestに結び付けて記録した後、通常mergeする（admin/delete-branchなし）。完全な同等性や高速化を証明済みとは扱わず、汎用test skip/reuseは認可しない。
-- [ ] 6.4 merge sourceのCI結果を回収後、v0.22.47を一度だけ明示公開する。tag・実bytes・署名来歴・identityの不一致は拒否する。
+- [x] 6.3 Ready化してCI全8job・Release Readinessと設定された追加検査を省略なく実行・回収し、全必須品質の合格を確認する。Windows実Bash検査の原因特定・限定修正と実再検査の合格も必須とし、診断追加のみでは進めない。観測対象の入力identityを一致確認した同条件でのWindows cold/warm計測、およびmacOS normal/coverage inventoryの実測・差分・完全性と未証明部分をsource/run/attempt/digestに結び付けて記録した後、通常mergeする（admin/delete-branchなし）。完全な同等性や高速化を証明済みとは扱わず、汎用test skip/reuseは認可しない。
+- [x] 6.4 merge sourceのCI結果を回収後、v0.22.47を一度だけ明示公開する。tag・実bytes・署名来歴・identityの不一致は拒否する。
 - [ ] 6.5 実公開版のgroup操作、起動・保存・再起動、packaged文書10-cycle受入、actual metadata receiptの正常/拒否検証を回収する。実経路とfixtureの主張を区別する。
 - [ ] 6.6 公開tag直後のclean exact sourceでcanonical referenceを検証・採用し、公開handoff記録と同期済み8main specの一致、archive対象の実成果物・検査結果を整える。実archive・担当Issue整理・#388同期は#415と終了台帳で未完追跡し、実施後のみ完了とする。
 - [ ] 6.7 公開後recordsの固定範囲・完全性・同一source・実公開assetとの結合検査を通し、通常Draft review/CI/mergeへ渡せる差分と証跡を整える。実records PRのreview/指摘対応/mergeと、branch-hygieneによるstash0/masterclean/0ahead0behind/既存worktree確認・不要local枝整理・remote保持は#415と終了台帳で実施結果を確認するまで未完とする。
