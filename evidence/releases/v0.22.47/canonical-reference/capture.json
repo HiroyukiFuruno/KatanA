@@ -1,0 +1,74 @@
+{
+  "schema": "katana-v47-canonical-reference-v1",
+  "version": "v0.22.47",
+  "source_commit": "6dabe8531e2b340630887967b63206b59ebc6de3",
+  "source_tree": "57c7bbcf3c881e6bf6952135b716f52b1d7dadb5",
+  "capture_started_at": "2026-11-02T22:53:11.920000+00:00",
+  "capture_finished_at": "2026-11-02T22:54:45.330925+00:00",
+  "command": "scripts/screenshot/generate-sample-diagrams-reference.sh",
+  "input_sha256": {
+    "assets/fixtures/sample_diagrams.md": "88f5cfae620fa721cd0a53765402833dc6e705dfc27c6cd1808143530e043dd3",
+    "scripts/screenshot/examples/sample-diagrams-canonical-capture.json": "d05e6851066d0d9b3789bcc2d358b3fc172eda2df6431f6f97120cdecd6fbfbb",
+    "scripts/screenshot/generate-sample-diagrams-reference.sh": "f28ca475eb691b354f19f7e7aec90adf4f7b92000dc7a8ad627c250b72d7205b",
+    "scripts/screenshot/run.sh": "99a96370b142d063928232631827de29d60f8eb022db2d2120b09c6a9f515722",
+    "scripts/screenshot/source_identity.py": "edd55b558b07eb8e3a0ff535185b8b9f915a9d2bf10127db606891d4c48c6fb1",
+    "Cargo.lock": "20064ec3617fb52673a251c6457fe2f8bb86cd55f55012ffdb9480b42c35a21a",
+    "scripts/screenshot/Cargo.lock": "768a8dcba0283c7215c9a2bb20124ae9d85bd1497fcd29c1f3dd6b756cabbd05"
+  },
+  "renderer": {
+    "version": "0.4.23",
+    "checksum": "8e5e0803f343d781dc015d1fe21b052492d67579ba303cf86203f60455852e00"
+  },
+  "source_identity": {
+    "schema_version": 1,
+    "head": "6dabe8531e2b340630887967b63206b59ebc6de3"
+  },
+  "geometry": {
+    "configured_font_size": 14.0,
+    "interaction_state": {
+      "active_editor_line": null,
+      "active_markdown_ranges": 0,
+      "code_copy_control_renders": 0,
+      "code_selection_renders": 0,
+      "completed_ui_frame_nr": 1223,
+      "diagram_control_renders": 0,
+      "hovered_markdown_spans": 0,
+      "hovered_preview_line_count": 0,
+      "image_control_renders": 0,
+      "image_hover_background_renders": 0,
+      "local_image_hover_background_renders": 0,
+      "markdown_section_renders": 17,
+      "pointer_inside_content": false,
+      "pointer_position": {
+        "x": 1.0,
+        "y": 1.0
+      }
+    },
+    "pixels_per_point": 2.0,
+    "preview_geometry": {
+      "content_top_y": 134.0,
+      "full_screenshot": {
+        "height": 4774,
+        "output_name": "sample-diagrams-full",
+        "width": 2565
+      },
+      "physical_crop": {
+        "height": 4450,
+        "width": 2374,
+        "x": 88,
+        "y": 268
+      },
+      "scroll_y": 0.0,
+      "viewport": {
+        "height": 2225.0,
+        "width": 1187.0,
+        "x": 44.0,
+        "y": 134.0
+      }
+    },
+    "require_clean_interaction_state": true,
+    "schema_version": 1,
+    "ui_pass_frame_nr": 1223
+  },
+  "png_sha256": "6b5ece9d9d3548e4f0250d9126535e10daf90768029f77e9b2ed46c8c3d26527"
+}
