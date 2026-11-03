@@ -15,6 +15,8 @@ HOST_CONTROLLER_PATHS = frozenset({
     "scripts/release/test-postpublication-controller-scope.py",
     "scripts/release/document_host_controller.py",
     "scripts/release/test-document-host-controller.py",
+    "scripts/release/document_host_heartbeat.py",
+    "scripts/release/test-document-host-acceptance.py",
     "scripts/release/check-pr-ready.sh",
     "scripts/release/select-pr-readiness-mode.sh",
     "scripts/release/test-postpublication-controller-readiness.py",
@@ -85,6 +87,19 @@ def validate_protected_contracts(path: str, before: bytes, after: bytes) -> None
     elif path == "scripts/release/document_host_acceptance.py":
         require(_constants(before) == _constants(after), "host scope/approval/schema constants changed")
         _same_function(before, after, "verify_v47_timing")
+    elif path == "scripts/release/document_host_heartbeat.py":
+        def constants(raw):
+            return [ast.dump(node, include_attributes=False) for node in ast.parse(raw).body
+                    if isinstance(node, ast.Assign)
+                    and any(isinstance(name, ast.Name) and name.id.isupper() for name in node.targets)]
+        require(constants(before) == constants(after), "heartbeat interval/retry constants changed")
+        _same_function(before, after, "verify")
+        def observer(raw):
+            classes = [node for node in ast.parse(raw).body
+                       if isinstance(node, ast.ClassDef) and node.name == "HeartbeatObserver"]
+            require(len(classes) == 1, "protected heartbeat observer missing or duplicated")
+            return ast.dump(classes[0], include_attributes=False)
+        require(observer(before) == observer(after), "heartbeat observer poll/lifecycle contract changed")
     elif path == "scripts/release/process_memory_sampler.py":
         require(_constants(before) == _constants(after), "sampler ABI/identity constants changed")
         for name in ("_base", "validate_pid", "_linux_starttime", "_darwin_identity", "process_identity",

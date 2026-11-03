@@ -1,5 +1,6 @@
 """P/C境界を隔離した実Git repositoryで検査する。公開native証跡ではない。"""
 
+import ast
 import copy
 import hashlib
 import json
@@ -165,6 +166,51 @@ class HostControllerTests(unittest.TestCase):
             self.assertNotEqual(raw, mutated)
             with self.subTest(name=name, value=original), self.assertRaises(HostEvidenceError):
                 controller.validate_protected_contracts("scripts/release/"+name, raw, mutated)
+
+    def test_heartbeat_constants_are_immutable(self):
+        path = "scripts/release/document_host_heartbeat.py"
+        raw = (HERE/"document_host_heartbeat.py").read_bytes()
+        for original, changed in (("200_000_000", "200_000_001"),
+                                  ("READ_RETRIES = 3", "READ_RETRIES = 4"),
+                                  ("READ_RETRY_SECONDS = 0.05", "READ_RETRY_SECONDS = 0.06")):
+            with self.subTest(original=original), self.assertRaisesRegex(HostEvidenceError, "constants changed"):
+                controller.validate_protected_contracts(path, raw, raw.replace(original.encode(), changed.encode(), 1))
+        with self.assertRaisesRegex(HostEvidenceError, "constants changed"):
+            controller.validate_protected_contracts(path, raw, raw+b"\nREAD_RETRIES = 3\n")
+
+    def test_entire_heartbeat_verify_function_is_immutable(self):
+        path = "scripts/release/document_host_heartbeat.py"
+        raw = (HERE/"document_host_heartbeat.py").read_bytes()
+        tree = ast.parse(raw)
+        function = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "verify")
+        function.body.append(ast.Pass())
+        with self.assertRaisesRegex(HostEvidenceError, "contract changed: verify"):
+            controller.validate_protected_contracts(path, raw, ast.unparse(tree).encode())
+        with self.assertRaisesRegex(HostEvidenceError, "missing or duplicated: verify"):
+            controller.validate_protected_contracts(path, raw, raw+b"\ndef verify():\n    pass\n")
+
+    def test_entire_heartbeat_observer_class_is_immutable(self):
+        path = "scripts/release/document_host_heartbeat.py"
+        raw = (HERE/"document_host_heartbeat.py").read_bytes()
+        tree = ast.parse(raw)
+        observer = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "HeartbeatObserver")
+        observer.body.append(ast.Pass())
+        for mutated in (ast.unparse(tree).encode(), raw.replace(b"stop_event.wait(0.1)", b"stop_event.wait(0.2)")):
+            with self.subTest(mutated=mutated[-80:]), self.assertRaisesRegex(HostEvidenceError, "poll/lifecycle contract changed"):
+                controller.validate_protected_contracts(path, raw, mutated)
+        with self.assertRaisesRegex(HostEvidenceError, "observer missing or duplicated"):
+            controller.validate_protected_contracts(path, raw, raw+b"\nclass HeartbeatObserver:\n    pass\n")
+
+    def test_heartbeat_reader_only_change_preserves_protected_contracts(self):
+        path = "scripts/release/document_host_heartbeat.py"
+        raw = (HERE/"document_host_heartbeat.py").read_bytes()
+        mutated = raw.replace(b"before = os.fstat(handle.fileno())", b"before = os.fstat(handle.fileno())\n                pass", 1)
+        self.assertNotEqual(raw, mutated)
+        controller.validate_protected_contracts(path, raw, mutated)
+
+    def test_heartbeat_correction_adds_only_the_two_approved_closure_paths(self):
+        controller.validate_paths(["scripts/release/document_host_heartbeat.py", "scripts/release/test-document-host-acceptance.py"])
+        self.assertEqual(len(controller.HOST_CONTROLLER_PATHS), 30)
 
     def test_native_after_snapshot_stays_at_actual_c_but_records_verification_can_move(self):
         snapshot = module("_unit_controller_snapshot", "record-document-host-snapshot.py")
