@@ -63,6 +63,9 @@ class ProcessObserver:
         verified = getattr(self, "_verified_workers", {})
         terminated = []
         unknown_terminated = []
+        identified_terminated = []
+        pending = {}
+        pending_probes = []
         retired_pids = set()
 
         def read_table():
@@ -85,32 +88,57 @@ class ProcessObserver:
             previous = verified.get(pid)
             return (previous is not None and previous["identity"]["executable"] == str(self.worker)
                     and previous["executable_sha256"] == self.hashes[self.worker]
-                    and self.owned.get(pid) == previous["identity"] and pid in current_descendants
+                    and self.owned.get(pid) == previous["identity"]
                     and (identity is None or identity == previous["identity"]))
+
+        def identified_worker(pid, identity):
+            return (identity is not None and identity["executable"] == str(self.worker)
+                    and self.owned.get(pid) == identity
+                    and (pid in current_descendants or verified_worker(pid, identity) or pid in pending))
+
+        def complete_retirement(pid, observation):
+            category = observation.pop("category")
+            if category == "verified":
+                terminated.append(observation | {"previous_verified": verified[pid]})
+            elif category == "identified":
+                identified_terminated.append(observation | {"classification": "IDENTIFIED-RETIRED"})
+            else:
+                # WHY: 消失した未同定PIDをworkerの正の観測やmemory=0へ読み替えない。
+                unknown_terminated.append(observation | {"classification": "UNKNOWN-RETIRED"})
+            pending.pop(pid, None)
+            retired_pids.add(pid)
 
         def retired_worker(pid, error, stage, identity=None):
             known = verified_worker(pid, identity)
+            identified = identified_worker(pid, identity)
             first_seen = (stage == "identity" and pid not in self.owned and pid not in verified
                           and pid in current_descendants)
+            previous_probe = pending.get(pid)
             if not (isinstance(error, ProcessLookupError) and error.errno == errno.ESRCH
-                    and (known or first_seen)):
+                    and (known or identified or first_seen or previous_probe is not None)):
                 return None
             fresh = read_table()
             check_main(fresh[1])
-            if pid in fresh[1]:
-                return None
             observation = {"pid": pid, "ppid": table[pid][0],
                            "error": "ProcessLookupError", "errno": errno.ESRCH,
                            "observation_stage": stage,
                            "before_observed_at": observed_at, "before_ps": output,
                            "after_observed_at": fresh[2], "after_ps": fresh[0],
-                           "main_identity": self.main_identity, "pid_absent": True}
-            if known:
-                terminated.append(observation | {"previous_verified": verified[pid]})
+                           "main_identity": self.main_identity, "pid_absent": pid not in fresh[1],
+                           "category": "verified" if known else "identified" if identified else "unknown"}
+            if previous_probe is not None:
+                observation["category"] = previous_probe["category"]
+                if observation["category"] == "unknown" and identified:
+                    observation["category"] = "identified"
+            expected_identity = identity or (previous_probe or {}).get("identified_identity")
+            if expected_identity is not None:
+                observation["identified_identity"] = expected_identity
+            if pid in fresh[1]:
+                # WHY: zombie等の残存PIDを不在とせず、同じ有限snapshotで全PIDを再照合する。
+                pending[pid] = observation
+                pending_probes.append(observation.copy())
             else:
-                # WHY: 消失した未同定PIDをworkerの正の観測やmemory=0へ読み替えない。
-                unknown_terminated.append(observation | {"classification": "UNKNOWN-RETIRED"})
-            retired_pids.add(pid)
+                complete_retirement(pid, observation)
             return fresh
 
         current = read_table()
@@ -119,10 +147,15 @@ class ProcessObserver:
             output, table, observed_at = current
             actual_main_alive = check_main(table)
             current_descendants = descendants(table, self.main_pid) if actual_main_alive else set()
-            pids = current_descendants | (set(self.owned) & set(table))
+            pids = current_descendants | (set(self.owned) & set(table)) | set(pending)
             children, completed = [], {}
             refreshed = None
             for pid in sorted(pids):
+                if pid not in table:
+                    observation = pending[pid] | {"after_observed_at": observed_at, "after_ps": output,
+                                                  "pid_absent": True}
+                    complete_retirement(pid, observation)
+                    continue
                 try:
                     identity = process_identity(pid)
                 except (OSError, RuntimeError, ValueError) as error:
@@ -134,15 +167,22 @@ class ProcessObserver:
                                      "error": type(error).__name__})
                     continue
                 previous = self.owned.get(pid)
+                if pid in pending:
+                    expected = pending[pid].get("identified_identity")
+                    require(identity["executable"] == str(self.worker)
+                            and (expected is None or identity == expected)
+                            and (previous is None or identity == previous)
+                            and (expected is not None or previous is not None or pid in current_descendants),
+                            "pending child identity/path changed")
                 if previous is not None and identity != previous:
                     # WHY: 読み直しでも、別start identityを旧workerの観測値へ読み替えない。
                     require(pid not in current_descendants, "actual owned child PID/start/path changed")
                     continue
                 self.owned[pid] = identity
                 try:
-                    # WHY: 成功履歴と今回identityが一致するworkerだけ、文字列化前のESRCHを照合する。
+                    # WHY: 今回実取得したexact worker identityだけ、文字列化前のESRCHを照合する。
                     measurement = (sample(pid, identity, raise_on_missing_process=True)
-                                   if verified_worker(pid, identity) else sample(pid, identity))
+                                   if identified_worker(pid, identity) else sample(pid, identity))
                 except ProcessLookupError as error:
                     fresh = retired_worker(pid, error, "memory", identity)
                     # WHY: childの例外をmain終了待ちへ流さず、不在未証明はその場で不合格にする。
@@ -158,6 +198,7 @@ class ProcessObserver:
                         and measurement.get("identity") == identity and measurement.get("pid") == pid):
                     completed[pid] = {"identity": identity, "executable_sha256": self.hashes[self.worker],
                                       "observed_at": measurement["observed_at"]}
+                    pending.pop(pid, None)
             if refreshed is not None:
                 # WHY: 全initial PIDを調べ終える前に再取得表を採用せず、他childの異常を再取得で捨てない。
                 require(all(child["status"] == "observed" and child["role"] == "office_sidecar"
@@ -167,6 +208,7 @@ class ProcessObserver:
                 # WHY: 対象PIDを削るのでなく、main/新descendant/retained ownedを全て実OSから作り直す。
                 current = refreshed
                 continue
+            require(not pending, "OS child snapshot contains unresolved pending PID")
             if all(child["status"] == "observed" and child["role"] == "office_sidecar" for child in children):
                 verified.update(completed)
                 self._verified_workers = verified
@@ -174,7 +216,9 @@ class ProcessObserver:
                     "main_cpu_percent": table[self.main_pid][1] if self.main_pid in table else None,
                     "main_alive": actual_main_alive, "children": children,
                     **({"terminated_children": terminated} if terminated else {}),
-                    **({"unknown_retired_children": unknown_terminated} if unknown_terminated else {})}
+                    **({"unknown_retired_children": unknown_terminated} if unknown_terminated else {}),
+                    **({"identified_retired_children": identified_terminated} if identified_terminated else {}),
+                    **({"pending_child_probes": pending_probes} if pending_probes else {})}
         require(False, "OS child snapshot did not stabilize within three attempts")
 
     def finish(self) -> dict:

@@ -346,7 +346,7 @@ class WorkerSnapshotBoundaryTests(unittest.TestCase):
             result = observer.snapshot()
         self.assertEqual([child["pid"] for child in result["children"]], [3, 4])
 
-    def test_typed_memory_esrch_uses_same_proof_only_for_verified_worker(self):
+    def test_typed_memory_esrch_uses_proof_for_actual_identified_worker(self):
         for known, remains, error in ((True, False, ProcessLookupError(errno.ESRCH, "gone")),
                                      (True, True, ProcessLookupError(errno.ESRCH, "live")),
                                      (True, False, ProcessLookupError(errno.EIO, "not ESRCH")),
@@ -356,16 +356,17 @@ class WorkerSnapshotBoundaryTests(unittest.TestCase):
                 if known:
                     self.verified(observer, 2)
                 def measurement(pid, identity, **options):
-                    self.assertEqual(options.get("raise_on_missing_process", False), known)
+                    self.assertTrue(options.get("raise_on_missing_process", False))
                     if known:
                         raise error
                     return self.measurement(pid, identity) | {"status": "error", "rss_bytes": None,
                                                              "error": "ProcessLookupError: untrusted text"}
-                with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), self.ps(2) if remains else self.ps()]), \
+                tables = [self.ps(2)]*4 if remains else [self.ps(2), self.ps()]
+                with patch.object(processes.subprocess, "run", side_effect=tables), \
                         patch.object(processes, "process_identity", side_effect=self.identity), \
                         patch.object(processes, "sample", side_effect=measurement):
                     if known and (remains or error.errno != errno.ESRCH):
-                        with self.assertRaisesRegex(HostEvidenceError, "without proven exit"):
+                        with self.assertRaisesRegex(HostEvidenceError, "three attempts" if remains else "without proven exit"):
                             observer.snapshot()
                     else:
                         result = observer.snapshot()
@@ -434,8 +435,13 @@ class WorkerSnapshotBoundaryTests(unittest.TestCase):
                     if pid == 2:
                         raise error
                     return self.identity(pid)
-                with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), self.ps(2) if remains else self.ps()]), \
+                tables = [self.ps(2)]*4 if remains else [self.ps(2), self.ps()]
+                with patch.object(processes.subprocess, "run", side_effect=tables), \
                         patch.object(processes, "process_identity", side_effect=identity):
+                    if remains:
+                        with self.assertRaisesRegex(HostEvidenceError, "three attempts"):
+                            observer.snapshot()
+                        continue
                     result = observer.snapshot()
                 self.assertEqual(result["children"][0]["status"], "identity_unobserved")
                 self.assertNotIn("terminated_children", result)
@@ -537,8 +543,14 @@ class WorkerSnapshotBoundaryTests(unittest.TestCase):
                         raise OSError(errno.EIO, "unknown error")
                     raise ProcessLookupError(errno.EIO if kind == "non_esrch" else errno.ESRCH, "gone")
                 fresh = SimpleNamespace(stdout="1 0 0\n2 99 0\n") if kind == "reparented" else self.ps(2)
-                with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), fresh]) as table_read, \
+                tables = [self.ps(2), fresh, fresh, fresh] if kind in ("live", "reparented") else [self.ps(2)]
+                with patch.object(processes.subprocess, "run", side_effect=tables) as table_read, \
                         patch.object(processes, "process_identity", side_effect=identity):
+                    if kind in ("live", "reparented"):
+                        with self.assertRaisesRegex(HostEvidenceError, "three attempts"):
+                            observer.snapshot()
+                        self.assertEqual(table_read.call_count, 4)
+                        continue
                     result = observer.snapshot()
                 self.assertEqual(result["children"][0]["status"], "identity_unobserved")
                 self.assertNotIn("unknown_retired_children", result)
@@ -622,6 +634,133 @@ class WorkerSnapshotBoundaryTests(unittest.TestCase):
                         observer.snapshot()
                 self.assertEqual(table_read.call_count, 4)
 
+    def test_pending_pid_must_resolve_to_actual_positive_worker(self):
+        for known in (False, True):
+            with self.subTest(known=known):
+                observer = self.observer()
+                if known:
+                    self.verified(observer, 2)
+                child_calls = []
+                def identity(pid):
+                    if pid == 2:
+                        child_calls.append(pid)
+                        if len(child_calls) == 1:
+                            raise ProcessLookupError(errno.ESRCH, "pending but globally present")
+                    return self.identity(pid)
+                with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), self.ps(2)]), \
+                        patch.object(processes, "process_identity", side_effect=identity), \
+                        patch.object(processes, "sample", side_effect=self.measurement):
+                    result = observer.snapshot()
+                self.assertEqual([child["pid"] for child in result["children"]], [2])
+                self.assertEqual(len(result["pending_child_probes"]), 1)
+                self.assertFalse(result["pending_child_probes"][0]["pid_absent"])
+                self.assertNotIn("unknown_retired_children", result)
+                self.assertNotIn("terminated_children", result)
+
+    def test_initial_reparented_verified_worker_remains_tracked_until_proven_absent(self):
+        observer = self.observer()
+        self.verified(observer, 2)
+        def identity(pid):
+            if pid == 2:
+                raise ProcessLookupError(errno.ESRCH, "reparented exiting worker")
+            return self.identity(pid)
+        reparented = SimpleNamespace(stdout="1 0 0\n2 99 0\n")
+        with patch.object(processes.subprocess, "run", side_effect=[reparented, reparented, self.ps()]), \
+                patch.object(processes, "process_identity", side_effect=identity):
+            result = observer.snapshot()
+        self.assertEqual(result["terminated_children"][0]["pid"], 2)
+        self.assertEqual(result["pending_child_probes"][0]["ppid"], 99)
+        self.assertEqual(result["children"], [])
+
+    def test_first_sample_esrch_records_actual_identified_retirement_without_prior_rss(self):
+        observer = self.observer()
+        with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), self.ps()]), \
+                patch.object(processes, "process_identity", side_effect=self.identity), \
+                patch.object(processes, "sample", side_effect=ProcessLookupError(errno.ESRCH, "first memory read")):
+            result = observer.snapshot()
+        diagnostic = result["identified_retired_children"][0]
+        self.assertEqual(diagnostic["classification"], "IDENTIFIED-RETIRED")
+        self.assertEqual(diagnostic["identified_identity"], self.identity(2))
+        self.assertFalse(set(diagnostic) & {"memory", "previous_verified", "role"})
+        self.assertEqual(result["children"], [])
+        self.assertNotIn(2, getattr(observer, "_verified_workers", {}))
+
+    def test_unknown_pending_upgrades_to_identified_after_real_identity_before_memory_esrch(self):
+        observer = self.observer()
+        calls = []
+        def identity(pid):
+            if pid == 2:
+                calls.append(pid)
+                if len(calls) == 1:
+                    raise ProcessLookupError(errno.ESRCH, "unknown pending")
+            return self.identity(pid)
+        with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), self.ps(2), self.ps()]), \
+                patch.object(processes, "process_identity", side_effect=identity), \
+                patch.object(processes, "sample", side_effect=ProcessLookupError(errno.ESRCH, "identified then exit")):
+            result = observer.snapshot()
+        self.assertNotIn("unknown_retired_children", result)
+        self.assertEqual(result["identified_retired_children"][0]["identified_identity"], self.identity(2))
+        original = result["pending_child_probes"][0]
+        self.assertEqual(original["category"], "unknown")
+        self.assertNotIn("identified_identity", original)
+        self.assertEqual(result["children"], [])
+
+    def test_pending_pid_absent_from_descendants_and_owned_still_gets_global_absence_check(self):
+        observer = self.observer()
+        def identity(pid):
+            if pid != 1:
+                raise ProcessLookupError(errno.ESRCH, "pending then absent")
+            return self.identity(pid)
+        with patch.object(processes.subprocess, "run", side_effect=[self.ps(2, 3), self.ps(2, 3), self.ps()]), \
+                patch.object(processes, "process_identity", side_effect=identity):
+            result = observer.snapshot()
+        self.assertEqual({row["pid"] for row in result["unknown_retired_children"]}, {2, 3})
+        self.assertTrue(all(row["pid_absent"] for row in result["unknown_retired_children"]))
+        self.assertEqual(result["children"], [])
+
+    def test_pending_identity_reuse_foreign_permission_and_memory_errors_stay_rejected(self):
+        for failure in ("reuse", "foreign", "permission", "memory", "reparented_unresolved", "unknown_reparented_live"):
+            with self.subTest(failure=failure):
+                observer = self.observer()
+                if failure != "unknown_reparented_live":
+                    self.verified(observer, 2)
+                calls = []
+                def identity(pid):
+                    if pid == 2:
+                        calls.append(pid)
+                        if len(calls) == 1 or failure == "reparented_unresolved":
+                            raise ProcessLookupError(errno.ESRCH, "pending")
+                        if failure == "permission":
+                            raise PermissionError(errno.EACCES, "denied after pending")
+                        value = self.identity(pid)
+                        if failure == "reuse":
+                            return value | {"start_identity": "changed"}
+                        if failure == "foreign":
+                            return value | {"executable": str(Path("/foreign"))}
+                    return self.identity(pid)
+                fresh = SimpleNamespace(stdout="1 0 0\n2 99 0\n") if failure in ("reparented_unresolved", "unknown_reparented_live") else self.ps(2)
+                with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), fresh, fresh, fresh]), \
+                        patch.object(processes, "process_identity", side_effect=identity), \
+                        patch.object(processes, "sample", return_value={"status": "error", "error": "PermissionError"}):
+                    with self.assertRaises(HostEvidenceError):
+                        observer.snapshot()
+
+    def test_pending_probe_cannot_erase_invalid_other_child_in_either_pid_order(self):
+        for pending_pid, invalid in ((2, 3), (3, 2)):
+            with self.subTest(pending=pending_pid):
+                observer = self.observer()
+                self.verified(observer, pending_pid)
+                def identity(pid):
+                    if pid == pending_pid:
+                        raise ProcessLookupError(errno.ESRCH, "globally present")
+                    if pid == invalid:
+                        raise PermissionError(errno.EACCES, "invalid other child")
+                    return self.identity(pid)
+                with patch.object(processes.subprocess, "run", side_effect=[self.ps(2, 3), self.ps(pending_pid)]), \
+                        patch.object(processes, "process_identity", side_effect=identity):
+                    with self.assertRaisesRegex(HostEvidenceError, "cannot be discarded"):
+                        observer.snapshot()
+
 
 @unittest.skipUnless(platform.system() == "Darwin", "actual Darwin worker identity/libproc lifecycle")
 class ActualWorkerSnapshotTests(unittest.TestCase):
@@ -637,6 +776,21 @@ class ActualWorkerSnapshotTests(unittest.TestCase):
     def test_first_seen_real_child_exit_is_unknown_retired_not_worker_observation(self):
         self.actual_worker_exit("first_seen")
 
+    def test_actual_unreaped_known_worker_stays_pending_until_global_absence(self):
+        self.actual_worker_exit("zombie_known")
+
+    def test_actual_unreaped_first_seen_child_is_not_claimed_absent_while_present(self):
+        self.actual_worker_exit("zombie_unknown")
+
+    def test_actual_unreaped_first_sample_non_esrch_memory_failure_stays_rejected(self):
+        self.actual_worker_exit("zombie_identified")
+
+    def test_actual_unreaped_first_sample_after_read_is_identified_without_prior_rss(self):
+        self.actual_worker_exit("zombie_identified_after")
+
+    def test_actual_first_sample_worker_exit_keeps_identified_evidence_without_prior_rss(self):
+        self.actual_worker_exit("memory_first")
+
     def actual_worker_exit(self, stage):
         # WHY: unitの境界hookで終了順序だけ決め、PID/identity/RSS/再取得psは実OSを使う。
         script = '''
@@ -651,6 +805,12 @@ for command in sys.stdin:
         child.stdin.write(b"exit\\n"); child.stdin.flush()
         print(child.wait(timeout=5),flush=True)
         child=spawn()
+    elif command.strip()=="zombie":
+        child.stdin.write(b"exit\\n"); child.stdin.flush()
+        print("exit-requested",flush=True)
+    elif command.strip()=="reap":
+        print(child.wait(timeout=5),flush=True)
+        child=spawn()
     else:
         child.stdin.write(b"exit\\n"); child.stdin.flush()
         child.wait(timeout=5)
@@ -662,7 +822,7 @@ for command in sys.stdin:
             worker_pid = int(app.stdout.readline())
             executable = Path(sampler.process_identity(app.pid)["executable"])
             observer = processes.ProcessObserver(app.pid, executable, executable)
-            if stage == "first_seen":
+            if stage in ("first_seen", "zombie_unknown", "zombie_identified", "zombie_identified_after", "memory_first"):
                 self.assertNotIn(worker_pid, observer.owned)
                 self.assertNotIn(worker_pid, getattr(observer, "_verified_workers", {}))
             else:
@@ -671,10 +831,29 @@ for command in sys.stdin:
                 self.assertEqual(initial["children"][0]["memory"]["status"], "ok")
             original_identity = processes.process_identity
             original_read = sampler._read_memory
+            original_run = subprocess.run
             replaced = []
+            exit_requested = []
+            zombie_proofs = []
             def replace_worker():
-                if not replaced:
-                    app.stdin.write("replace\n"); app.stdin.flush()
+                if exit_requested:
+                    return
+                exit_requested.append(True)
+                app.stdin.write("zombie\n" if stage.startswith("zombie_") else "replace\n"); app.stdin.flush()
+                if stage.startswith("zombie_"):
+                    self.assertEqual(app.stdout.readline().strip(), "exit-requested")
+                    deadline = time.monotonic()+5
+                    while time.monotonic() < deadline:
+                        state = original_run(["ps", "-p", str(worker_pid), "-o", "stat="],
+                                             check=True, capture_output=True, text=True, timeout=5).stdout.strip()
+                        if state.startswith("Z"):
+                            with self.assertRaises(ProcessLookupError) as missing:
+                                original_identity(worker_pid)
+                            self.assertEqual(missing.exception.errno, errno.ESRCH)
+                            break
+                    else:
+                        self.fail("actual worker did not become an unreaped zombie")
+                else:
                     self.assertEqual(app.stdout.readline().strip(), "0")
                     replaced.append(int(app.stdout.readline()))
             def identity(pid):
@@ -682,26 +861,64 @@ for command in sys.stdin:
                     replace_worker()
                 return original_identity(pid)
             def read_memory(result, pid, system):
-                if pid == worker_pid and stage == "memory_before":
+                if pid == worker_pid and stage in ("memory_before", "memory_first", "zombie_identified"):
                     replace_worker()
                 original_read(result, pid, system)
-                if pid == worker_pid and stage == "memory_after":
+                if pid == worker_pid and stage in ("memory_after", "zombie_identified_after"):
                     replace_worker()
-            boundary = (patch.object(processes, "process_identity", side_effect=identity) if stage in ("identity", "first_seen")
+            def ps_then_reap(arguments, **options):
+                observed = original_run(arguments, **options)
+                if (arguments == ["ps", "-axo", "pid=,ppid=,%cpu="] and stage.startswith("zombie_")
+                        and exit_requested and not replaced):
+                    self.assertIn(worker_pid, processes.process_table(observed.stdout))
+                    with self.assertRaises(ProcessLookupError) as missing:
+                        original_identity(worker_pid)
+                    self.assertEqual(missing.exception.errno, errno.ESRCH)
+                    zombie_proofs.append(worker_pid)
+                    app.stdin.write("reap\n"); app.stdin.flush()
+                    self.assertEqual(app.stdout.readline().strip(), "0")
+                    replaced.append(int(app.stdout.readline()))
+                return observed
+            boundary = (patch.object(processes, "process_identity", side_effect=identity) if stage in ("identity", "first_seen", "zombie_known", "zombie_unknown")
                         else patch.object(sampler, "_read_memory", side_effect=read_memory))
-            with boundary:
+            with boundary, patch.object(processes.subprocess, "run", side_effect=ps_then_reap):
                 result = observer.snapshot()
+            if stage == "zombie_identified":
+                self.assertEqual(result["children"][0]["pid"], worker_pid)
+                self.assertEqual(result["children"][0]["status"], "memory_unobserved")
+                self.assertIn("non-positive memory values", result["children"][0]["memory"]["error"])
+                self.assertNotIn("pending_child_probes", result)
+                self.assertNotIn("identified_retired_children", result)
+                app.stdin.write("reap\n"); app.stdin.flush()
+                self.assertEqual(app.stdout.readline().strip(), "0")
+                int(app.stdout.readline())
+                app.stdin.write("quit\n"); app.stdin.flush()
+                self.assertEqual(app.wait(timeout=5), 0)
+                self.assertEqual(observer.finish()["children"], [])
+                return
             self.assertEqual([row["pid"] for row in result["children"]], replaced)
             self.assertGreater(result["children"][0]["memory"]["rss_bytes"], 0)
             self.assertGreater(result["children"][0]["memory"]["physical_footprint_bytes"], 0)
-            diagnostics = result["unknown_retired_children" if stage == "first_seen" else "terminated_children"]
+            unknown = stage in ("first_seen", "zombie_unknown")
+            identified = stage in ("memory_first", "zombie_identified_after")
+            diagnostics = result["unknown_retired_children" if unknown else "identified_retired_children" if identified else "terminated_children"]
             self.assertTrue(diagnostics[0]["pid_absent"])
             self.assertEqual(diagnostics[0]["pid"], worker_pid)
             self.assertEqual(diagnostics[0]["observation_stage"],
-                             "identity" if stage in ("identity", "first_seen") else "memory")
-            if stage == "first_seen":
+                             "identity" if stage in ("identity", "first_seen") or stage.startswith("zombie_") else "memory")
+            if unknown:
                 self.assertEqual(diagnostics[0]["classification"], "UNKNOWN-RETIRED")
                 self.assertFalse(set(diagnostics[0]) & {"identity", "role", "executable_sha256", "memory", "previous_verified"})
+            if identified:
+                self.assertEqual(diagnostics[0]["classification"], "IDENTIFIED-RETIRED")
+                self.assertEqual(diagnostics[0]["identified_identity"]["executable"], str(executable))
+                self.assertNotIn("previous_verified", diagnostics[0])
+                self.assertNotIn("memory", diagnostics[0])
+            if stage.startswith("zombie_"):
+                self.assertEqual(zombie_proofs, [worker_pid])
+                self.assertEqual(len(result["pending_child_probes"]), 1)
+                self.assertFalse(result["pending_child_probes"][0]["pid_absent"])
+                self.assertIn(worker_pid, processes.process_table(result["pending_child_probes"][0]["after_ps"]))
             app.stdin.write("quit\n"); app.stdin.flush()
             self.assertEqual(app.wait(timeout=5), 0)
             self.assertEqual(observer.finish()["children"], [])
