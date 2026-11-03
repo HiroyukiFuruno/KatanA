@@ -59,45 +59,88 @@ class ProcessObserver:
             require(signature(path) == expected, "actual main/worker inode/stat changed during observation")
 
     def snapshot(self, *, main_alive: bool = True) -> dict:
-        self.unchanged()
-        output = subprocess.run(["ps", "-axo", "pid=,ppid=,%cpu="], check=True,
-                                capture_output=True, text=True, timeout=10).stdout
-        table = process_table(output)
-        if self.main_pid not in table and main_alive:
-            raise ProcessLookupError(errno.ESRCH, "actual main process is absent from the OS table")
-        actual_main_alive = False
-        if self.main_pid in table:
-            require(process_identity(self.main_pid) == self.main_identity, "actual main PID/start/path changed")
-            actual_main_alive = True
-        if main_alive:
-            require(actual_main_alive,
-                    "actual main PID/start/path changed")
-        else:
-            require(not actual_main_alive, "normal main exit was not observed by the OS")
-        pids = (descendants(table, self.main_pid) if actual_main_alive else set()) | (set(self.owned) & set(table))
-        children = []
-        for pid in sorted(pids):
-            try:
-                identity = process_identity(pid)
-            except (OSError, RuntimeError, ValueError) as error:
-                children.append({"pid": pid, "ppid": table[pid][0], "status": "identity_unobserved",
-                                 "error": type(error).__name__})
-                continue
-            previous = self.owned.get(pid)
-            if previous is not None and identity != previous:
-                # WHY: 旧PIDの新processをownedへ誤認せず、現main子孫でなければ無関係な再利用を除く。
-                if pid not in descendants(table, self.main_pid):
+        # WHY: ownedには失敗sampleも入るため、完了済みの正しいworker観測だけを別に保持する。
+        verified = getattr(self, "_verified_workers", {})
+        terminated = []
+
+        def read_table():
+            output = subprocess.run(["ps", "-axo", "pid=,ppid=,%cpu="], check=True,
+                                    capture_output=True, text=True, timeout=10).stdout
+            return output, process_table(output), datetime.now(timezone.utc).isoformat()
+
+        def check_main(table):
+            if self.main_pid not in table and main_alive:
+                raise ProcessLookupError(errno.ESRCH, "actual main process is absent from the OS table")
+            alive = self.main_pid in table
+            if alive:
+                require(process_identity(self.main_pid) == self.main_identity, "actual main PID/start/path changed")
+            require(alive == main_alive, "normal main exit was not observed by the OS")
+            return alive
+
+        current = read_table()
+        for attempt in range(3):
+            self.unchanged()
+            output, table, observed_at = current
+            actual_main_alive = check_main(table)
+            current_descendants = descendants(table, self.main_pid) if actual_main_alive else set()
+            pids = current_descendants | (set(self.owned) & set(table))
+            children, completed = [], {}
+            refreshed = None
+            for pid in sorted(pids):
+                try:
+                    identity = process_identity(pid)
+                except (OSError, RuntimeError, ValueError) as error:
+                    previous = verified.get(pid)
+                    known_worker = (previous is not None and previous["identity"]["executable"] == str(self.worker)
+                                    and previous["executable_sha256"] == self.hashes[self.worker]
+                                    and self.owned.get(pid) == previous["identity"] and pid in current_descendants)
+                    if isinstance(error, ProcessLookupError) and error.errno == errno.ESRCH and known_worker:
+                        fresh = read_table()
+                        check_main(fresh[1])
+                        if pid not in fresh[1]:
+                            terminated.append({"pid": pid, "previous_verified": previous,
+                                               "error": "ProcessLookupError", "errno": errno.ESRCH,
+                                               "before_observed_at": observed_at, "before_ps": output,
+                                               "after_observed_at": fresh[2], "after_ps": fresh[0],
+                                               "main_identity": self.main_identity, "pid_absent": True})
+                            refreshed = fresh
+                            continue
+                    children.append({"pid": pid, "ppid": table[pid][0], "status": "identity_unobserved",
+                                     "error": type(error).__name__})
                     continue
-            self.owned[pid] = identity
-            measurement = sample(pid, identity)
-            role = "office_sidecar" if identity["executable"] == str(self.worker) else "unclassified_descendant"
-            children.append({"pid": pid, "ppid": table[pid][0], "identity": identity,
-                             "cpu_percent": table[pid][1], "memory": measurement,
-                             "role": role, "executable_sha256": self.hashes[self.worker] if role == "office_sidecar" else None,
-                             "status": "observed" if measurement["status"] == "ok" else "memory_unobserved"})
-        return {"observed_at": datetime.now(timezone.utc).isoformat(),
-                "main_cpu_percent": table[self.main_pid][1] if self.main_pid in table else None,
-                "main_alive": actual_main_alive, "children": children}
+                previous = self.owned.get(pid)
+                if previous is not None and identity != previous:
+                    # WHY: 読み直しでも、別start identityを旧workerの観測値へ読み替えない。
+                    require(pid not in current_descendants, "actual owned child PID/start/path changed")
+                    continue
+                self.owned[pid] = identity
+                measurement = sample(pid, identity)
+                role = "office_sidecar" if identity["executable"] == str(self.worker) else "unclassified_descendant"
+                children.append({"pid": pid, "ppid": table[pid][0], "identity": identity,
+                                 "cpu_percent": table[pid][1], "memory": measurement,
+                                 "role": role, "executable_sha256": self.hashes[self.worker] if role == "office_sidecar" else None,
+                                 "status": "observed" if measurement["status"] == "ok" else "memory_unobserved"})
+                if (role == "office_sidecar" and measurement["status"] == "ok"
+                        and measurement.get("identity") == identity and measurement.get("pid") == pid):
+                    completed[pid] = {"identity": identity, "executable_sha256": self.hashes[self.worker],
+                                      "observed_at": measurement["observed_at"]}
+            if refreshed is not None:
+                # WHY: 全initial PIDを調べ終える前に再取得表を採用せず、他childの異常を再取得で捨てない。
+                require(all(child["status"] == "observed" and child["role"] == "office_sidecar"
+                            and child["memory"].get("identity") == child["identity"]
+                            and child["memory"].get("pid") == child["pid"] for child in children),
+                        "invalid actual child observation cannot be discarded by OS table refresh")
+                # WHY: 対象PIDを削るのでなく、main/新descendant/retained ownedを全て実OSから作り直す。
+                current = refreshed
+                continue
+            if all(child["status"] == "observed" and child["role"] == "office_sidecar" for child in children):
+                verified.update(completed)
+                self._verified_workers = verified
+            return {"observed_at": datetime.now(timezone.utc).isoformat(),
+                    "main_cpu_percent": table[self.main_pid][1] if self.main_pid in table else None,
+                    "main_alive": actual_main_alive, "children": children,
+                    **({"terminated_children": terminated} if terminated else {})}
+        require(False, "OS child snapshot did not stabilize within three attempts")
 
     def finish(self) -> dict:
         result = self.snapshot(main_alive=False)

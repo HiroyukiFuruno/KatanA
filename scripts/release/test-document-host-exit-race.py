@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -277,6 +278,226 @@ class SamplerAndIdentityBoundaryTests(unittest.TestCase):
             if child.poll() is None:
                 child.terminate()
             child.communicate(timeout=5)
+
+
+class WorkerSnapshotBoundaryTests(unittest.TestCase):
+    """OS読み取り境界を制御するunit。actual OS lifecycle回帰とは区別する。"""
+
+    def observer(self):
+        observer = object.__new__(processes.ProcessObserver)
+        observer.main_pid = 1
+        observer.main = Path("/main")
+        observer.worker = Path("/worker")
+        observer.main_identity = self.identity(1)
+        observer.hashes = {observer.worker: "fixed-worker-hash"}
+        observer.owned = {}
+        observer.unchanged = lambda: None
+        return observer
+
+    def identity(self, pid):
+        return {"pid": pid, "executable": str(Path("/main" if pid == 1 else "/worker")),
+                "start_identity": f"actual-start-{pid}"}
+
+    def measurement(self, pid, identity):
+        return {"status": "ok", "pid": pid, "identity": identity,
+                "observed_at": "2026-11-03T00:00:00+00:00", "rss_bytes": 4096}
+
+    def verified(self, observer, pid):
+        identity = self.identity(pid)
+        observer.owned[pid] = identity
+        if not hasattr(observer, "_verified_workers"):
+            observer._verified_workers = {}
+        observer._verified_workers[pid] = {"identity": identity,
+            "executable_sha256": observer.hashes[observer.worker], "observed_at": "prior-real-sample"}
+
+    def ps(self, *pids):
+        return SimpleNamespace(stdout="1 0 0.0\n"+"".join(f"{pid} 1 0.0\n" for pid in pids))
+
+    def test_known_worker_esrch_requires_prior_success_and_fresh_absence(self):
+        observer = self.observer()
+        self.verified(observer, 2)
+        def identity(pid):
+            if pid == 2:
+                raise ProcessLookupError(errno.ESRCH, "gone")
+            return self.identity(pid)
+        with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), self.ps()]), \
+                patch.object(processes, "process_identity", side_effect=identity):
+            result = observer.snapshot()
+        self.assertEqual(result["children"], [])
+        retired = result["terminated_children"][0]
+        self.assertEqual(retired["pid"], 2)
+        self.assertTrue(retired["pid_absent"])
+        self.assertIn("2 1", retired["before_ps"])
+        self.assertNotIn("2 1", retired["after_ps"])
+        self.assertEqual(retired["previous_verified"], observer._verified_workers[2])
+
+    def test_refresh_observes_new_descendant_and_retained_owned(self):
+        observer = self.observer()
+        self.verified(observer, 2)
+        self.verified(observer, 4)
+        def identity(pid):
+            if pid == 2:
+                raise ProcessLookupError(errno.ESRCH, "gone")
+            return self.identity(pid)
+        fresh = SimpleNamespace(stdout="1 0 0\n3 1 0\n4 99 0\n")
+        with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), fresh]), \
+                patch.object(processes, "process_identity", side_effect=identity), \
+                patch.object(processes, "sample", side_effect=self.measurement):
+            result = observer.snapshot()
+        self.assertEqual([child["pid"] for child in result["children"]], [3, 4])
+
+    def test_unverified_or_live_worker_esrch_is_not_retired(self):
+        for known, remains, error in [(False, False, ProcessLookupError(errno.ESRCH, "gone")),
+                                     (True, True, ProcessLookupError(errno.ESRCH, "still live")),
+                                     (True, False, PermissionError(errno.EACCES, "denied")),
+                                     (True, False, OSError(errno.EIO, "I/O failure"))]:
+            with self.subTest(known=known, remains=remains, error=type(error).__name__):
+                observer = self.observer()
+                observer.owned[2] = self.identity(2)
+                if known:
+                    self.verified(observer, 2)
+                def identity(pid):
+                    if pid == 2:
+                        raise error
+                    return self.identity(pid)
+                with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), self.ps(2) if remains else self.ps()]), \
+                        patch.object(processes, "process_identity", side_effect=identity):
+                    result = observer.snapshot()
+                self.assertEqual(result["children"][0]["status"], "identity_unobserved")
+                self.assertNotIn("terminated_children", result)
+
+    def test_pid_reuse_and_main_identity_change_are_rejected(self):
+        for changed_pid in (1, 2):
+            with self.subTest(pid=changed_pid):
+                observer = self.observer()
+                self.verified(observer, 2)
+                def identity(pid):
+                    result = self.identity(pid)
+                    return result | {"start_identity": "reused"} if pid == changed_pid else result
+                with patch.object(processes.subprocess, "run", return_value=self.ps(2)), \
+                        patch.object(processes, "process_identity", side_effect=identity):
+                    with self.assertRaises(HostEvidenceError):
+                        observer.snapshot()
+
+    def test_failed_memory_cannot_establish_verified_worker_history(self):
+        observer = self.observer()
+        with patch.object(processes.subprocess, "run", return_value=self.ps(2)), \
+                patch.object(processes, "process_identity", side_effect=self.identity), \
+                patch.object(processes, "sample", return_value={"status": "error", "rss_bytes": None}):
+            first = observer.snapshot()
+        self.assertEqual(first["children"][0]["status"], "memory_unobserved")
+        self.assertIn(2, observer.owned)
+        self.assertNotIn(2, getattr(observer, "_verified_workers", {}))
+        def identity(pid):
+            if pid == 2:
+                raise ProcessLookupError(errno.ESRCH, "gone")
+            return self.identity(pid)
+        with patch.object(processes.subprocess, "run", return_value=self.ps(2)) as table_read, \
+                patch.object(processes, "process_identity", side_effect=identity):
+            second = observer.snapshot()
+        self.assertEqual(second["children"][0]["status"], "identity_unobserved")
+        self.assertNotIn("terminated_children", second)
+        self.assertEqual(table_read.call_count, 1)
+
+    def test_invalid_other_child_cannot_disappear_across_refresh_in_either_pid_order(self):
+        for retiring, invalid in ((2, 3), (3, 2)):
+            for failure in ("unknown_esrch", "permission", "foreign", "memory", "memory_identity"):
+                with self.subTest(retiring=retiring, invalid=invalid, failure=failure):
+                    observer = self.observer()
+                    self.verified(observer, retiring)
+                    inspected = []
+                    def identity(pid):
+                        inspected.append(pid)
+                        if pid == retiring or (pid == invalid and failure == "unknown_esrch"):
+                            raise ProcessLookupError(errno.ESRCH, "gone")
+                        if pid == invalid and failure == "permission":
+                            raise PermissionError(errno.EACCES, "denied")
+                        value = self.identity(pid)
+                        return value | {"executable": "/foreign"} if pid == invalid and failure == "foreign" else value
+                    def measurement(pid, value):
+                        result = self.measurement(pid, value)
+                        if pid == invalid and failure == "memory":
+                            return result | {"status": "error", "rss_bytes": None}
+                        if pid == invalid and failure == "memory_identity":
+                            return result | {"identity": value | {"start_identity": "wrong"}}
+                        return result
+                    with patch.object(processes.subprocess, "run", side_effect=[self.ps(2, 3), self.ps()]), \
+                            patch.object(processes, "process_identity", side_effect=identity), \
+                            patch.object(processes, "sample", side_effect=measurement):
+                        with self.assertRaisesRegex(HostEvidenceError, "cannot be discarded"):
+                            observer.snapshot()
+                    self.assertIn(invalid, inspected)
+
+    def test_refresh_is_bounded_and_later_invalid_child_still_fails(self):
+        for final_invalid in (False, True):
+            with self.subTest(final_invalid=final_invalid):
+                observer = self.observer()
+                for pid in (2, 3, 4):
+                    self.verified(observer, pid)
+                def identity(pid):
+                    if pid != 1:
+                        raise ProcessLookupError(errno.ESRCH, "gone")
+                    return self.identity(pid)
+                tables = [self.ps(2), self.ps(3), self.ps(4, 5) if final_invalid else self.ps(4), self.ps()]
+                with patch.object(processes.subprocess, "run", side_effect=tables) as table_read, \
+                        patch.object(processes, "process_identity", side_effect=identity):
+                    with self.assertRaisesRegex(HostEvidenceError, "cannot be discarded" if final_invalid else "three attempts"):
+                        observer.snapshot()
+                self.assertEqual(table_read.call_count, 4)
+
+
+@unittest.skipUnless(platform.system() == "Darwin", "actual Darwin worker identity/libproc lifecycle")
+class ActualWorkerSnapshotTests(unittest.TestCase):
+    def test_real_worker_exits_between_ps_and_identity_then_fresh_child_is_observed(self):
+        # WHY: unitの境界hookで終了順序だけ決め、PID/identity/RSS/再取得psは実OSを使う。
+        script = '''
+import subprocess, sys
+def spawn():
+    child = subprocess.Popen([sys.executable,"-B","-c","import sys; sys.stdin.readline()"],stdin=subprocess.PIPE)
+    print(child.pid,flush=True)
+    return child
+child=spawn()
+for command in sys.stdin:
+    if command.strip()=="replace":
+        child.stdin.write(b"exit\\n"); child.stdin.flush()
+        print(child.wait(timeout=5),flush=True)
+        child=spawn()
+    else:
+        child.stdin.write(b"exit\\n"); child.stdin.flush()
+        child.wait(timeout=5)
+        break
+'''
+        app = subprocess.Popen([sys.executable, "-B", "-c", script], stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8")
+        try:
+            worker_pid = int(app.stdout.readline())
+            executable = Path(sampler.process_identity(app.pid)["executable"])
+            observer = processes.ProcessObserver(app.pid, executable, executable)
+            initial = observer.snapshot()
+            self.assertEqual([row["pid"] for row in initial["children"]], [worker_pid])
+            self.assertEqual(initial["children"][0]["memory"]["status"], "ok")
+            original_identity = processes.process_identity
+            replaced = []
+            def identity(pid):
+                if pid == worker_pid and not replaced:
+                    app.stdin.write("replace\n"); app.stdin.flush()
+                    self.assertEqual(app.stdout.readline().strip(), "0")
+                    replaced.append(int(app.stdout.readline()))
+                return original_identity(pid)
+            with patch.object(processes, "process_identity", side_effect=identity):
+                result = observer.snapshot()
+            self.assertEqual([row["pid"] for row in result["children"]], replaced)
+            self.assertGreater(result["children"][0]["memory"]["rss_bytes"], 0)
+            self.assertGreater(result["children"][0]["memory"]["physical_footprint_bytes"], 0)
+            self.assertTrue(result["terminated_children"][0]["pid_absent"])
+            self.assertEqual(result["terminated_children"][0]["pid"], worker_pid)
+            app.stdin.write("quit\n"); app.stdin.flush()
+            self.assertEqual(app.wait(timeout=5), 0)
+            self.assertEqual(observer.finish()["children"], [])
+        finally:
+            if app.poll() is None:
+                app.terminate()
+            app.communicate(timeout=5)
 
 
 if __name__ == "__main__":
