@@ -62,11 +62,15 @@ class ProcessObserver:
         # WHY: ownedには失敗sampleも入るため、完了済みの正しいworker観測だけを別に保持する。
         verified = getattr(self, "_verified_workers", {})
         terminated = []
+        unknown_terminated = []
+        retired_pids = set()
 
         def read_table():
             output = subprocess.run(["ps", "-axo", "pid=,ppid=,%cpu="], check=True,
                                     capture_output=True, text=True, timeout=10).stdout
-            return output, process_table(output), datetime.now(timezone.utc).isoformat()
+            table = process_table(output)
+            require(not (retired_pids & set(table)), "retired child PID reappeared during OS snapshot")
+            return output, table, datetime.now(timezone.utc).isoformat()
 
         def check_main(table):
             if self.main_pid not in table and main_alive:
@@ -85,19 +89,28 @@ class ProcessObserver:
                     and (identity is None or identity == previous["identity"]))
 
         def retired_worker(pid, error, stage, identity=None):
+            known = verified_worker(pid, identity)
+            first_seen = (stage == "identity" and pid not in self.owned and pid not in verified
+                          and pid in current_descendants)
             if not (isinstance(error, ProcessLookupError) and error.errno == errno.ESRCH
-                    and verified_worker(pid, identity)):
+                    and (known or first_seen)):
                 return None
             fresh = read_table()
             check_main(fresh[1])
             if pid in fresh[1]:
                 return None
-            terminated.append({"pid": pid, "previous_verified": verified[pid],
-                               "error": "ProcessLookupError", "errno": errno.ESRCH,
-                               "observation_stage": stage,
-                               "before_observed_at": observed_at, "before_ps": output,
-                               "after_observed_at": fresh[2], "after_ps": fresh[0],
-                               "main_identity": self.main_identity, "pid_absent": True})
+            observation = {"pid": pid, "ppid": table[pid][0],
+                           "error": "ProcessLookupError", "errno": errno.ESRCH,
+                           "observation_stage": stage,
+                           "before_observed_at": observed_at, "before_ps": output,
+                           "after_observed_at": fresh[2], "after_ps": fresh[0],
+                           "main_identity": self.main_identity, "pid_absent": True}
+            if known:
+                terminated.append(observation | {"previous_verified": verified[pid]})
+            else:
+                # WHY: 消失した未同定PIDをworkerの正の観測やmemory=0へ読み替えない。
+                unknown_terminated.append(observation | {"classification": "UNKNOWN-RETIRED"})
+            retired_pids.add(pid)
             return fresh
 
         current = read_table()
@@ -160,7 +173,8 @@ class ProcessObserver:
             return {"observed_at": datetime.now(timezone.utc).isoformat(),
                     "main_cpu_percent": table[self.main_pid][1] if self.main_pid in table else None,
                     "main_alive": actual_main_alive, "children": children,
-                    **({"terminated_children": terminated} if terminated else {})}
+                    **({"terminated_children": terminated} if terminated else {}),
+                    **({"unknown_retired_children": unknown_terminated} if unknown_terminated else {})}
         require(False, "OS child snapshot did not stabilize within three attempts")
 
     def finish(self) -> dict:
