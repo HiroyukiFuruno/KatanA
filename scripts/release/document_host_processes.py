@@ -109,6 +109,7 @@ class ProcessObserver:
             retired_pids.add(pid)
 
         def retired_worker(pid, error, stage, identity=None):
+            nonlocal pending_retirement_completed
             known = verified_worker(pid, identity)
             identified = identified_worker(pid, identity)
             first_seen = (stage == "identity" and pid not in self.owned and pid not in verified
@@ -139,6 +140,7 @@ class ProcessObserver:
                 pending_probes.append(observation.copy())
             else:
                 complete_retirement(pid, observation)
+            pending_retirement_completed = previous_probe is not None and pid not in fresh[1]
             return fresh
 
         current = read_table()
@@ -149,7 +151,7 @@ class ProcessObserver:
             current_descendants = descendants(table, self.main_pid) if actual_main_alive else set()
             pids = current_descendants | (set(self.owned) & set(table)) | set(pending)
             children, completed = [], {}
-            refreshed = None
+            refreshed, pending_retirement_completed = None, False
             for pid in sorted(pids):
                 if pid not in table:
                     observation = pending[pid] | {"after_observed_at": observed_at, "after_ps": output,
@@ -207,7 +209,13 @@ class ProcessObserver:
                         "invalid actual child observation cannot be discarded by OS table refresh")
                 # WHY: 対象PIDを削るのでなく、main/新descendant/retained ownedを全て実OSから作り直す。
                 current = refreshed
-                continue
+                if (attempt < 2 or not pending_retirement_completed or pending
+                        or descendants(current[1], self.main_pid) or set(self.owned) & set(current[1])):
+                    continue
+                # WHY: 同じ保留PIDが最後のreadで消失し全候補も空なら、退役済みの表で通常returnできる。
+                output, table, observed_at = current
+                actual_main_alive = check_main(table)
+                children = []
             require(not pending, "OS child snapshot contains unresolved pending PID")
             if all(child["status"] == "observed" and child["role"] == "office_sidecar" for child in children):
                 verified.update(completed)
@@ -219,7 +227,12 @@ class ProcessObserver:
                     **({"unknown_retired_children": unknown_terminated} if unknown_terminated else {}),
                     **({"identified_retired_children": identified_terminated} if identified_terminated else {}),
                     **({"pending_child_probes": pending_probes} if pending_probes else {})}
-        require(False, "OS child snapshot did not stabilize within three attempts")
+        pending_summary = [{key: probe.get(key) for key in
+                            ("pid", "observation_stage", "category", "identified_identity", "pid_absent")}
+                           for probe in pending.values()]
+        require(False, "OS child snapshot did not stabilize within three attempts"
+                f": final_ps={current[0]!r}; pending={pending_summary!r}; "
+                f"last_refresh_resolved_pending={pending_retirement_completed!r}; retired_pids={sorted(retired_pids)!r}")
 
     def finish(self) -> dict:
         result = self.snapshot(main_alive=False)
