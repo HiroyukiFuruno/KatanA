@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import threading
@@ -22,9 +23,10 @@ def observe(path: Path, stop: threading.Event) -> dict:
     for attempt in range(READ_RETRIES):
         raw, modified, status, frame = None, None, "missing", None
         try:
-            before = path.stat()
-            raw = path.read_bytes()
-            after = path.stat()
+            with path.open("rb") as handle:
+                before = os.fstat(handle.fileno())
+                raw = handle.read()
+                after = os.fstat(handle.fileno())
             parsed = re.fullmatch(rb"first-frame\nframe=([1-9][0-9]*)\n", raw)
             if parsed is not None and (before.st_mtime_ns, before.st_size) == (after.st_mtime_ns, after.st_size):
                 frame, modified, status = int(parsed[1]), after.st_mtime_ns, "observed"

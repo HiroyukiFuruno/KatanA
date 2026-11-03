@@ -7,10 +7,14 @@ import copy
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
+import os
 import tempfile
+import threading
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+import document_host_heartbeat as heartbeat
 from document_host_io import HostEvidenceError, decode, digest, reference
 from document_host_transcript import HOST, KDV, verify
 from document_host_acceptance import assessments, same_source_content
@@ -99,6 +103,172 @@ def warm_sample(item: dict) -> dict:
 def validate(value: dict, fmt: str = "docx"):
     return verify(value, fixtures={test_sha(fmt): fmt}, html_sha=test_sha("html"), provenance=fixture()["provenance"],
                   main_sha=test_sha("main"), worker_sha=test_sha("worker"), producer_sha=test_sha("producer"))
+
+
+class HeartbeatReadUnitFile:
+    def __init__(self, handle, synchronise):
+        self.handle, self.synchronise = handle, synchronise
+
+    def __enter__(self):
+        self.handle.__enter__()
+        return self
+
+    def __exit__(self, *args):
+        return self.handle.__exit__(*args)
+
+    def fileno(self):
+        return self.handle.fileno()
+
+    def read(self, *args):
+        raw = self.handle.read(*args)
+        self.synchronise("read")
+        return raw
+
+
+def heartbeat_unit_windows_descriptor(path, _flags):
+    """実rename競合のUTだけで、Windowsの読取handleにもdelete共有を許可する。"""
+    import ctypes
+    from ctypes import wintypes
+    import msvcrt
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    create_file = kernel32.CreateFileW
+    create_file.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, ctypes.c_void_p,
+                           wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+    create_file.restype = wintypes.HANDLE
+    close_handle = kernel32.CloseHandle
+    close_handle.argtypes, close_handle.restype = [wintypes.HANDLE], wintypes.BOOL
+    generic_read, share_read_write_delete, open_existing, file_attribute_normal = 0x80000000, 0x7, 3, 0x80
+    handle = create_file(str(path), generic_read, share_read_write_delete, None,
+                         open_existing, file_attribute_normal, None)
+    if handle == ctypes.c_void_p(-1).value:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        return msvcrt.open_osfhandle(handle, os.O_RDONLY | os.O_BINARY | os.O_NOINHERIT)
+    except BaseException:
+        close_handle(handle)
+        raise
+
+
+class HeartbeatReaderBoundaryTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.path = Path(self.temp.name)/"heartbeat"
+        self.path.write_bytes(b"first-frame\nframe=41\n")
+        self.request, self.completed, self.stopping = (threading.Event() for _ in range(3))
+        self.errors, self.mutation, self.boundary, self.repeat, self.read_count = [], None, "read", False, 0
+        self.writer = threading.Thread(target=self.write_on_request, daemon=True)
+        self.writer.start()
+
+    def tearDown(self):
+        self.stopping.set()
+        self.request.set()
+        self.writer.join(5)
+        self.assertFalse(self.writer.is_alive(), "unit writer did not finish")
+        self.assertEqual(self.errors, [])
+        self.temp.cleanup()
+
+    def write_on_request(self):
+        while self.request.wait(5):
+            if self.stopping.is_set():
+                return
+            self.request.clear()
+            try:
+                self.mutation()
+            except Exception as error:
+                self.errors.append(error)
+            finally:
+                self.completed.set()
+
+    def synchronise(self, boundary):
+        if boundary != self.boundary or (self.read_count and not self.repeat):
+            return
+        self.read_count += 1
+        self.request.set()
+        self.assertTrue(self.completed.wait(5), "unit writer did not reach read boundary")
+        self.completed.clear()
+        self.assertEqual(self.errors, [])
+
+    def observe_with_writer(self, mutation, *, boundary="read", repeat=False):
+        self.mutation, self.boundary, self.repeat = mutation, boundary, repeat
+        original_open = Path.open
+        def unit_open(path, *args, **kwargs):
+            if path == self.path and (args[0] if args else kwargs.get("mode")) == "rb":
+                handle = (open(path, "rb", opener=heartbeat_unit_windows_descriptor) if os.name == "nt"
+                          else original_open(path, *args, **kwargs))
+                self.synchronise("open")
+                return HeartbeatReadUnitFile(handle, self.synchronise)
+            return original_open(path, *args, **kwargs)
+        stop = threading.Event()
+        stop.set()
+        with patch.object(Path, "open", unit_open):
+            return heartbeat.observe(self.path, stop)
+
+    def replace_frame(self):
+        replacement = self.path.with_suffix(".next")
+        replacement.write_bytes(b"first-frame\nframe=42\n")
+        before = self.path.stat()
+        os.utime(replacement, ns=(before.st_atime_ns, before.st_mtime_ns+1_000_000))
+        os.replace(replacement, self.path)
+
+    def assert_original_snapshot(self, result):
+        self.assertEqual(result["status"], "observed")
+        self.assertEqual([item["status"] for item in result["attempts"]], ["observed"])
+        self.assertEqual(result["frame"], 41)
+        self.assertEqual(len(result["attempts"]), 1)
+        self.assertEqual(result["sha256"], hashlib.sha256(b"first-frame\nframe=41\n").hexdigest())
+        self.assertEqual(self.path.read_bytes(), b"first-frame\nframe=42\n")
+
+    def test_atomic_replace_after_open_keeps_complete_descriptor_snapshot(self):
+        self.assert_original_snapshot(self.observe_with_writer(self.replace_frame, boundary="open"))
+
+    def test_atomic_replace_after_read_keeps_complete_descriptor_snapshot(self):
+        self.assert_original_snapshot(self.observe_with_writer(self.replace_frame))
+
+    def rewrite_frame(self, raw):
+        before = self.path.stat()
+        self.path.write_bytes(raw)
+        os.utime(self.path, ns=(before.st_atime_ns, before.st_mtime_ns+1_000_000))
+
+    def assert_partial_retries(self, result):
+        self.assertEqual(result["status"], "partial_write")
+        self.assertIsNone(result["frame"])
+        self.assertIsNone(result["mtime_ns"])
+        self.assertEqual([item["status"] for item in result["attempts"]], ["partial_write"]*3)
+
+    def test_in_place_complete_rewrite_during_read_is_rejected(self):
+        inode = self.path.stat().st_ino
+        result = self.observe_with_writer(lambda: self.rewrite_frame(b"first-frame\nframe=42\n"), repeat=True)
+        self.assert_partial_retries(result)
+        self.assertEqual(self.path.stat().st_ino, inode)
+
+    def test_in_place_truncation_during_read_is_rejected(self):
+        inode = self.path.stat().st_ino
+        result = self.observe_with_writer(lambda: self.rewrite_frame(b"first-frame\nframe="), repeat=True)
+        self.assert_partial_retries(result)
+        self.assertEqual(self.path.stat().st_ino, inode)
+
+    def test_malformed_and_truncated_frames_do_not_become_observations(self):
+        stop = threading.Event()
+        stop.set()
+        for raw in (b"", b"first-frame\nframe=", b"first-frame\nframe=0\n", b"first-frame\nframe=41\nextra"):
+            self.path.write_bytes(raw)
+            with self.subTest(raw=raw):
+                self.assert_partial_retries(heartbeat.observe(self.path, stop))
+
+    def test_missing_file_retains_original_missing_retries(self):
+        stop = threading.Event()
+        stop.set()
+        result = heartbeat.observe(self.path.with_name("missing"), stop)
+        self.assertEqual([item["status"] for item in result["attempts"]], ["missing"]*3)
+        self.assertTrue(all(item["frame"] is None and item["mtime_ns"] is None and item["sha256"] is None
+                            for item in result["attempts"]))
+
+    def test_actual_file_error_is_not_relabelled_as_missing_or_partial(self):
+        with self.assertRaises(OSError) as actual:
+            self.path.parent.open("rb")
+        with self.assertRaises(type(actual.exception)) as rejected:
+            heartbeat.observe(self.path.parent, threading.Event())
+        self.assertIs(type(rejected.exception), type(actual.exception))
 
 
 class HostTranscriptBoundaryTests(unittest.TestCase):

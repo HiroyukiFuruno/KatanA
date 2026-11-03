@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from document_host_io import HostEvidenceError
 import future_publication_records as records
@@ -15,6 +16,8 @@ from generated_asset_identity import file_digest
 from generated_identity_fixtures import bundle, git, repository
 from published_git_source import git_source_identity
 from v047_evidence_paths import HOST_FILES, CANONICAL_FILES, HOST_RECEIPT, HOST_MANIFESTS
+from v047_evidence_paths import HOST_ACCEPTANCE
+import document_host_controller as host_controller
 
 ROOT = Path(__file__).resolve().parents[2]
 VERSION = "0.22.47"
@@ -33,8 +36,8 @@ def assert_delta_sync(test, root):
     deltas = {path.parent.name: path for path in (locations[0] / "specs").glob("*/spec.md")}
     test.assertEqual(set(deltas), set(records.POLICIES[VERSION][CHANGE]))
     for capability, path in deltas.items():
-        delta = path.read_text().removeprefix("## ADDED Requirements\n").strip()
-        main = (root / "openspec/specs" / capability / "spec.md").read_text()
+        delta = path.read_text(encoding="utf-8").removeprefix("## ADDED Requirements\n").strip()
+        main = (root / "openspec/specs" / capability / "spec.md").read_text(encoding="utf-8")
         test.assertEqual(main.count(delta), 1, capability)
 
 
@@ -69,6 +72,10 @@ class Publication47Tests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
         repository(self.root, "v0.22.47")
+        git(self.root, "config", "core.autocrlf", "false")
+        for name in ("Cargo.toml", "Cargo.lock"):
+            path = self.root/name
+            path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n"))
         self.write(f"openspec/changes/{CHANGE}/tasks.md", "- [x] 1.1 Impl\n- [ ] 6.7 Archive\n")
         self.write(f"openspec/changes/{CHANGE}/proposal.md", "Published proposal\n")
         for cap in CAPABILITIES:
@@ -77,7 +84,7 @@ class Publication47Tests(unittest.TestCase):
             self.write(f"openspec/specs/{cap}/spec.md",
                        "## Purpose\n\nPurpose.\n\n## Requirements\n\n### Requirement: Old\n\nOld behavior.\n\n### Requirement: New\n\nNew behavior.\n")
         for name in ("check-openspec-task-phase.py", "check-openspec-task-completion.py"):
-            self.write("scripts/release/" + name, (ROOT / "scripts/release" / name).read_text())
+            self.write("scripts/release/" + name, (ROOT / "scripts/release" / name).read_text(encoding="utf-8"))
         self.commit()
         self.source = git(self.root, "rev-parse", "HEAD")
         self.write("evidence/releases/v0.22.47/publication.md", "Published metadata\n")
@@ -89,7 +96,7 @@ class Publication47Tests(unittest.TestCase):
     def write(self, name, text):
         path = self.root / name
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text)
+        path.write_text(text, encoding="utf-8", newline="\n")
 
     def commit(self):
         git(self.root, "add", ".")
@@ -123,7 +130,7 @@ class Publication47Tests(unittest.TestCase):
         archived = self.root / "openspec/changes/archive" / ("2026-11-02-" + CHANGE)
         archived.parent.mkdir(parents=True)
         active.rename(archived)
-        (archived / "tasks.md").write_text("- [x] 1.1 Impl\n- [x] 6.7 Archive\n")
+        (archived / "tasks.md").write_text("- [x] 1.1 Impl\n- [x] 6.7 Archive\n", encoding="utf-8")
         self.commit()
         records.verify_scope(self.root, self.source, VERSION)
         self.write("evidence/releases/v0.22.47/document-host/unknown.json", "unknown\n")
@@ -142,16 +149,35 @@ class Publication47Tests(unittest.TestCase):
         with self.assertRaisesRegex(HostEvidenceError, "complete v47 host"):
             records.verify_v47_record_inventory(self.root)
 
+    def test_records_can_follow_verified_controller_without_relabelling_published_source(self):
+        git(self.root, "switch", "-c", "release/unit-controller", self.source)
+        self.write("scripts/release/postpublication_controller_scope.py", "unit approved controller\n")
+        self.commit()
+        selected = git(self.root, "rev-parse", "HEAD")
+        with patch.object(host_controller, "PUBLISHED_SOURCE", self.source):
+            binding = host_controller.verify_controller(self.root, self.source, selected)
+            self.write(HOST_ACCEPTANCE, json.dumps({"controller":binding}))
+            self.write("evidence/releases/v0.22.47/publication.md", "actual records unit\n")
+            self.commit()
+            changed, _tasks = records.verify_scope(self.root, self.source, VERSION)
+            self.assertIn("scripts/release/postpublication_controller_scope.py", changed)
+            self.assertEqual(binding["published_source"], self.source)
+            self.assertEqual(binding["controller_commit"], selected)
+            self.write("scripts/release/postpublication_controller_scope.py", "later unapproved controller\n")
+            self.commit()
+            with self.assertRaisesRegex(HostEvidenceError, "differs from selected controller"):
+                records.verify_scope(self.root, self.source, VERSION)
+
     def test_unsynced_published_main_spec_is_rejected(self):
         path = self.root / f"openspec/specs/{CAPABILITIES[0]}/spec.md"
-        path.write_text(path.read_text().replace("### Requirement: New\n\nNew behavior.\n", ""))
+        path.write_text(path.read_text(encoding="utf-8").replace("### Requirement: New\n\nNew behavior.\n", ""), encoding="utf-8")
         self.commit()
         source = git(self.root, "rev-parse", "HEAD")
         with self.assertRaisesRegex(HostEvidenceError, "already contain its delta"):
             records.verify_scope(self.root, source, VERSION)
 
     def test_records_paths_are_ignored_by_release_trigger_without_ignoring_assets(self):
-        workflow = (ROOT / ".github/workflows/build-and-release.yml").read_text()
+        workflow = (ROOT / ".github/workflows/build-and-release.yml").read_text(encoding="utf-8")
         trigger = workflow.split("  pull_request:\n", 1)[1].split("  push:\n", 1)[0]
         self.assertIn("      - 'evidence/**'", trigger)
         self.assertIn("      - 'openspec/**'", trigger)
@@ -173,11 +199,11 @@ class Publication47Tests(unittest.TestCase):
         archived = self.root / "openspec/changes/archive" / ("2026-11-01-" + CHANGE)
         archived.parent.mkdir(parents=True)
         active.rename(archived)
-        (archived / "tasks.md").write_text("- [x] 1.1 Impl\n- [x] 6.7 Archive\n")
+        (archived / "tasks.md").write_text("- [x] 1.1 Impl\n- [x] 6.7 Archive\n", encoding="utf-8")
         self.commit()
         records.verify_scope(self.root, self.source, VERSION)
         path = self.root / f"openspec/specs/{CAPABILITIES[0]}/spec.md"
-        path.write_text(path.read_text() + "\n### Requirement: New\n\nNew behavior.\n")
+        path.write_text(path.read_text(encoding="utf-8") + "\n### Requirement: New\n\nNew behavior.\n", encoding="utf-8")
         self.commit()
         with self.assertRaisesRegex(HostEvidenceError, "main spec must remain unchanged"):
             records.verify_scope(self.root, self.source, VERSION)
@@ -193,14 +219,14 @@ class Publication47Tests(unittest.TestCase):
 
     def test_workflow_preserves_normal_release_and_exact_record_routes(self):
         helper = runpy.run_path(str(ROOT / "scripts/release/test-release-flow-contract.py"))
-        workflow = (ROOT / ".github/workflows/release-readiness.yml").read_text()
+        workflow = (ROOT / ".github/workflows/release-readiness.yml").read_text(encoding="utf-8")
         route = helper["run_readiness_routing"]
         self.assertEqual([VERSION, "--post-release-evidence"], route(workflow, BRANCH))
         for branch in ("release/v0.22.47", BRANCH + "-extra"):
             self.assertEqual([VERSION, "--pr-bootstrap"], route(workflow, branch))
 
     def test_other_branches_and_post_release_modes_cannot_bypass_scope_guard(self):
-        source = (ROOT / "scripts/release/check-pr-ready.sh").read_text()
+        source = (ROOT / "scripts/release/check-pr-ready.sh").read_text(encoding="utf-8")
         guard = source.split("# 5. Version increment or published-release guard\n", 1)[1].split(
             'if [[ "$TASK_GATE_MODE" == "post-release-evidence" ||', 1)[0]
         for branch, mode, accepted in ((BRANCH, "post-release-evidence", True),
@@ -226,29 +252,29 @@ class Publication47ReceiptTests(unittest.TestCase):
                              "sha256": file_digest(path), "download_url": "https://example.invalid/" + path.name}
                              for index, path in enumerate(sorted(assets.iterdir())) if path.name != "checksums.txt"}
             identity = {"release_id": 10, "assets": asset_records}
-            (canonical / "publication-identity.json").write_text(json.dumps(identity))
+            (canonical / "publication-identity.json").write_text(json.dumps(identity), encoding="utf-8")
             host = {"source_commit": source, "release_id": 10, "assets": asset_records}
             (root / HOST_RECEIPT).parent.mkdir(parents=True)
-            (root / HOST_RECEIPT).write_text(json.dumps(host))
+            (root / HOST_RECEIPT).write_text(json.dumps(host), encoding="utf-8")
             for platform, name in HOST_MANIFESTS.items():
-                (root / name).write_text(json.dumps(builds[platform]))
+                (root / name).write_text(json.dumps(builds[platform]), encoding="utf-8")
             records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
             with self.assertRaisesRegex(HostEvidenceError, "run or attempt"):
                 records.verify_v47_host_binding(root, {"id": 10}, source, "123", "1", canonical)
             changed_host = copy.deepcopy(host)
             changed_host["assets"][next(iter(changed_host["assets"]))]["sha256"] = "0" * 64
-            (root / HOST_RECEIPT).write_text(json.dumps(changed_host))
+            (root / HOST_RECEIPT).write_text(json.dumps(changed_host), encoding="utf-8")
             with self.assertRaisesRegex(HostEvidenceError, "public asset"):
                 records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
-            (root / HOST_RECEIPT).write_text(json.dumps(host))
+            (root / HOST_RECEIPT).write_text(json.dumps(host), encoding="utf-8")
             changed_manifest = copy.deepcopy(builds["windows"])
             changed_manifest["provenance"]["source_commit"] = "0" * 40
-            (root / HOST_MANIFESTS["windows"]).write_text(json.dumps(changed_manifest))
+            (root / HOST_MANIFESTS["windows"]).write_text(json.dumps(changed_manifest), encoding="utf-8")
             with self.assertRaisesRegex(HostEvidenceError, "build manifest"):
                 records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
-            (root / HOST_MANIFESTS["windows"]).write_text(json.dumps(builds["windows"]))
+            (root / HOST_MANIFESTS["windows"]).write_text(json.dumps(builds["windows"]), encoding="utf-8")
             host["release_id"] = 11
-            (root / HOST_RECEIPT).write_text(json.dumps(host))
+            (root / HOST_RECEIPT).write_text(json.dumps(host), encoding="utf-8")
             with self.assertRaisesRegex(HostEvidenceError, "public release"):
                 records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
 

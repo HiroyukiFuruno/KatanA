@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import ctypes
 import ctypes.util
+import errno
 import json
 import os
 import platform
@@ -137,7 +138,8 @@ def _read_memory(result: dict[str, Any], pid: int, system: str) -> None:
         result.update(rss_bytes=_linux_memory(pid), rss_source=f"/proc/{pid}/status:VmRSS",
                       physical_footprint_source="unsupported on Linux sampler")
 
-def sample_for_platform(pid: int, system: str, expected_identity: dict[str, str] | None = None) -> dict[str, Any]:
+def sample_for_platform(pid: int, system: str, expected_identity: dict[str, str] | None = None,
+                        *, raise_on_missing_process: bool = False) -> dict[str, Any]:
     validate_pid(pid)
     result = _base(pid)
     if system not in ("Darwin", "Linux"):
@@ -155,6 +157,9 @@ def sample_for_platform(pid: int, system: str, expected_identity: dict[str, str]
             raise RuntimeError("process identity changed during memory sample")
         result["status"] = "ok"
     except (OSError, RuntimeError, ValueError, UnicodeError, ctypes.ArgumentError) as error:
+        # WHY: mainの終了競合だけをcollectorの実exit検証へ渡し、通常sampleの失敗契約は維持する。
+        if raise_on_missing_process and isinstance(error, ProcessLookupError) and error.errno == errno.ESRCH:
+            raise
         # WHY: 識別に失敗した値は不採用とし、部分的な古い値を公開しない。
         result["rss_bytes"] = None
         result["rss_source"] = None
@@ -163,8 +168,10 @@ def sample_for_platform(pid: int, system: str, expected_identity: dict[str, str]
         result["error"] = f"{type(error).__name__}: {error}"
     return result
 
-def sample(pid: int, expected_identity: dict[str, str] | None = None) -> dict[str, Any]:
-    return sample_for_platform(pid, platform.system(), expected_identity)
+def sample(pid: int, expected_identity: dict[str, str] | None = None,
+           *, raise_on_missing_process: bool = False) -> dict[str, Any]:
+    return sample_for_platform(pid, platform.system(), expected_identity,
+                               raise_on_missing_process=raise_on_missing_process)
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)

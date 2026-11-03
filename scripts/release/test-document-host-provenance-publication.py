@@ -2,6 +2,7 @@
 """型/metadataの合成UT専用。実配布受入データや実Release成功には使用しない。"""
 
 import copy
+from contextlib import contextmanager
 import json
 import os
 from pathlib import Path
@@ -10,6 +11,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+import document_host_acceptance as acceptance
 from document_host_acceptance import provenance
 from document_host_io import HostEvidenceError, digest, legacy, write_new
 from document_host_publication import ASSETS, TARGETS, manifest_metadata, module, verify_download_receipt
@@ -17,6 +19,125 @@ from document_host_publication import ASSETS, TARGETS, manifest_metadata, module
 
 def unit_sha(label):
     return digest(("SYNTHETIC-UNIT-TEST-ONLY:"+label).encode())
+
+
+class PublishedApprovalBindingTests(unittest.TestCase):
+    """固定PのGit読取境界を注入するUT。実published Pのsmokeとは区別する。"""
+
+    @contextmanager
+    def fixture(self):
+        from document_host_controller import PUBLISHED_SOURCE
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            content = "SYNTHETIC UNIT ONLY: latest approved text\n追記された合成承認文\n".encode("utf-8")
+            path = root / acceptance.APPROVAL
+            path.parent.mkdir(parents=True)
+            path.write_bytes(content)
+            environment = legacy().git_environment()
+            original_run = subprocess.run
+            def git(*args):
+                return original_run(["git", "--no-replace-objects", "-C", str(root),
+                                     "-c", "user.name=Host Approval Unit Test", "-c", "user.email=unit@example.invalid",
+                                     "-c", "core.autocrlf=false", "-c", f"core.attributesFile={os.devnull}", *args],
+                                    check=True, capture_output=True, env=environment).stdout
+            git("init", "-q")
+            git("add", acceptance.APPROVAL)
+            git("commit", "-q", "-m", "Synthetic approval fixture")
+            commit = git("rev-parse", "HEAD").decode("ascii").strip()
+            def read_fixed_blob(command, **options):
+                if command == ["git", "rev-parse", "--local-env-vars"]:
+                    return original_run(command, **options)
+                self.assertEqual(command, ["git", "--no-replace-objects", "-C", str(root), "show",
+                                           PUBLISHED_SOURCE+":"+acceptance.APPROVAL])
+                # WHY: 本物のtemp Git blobへ読取だけ写像し、CIのshallow公開履歴へ依存しない。
+                return original_run(command[:-1]+[commit+":"+acceptance.APPROVAL], **options)
+            source = {"source_commit": PUBLISHED_SOURCE, "source_tree_sha256": unit_sha("source"),
+                      "cargo_lock_sha256": unit_sha("lock"), "published_dependencies": {}}
+            evidence = dict.fromkeys(acceptance.MANIFEST | {"controller"})
+            evidence.update(schema="katana-host-acceptance-v1", version="v0.22.47", scope=acceptance.SCOPE,
+                            policy=acceptance.POLICY, approval_sha256=digest(content), phase="postpublication",
+                            claim="published_macos_host_accepted", provenance=source, candidate={},
+                            controller={"schema": "katana-v47-host-controller-v1", "published_source": PUBLISHED_SOURCE,
+                                        "controller_commit": "c"*40, "controller_source_tree_sha256": unit_sha("controller")})
+            yield root, evidence, read_fixed_blob, git, commit, content
+
+    def test_published_blob_approval_passes_then_next_bundle_contract_is_still_required(self):
+        with self.fixture() as (root, evidence, reader, _git, _commit, _content):
+            with patch.object(acceptance, "provenance", return_value=evidence["provenance"]) as validated, \
+                    patch.object(acceptance.subprocess, "run", side_effect=reader):
+                with self.assertRaisesRegex(HostEvidenceError, "host bundle: missing or unknown fields"):
+                    acceptance.verify_payload(root, evidence, phase="postpublication", publication_version="v0.22.47")
+            validated.assert_called_once()
+
+    def test_working_text_or_record_hash_tamper_cannot_replace_published_approval(self):
+        with self.fixture() as (root, evidence, reader, _git, _commit, content):
+            for change in ("working", "record", "both"):
+                with self.subTest(change=change):
+                    changed = copy.deepcopy(evidence)
+                    (root / acceptance.APPROVAL).write_bytes(content if change == "record" else b"forged approval\n")
+                    if change in ("record", "both"):
+                        changed["approval_sha256"] = digest(b"forged approval\n")
+                    with patch.object(acceptance, "provenance", return_value=evidence["provenance"]), \
+                            patch.object(acceptance.subprocess, "run", side_effect=reader):
+                        with self.assertRaisesRegex(HostEvidenceError, "host approval text changed"):
+                            acceptance.verify_payload(root, changed, phase="postpublication", publication_version="v0.22.47")
+
+    def test_wrong_source_is_rejected_before_reading_approval(self):
+        with self.fixture() as (root, evidence, _reader, _git, _commit, _content):
+            evidence["provenance"]["source_commit"] = "b"*40
+            with patch.object(acceptance, "published_approval_sha256") as getter:
+                with self.assertRaisesRegex(HostEvidenceError, "controller binding differs from published product source"):
+                    acceptance.verify_payload(root, evidence, phase="postpublication", publication_version="v0.22.47")
+            getter.assert_not_called()
+
+    def test_missing_trusted_published_blob_is_rejected(self):
+        with self.fixture() as (root, evidence, _reader, _git, _commit, _content):
+            with patch.object(acceptance, "provenance", return_value=evidence["provenance"]):
+                with self.assertRaisesRegex(HostEvidenceError, "published host approval blob unavailable"):
+                    acceptance.verify_payload(root, evidence, phase="postpublication", publication_version="v0.22.47")
+
+    def test_git_replace_cannot_rebind_approval_blob(self):
+        with self.fixture() as (root, evidence, reader, git, commit, content):
+            path = root / acceptance.APPROVAL
+            path.write_bytes(b"replacement commit is not the approved text\n")
+            git("add", acceptance.APPROVAL)
+            git("commit", "-q", "-m", "Synthetic malicious replacement")
+            replacement = git("rev-parse", "HEAD").decode("ascii").strip()
+            git("replace", commit, replacement)
+            replaced = subprocess.run(["git", "-C", str(root), "show", commit+":"+acceptance.APPROVAL],
+                                      check=True, capture_output=True, env=legacy().git_environment()).stdout
+            self.assertNotEqual(replaced, content)
+            path.write_bytes(content)
+            with patch.object(acceptance.subprocess, "run", side_effect=reader):
+                self.assertEqual(acceptance.published_approval_sha256(root), digest(content))
+
+    def test_legacy_v42_keeps_original_constant_and_early_approval_check(self):
+        self.assertEqual(acceptance.APPROVAL_SHA256, "42701122e21f9c3af53cf09d54eb03dd212677a832143b7371c3e090177a4bcd")
+        with self.fixture() as (root, evidence, _reader, _git, _commit, content):
+            evidence.pop("controller")
+            evidence["version"] = "v0.22.42"
+            with patch.object(acceptance, "APPROVAL_SHA256", digest(content)), \
+                    patch.object(acceptance, "published_approval_sha256") as getter, \
+                    patch.object(acceptance, "provenance", return_value=evidence["provenance"]) as validated:
+                with self.assertRaisesRegex(HostEvidenceError, "host bundle: missing or unknown fields"):
+                    acceptance.verify_payload(root, evidence, phase="postpublication", publication_version="v0.22.42")
+                validated.reset_mock()
+                (root / acceptance.APPROVAL).write_bytes(content+b"unauthorized change\n")
+                with self.assertRaisesRegex(HostEvidenceError, "host approval text changed"):
+                    acceptance.verify_payload(root, evidence, phase="postpublication", publication_version="v0.22.42")
+                validated.assert_not_called()
+                getter.assert_not_called()
+
+    def test_unknown_phase_version_or_v47_prepublish_never_reads_published_approval(self):
+        with self.fixture() as (root, evidence, _reader, _git, _commit, _content):
+            with patch.object(acceptance, "published_approval_sha256") as getter, \
+                    patch.object(acceptance, "provenance") as validated:
+                for phase, version in (("unknown", "v0.22.47"), ("postpublication", "v0.22.48"),
+                                       ("prepublish", "v0.22.47")):
+                    with self.subTest(phase=phase, version=version), self.assertRaises(HostEvidenceError):
+                        acceptance.verify_payload(root, evidence, phase=phase, publication_version=version)
+                getter.assert_not_called()
+                validated.assert_not_called()
 
 
 class CheckoutSourceBytesTests(unittest.TestCase):
