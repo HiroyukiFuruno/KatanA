@@ -630,8 +630,14 @@ class WorkerSnapshotBoundaryTests(unittest.TestCase):
                 tables = [self.ps(2), self.ps(3), self.ps(4, 5) if final_invalid else self.ps(4), self.ps()]
                 with patch.object(processes.subprocess, "run", side_effect=tables) as table_read, \
                         patch.object(processes, "process_identity", side_effect=identity):
-                    with self.assertRaisesRegex(HostEvidenceError, "cannot be discarded" if final_invalid else "three attempts"):
-                        observer.snapshot()
+                    if final_invalid:
+                        with self.assertRaisesRegex(HostEvidenceError, "cannot be discarded"):
+                            observer.snapshot()
+                    else:
+                        result = observer.snapshot()
+                        self.assertEqual(result["children"], [])
+                        self.assertEqual([row["pid"] for row in result["terminated_children"]], [2, 3, 4])
+                        self.assertTrue(all(row["pid_absent"] for row in result["terminated_children"]))
                 self.assertEqual(table_read.call_count, 4)
 
     def pending_boundary(self, category):
@@ -685,7 +691,7 @@ class WorkerSnapshotBoundaryTests(unittest.TestCase):
                 self.assertEqual(result["main_cpu_percent"], 7.5)
                 self.assert_final_retirement(result, observer, category)
 
-    def test_earlier_pending_resolution_cannot_admit_later_distinct_pid_churn(self):
+    def test_earlier_pending_resolution_and_distinct_retirement_accept_final_empty(self):
         observer = self.observer()
         for pid in (2, 3):
             self.verified(observer, pid)
@@ -695,9 +701,44 @@ class WorkerSnapshotBoundaryTests(unittest.TestCase):
             return self.identity(pid)
         with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), self.ps(2), self.ps(3), self.ps()]) as table_read, \
                 patch.object(processes, "process_identity", side_effect=identity):
-            with self.assertRaisesRegex(HostEvidenceError, "three attempts"):
-                observer.snapshot()
+            result = observer.snapshot()
         self.assertEqual(table_read.call_count, 4)
+        self.assertEqual(result["children"], [])
+        self.assertEqual([row["pid"] for row in result["terminated_children"]], [2, 3])
+        self.assertTrue(all(row["pid_absent"] for row in result["terminated_children"]))
+        self.assertEqual(len(result["pending_child_probes"]), 1)
+
+    def test_distinct_retirements_final_empty_preserves_each_classification(self):
+        for category in ("verified", "identified", "unknown"):
+            with self.subTest(category=category):
+                observer = self.observer()
+                if category == "verified":
+                    for pid in (2, 3, 4):
+                        self.verified(observer, pid)
+                def identity(pid):
+                    if pid != 1 and category != "identified":
+                        raise ProcessLookupError(errno.ESRCH, "distinct retired child")
+                    return self.identity(pid)
+                def measurement(_pid, _identity, **_options):
+                    raise ProcessLookupError(errno.ESRCH, "distinct identified retirement")
+                with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), self.ps(3), self.ps(4), self.ps()]) as table_read, \
+                        patch.object(processes, "process_identity", side_effect=identity), \
+                        patch.object(processes, "sample", side_effect=measurement):
+                    result = observer.snapshot()
+                self.assertEqual(table_read.call_count, 4)
+                self.assertEqual(result["children"], [])
+                self.assert_distinct_classifications(result, category)
+
+    def assert_distinct_classifications(self, result, category):
+        key = {"verified": "terminated_children", "identified": "identified_retired_children",
+               "unknown": "unknown_retired_children"}[category]
+        self.assertEqual([row["pid"] for row in result[key]], [2, 3, 4])
+        for row in result[key]:
+            self.assertTrue(row["pid_absent"])
+            self.assertFalse(set(row) & {"memory", "rss_bytes", "role"})
+            if category == "unknown":
+                self.assertFalse(set(row) & {"identified_identity", "previous_verified", "identity"})
+                self.assertEqual(row["classification"], "UNKNOWN-RETIRED")
 
     def test_final_pending_absence_cannot_discard_new_or_retained_owned_candidates(self):
         for candidate in ("new", "foreign", "owned_reparented"):
@@ -923,6 +964,9 @@ class ActualWorkerSnapshotTests(unittest.TestCase):
     def test_actual_same_pending_worker_final_absence_uses_four_existing_tables(self):
         self.actual_worker_exit("zombie_final")
 
+    def test_actual_three_distinct_children_final_absence_uses_four_existing_tables(self):
+        self.actual_worker_exit("distinct_final")
+
     def test_actual_unreaped_first_seen_child_is_not_claimed_absent_while_present(self):
         self.actual_worker_exit("zombie_unknown")
 
@@ -958,6 +1002,10 @@ for command in sys.stdin:
     elif command.strip()=="reap-final":
         print(child.wait(timeout=5),flush=True)
         child=None
+    elif command.strip()=="exit-final":
+        child.stdin.write(b"exit\\n"); child.stdin.flush()
+        print(child.wait(timeout=5),flush=True)
+        child=None
     else:
         if child is not None:
             child.stdin.write(b"exit\\n"); child.stdin.flush()
@@ -984,6 +1032,7 @@ for command in sys.stdin:
             exit_requested = []
             zombie_proofs = []
             snapshot_reads = []
+            distinct_children, distinct_completed = [worker_pid], []
             def replace_worker():
                 if exit_requested:
                     return
@@ -1006,6 +1055,15 @@ for command in sys.stdin:
                     self.assertEqual(app.stdout.readline().strip(), "0")
                     replaced.append(int(app.stdout.readline()))
             def identity(pid):
+                if stage == "distinct_final":
+                    if pid == distinct_children[-1] and pid not in distinct_completed:
+                        app.stdin.write("replace\n" if len(distinct_children) < 3 else "exit-final\n")
+                        app.stdin.flush()
+                        self.assertEqual(app.stdout.readline().strip(), "0")
+                        distinct_completed.append(pid)
+                        if len(distinct_children) < 3:
+                            distinct_children.append(int(app.stdout.readline()))
+                    return original_identity(pid)
                 if pid == worker_pid:
                     replace_worker()
                 return original_identity(pid)
@@ -1032,10 +1090,24 @@ for command in sys.stdin:
                     self.assertEqual(app.stdout.readline().strip(), "0")
                     replaced.append(worker_pid if stage == "zombie_final" else int(app.stdout.readline()))
                 return observed
-            boundary = (patch.object(processes, "process_identity", side_effect=identity) if stage in ("identity", "first_seen", "zombie_known", "zombie_unknown", "zombie_final")
+            boundary = (patch.object(processes, "process_identity", side_effect=identity) if stage in ("identity", "first_seen", "zombie_known", "zombie_unknown", "zombie_final", "distinct_final")
                         else patch.object(sampler, "_read_memory", side_effect=read_memory))
             with boundary, patch.object(processes.subprocess, "run", side_effect=ps_then_reap):
                 result = observer.snapshot()
+            if stage == "distinct_final":
+                self.assertEqual(len(snapshot_reads), 4)
+                self.assertEqual(distinct_completed, distinct_children)
+                for pid, table in zip(distinct_children, snapshot_reads[:3]):
+                    self.assertIn(pid, processes.process_table(table))
+                    self.assertNotIn(pid, processes.process_table(snapshot_reads[3]))
+                self.assertEqual(result["children"], [])
+                self.assertEqual(result["terminated_children"][0]["pid"], worker_pid)
+                self.assertEqual([row["pid"] for row in result["unknown_retired_children"]], distinct_children[1:])
+                self.assertTrue(all(row["pid_absent"] for row in result["unknown_retired_children"]))
+                app.stdin.write("quit\n"); app.stdin.flush()
+                self.assertEqual(app.wait(timeout=5), 0)
+                self.assertEqual(observer.finish()["children"], [])
+                return
             if stage == "zombie_final":
                 self.assertEqual(len(snapshot_reads), 4)
                 self.assertEqual(zombie_proofs, [worker_pid, worker_pid])

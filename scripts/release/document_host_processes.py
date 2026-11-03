@@ -209,10 +209,10 @@ class ProcessObserver:
                         "invalid actual child observation cannot be discarded by OS table refresh")
                 # WHY: 対象PIDを削るのでなく、main/新descendant/retained ownedを全て実OSから作り直す。
                 current = refreshed
-                if (attempt < 2 or not pending_retirement_completed or pending
+                if (attempt < 2 or pending
                         or descendants(current[1], self.main_pid) or set(self.owned) & set(current[1])):
                     continue
-                # WHY: 同じ保留PIDが最後のreadで消失し全候補も空なら、退役済みの表で通常returnできる。
+                # WHY: 最後のfresh表で保留PIDと全候補の不在が確定すれば、退役履歴に依存せず通常returnできる。
                 output, table, observed_at = current
                 actual_main_alive = check_main(table)
                 children = []
