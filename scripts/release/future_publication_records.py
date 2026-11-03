@@ -11,7 +11,7 @@ import tempfile
 
 from document_host_io import decode, fields, integer, moment, read, require, sha
 from future_publication_download import api, selected_assets, verify_unchanged
-from generated_asset_identity import file_digest, manifest_metadata, run_identity
+from generated_asset_identity import assets_for, file_digest, manifest_metadata, run_identity
 from postpublication_controller_scope import git, validate_worktree_clean
 from postpublication_run_admission import admit
 from postpublication_source_binding import COMMIT_PATTERN, REPOSITORY, verify_tag_source
@@ -258,7 +258,10 @@ def verify_v47_host_binding(root, release, source, run, attempt, canonical):
     identity = decode(read(canonical / "publication-identity.json"))
     require(host["source_commit"] == source and host["release_id"] == release["id"] == identity["release_id"],
             "host receipt differs from admitted public release")
-    require(set(host["assets"]) == set(identity["assets"]), "host asset set differs from published identity")
+    payloads = set().union(*assets_for("v0.22.47").values())
+    require(set(host["assets"]) == payloads, "host payload asset set differs from published release")
+    require(set(identity["assets"]) == payloads | {"checksums.txt"},
+            "canonical asset set differs from published release")
     for name, item in host["assets"].items():
         actual = identity["assets"][name]
         require(all(item[key] == actual[key] for key in ("asset_id", "size", "sha256", "download_url")),
