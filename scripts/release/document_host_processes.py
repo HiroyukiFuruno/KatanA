@@ -77,6 +77,29 @@ class ProcessObserver:
             require(alive == main_alive, "normal main exit was not observed by the OS")
             return alive
 
+        def verified_worker(pid, identity=None):
+            previous = verified.get(pid)
+            return (previous is not None and previous["identity"]["executable"] == str(self.worker)
+                    and previous["executable_sha256"] == self.hashes[self.worker]
+                    and self.owned.get(pid) == previous["identity"] and pid in current_descendants
+                    and (identity is None or identity == previous["identity"]))
+
+        def retired_worker(pid, error, stage, identity=None):
+            if not (isinstance(error, ProcessLookupError) and error.errno == errno.ESRCH
+                    and verified_worker(pid, identity)):
+                return None
+            fresh = read_table()
+            check_main(fresh[1])
+            if pid in fresh[1]:
+                return None
+            terminated.append({"pid": pid, "previous_verified": verified[pid],
+                               "error": "ProcessLookupError", "errno": errno.ESRCH,
+                               "observation_stage": stage,
+                               "before_observed_at": observed_at, "before_ps": output,
+                               "after_observed_at": fresh[2], "after_ps": fresh[0],
+                               "main_identity": self.main_identity, "pid_absent": True})
+            return fresh
+
         current = read_table()
         for attempt in range(3):
             self.unchanged()
@@ -90,21 +113,10 @@ class ProcessObserver:
                 try:
                     identity = process_identity(pid)
                 except (OSError, RuntimeError, ValueError) as error:
-                    previous = verified.get(pid)
-                    known_worker = (previous is not None and previous["identity"]["executable"] == str(self.worker)
-                                    and previous["executable_sha256"] == self.hashes[self.worker]
-                                    and self.owned.get(pid) == previous["identity"] and pid in current_descendants)
-                    if isinstance(error, ProcessLookupError) and error.errno == errno.ESRCH and known_worker:
-                        fresh = read_table()
-                        check_main(fresh[1])
-                        if pid not in fresh[1]:
-                            terminated.append({"pid": pid, "previous_verified": previous,
-                                               "error": "ProcessLookupError", "errno": errno.ESRCH,
-                                               "before_observed_at": observed_at, "before_ps": output,
-                                               "after_observed_at": fresh[2], "after_ps": fresh[0],
-                                               "main_identity": self.main_identity, "pid_absent": True})
-                            refreshed = fresh
-                            continue
+                    fresh = retired_worker(pid, error, "identity")
+                    if fresh is not None:
+                        refreshed = fresh
+                        continue
                     children.append({"pid": pid, "ppid": table[pid][0], "status": "identity_unobserved",
                                      "error": type(error).__name__})
                     continue
@@ -114,7 +126,16 @@ class ProcessObserver:
                     require(pid not in current_descendants, "actual owned child PID/start/path changed")
                     continue
                 self.owned[pid] = identity
-                measurement = sample(pid, identity)
+                try:
+                    # WHY: 成功履歴と今回identityが一致するworkerだけ、文字列化前のESRCHを照合する。
+                    measurement = (sample(pid, identity, raise_on_missing_process=True)
+                                   if verified_worker(pid, identity) else sample(pid, identity))
+                except ProcessLookupError as error:
+                    fresh = retired_worker(pid, error, "memory", identity)
+                    # WHY: childの例外をmain終了待ちへ流さず、不在未証明はその場で不合格にする。
+                    require(fresh is not None, f"actual worker memory failure without proven exit: PID {pid}: {error}")
+                    refreshed = fresh
+                    continue
                 role = "office_sidecar" if identity["executable"] == str(self.worker) else "unclassified_descendant"
                 children.append({"pid": pid, "ppid": table[pid][0], "identity": identity,
                                  "cpu_percent": table[pid][1], "memory": measurement,

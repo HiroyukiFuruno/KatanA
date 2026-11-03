@@ -298,7 +298,7 @@ class WorkerSnapshotBoundaryTests(unittest.TestCase):
         return {"pid": pid, "executable": str(Path("/main" if pid == 1 else "/worker")),
                 "start_identity": f"actual-start-{pid}"}
 
-    def measurement(self, pid, identity):
+    def measurement(self, pid, identity, **_options):
         return {"status": "ok", "pid": pid, "identity": identity,
                 "observed_at": "2026-11-03T00:00:00+00:00", "rss_bytes": 4096}
 
@@ -345,6 +345,78 @@ class WorkerSnapshotBoundaryTests(unittest.TestCase):
                 patch.object(processes, "sample", side_effect=self.measurement):
             result = observer.snapshot()
         self.assertEqual([child["pid"] for child in result["children"]], [3, 4])
+
+    def test_typed_memory_esrch_uses_same_proof_only_for_verified_worker(self):
+        for known, remains, error in ((True, False, ProcessLookupError(errno.ESRCH, "gone")),
+                                     (True, True, ProcessLookupError(errno.ESRCH, "live")),
+                                     (True, False, ProcessLookupError(errno.EIO, "not ESRCH")),
+                                     (False, False, None)):
+            with self.subTest(known=known, remains=remains, error=error):
+                observer = self.observer()
+                if known:
+                    self.verified(observer, 2)
+                def measurement(pid, identity, **options):
+                    self.assertEqual(options.get("raise_on_missing_process", False), known)
+                    if known:
+                        raise error
+                    return self.measurement(pid, identity) | {"status": "error", "rss_bytes": None,
+                                                             "error": "ProcessLookupError: untrusted text"}
+                with patch.object(processes.subprocess, "run", side_effect=[self.ps(2), self.ps(2) if remains else self.ps()]), \
+                        patch.object(processes, "process_identity", side_effect=self.identity), \
+                        patch.object(processes, "sample", side_effect=measurement):
+                    if known and (remains or error.errno != errno.ESRCH):
+                        with self.assertRaisesRegex(HostEvidenceError, "without proven exit"):
+                            observer.snapshot()
+                    else:
+                        result = observer.snapshot()
+                        if known:
+                            self.assertEqual(result["children"], [])
+                            self.assertEqual(result["terminated_children"][0]["observation_stage"], "memory")
+                        else:
+                            self.assertEqual(result["children"][0]["status"], "memory_unobserved")
+                            self.assertNotIn("terminated_children", result)
+
+    def test_other_invalid_child_cannot_be_erased_by_memory_esrch_refresh(self):
+        for retiring, invalid in ((2, 3), (3, 2)):
+            for failure in ("unknown_esrch", "permission", "foreign", "memory", "memory_identity"):
+                with self.subTest(retiring=retiring, invalid=invalid, failure=failure):
+                    observer = self.observer()
+                    self.verified(observer, retiring)
+                    def identity(pid):
+                        if pid == invalid and failure in ("unknown_esrch", "permission"):
+                            raise (ProcessLookupError(errno.ESRCH, "gone") if failure == "unknown_esrch"
+                                   else PermissionError(errno.EACCES, "denied"))
+                        value = self.identity(pid)
+                        return value | {"executable": "/foreign"} if pid == invalid and failure == "foreign" else value
+                    def measurement(pid, value, **_options):
+                        if pid == retiring:
+                            raise ProcessLookupError(errno.ESRCH, "gone during memory")
+                        result = self.measurement(pid, value)
+                        if failure == "memory":
+                            return result | {"status": "error", "rss_bytes": None, "error": "PermissionError"}
+                        if failure == "memory_identity":
+                            return result | {"identity": value | {"start_identity": "wrong"}}
+                        return result
+                    with patch.object(processes.subprocess, "run", side_effect=[self.ps(2, 3), self.ps()]), \
+                            patch.object(processes, "process_identity", side_effect=identity), \
+                            patch.object(processes, "sample", side_effect=measurement):
+                        with self.assertRaisesRegex(HostEvidenceError, "cannot be discarded"):
+                            observer.snapshot()
+
+    def test_non_esrch_memory_errors_never_refresh(self):
+        for failure in ("PermissionError", "OSError", "RuntimeError"):
+            with self.subTest(failure=failure):
+                observer = self.observer()
+                self.verified(observer, 2)
+                measurement = self.measurement(2, self.identity(2)) | {"status": "error", "rss_bytes": None,
+                                                                       "error": failure}
+                with patch.object(processes.subprocess, "run", return_value=self.ps(2)) as table_read, \
+                        patch.object(processes, "process_identity", side_effect=self.identity), \
+                        patch.object(processes, "sample", return_value=measurement):
+                    result = observer.snapshot()
+                self.assertEqual(result["children"][0]["status"], "memory_unobserved")
+                self.assertNotIn("terminated_children", result)
+                self.assertEqual(table_read.call_count, 1)
 
     def test_unverified_or_live_worker_esrch_is_not_retired(self):
         for known, remains, error in [(False, False, ProcessLookupError(errno.ESRCH, "gone")),
@@ -414,7 +486,7 @@ class WorkerSnapshotBoundaryTests(unittest.TestCase):
                             raise PermissionError(errno.EACCES, "denied")
                         value = self.identity(pid)
                         return value | {"executable": "/foreign"} if pid == invalid and failure == "foreign" else value
-                    def measurement(pid, value):
+                    def measurement(pid, value, **_options):
                         result = self.measurement(pid, value)
                         if pid == invalid and failure == "memory":
                             return result | {"status": "error", "rss_bytes": None}
@@ -449,6 +521,15 @@ class WorkerSnapshotBoundaryTests(unittest.TestCase):
 @unittest.skipUnless(platform.system() == "Darwin", "actual Darwin worker identity/libproc lifecycle")
 class ActualWorkerSnapshotTests(unittest.TestCase):
     def test_real_worker_exits_between_ps_and_identity_then_fresh_child_is_observed(self):
+        self.actual_worker_exit("identity")
+
+    def test_real_worker_exits_before_memory_read_then_fresh_memory_is_observed(self):
+        self.actual_worker_exit("memory_before")
+
+    def test_real_worker_exits_after_memory_read_then_fresh_memory_is_observed(self):
+        self.actual_worker_exit("memory_after")
+
+    def actual_worker_exit(self, stage):
         # WHY: unitの境界hookで終了順序だけ決め、PID/identity/RSS/再取得psは実OSを使う。
         script = '''
 import subprocess, sys
@@ -477,20 +558,34 @@ for command in sys.stdin:
             self.assertEqual([row["pid"] for row in initial["children"]], [worker_pid])
             self.assertEqual(initial["children"][0]["memory"]["status"], "ok")
             original_identity = processes.process_identity
+            original_read = sampler._read_memory
             replaced = []
-            def identity(pid):
-                if pid == worker_pid and not replaced:
+            def replace_worker():
+                if not replaced:
                     app.stdin.write("replace\n"); app.stdin.flush()
                     self.assertEqual(app.stdout.readline().strip(), "0")
                     replaced.append(int(app.stdout.readline()))
+            def identity(pid):
+                if pid == worker_pid:
+                    replace_worker()
                 return original_identity(pid)
-            with patch.object(processes, "process_identity", side_effect=identity):
+            def read_memory(result, pid, system):
+                if pid == worker_pid and stage == "memory_before":
+                    replace_worker()
+                original_read(result, pid, system)
+                if pid == worker_pid and stage == "memory_after":
+                    replace_worker()
+            boundary = (patch.object(processes, "process_identity", side_effect=identity) if stage == "identity"
+                        else patch.object(sampler, "_read_memory", side_effect=read_memory))
+            with boundary:
                 result = observer.snapshot()
             self.assertEqual([row["pid"] for row in result["children"]], replaced)
             self.assertGreater(result["children"][0]["memory"]["rss_bytes"], 0)
             self.assertGreater(result["children"][0]["memory"]["physical_footprint_bytes"], 0)
             self.assertTrue(result["terminated_children"][0]["pid_absent"])
             self.assertEqual(result["terminated_children"][0]["pid"], worker_pid)
+            self.assertEqual(result["terminated_children"][0]["observation_stage"],
+                             "identity" if stage == "identity" else "memory")
             app.stdin.write("quit\n"); app.stdin.flush()
             self.assertEqual(app.wait(timeout=5), 0)
             self.assertEqual(observer.finish()["children"], [])
