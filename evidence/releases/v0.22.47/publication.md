@@ -107,8 +107,9 @@ C10の最新レビューはP0/P1ゼロ、2threadは返信・resolve済み。
 1280×2400、PNG SHA256 `6b5ece9d9d3548e4f0250d9126535e10daf90768029f77e9b2ed46c8c3d26527`。
 取得時刻は2026-11-02 22:53:11.920〜22:54:45.330925 UTC、KRRは0.4.23。
 再生成入口は `scripts/screenshot/generate-sample-diagrams-reference.sh`。入力hash、実Git tree、geometry、interactionはreceiptに記録した。
-C10へ再ラベルしていない。[canonical handoff #338](https://github.com/HiroyukiFuruno/KatanA/issues/338)で公開commitへの参照を共有する。
+C10へ再ラベルしていない。[canonical handoff #338](https://github.com/HiroyukiFuruno/KatanA/issues/338#issuecomment-6615644808)で公開commitへの固定リンクを共有した。
 
 ZIP例外の既存期限は2026-11-07 00:00 UTCのまま。
 [固定依存経路の評価](../../../docs/security/zip-0429-risk-assessment-2026-11-03.ja.md)と[Issue #354](https://github.com/HiroyukiFuruno/KatanA/issues/354)を参照し、延長・全programの安全・上流対応済みとは主張しない。
-公開記録・archive準備と、記録PR自体のレビュー/CI/merge・その後の後片付けは区別し、後者の実績は[Issue #415](https://github.com/HiroyukiFuruno/KatanA/issues/415)で追跡する。
+[OpenSpecの記録](../../../openspec/changes/archive/2026-11-04-v0-22-47-katana-contained-fixes/tasks.md)へアーカイブし、42タスクのID・本文と同期済み8main specの不変を照合した。
+記録PR自体のレビュー/CI/merge・その後の後片付けの実績は[Issue #415](https://github.com/HiroyukiFuruno/KatanA/issues/415)で追跡する。
