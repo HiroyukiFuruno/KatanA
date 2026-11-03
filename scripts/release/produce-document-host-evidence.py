@@ -149,7 +149,8 @@ def operation(run: PrivateRun, filename: str, pid: int, start: str, inputs: dict
     return result
 
 
-def pair(root: Path, entry: dict, source: dict, bundle: dict, producer_sha: str) -> dict:
+def pair(root: Path, entry: dict, source: dict, bundle: dict, producer_sha: str,
+         controller: dict | None = None) -> dict:
     fields(entry, {"directory", "prefix", "office_input", "html_input", "operations"}, "private run mapping")
     run = PrivateRun(Path(entry["directory"]))
     require(isinstance(entry["prefix"], str) and entry["prefix"] and "/" not in entry["prefix"], "explicit run label prefix required")
@@ -159,8 +160,13 @@ def pair(root: Path, entry: dict, source: dict, bundle: dict, producer_sha: str)
             "run source/registry identity changed or was not recorded")
     require(run.json("bundle-identity.before.json") == bundle and run.json("bundle-identity.after.json") == bundle,
             "run actual bundle identity changed or was not recorded")
-    require(run.raw("head.before").strip().decode() == source["source_commit"]
+    expected_head = controller["controller_commit"] if controller is not None else source["source_commit"]
+    require(run.raw("head.before").strip().decode() == expected_head
             and run.raw("head.before") == run.raw("head.after"), "run HEAD changed")
+    if controller is not None:
+        require(run.json("controller-identity.before.json") == controller
+                and run.json("controller-identity.after.json") == controller, "run verification controller changed")
+        require(run.raw("observer.exit").strip() == b"0", "actual observer did not exit normally")
     pid = int(run.raw("app.pid").decode().strip())
     require(run.raw("app.exit").strip() == b"0", "app did not exit normally")
     raw_lines = run.raw("memory-receipt-observations.jsonl").splitlines()
@@ -171,6 +177,8 @@ def pair(root: Path, entry: dict, source: dict, bundle: dict, producer_sha: str)
     start = None
     for value in observations:
         require(isinstance(value, dict) and isinstance(value.get("memory"), dict), "memory observation missing")
+        require(controller is None or value.get("controller_commit") == expected_head,
+                "memory observation controller differs from run")
         require(value.get("launch_record_sha256") == digest(launch_raw), "actual launch record differs from process/memory observation")
         memory = value["memory"]
         require(memory.get("status") == "ok" and memory.get("pid") == pid and memory.get("sampler") == "external_process_memory_v2",
@@ -249,6 +257,8 @@ def pair(root: Path, entry: dict, source: dict, bundle: dict, producer_sha: str)
     exit_observed = run.json("app-exit-observed.json")
     require(isinstance(exit_observed, dict) and exit_observed.get("pid") == pid and exit_observed.get("exit_code") == 0,
             "normal exit observation missing")
+    require(controller is None or exit_observed.get("controller_commit") == expected_head,
+            "exit observation controller differs from run")
     operations = [operation(run, filename, pid, start, inputs, cases, input_fnv(html)) for filename in entry["operations"]]
     terminal = run.json("kernel-processes.after-exit.json")
     require(isinstance(terminal, dict) and terminal.get("main_alive") is False and terminal.get("children") == [],
@@ -261,6 +271,8 @@ def pair(root: Path, entry: dict, source: dict, bundle: dict, producer_sha: str)
                   "quit_started_at": run.json("quit-started-at.json")["observedAt"], "exit_observed_at": exit_observed["observed_at"],
                   "exit_code": 0, "raw_artifacts": sorted(run.inventory), "settings": settings, "producer_sha256": producer_sha}
     transcript["post_exit_processes"] = {key: terminal[key] for key in ("observed_at", "main_alive", "children")}
+    if controller is not None:
+        transcript["controller"] = controller
     transcript["heartbeat_observations"] = [decode(line) for line in run.raw("heartbeat-observations.jsonl").splitlines()]
     launch = run.json("launch.json")
     require(isinstance(launch, dict) and launch.get("target") == bundle["target"], "actual launch target differs from run map")
@@ -272,7 +284,8 @@ def pair(root: Path, entry: dict, source: dict, bundle: dict, producer_sha: str)
     transcript["raw_artifacts"] = sorted(run.inventory)
     helper = legacy()
     verify_transcript(transcript, fixtures=helper.SUPPLIED_OFFICE_FIXTURES, html_sha=helper.ORIGINAL_HTML_SHA256,
-                      provenance=source, main_sha=bundle["main_sha256"], worker_sha=bundle["sidecar_sha256"], producer_sha=producer_sha)
+                      provenance=source, main_sha=bundle["main_sha256"], worker_sha=bundle["sidecar_sha256"], producer_sha=producer_sha,
+                      controller=controller)
     require(input_digest(office) == inputs["office"] and input_digest(html) == inputs["html"], "original input changed while producing evidence")
     return transcript
 

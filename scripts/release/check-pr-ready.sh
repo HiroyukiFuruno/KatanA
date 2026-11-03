@@ -150,6 +150,10 @@ if [[ -z "$TASK_GATE_MODE" ]]; then
 fi
 
 # 5. Version increment or published-release guard
+CONTROLLER_REPAIR_MODE=false
+if [[ "$TASK_GATE_MODE" == "postpublication-controller-repair" ]]; then
+    CONTROLLER_REPAIR_MODE=true
+fi
 if [[ "$TARGET_VERSION" == "0.22.47" &&
       ( "$TASK_GATE_MODE" == "post-release-host" || "$TASK_GATE_MODE" == "post-release-automated" ||
         ( "$TASK_GATE_MODE" == "post-release-evidence" &&
@@ -177,6 +181,37 @@ if [[ "$TASK_GATE_MODE" == "post-release-evidence" || "$TASK_GATE_MODE" == "post
         exit 1
     fi
     success "Published stable GitHub Release v${TARGET_VERSION} is present."
+elif [[ "$CONTROLLER_REPAIR_MODE" == "true" ]]; then
+    RELEASE_REPO=${KATANA_RELEASE_REPO:-HiroyukiFuruno/KatanA}
+    if [[ "$RELEASE_REPO" != "HiroyukiFuruno/KatanA" ]]; then
+        error "v0.22.47 controller repair is restricted to HiroyukiFuruno/KatanA."
+        exit 1
+    fi
+    RELEASE_STATE=$(gh release view "v${TARGET_VERSION}" \
+        --repo "$RELEASE_REPO" \
+        --json tagName,isDraft,isPrerelease \
+        --jq '.tagName + " draft=" + (.isDraft | tostring) + " prerelease=" + (.isPrerelease | tostring)' 2>/dev/null) || {
+        error "Published GitHub Release v${TARGET_VERSION} is required for controller repair."
+        exit 1
+    }
+    if [[ "$RELEASE_STATE" != "v${TARGET_VERSION} draft=false prerelease=false" ]]; then
+        error "v${TARGET_VERSION} is not a published stable GitHub Release: ${RELEASE_STATE}"
+        exit 1
+    fi
+    success "Published stable GitHub Release v${TARGET_VERSION} is present."
+    PUBLISHED=$(gh api "repos/${RELEASE_REPO}/commits/v0.22.47" --jq '.sha' 2>/dev/null) || {
+        error "Could not resolve the published v0.22.47 commit source."
+        exit 1
+    }
+    if [[ "$PUBLISHED" != "6dabe8531e2b340630887967b63206b59ebc6de3" ]]; then
+        error "Published v0.22.47 source differs from the approved product source."
+        exit 1
+    fi
+    python3 -B -c 'import sys; from pathlib import Path; sys.path.insert(0, str(Path.cwd() / "scripts/release")); from postpublication_controller_scope import verify_host_controller; verify_host_controller(Path.cwd(), "6dabe8531e2b340630887967b63206b59ebc6de3", controller=None)' || {
+        error "Committed host controller is outside the approved post-publication scope."
+        exit 1
+    }
+    success "Published source and committed controller scope are verified."
 else
     if ! ./scripts/release/check-version-increment.sh "$TARGET_VERSION"; then
         error "Version increment check failed for v${TARGET_VERSION}."
@@ -230,9 +265,17 @@ if [[ "$CURRENT_BRANCH" =~ ^release/ ]]; then
 fi
 
 # 7. Run preflight
-if ! KATANA_OPENSPEC_TASK_GATE="$TASK_GATE_MODE" ./scripts/release/preflight.sh "$TARGET_VERSION"; then
-    error "Preflight checks failed for v${TARGET_VERSION}."
-    exit 1
+if [[ "$CONTROLLER_REPAIR_MODE" == "true" ]]; then
+    # Controller修復PRはOpenSpecの既存bootstrap相で検査し、native完了を要求しない。
+    if ! KATANA_OPENSPEC_TASK_GATE="pr-bootstrap" ./scripts/release/preflight.sh "$TARGET_VERSION"; then
+        error "Preflight checks failed for v${TARGET_VERSION}."
+        exit 1
+    fi
+else
+    if ! KATANA_OPENSPEC_TASK_GATE="$TASK_GATE_MODE" ./scripts/release/preflight.sh "$TARGET_VERSION"; then
+        error "Preflight checks failed for v${TARGET_VERSION}."
+        exit 1
+    fi
 fi
 
 success "Mechanical pre-PR checks passed for v${TARGET_VERSION}."

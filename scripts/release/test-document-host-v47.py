@@ -38,9 +38,10 @@ class HostV47BatchTests(unittest.TestCase):
             root = Path(temporary).resolve()
             approval = root / APPROVAL
             approval.parent.mkdir(parents=True)
-            approval.write_text("synthetic-only")
+            approval.write_text("synthetic-only", encoding="utf-8")
             bundle = {"target": "macos-arm64", "main_path": "/unit-main", "worker_path": "/unit-worker",
-                      "main_sha256": "a"*64, "sidecar_sha256": "a"*64, "archive_sha256": "b"*64, "provenance": {}}
+                      "main_sha256": "a"*64, "sidecar_sha256": "a"*64, "archive_sha256": "b"*64,
+                      "provenance": {}, "controller": {}}
             helper = SimpleNamespace(legacy=lambda: SimpleNamespace(SUPPORTED_TARGETS={"macos-arm64"}),
                                      input_digest=lambda _: "a"*64)
             with patch.object(producer, "module", return_value=helper), patch.object(producer, "provenance"), \
@@ -118,6 +119,8 @@ class HostV47BatchTests(unittest.TestCase):
                 record = {key: None for key in MANIFEST}
                 record.update(schema="katana-host-acceptance-v1", version=wrong, scope="katana-host",
                               policy="2026-10-24-katana-host-advance-publication")
+                if expected == "v0.22.47":
+                    record["controller"] = None
                 write_new(root / path, record)
                 with self.assertRaisesRegex(HostEvidenceError, "host version or approval scope differs"):
                     verify(root, root / path, phase="postpublication", publication_version=expected)
@@ -129,13 +132,16 @@ class HostV47BatchTests(unittest.TestCase):
                     "start_identity": key, "cases": [{"format": "pptx", "ready_ms": 15000}],
                     "operations": [{"kind": "office", "name": "slide"}]}
                    for index, key in enumerate(fixtures)]
-        records[0]["operations"] += [{"kind": "html", "name": name}
-                                     for name in ("scroll", "reload", "dirty_source")]
+        state = {"dirty": False, "preview_input_fnv1a64": "1"*16, "last_imported_disk_fnv1a64": "1"*16}
+        records[0]["operations"] += [{"kind": "html", "name": name,
+                                     "before": {"loaded_source": state}, "after": {"loaded_source": state}}
+                                     for name in ("scroll", "reload")]
         producer.validate_batch(records, fixtures)
         for change in (lambda values: values[1].update(run_id="0"),
                        lambda values: values[1].update(input_sha256="0"),
                        lambda values: values[0].update(operations=[]),
-                       lambda values: values[0]["cases"][0].update(ready_ms=15001)):
+                       lambda values: values[0]["cases"][0].update(ready_ms=15001),
+                       lambda values: values[0]["operations"].append({"kind": "html", "name": "dirty_source"})):
             changed = copy.deepcopy(records)
             change(changed)
             with self.subTest(change=change), self.assertRaises(HostEvidenceError):

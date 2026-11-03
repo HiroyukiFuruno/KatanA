@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from contextlib import closing
 from datetime import datetime, timezone
+import errno
 import hashlib
 import os
 from pathlib import Path
@@ -25,6 +26,13 @@ def collect(run: Path, executable: Path, worker: Path, seconds: int) -> dict:
     require(run.is_absolute() and run.is_dir() and not run.is_symlink(), "actual non-symlink run directory required")
     require(executable.is_absolute() and executable.is_file() and not executable.is_symlink(), "actual packaged main required")
     pid = int((run / "app.pid").read_text().strip())
+    controller = None
+    controller_path = run / "controller-identity.before.json"
+    if controller_path.exists():
+        from document_host_controller import verify_binding
+        from document_host_io import read
+        controller = decode(read(controller_path))
+        verify_binding(Path(__file__).resolve().parents[2], decode(read(run / "source-identity.before.json")), controller)
     expected = process_identity(pid)
     require(Path(expected["executable"]).resolve() == executable.resolve(), "process executable differs from selected packaged main")
     observer = ProcessObserver(pid, executable, worker)
@@ -42,6 +50,7 @@ def collect(run: Path, executable: Path, worker: Path, seconds: int) -> dict:
     output = run / "memory-receipt-observations.jsonl"
     seen = set()
     observations = 0
+    awaiting_exit = False
     deadline = time.monotonic() + seconds
     with closing(select.kqueue()) as queue:
         descriptor = os.open(receipts, os.O_RDONLY)
@@ -54,14 +63,28 @@ def collect(run: Path, executable: Path, worker: Path, seconds: int) -> dict:
                     if (run / "app.exit").exists():
                         require((run / "app.exit").read_text().strip() == "0" and bool(seen), "abnormal app exit or missing samples")
                         import json
-                        terminal = observer.finish()
+                        try:
+                            terminal = observer.finish()
+                        except ProcessLookupError as error:
+                            if error.errno != errno.ESRCH:
+                                raise
+                            # WHY: ps表の取得後に消えたmainを、次の実OS照合で不在と確認する。
+                            queue.control(None, 8, 0.1)
+                            continue
                         require((run / "launch.json").read_bytes() == launch_raw, "actual launch record changed during observation")
+                        if controller is not None:
+                            verify_binding(Path(__file__).resolve().parents[2], decode(read(run / "source-identity.before.json")), controller)
                         heartbeat.finish()
                         with (run / "kernel-processes.after-exit.json").open("x") as handle:
                             json.dump(terminal, handle, allow_nan=False)
                         with (run / "app-exit-observed.json").open("x") as handle:
-                            json.dump({"pid": pid, "exit_code": 0, "observed_at": terminal["observed_at"]}, handle)
+                            json.dump({"pid": pid, "exit_code": 0, "observed_at": terminal["observed_at"],
+                                       **({"controller_commit": controller["controller_commit"]} if controller is not None else {})}, handle)
                         return {"status": "collected", "observations": observations, "receipt_sequences": len(seen), "app_exit": 0}
+                    if awaiting_exit:
+                        # WHY: ESRCHを正常終了へ読み替えず、元deadline内でlauncherの実exitを待つ。
+                        queue.control(None, 8, 0.1)
+                        continue
                     try:
                         raw = latest.read_bytes()
                     except FileNotFoundError:
@@ -72,13 +95,21 @@ def collect(run: Path, executable: Path, worker: Path, seconds: int) -> dict:
                             "receipt process/run differs")
                     sequence = receipt.get("seq")
                     require(type(sequence) is int and sequence > 0, "invalid receipt sequence")
-                    measurement = sample(pid, expected)
-                    require(measurement.get("status") == "ok", "external sampler failed; no zero/fallback measurement")
-                    processes = observer.snapshot()
+                    try:
+                        measurement = sample(pid, expected, raise_on_missing_process=True)
+                        require(measurement.get("status") == "ok", "external sampler failed; no zero/fallback measurement")
+                        processes = observer.snapshot()
+                    except ProcessLookupError as error:
+                        if error.errno != errno.ESRCH:
+                            raise
+                        awaiting_exit = True
+                        print("main process disappeared; waiting for actual app.exit", file=sys.stderr, flush=True)
+                        continue
                     finished = datetime.now(timezone.utc).isoformat()
                     confirmed = latest.read_bytes() == raw
                     import json
                     destination.write(json.dumps({"receipt_seq": sequence, "receipt_sha256": hashlib.sha256(raw).hexdigest(),
+                                      **({"controller_commit": controller["controller_commit"]} if controller is not None else {}),
                                       "receipt_stable_during_sample": confirmed, "sample_finished_at": finished,
                                       "host": receipt["host"], "kdv": receipt["kdv"],
                                       "document_workers_live": receipt["document_workers_live"], "memory": measurement,
