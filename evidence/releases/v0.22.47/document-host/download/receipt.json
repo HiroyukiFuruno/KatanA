@@ -1,0 +1,86 @@
+{
+  "schema": "katana-release-download-v1",
+  "release_url": "https://github.com/HiroyukiFuruno/KatanA/releases/tag/v0.22.47",
+  "release_id": 432053742,
+  "tag": "v0.22.47",
+  "draft": false,
+  "published_at": "2026-11-02T22:52:20Z",
+  "source_commit": "6dabe8531e2b340630887967b63206b59ebc6de3",
+  "provenance": {
+    "source_commit": "6dabe8531e2b340630887967b63206b59ebc6de3",
+    "source_tree_sha256": "2e1688b3aeb802205d77b09138d5afe214623f88e5e7cc705cde56498d84c801",
+    "cargo_lock_sha256": "20064ec3617fb52673a251c6457fe2f8bb86cd55f55012ffdb9480b42c35a21a",
+    "published_dependencies": {
+      "katana-document-viewer": {
+        "version": "0.5.12",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635"
+      },
+      "katana-render-runtime": {
+        "version": "0.4.23",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "8e5e0803f343d781dc015d1fe21b052492d67579ba303cf86203f60455852e00"
+      },
+      "katana-ui-core": {
+        "version": "0.4.1",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "f8fd7856249d96c0ce65e68151a327d82511af70a8fbe7416058a1a0ba8e9d5c"
+      }
+    }
+  },
+  "assets": {
+    "KatanA-Desktop-0.22.47.dmg": {
+      "asset_id": 703450552,
+      "size": 223147967,
+      "sha256": "32f7d255996860a3d6d2bce1150abe13c454aa7e83e4dfbc9a1bd958859121e5",
+      "downloaded_at": "2026-11-02T23:17:39.003708+00:00",
+      "download_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.47/KatanA-Desktop-0.22.47.dmg"
+    },
+    "KatanA-linux-x86_64.tar.gz": {
+      "asset_id": 703450543,
+      "size": 120658604,
+      "sha256": "d160139b5c2e54a16fd943eb4d167e6020d72a79b37fdfe8e15b1aaae517e6d7",
+      "downloaded_at": "2026-11-02T23:17:39.059418+00:00",
+      "download_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.47/KatanA-linux-x86_64.tar.gz"
+    },
+    "KatanA-macOS.zip": {
+      "asset_id": 703450551,
+      "size": 223459963,
+      "sha256": "d8ed3e022b4705cd3f32c3768d4189709a699d55672e5927f9ae5a307e4fee83",
+      "downloaded_at": "2026-11-02T23:17:39.160936+00:00",
+      "download_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.47/KatanA-macOS.zip"
+    },
+    "KatanA-windows-x86_64.msi": {
+      "asset_id": 703450553,
+      "size": 109203456,
+      "sha256": "701fc7b788786c6ceccb9140e1045a592586597e7096a76fd7d9508bbc0ed701",
+      "downloaded_at": "2026-11-02T23:17:39.213195+00:00",
+      "download_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.47/KatanA-windows-x86_64.msi"
+    },
+    "KatanA-windows-x86_64.zip": {
+      "asset_id": 703450571,
+      "size": 105875520,
+      "sha256": "7326575927ec629ec3f7ada615bb2c02fa77878d76102a20c60ade52e383dfc7",
+      "downloaded_at": "2026-11-02T23:17:39.261293+00:00",
+      "download_url": "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.47/KatanA-windows-x86_64.zip"
+    }
+  },
+  "downloaded_macos": "KatanA-macOS.zip",
+  "main_sha256": "23597c061af4b0e45705b416e06e6df30d18283cd52fe4f361efc85acdd40c87",
+  "sidecar_sha256": "d9779eb66c12f89cf1066c07a79cfe3d7ad77da32aa078e8aecd35d06a0bfb32",
+  "producer_sha256": "20829dff003885adb2c61ab8b76823d63d089d8782ebce3e3e064b57f597a6a4",
+  "build_manifests": {
+    "macos": {
+      "path": "evidence/releases/v0.22.47/document-host/download/receipt-build-macos.json",
+      "sha256": "3b9999764e4829b185a62c59729be711bd17165843b439dd1a31edfc8cd53357"
+    },
+    "linux": {
+      "path": "evidence/releases/v0.22.47/document-host/download/receipt-build-linux.json",
+      "sha256": "83af67d5b387f1b64b2c0d8b26f8178340d7621c16c8a3d29c5e688143d27fca"
+    },
+    "windows": {
+      "path": "evidence/releases/v0.22.47/document-host/download/receipt-build-windows.json",
+      "sha256": "e5221aa55934a8f73ab67d24085a1a1b2d62f25eb098aabf5e2036c3d24a07be"
+    }
+  }
+}

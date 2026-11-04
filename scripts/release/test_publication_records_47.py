@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 from document_host_io import HostEvidenceError
 import future_publication_records as records
-from generated_asset_identity import file_digest
+from generated_asset_identity import assets_for, file_digest
 from generated_identity_fixtures import bundle, git, repository
 from published_git_source import git_source_identity
 from v047_evidence_paths import HOST_FILES, CANONICAL_FILES, HOST_RECEIPT, HOST_MANIFESTS
@@ -248,17 +248,70 @@ class Publication47ReceiptTests(unittest.TestCase):
             source, assets, manifests, builds, _ = bundle(root, "v0.22.47")
             canonical = root / "canonical"
             shutil.copytree(manifests, canonical / "manifests")
+            payload_names = set().union(*assets_for("v0.22.47").values())
+            all_names = payload_names | {"checksums.txt"}
             asset_records = {path.name: {"asset_id": index + 1, "size": path.stat().st_size,
                              "sha256": file_digest(path), "download_url": "https://example.invalid/" + path.name}
-                             for index, path in enumerate(sorted(assets.iterdir())) if path.name != "checksums.txt"}
+                             for index, path in enumerate(sorted(assets.iterdir())) if path.name in all_names}
             identity = {"release_id": 10, "assets": asset_records}
             (canonical / "publication-identity.json").write_text(json.dumps(identity), encoding="utf-8")
-            host = {"source_commit": source, "release_id": 10, "assets": asset_records}
+            host_assets = {name: item for name, item in asset_records.items() if name in payload_names}
+            host = {"source_commit": source, "release_id": 10, "assets": host_assets}
             (root / HOST_RECEIPT).parent.mkdir(parents=True)
             (root / HOST_RECEIPT).write_text(json.dumps(host), encoding="utf-8")
             for platform, name in HOST_MANIFESTS.items():
                 (root / name).write_text(json.dumps(builds[platform]), encoding="utf-8")
             records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
+
+            def write_host(value):
+                (root / HOST_RECEIPT).write_text(json.dumps(value), encoding="utf-8")
+
+            def write_identity(value):
+                (canonical / "publication-identity.json").write_text(json.dumps(value), encoding="utf-8")
+
+            for invalid_assets in (
+                    {name: item for name, item in host_assets.items() if name != min(payload_names)},
+                    {**host_assets, "unexpected.zip": next(iter(host_assets.values()))},
+                    {**host_assets, "checksums.txt": asset_records["checksums.txt"]}):
+                with self.subTest(host_assets=set(invalid_assets)):
+                    write_host({**host, "assets": invalid_assets})
+                    with self.assertRaisesRegex(HostEvidenceError, "host payload asset set"):
+                        records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
+            write_host(host)
+            for invalid_assets in (
+                    {name: item for name, item in asset_records.items() if name != "checksums.txt"},
+                    {name: item for name, item in asset_records.items() if name != min(payload_names)},
+                    {**asset_records, "unexpected.zip": next(iter(asset_records.values()))}):
+                with self.subTest(canonical_assets=set(invalid_assets)):
+                    write_identity({**identity, "assets": invalid_assets})
+                    with self.assertRaisesRegex(HostEvidenceError, "canonical asset set"):
+                        records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
+            write_identity(identity)
+            for field in ("asset_id", "size", "sha256", "download_url"):
+                changed_host = copy.deepcopy(host)
+                descriptor = changed_host["assets"][next(iter(changed_host["assets"]))]
+                descriptor[field] = "https://invalid.example/changed" if field == "download_url" else 0
+                with self.subTest(descriptor=field):
+                    write_host(changed_host)
+                    with self.assertRaisesRegex(HostEvidenceError, "public asset"):
+                        records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
+            write_host(host)
+            changed_source = {**host, "source_commit": "0" * 40}
+            write_host(changed_source)
+            with self.assertRaisesRegex(HostEvidenceError, "public release"):
+                records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
+            write_host(host)
+            for platform, manifest_path in HOST_MANIFESTS.items():
+                changed_run = copy.deepcopy(builds[platform])
+                changed_run["github_run_attempt"] = "1"
+                (root / manifest_path).write_text(json.dumps(changed_run), encoding="utf-8")
+                canonical_manifest = canonical / records.MANIFESTS[platform]
+                canonical_manifest.write_text(json.dumps(changed_run), encoding="utf-8")
+                with self.subTest(manifest_run=platform):
+                    with self.assertRaisesRegex(HostEvidenceError, "run or attempt"):
+                        records.verify_v47_host_binding(root, {"id": 10}, source, "123", "2", canonical)
+                (root / manifest_path).write_text(json.dumps(builds[platform]), encoding="utf-8")
+                canonical_manifest.write_text(json.dumps(builds[platform]), encoding="utf-8")
             with self.assertRaisesRegex(HostEvidenceError, "run or attempt"):
                 records.verify_v47_host_binding(root, {"id": 10}, source, "123", "1", canonical)
             changed_host = copy.deepcopy(host)

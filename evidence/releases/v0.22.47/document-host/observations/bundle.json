@@ -1,0 +1,35 @@
+{
+  "target": "macos-arm64",
+  "main_sha256": "23597c061af4b0e45705b416e06e6df30d18283cd52fe4f361efc85acdd40c87",
+  "sidecar_sha256": "d9779eb66c12f89cf1066c07a79cfe3d7ad77da32aa078e8aecd35d06a0bfb32",
+  "archive_sha256": "d8ed3e022b4705cd3f32c3768d4189709a699d55672e5927f9ae5a307e4fee83",
+  "provenance": {
+    "source_commit": "6dabe8531e2b340630887967b63206b59ebc6de3",
+    "source_tree_sha256": "2e1688b3aeb802205d77b09138d5afe214623f88e5e7cc705cde56498d84c801",
+    "cargo_lock_sha256": "20064ec3617fb52673a251c6457fe2f8bb86cd55f55012ffdb9480b42c35a21a",
+    "published_dependencies": {
+      "katana-document-viewer": {
+        "version": "0.5.12",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635"
+      },
+      "katana-render-runtime": {
+        "version": "0.4.23",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "8e5e0803f343d781dc015d1fe21b052492d67579ba303cf86203f60455852e00"
+      },
+      "katana-ui-core": {
+        "version": "0.4.1",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "f8fd7856249d96c0ce65e68151a327d82511af70a8fbe7416058a1a0ba8e9d5c"
+      }
+    }
+  },
+  "controller": {
+    "schema": "katana-v47-host-controller-v1",
+    "published_source": "6dabe8531e2b340630887967b63206b59ebc6de3",
+    "controller_commit": "c569d8c9b671bf59882f27fb6103d707a4203573",
+    "controller_source_tree_sha256": "a3b873c2d3d1dffec4887ef8897c5ab62c884436485532ccef8af7fc8f57a692"
+  },
+  "schema": "katana-host-bundle-v1"
+}

@@ -1,0 +1,108 @@
+{
+  "schema": "katana-host-acceptance-v1",
+  "version": "v0.22.47",
+  "scope": "katana-host",
+  "policy": "2026-10-24-katana-host-advance-publication",
+  "approval_sha256": "869c552c1b10ef6c54c786c92e63cdb01de648b8e88afd15dbed7968cb6aad74",
+  "phase": "postpublication",
+  "claim": "published_macos_host_accepted",
+  "provenance": {
+    "source_commit": "6dabe8531e2b340630887967b63206b59ebc6de3",
+    "source_tree_sha256": "2e1688b3aeb802205d77b09138d5afe214623f88e5e7cc705cde56498d84c801",
+    "cargo_lock_sha256": "20064ec3617fb52673a251c6457fe2f8bb86cd55f55012ffdb9480b42c35a21a",
+    "published_dependencies": {
+      "katana-document-viewer": {
+        "version": "0.5.12",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635"
+      },
+      "katana-render-runtime": {
+        "version": "0.4.23",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "8e5e0803f343d781dc015d1fe21b052492d67579ba303cf86203f60455852e00"
+      },
+      "katana-ui-core": {
+        "version": "0.4.1",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "f8fd7856249d96c0ce65e68151a327d82511af70a8fbe7416058a1a0ba8e9d5c"
+      }
+    }
+  },
+  "candidate": {
+    "target": "macos-arm64",
+    "main_sha256": "23597c061af4b0e45705b416e06e6df30d18283cd52fe4f361efc85acdd40c87",
+    "sidecar_sha256": "d9779eb66c12f89cf1066c07a79cfe3d7ad77da32aa078e8aecd35d06a0bfb32",
+    "archive_sha256": "d8ed3e022b4705cd3f32c3768d4189709a699d55672e5927f9ae5a307e4fee83",
+    "bundle_manifest": {
+      "path": "evidence/releases/v0.22.47/document-host/observations/bundle.json",
+      "sha256": "959c25b13a923dacb2f4e2107eae9557475ad720f0895821096c46411ee9bc9f"
+    }
+  },
+  "transcripts": [
+    {
+      "path": "evidence/releases/v0.22.47/document-host/observations/run-01.json",
+      "sha256": "be427fc9fddb54f1ad9b24b79982bf368469d9add470cc58eb2362345500f890"
+    },
+    {
+      "path": "evidence/releases/v0.22.47/document-host/observations/run-02.json",
+      "sha256": "fcbee0f985f1081b4d9eb935e2c927a707a1a70a1f57fff319d4ba17a36e41bf"
+    },
+    {
+      "path": "evidence/releases/v0.22.47/document-host/observations/run-03.json",
+      "sha256": "86383c690571d4a305032475b77d8e1166d568c8ff9fd86f5407d09905702c18"
+    },
+    {
+      "path": "evidence/releases/v0.22.47/document-host/observations/run-04.json",
+      "sha256": "1baae1c6b458f23c37442cc88c3cf564889ce51b2cb0cc3f982b16c18d63df38"
+    },
+    {
+      "path": "evidence/releases/v0.22.47/document-host/observations/run-05.json",
+      "sha256": "2fe860f7cd18311629c524972abe7c203597ba3c031ec258c157a3dc28913ed0"
+    },
+    {
+      "path": "evidence/releases/v0.22.47/document-host/observations/run-06.json",
+      "sha256": "edc1c51cc4e31859ff1544d068f665f433432c22569cad78c6b35b6f933b400f"
+    },
+    {
+      "path": "evidence/releases/v0.22.47/document-host/observations/run-07.json",
+      "sha256": "dd3311ab389dce8d96b72fd612d3d074ed03170627f54f2054a35852cbe79b3b"
+    }
+  ],
+  "upstream_assessments": {
+    "chrome_html": {
+      "owner": "KRR",
+      "issue": "https://github.com/HiroyukiFuruno/katana-render-runtime/issues/106",
+      "status": "not_evaluated",
+      "score": null,
+      "observation": "independent_95_incomplete",
+      "measurement": null
+    },
+    "office_independent_95": {
+      "owner": "KDV",
+      "issue": "https://github.com/HiroyukiFuruno/katana-document-viewer/issues/58",
+      "status": "not_evaluated",
+      "score": null,
+      "observation": "independent_95_incomplete",
+      "measurement": null
+    }
+  },
+  "other_targets": {
+    "windows-x86_64": "document_qa_not_run",
+    "macos-x86_64": "document_qa_not_run",
+    "linux-x86_64": "document_qa_not_run"
+  },
+  "producer_sha256": "e0c3a613464ae65b6f5cdf648090ff28a9c4b6b5c6b31458a4ed9412e41262a1",
+  "controller": {
+    "schema": "katana-v47-host-controller-v1",
+    "published_source": "6dabe8531e2b340630887967b63206b59ebc6de3",
+    "controller_commit": "c569d8c9b671bf59882f27fb6103d707a4203573",
+    "controller_source_tree_sha256": "a3b873c2d3d1dffec4887ef8897c5ab62c884436485532ccef8af7fc8f57a692"
+  },
+  "publication": {
+    "status": "published_macos_host_accepted",
+    "receipt": {
+      "path": "evidence/releases/v0.22.47/document-host/download/receipt.json",
+      "sha256": "5ae0ffd8ec9cb85feb873f1100347a8024b3fbedbc6ea890fb432b76d0f48b1f"
+    }
+  }
+}

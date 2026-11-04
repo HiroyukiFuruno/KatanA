@@ -1,0 +1,41 @@
+{
+  "schema": "katana-generated-asset-identity-v1",
+  "version": "v0.22.47",
+  "platform": "linux",
+  "provenance": {
+    "source_commit": "6dabe8531e2b340630887967b63206b59ebc6de3",
+    "source_tree_sha256": "2e1688b3aeb802205d77b09138d5afe214623f88e5e7cc705cde56498d84c801",
+    "cargo_lock_sha256": "20064ec3617fb52673a251c6457fe2f8bb86cd55f55012ffdb9480b42c35a21a",
+    "published_dependencies": {
+      "katana-document-viewer": {
+        "version": "0.5.12",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "4d39820039dee936b5ae1b7d9656751223421b5140c2b25f91d15ebe7519d635"
+      },
+      "katana-render-runtime": {
+        "version": "0.4.23",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "8e5e0803f343d781dc015d1fe21b052492d67579ba303cf86203f60455852e00"
+      },
+      "katana-ui-core": {
+        "version": "0.4.1",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "f8fd7856249d96c0ce65e68151a327d82511af70a8fbe7416058a1a0ba8e9d5c"
+      }
+    }
+  },
+  "github_run_id": "41531951434",
+  "github_run_attempt": "1",
+  "targets": {
+    "linux-x86_64": {
+      "main_sha256": "9c87001f2eae6b474f6ee872c442e2f0633c44b4483f4a3943d5a4786c63b9d3",
+      "sidecar_sha256": "32fbb2bf20146b250982fee89b70b0e36f149642a04c8bedf244fe8556b4f296"
+    }
+  },
+  "assets": {
+    "KatanA-linux-x86_64.tar.gz": {
+      "sha256": "d160139b5c2e54a16fd943eb4d167e6020d72a79b37fdfe8e15b1aaae517e6d7",
+      "size": 120658604
+    }
+  }
+}
