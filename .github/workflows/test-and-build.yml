@@ -29,12 +29,33 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  docs-scope:
+    name: Documentation change scope
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.docs_scope.outputs.docs_only }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Check Documentation change scope
+        id: docs_scope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+        run: bash .github/scripts/check-docs-change-scope.sh
+
   test:
-    name: Test and Build
+    name: Test and Build (${{ matrix.os }})
     # WHY: Draft PRでは重い検査を起動せず、pushとReady PRだけを実行する。
+    needs: docs-scope
     if: >-
+      !cancelled() && (needs.docs-scope.result == 'success' || needs.docs-scope.result == 'skipped') && (
       github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.draft) ||
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
     # 全テストを維持し、巨大なOffice/V8依存のデバッグ情報だけでrunnerを満杯にしない。
     env:
       RUST_TEST_THREADS: 2
@@ -47,8 +68,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ needs.docs-scope.outputs.docs_only == 'true' && 'ubuntu-latest' || matrix.os }}
     steps:
+      - name: Confirm documentation-only change
+        if: needs.docs-scope.outputs.docs_only == 'true'
+        run: echo 'Documentation change scope verified.'
       # - name: Validate Branch Name
       #   if: github.base_ref == 'master'
       #   shell: bash
@@ -59,25 +83,29 @@ jobs:
       #       exit 1
       #     fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: needs.docs-scope.outputs.docs_only != 'true'
 
       - name: Install Python for Windows inventory
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && needs.docs-scope.outputs.docs_only != 'true'
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.14'
 
       - name: Install Rust toolchain
+        if: needs.docs-scope.outputs.docs_only != 'true'
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
 
       - name: Install just
+        if: needs.docs-scope.outputs.docs_only != 'true'
         uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: just
           fallback: none
 
       - name: Install bun
+        if: needs.docs-scope.outputs.docs_only != 'true'
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: latest
@@ -85,7 +113,7 @@ jobs:
       # WHY: 取得元とコンパイル成果物を分離し、検査結果を再利用しない。
       - name: Cache Windows Cargo registry
         id: windows_registry_cache
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && needs.docs-scope.outputs.docs_only != 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -96,7 +124,7 @@ jobs:
 
       - name: Identify Windows compiled target
         id: windows_target_identity
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && needs.docs-scope.outputs.docs_only != 'true'
         shell: bash
         run: >-
           python3 -B scripts/ci/windows_target_cache_identity.py --repo .
@@ -105,7 +133,7 @@ jobs:
       # WHY: 同一source/toolchainだけを許可し、識別不能なら通常のfresh buildへ戻す。
       - name: Cache Windows compiled target
         id: windows_target_cache
-        if: runner.os == 'Windows' && steps.windows_target_identity.outputs.cache_eligible == 'true'
+        if: runner.os == 'Windows' && steps.windows_target_identity.outputs.cache_eligible == 'true' && needs.docs-scope.outputs.docs_only != 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -114,7 +142,7 @@ jobs:
           key: ${{ steps.windows_target_identity.outputs.cache_key }}
 
       - name: Cache Cargo registry & target
-        if: runner.os != 'Windows'
+        if: runner.os != 'Windows' && needs.docs-scope.outputs.docs_only != 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -127,22 +155,24 @@ jobs:
             ${{ runner.os }}-cargo-test-no-debug-info-v1-
 
       - name: Install dependencies (Linux)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && needs.docs-scope.outputs.docs_only != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev mesa-vulkan-drivers vulkan-tools
 
       - name: Verify software Vulkan adapter (Linux)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && needs.docs-scope.outputs.docs_only != 'true'
         run: |
           lvp_icd="$(find /usr/share/vulkan/icd.d -name '*lvp*.json' -print -quit)"
           test -n "${lvp_icd}"
           LIBGL_ALWAYS_SOFTWARE=1 VK_DRIVER_FILES="${lvp_icd}" vulkaninfo --summary
 
       - name: Check types
+        if: needs.docs-scope.outputs.docs_only != 'true'
         run: cargo check --workspace
 
       - name: Verify CI resource contract
+        if: needs.docs-scope.outputs.docs_only != 'true'
         shell: bash
         run: |
           python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
@@ -157,18 +187,20 @@ jobs:
           python3 -B -m unittest discover -s scripts/runner -p test_impacted.py -v
 
       - name: Verify native inventory pipes (Windows)
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && needs.docs-scope.outputs.docs_only != 'true'
         shell: bash
         run: |
           python3 -B -W error::ResourceWarning -m unittest discover -s scripts/release -p test_native_test_pipe_reader.py -v
           python3 -B -W error::ResourceWarning -m unittest discover -s scripts/release -p test_native_test_run_recording.py -v
 
       - name: Install cargo-sweep
+        if: needs.docs-scope.outputs.docs_only != 'true'
         run: |
           cargo install cargo-sweep --version 0.8.0 --locked
           cargo sweep --version
 
       - name: Verify Cargo sweep safety contract
+        if: needs.docs-scope.outputs.docs_only != 'true'
         shell: bash
         run: |
           if [[ "${RUNNER_OS}" == "Windows" ]]; then
@@ -179,7 +211,7 @@ jobs:
           python3 -B -m unittest discover -s scripts/ci -p 'test_isolated_test_config.py' -v
 
       - name: Measure cold real-font lookup (Windows)
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && needs.docs-scope.outputs.docs_only != 'true'
         env:
           DEBUG: 'true'
         run: >-
@@ -188,18 +220,23 @@ jobs:
           -- --exact --nocapture
 
       - name: Test CommonMark cache contracts
+        if: needs.docs-scope.outputs.docs_only != 'true'
         run: python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked -p katana-ui -p egui_commonmark_backend --lib lazy_highlighting_tests
 
       - name: Test CommonMark HTML trace bounds
+        if: needs.docs-scope.outputs.docs_only != 'true'
         run: just test-commonmark-html-trace
 
       - name: Test patched custom cursor cache
+        if: needs.docs-scope.outputs.docs_only != 'true'
         run: python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked -p katana-ui -p egui-winit --lib cursor_cache::tests
 
       - name: Test patched native surface size contracts
+        if: needs.docs-scope.outputs.docs_only != 'true'
         run: just test-wgpu-native-surface-size
 
       - name: Run tests
+        if: needs.docs-scope.outputs.docs_only != 'true'
         id: workspace_tests
         shell: bash
         env:
@@ -224,7 +261,7 @@ jobs:
           fi
 
       - name: Upload original HTML failure sample (macOS)
-        if: failure() && runner.os == 'macOS' && steps.workspace_tests.outcome == 'failure'
+        if: failure() && runner.os == 'macOS' && steps.workspace_tests.outcome == 'failure' && needs.docs-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: original-html-failure-sample-${{ runner.os }}
@@ -233,7 +270,7 @@ jobs:
 
       # WHY: 通常検査の失敗を維持し、描画phaseの診断だけを別実行へ隔離する。
       - name: Trace failed HTML startup (macOS)
-        if: failure() && runner.os == 'macOS' && steps.workspace_tests.outcome == 'failure'
+        if: failure() && runner.os == 'macOS' && steps.workspace_tests.outcome == 'failure' && needs.docs-scope.outputs.docs_only != 'true'
         shell: bash
         env:
           DEBUG: 'true'
@@ -244,14 +281,14 @@ jobs:
           -- --exact --nocapture'
 
       - name: Test screenshot harness contracts
-        if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
+        if: (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')) && needs.docs-scope.outputs.docs_only != 'true'
         shell: bash
         env:
           CARGO_TARGET_DIR: target/screenshot-harness
         run: python3 -B scripts/ci/isolated-test-config.py -- cargo test --locked --release --manifest-path scripts/screenshot/Cargo.toml
 
       - name: Run multi-format headless acceptance
-        if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
+        if: (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')) && needs.docs-scope.outputs.docs_only != 'true'
         shell: bash
         run: |
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
@@ -265,7 +302,7 @@ jobs:
             --output "target/multi-format-headless-${{ runner.os }}"
 
       - name: Upload multi-format headless evidence
-        if: always() && (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
+        if: always() && (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')) && needs.docs-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: multi-format-headless-${{ runner.os }}
@@ -273,14 +310,14 @@ jobs:
           if-no-files-found: error
 
       - name: Install coverage tool
-        if: runner.os == 'macOS' && (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
+        if: runner.os == 'macOS' && (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')) && needs.docs-scope.outputs.docs_only != 'true'
         uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: cargo-llvm-cov@0.9.1
           fallback: none
 
       - name: Run coverage
-        if: runner.os == 'macOS' && (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
+        if: runner.os == 'macOS' && (github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')) && needs.docs-scope.outputs.docs_only != 'true'
         env:
           KATANA_TEST_INVENTORY_DIRECTORY: ${{ env.KATANA_TEST_INVENTORY_ROOT }}/coverage
         run: |
@@ -288,11 +325,11 @@ jobs:
           JOBS=1 just coverage
 
       - name: Compare observed test inventory diagnostics
-        if: always() && runner.os == 'macOS'
+        if: always() && runner.os == 'macOS' && needs.docs-scope.outputs.docs_only != 'true'
         run: python3 -B scripts/release/compare-test-invocations.py --directory "$KATANA_TEST_INVENTORY_ROOT"
 
       - name: Upload observed test inventory diagnostics
-        if: always()
+        if: always() && needs.docs-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-inventory-${{ runner.os }}
@@ -300,42 +337,52 @@ jobs:
           if-no-files-found: warn
 
   lint:
-    name: Lint
-    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
+    name: Lint (${{ matrix.os }})
+    needs: docs-scope
+    if: >-
+      !cancelled() && (needs.docs-scope.result == 'success' || needs.docs-scope.result == 'skipped') &&
+      ((github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ needs.docs-scope.outputs.docs_only == 'true' && 'ubuntu-latest' || matrix.os }}
     steps:
+      - name: Confirm documentation-only change
+        if: needs.docs-scope.outputs.docs_only == 'true'
+        run: echo 'Documentation change scope verified.'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: needs.docs-scope.outputs.docs_only != 'true'
 
       - name: Install dependencies (Linux)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && needs.docs-scope.outputs.docs_only != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev
 
       - name: Install Rust toolchain with clippy and rustfmt
+        if: needs.docs-scope.outputs.docs_only != 'true'
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
           components: clippy, rustfmt
 
       - name: Install just
+        if: needs.docs-scope.outputs.docs_only != 'true'
         uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: just
           fallback: none
 
       - name: Install bun
+        if: needs.docs-scope.outputs.docs_only != 'true'
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: latest
 
       # WHY: compiled targetを共有せず、lintも現在のsourceから実行する。
       - name: Cache Windows Cargo registry
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && needs.docs-scope.outputs.docs_only != 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -345,7 +392,7 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-cargo-registry-v1-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Cache Cargo registry & target
-        if: runner.os != 'Windows'
+        if: runner.os != 'Windows' && needs.docs-scope.outputs.docs_only != 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -358,15 +405,20 @@ jobs:
             ${{ runner.os }}-cargo-lint-
 
       - name: Check formatting
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && needs.docs-scope.outputs.docs_only != 'true'
         run: just fmt-check
 
       - name: Run linter
+        if: needs.docs-scope.outputs.docs_only != 'true'
         run: just lint
 
   supply-chain:
     name: Dependency Supply Chain
-    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
+    needs: docs-scope
+    if: >-
+      !cancelled() && (needs.docs-scope.result == 'success' || needs.docs-scope.result == 'skipped') &&
+      ((github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
+      && needs.docs-scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -383,7 +435,11 @@ jobs:
   # CodeQL security scanning (Task 7.2 / 7.3).
   codeql:
     name: CodeQL Security Scan
-    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
+    needs: docs-scope
+    if: >-
+      !cancelled() && (needs.docs-scope.result == 'success' || needs.docs-scope.result == 'skipped') &&
+      ((github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
+      && needs.docs-scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     permissions:
       security-events: write  # Required to upload SARIF results.
