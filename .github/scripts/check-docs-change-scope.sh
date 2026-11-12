@@ -53,6 +53,9 @@ if [[ "$PR_NUMBER" == 423 && "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-
     scripts/ci/check-linux-office-worker-contract.sh
     scripts/ci/check-native-office-worker-contract.sh
     scripts/ci/coverage.sh
+    scripts/ci/test_cargo_clean_guard.py
+    scripts/ci/test_cargo_sweep_guard.py
+    scripts/ci/test_cargo_target_lease_guard.py
     scripts/ci/test_isolated_test_config.py
     scripts/ci/test_native_profiler_job_contract.py
     scripts/ci/test_windows_compiled_cache_contract.py
@@ -63,7 +66,7 @@ if [[ "$PR_NUMBER" == 423 && "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-
     scripts/screenshot/run.sh
   )
   introduction_diff=$(git diff --raw --no-abbrev --no-renames -z "$BASE_SHA" HEAD -- "${introduction_files[@]}" | shasum -a 256)
-  if [[ "${introduction_diff%% *}" == 81834453ebca912cd1fd54215d8a46ec42709d10b4a0b8c51f46bde20b1a7d57 ]]; then
+  if [[ "${introduction_diff%% *}" == c35f7539e4abd841fb2f11b0228f339adfa3d73497fc187755a1c47359ce1c7e ]]; then
     hotfix_excluded=("${scratch_excluded[@]}" ':(exclude,top,literal).github/scripts/check-docs-change-scope.sh')
     for path in "${introduction_files[@]}"; do
       hotfix_excluded+=(":(exclude,top,literal)$path")

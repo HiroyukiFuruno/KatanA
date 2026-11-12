@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import signal
@@ -49,29 +50,39 @@ class CargoTargetLeaseProcessTests(unittest.TestCase):
             "target = Path(os.environ['CARGO_TARGET_DIR'])\n"
             "command = ['cargo', 'test', '--manifest-path', "
             f"{str(self.manifest)!r}, '--test', 'a_first', '--test', 'b_second', "
-            "'--', '--test-threads=1']\n"
+            "'--message-format=json', '--', '--test-threads=1']\n"
             "with target_lease(target, exclusive=False):\n"
             "    raise SystemExit(subprocess.run(command, env=os.environ.copy()).returncode)\n",
             encoding="utf-8",
         )
-        process = subprocess.Popen(
-            [sys.executable, str(runner)], env=self.environment,
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
-        )
+        output_path = self.root / "cargo-test-output.jsonl"
+        with output_path.open("w", encoding="utf-8") as output:
+            process = subprocess.Popen(
+                [sys.executable, str(runner)], env=self.environment,
+                stdout=output, stderr=subprocess.STDOUT,
+            )
         try:
             self.wait_for(self.root / "barrier", process)
-            next_binaries = list((self.target / "debug/deps").glob("b_second-*"))
-            self.assertTrue(next_binaries, "Cargo should have built the next test executable")
+            messages = (json.loads(line) for line in output_path.read_text(encoding="utf-8").splitlines()
+                        if line.startswith("{"))
+            next_binaries = [Path(message["executable"]) for message in messages
+                             if message.get("reason") == "compiler-artifact"
+                             and message["target"]["name"] == "b_second" and message.get("executable")]
+            self.assertEqual(1, len(next_binaries), "Cargo should report the next test executable")
+            next_binary = next_binaries[0]
+            self.assertTrue(next_binary.resolve().is_relative_to(self.target.resolve()))
+            self.assertTrue(next_binary.is_file())
 
             clean = self.run_guard(CLEAN)
             self.assertEqual(75, clean.returncode, clean.stdout + clean.stderr)
             sweep = self.run_guard(SWEEP, "--dry-run")
             self.assertEqual(0, sweep.returncode, sweep.stdout + sweep.stderr)
             self.assertIn("Cargo sweep skipped safely", sweep.stdout)
-            self.assertTrue(next_binaries[0].is_file())
+            self.assertTrue(next_binary.is_file())
 
             (self.root / "release").touch()
-            output, _ = process.communicate(timeout=60)
+            process.wait(timeout=60)
+            output = output_path.read_text(encoding="utf-8")
             self.assertEqual(0, process.returncode, output)
             self.assertTrue((self.root / "second-ran").is_file(), output)
 
