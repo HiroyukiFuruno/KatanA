@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -58,7 +59,6 @@ class ScratchTest(unittest.TestCase):
         self.assertEqual("temporary", contents)
         self.assertFalse(Path(directory).exists())
 
-    @unittest.skipUnless(sys.platform == "darwin", "macOS open-file inspection")
     def test_unrelated_process_open_file_prevents_cleanup(self):
         with tempfile.TemporaryDirectory() as parent:
             env = os.environ.copy() | {"TMPDIR": parent}
@@ -73,6 +73,20 @@ class ScratchTest(unittest.TestCase):
                     self.assertIn("may still be in use", error)
                     self.assertEqual("temporary", stream.read())
                     self.assertTrue(directory.is_dir())
+
+    @unittest.skipIf(sys.platform == "darwin", "macOS uses the system lsof path")
+    def test_missing_lsof_retains_scratch(self):
+        with tempfile.TemporaryDirectory() as parent:
+            tools = Path(parent, "bin")
+            tools.mkdir()
+            Path(tools, "ps").symlink_to(shutil.which("ps"))
+            result = subprocess.run(
+                self.command(WRITE_SCRATCH), env=os.environ | {"TMPDIR": parent, "PATH": str(tools)},
+                capture_output=True, text=True, timeout=15,
+            )
+            self.assertEqual(1, result.returncode, result.stderr)
+            self.assertIn("lsof is required", result.stderr)
+            self.assertTrue(Path(result.stdout.strip()).is_dir())
 
 
 if __name__ == "__main__":

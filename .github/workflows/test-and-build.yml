@@ -35,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       skip_product_checks: ${{ steps.docs_scope.outcome == 'success' && (steps.docs_scope.outputs.docs_only == 'true' || steps.docs_scope.outputs.scratch_only == 'true') }}
+      scratch_only: ${{ steps.docs_scope.outcome == 'success' && steps.docs_scope.outputs.scratch_only == 'true' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -83,7 +84,15 @@ jobs:
       #       exit 1
       #     fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        if: needs.docs-scope.outputs.skip_product_checks != 'true'
+        if: needs.docs-scope.outputs.skip_product_checks != 'true' || (needs.docs-scope.outputs.scratch_only == 'true' && matrix.os == 'ubuntu-latest')
+      - name: Verify scratch management (Linux)
+        if: needs.docs-scope.outputs.scratch_only == 'true' && matrix.os == 'ubuntu-latest'
+        run: |
+          if ! command -v lsof >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y lsof
+          fi
+          python3 -B -m unittest discover -s scripts/ci -p test_with_scratch.py -v
 
       - name: Install Python for Windows inventory
         if: runner.os == 'Windows' && needs.docs-scope.outputs.skip_product_checks != 'true'

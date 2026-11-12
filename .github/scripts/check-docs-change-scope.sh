@@ -35,30 +35,34 @@ if [[ -n "$(git diff --no-renames --name-only "$BASE_SHA" HEAD -- "${documents[@
 fi
 
 # WHY: 一時領域の管理だけを変える場合は、関連する検査を公開準備検査の代わりに実行する。
-scratch_files=(
-  AGENTS.md
-  just/maintenance.just
-  just/tests.just
-  scripts/ci/test_with_scratch.py
-  scripts/ci/with-scratch.py
-  scripts/release/test-collect-artifacts.sh
-  scripts/screenshot/run.sh
+scratch_excluded=(
+  ':(exclude,top,literal)scripts/ci/test_with_scratch.py'
+  ':(exclude,top,literal)scripts/ci/with-scratch.py'
 )
-scratch_excluded=()
-for path in "${scratch_files[@]}"; do
-  scratch_excluded+=(":(exclude,top,literal)$path")
-done
 
-# WHY: 導入PRだけは検査ワークフローと、push 前の Windows 検査に必要なツール更新を含む。
+# WHY: 導入PRだけは確認済みの関連ファイル差分とワークフロー変更を含める。
 if [[ "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-hotfix-task-401 &&
       "$HEAD_REPOSITORY" == "$GITHUB_REPOSITORY" ]]; then
-  scratch_excluded+=(
-    ':(exclude,top,literal).github/workflows/release-readiness.yml'
-    ':(exclude,top,literal).github/workflows/test-and-build.yml'
-    ':(exclude,top,literal).github/scripts/check-docs-change-scope.sh'
-    ':(exclude,top,literal)scripts/ci/test_native_profiler_job_contract.py'
-    ':(exclude,top,literal)platforms/windows/ci/Dockerfile'
+  introduction_files=(
+    AGENTS.md
+    just/maintenance.just
+    just/tests.just
+    platforms/windows/ci/Dockerfile
+    scripts/ci/test_native_profiler_job_contract.py
+    scripts/release/test-collect-artifacts.sh
+    scripts/screenshot/run.sh
   )
+  introduction_diff=$(git diff --raw --no-abbrev --no-renames -z "$BASE_SHA" HEAD -- "${introduction_files[@]}" | shasum -a 256)
+  if [[ "${introduction_diff%% *}" == 397ffdc9028516dc05d9289135f5c1c5b9165a4399973a0e8e4af995a80f9db6 ]]; then
+    for path in "${introduction_files[@]}"; do
+      scratch_excluded+=(":(exclude,top,literal)$path")
+    done
+    scratch_excluded+=(
+      ':(exclude,top,literal).github/workflows/release-readiness.yml'
+      ':(exclude,top,literal).github/workflows/test-and-build.yml'
+      ':(exclude,top,literal).github/scripts/check-docs-change-scope.sh'
+    )
+  fi
 fi
 
 if [[ -n "$(git diff --no-renames --name-only "$BASE_SHA" HEAD -- scripts/ci/with-scratch.py)" ]] &&

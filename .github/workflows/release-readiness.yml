@@ -45,6 +45,8 @@ jobs:
         if: steps.docs_scope.outcome == 'success' && steps.docs_scope.outputs.scratch_only == 'true'
         shell: bash
         run: |
+          brew install just
+          just with-scratch python3 -B -c 'import os, pathlib; assert pathlib.Path(os.environ["KATANA_SCRATCH_DIR"]).is_dir()'
           python3 -B -m unittest discover -s scripts/ci -p test_with_scratch.py -v
           python3 -B -m unittest discover -s scripts/ci -p test_native_profiler_job_contract.py -v
           bash -n scripts/screenshot/run.sh

@@ -15,13 +15,13 @@ def remove_scratch(directory: Path, device: int, inode: int) -> None:
     entry = directory.lstat()
     if directory.resolve() != directory or (entry.st_dev, entry.st_ino) != (device, inode):
         raise RuntimeError("scratch directory identity changed")
-    if sys.platform == "darwin":
-        # WHY: 別のプロセスや仮想マシンが参照している間は一時領域も保持する。
-        check = subprocess.run(
-            ["/usr/sbin/lsof", "-t", "+D", str(directory)], capture_output=True, text=True
-        )
-        if check.returncode not in {0, 1} or check.stderr or check.stdout:
-            raise RuntimeError("scratch directory may still be in use")
+    # WHY: 同じグループに属さないプロセスからの利用も確認してから削除する。
+    lsof = "/usr/sbin/lsof" if sys.platform == "darwin" else shutil.which("lsof")
+    if lsof is None:
+        raise RuntimeError("lsof is required to verify scratch usage")
+    check = subprocess.run([lsof, "-t", "+D", str(directory)], capture_output=True, text=True)
+    if check.returncode not in {0, 1} or check.stderr or check.stdout:
+        raise RuntimeError("scratch directory may still be in use")
     shutil.rmtree(directory)
 
 
