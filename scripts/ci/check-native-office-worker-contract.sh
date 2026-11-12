@@ -21,7 +21,8 @@ HELPER_SOURCE=$(<"$HELPER")
 for required_marker in \
     'cargo metadata --locked --format-version 1 --no-deps' \
     'office_worker_target.py' \
-    'cargo build --locked -p katana-ui --bin kdv-office-worker' \
+    'cargo build --release --locked -p katana-ui --bin kdv-office-worker' \
+    'OFFICE_WORKER="$TARGET_DIR/release/$OFFICE_WORKER_NAME"' \
     '[[ -x "$OFFICE_WORKER" ]]' \
     'export KATANA_KDV_OFFICE_WORKER="$OFFICE_WORKER"'; do
     [[ "$HELPER_SOURCE" == *"$required_marker"* ]] || {

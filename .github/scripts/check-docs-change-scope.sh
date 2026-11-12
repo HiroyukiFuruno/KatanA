@@ -40,28 +40,38 @@ scratch_excluded=(
   ':(exclude,top,literal)scripts/ci/with-scratch.py'
 )
 
-# WHY: 導入PRだけは確認済みの関連ファイル差分とワークフロー変更を含める。
-if [[ "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-hotfix-task-401 &&
+# WHY: #423 は公開準備だけを対象検査へ切り替え、製品テストと lint は通常どおり実行する。
+if [[ "$PR_NUMBER" == 423 && "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-hotfix-task-401 &&
       "$HEAD_REPOSITORY" == "$GITHUB_REPOSITORY" ]]; then
   introduction_files=(
+    .github/workflows/release-readiness.yml
+    .github/workflows/test-and-build.yml
     AGENTS.md
     just/maintenance.just
     just/tests.just
     platforms/windows/ci/Dockerfile
+    scripts/ci/check-linux-office-worker-contract.sh
+    scripts/ci/check-native-office-worker-contract.sh
+    scripts/ci/coverage.sh
+    scripts/ci/test_isolated_test_config.py
     scripts/ci/test_native_profiler_job_contract.py
+    scripts/ci/with-office-test-worker.sh
+    scripts/release/check-multi-format-document-contract.py
     scripts/release/test-collect-artifacts.sh
+    scripts/release/test_worker_snapshot.py
     scripts/screenshot/run.sh
   )
   introduction_diff=$(git diff --raw --no-abbrev --no-renames -z "$BASE_SHA" HEAD -- "${introduction_files[@]}" | shasum -a 256)
-  if [[ "${introduction_diff%% *}" == 397ffdc9028516dc05d9289135f5c1c5b9165a4399973a0e8e4af995a80f9db6 ]]; then
+  if [[ "${introduction_diff%% *}" == 5bbbd2207ef729035c54bda3cf4c6c0d94ef29f38894882242ae207f0eab1d80 ]]; then
+    hotfix_excluded=("${scratch_excluded[@]}" ':(exclude,top,literal).github/scripts/check-docs-change-scope.sh')
     for path in "${introduction_files[@]}"; do
-      scratch_excluded+=(":(exclude,top,literal)$path")
+      hotfix_excluded+=(":(exclude,top,literal)$path")
     done
-    scratch_excluded+=(
-      ':(exclude,top,literal).github/workflows/release-readiness.yml'
-      ':(exclude,top,literal).github/workflows/test-and-build.yml'
-      ':(exclude,top,literal).github/scripts/check-docs-change-scope.sh'
-    )
+    if git diff --no-renames --quiet --diff-filter=T "$BASE_SHA" HEAD &&
+       git diff --no-renames --quiet "$BASE_SHA" HEAD -- . "${hotfix_excluded[@]}"; then
+      echo 'non_release_hotfix=true' >> "$GITHUB_OUTPUT"
+      echo 'Non-release hotfix scope verified. Full product CI is required.'
+    fi
   fi
 fi
 

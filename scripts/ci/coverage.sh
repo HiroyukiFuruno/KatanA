@@ -86,15 +86,16 @@ info "Using $JOBS parallel jobs/threads"
 info "Cleaning up old coverage data..."
 cargo llvm-cov clean --workspace
 
-info "Building the real Office worker beside the coverage test binaries..."
+info "Building the real Office worker with release optimization..."
 COVERAGE_TARGET_DIR=${CARGO_LLVM_COV_TARGET_DIR:-target/llvm-cov-target}
-CARGO_TARGET_DIR="$COVERAGE_TARGET_DIR" cargo build -p katana-ui --bin kdv-office-worker -q
+OFFICE_TARGET_DIR=$(cargo metadata --locked --format-version 1 --no-deps | python3 -B scripts/ci/office_worker_target.py)
+cargo build --release --locked -p katana-ui --bin kdv-office-worker -q
 if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ]]; then
     OFFICE_WORKER_NAME=kdv-office-worker.exe
 else
     OFFICE_WORKER_NAME=kdv-office-worker
 fi
-OFFICE_WORKER_SOURCE="${COVERAGE_TARGET_DIR:A}/debug/${OFFICE_WORKER_NAME}"
+OFFICE_WORKER_SOURCE="$OFFICE_TARGET_DIR/release/$OFFICE_WORKER_NAME"
 KATANA_KDV_OFFICE_WORKER=$(python3 scripts/release/worker_snapshot.py \
     "$OFFICE_WORKER_SOURCE" --directory "$COVERAGE_TARGET_DIR/tmp")
 export KATANA_KDV_OFFICE_WORKER
