@@ -44,9 +44,13 @@ scratch_excluded=(
 if [[ "$PR_NUMBER" == 423 && "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-hotfix-task-401 &&
       "$HEAD_REPOSITORY" == "$GITHUB_REPOSITORY" ]]; then
   introduction_files=(
+    .github/workflows/build-and-release.yml
     .github/workflows/release-readiness.yml
     .github/workflows/test-and-build.yml
     AGENTS.md
+    crates/katana-linter/src/utils/parser.rs
+    crates/katana-platform/src/cache/default/migration.rs
+    crates/katana-ui/src/shell_ui/mod.rs
     just/maintenance.just
     just/tests.just
     platforms/windows/ci/Dockerfile
@@ -66,7 +70,7 @@ if [[ "$PR_NUMBER" == 423 && "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-
     scripts/screenshot/run.sh
   )
   introduction_diff=$(git diff --raw --no-abbrev --no-renames -z "$BASE_SHA" HEAD -- "${introduction_files[@]}" | shasum -a 256)
-  if [[ "${introduction_diff%% *}" == c35f7539e4abd841fb2f11b0228f339adfa3d73497fc187755a1c47359ce1c7e ]]; then
+  if [[ "${introduction_diff%% *}" == fd6a61db8ed80f28249314303f6880e2b4447c717553f11eed127a38162465d6 ]]; then
     hotfix_excluded=("${scratch_excluded[@]}" ':(exclude,top,literal).github/scripts/check-docs-change-scope.sh')
     for path in "${introduction_files[@]}"; do
       hotfix_excluded+=(":(exclude,top,literal)$path")

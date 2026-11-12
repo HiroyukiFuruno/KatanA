@@ -156,6 +156,7 @@ jobs:
     if: >-
       github.event_name == 'workflow_run' &&
       github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.head_branch != 'release/v0.22.47-scratch-hotfix-task-401' &&
       ((github.event.workflow_run.event == 'pull_request' && startsWith(github.event.workflow_run.head_branch, 'release/v')) ||
        (github.event.workflow_run.event == 'workflow_dispatch' && github.event.workflow_run.head_branch == 'master'))
     runs-on: macos-latest

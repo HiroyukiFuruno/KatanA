@@ -25,16 +25,10 @@ impl ShellUiOps {
     }
 
     pub(crate) fn is_headless() -> bool {
-        if std::env::var("KATANA_HEADLESS").is_ok() {
-            return true;
-        }
-        #[cfg(target_os = "linux")]
-        {
-            if std::env::var("DISPLAY").is_err() && std::env::var("WAYLAND_DISPLAY").is_err() {
-                return true;
-            }
-        }
-        false
+        std::env::var("KATANA_HEADLESS").is_ok()
+            || (cfg!(target_os = "linux")
+                && std::env::var("DISPLAY").is_err()
+                && std::env::var("WAYLAND_DISPLAY").is_err())
     }
 
     pub(crate) fn open_folder_dialog() -> Option<std::path::PathBuf> {

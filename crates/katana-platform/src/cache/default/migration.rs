@@ -134,10 +134,7 @@ impl DefaultCacheService {
             let _ = std::fs::remove_file(inner_path);
             return false;
         }
-        if std::fs::rename(inner_path, &canonical_path).is_err() {
-            return false;
-        }
-        true
+        std::fs::rename(inner_path, &canonical_path).is_ok()
     }
 
     pub(super) fn load_legacy_persistent(path: &std::path::Path) -> Option<PersistentData> {
