@@ -50,6 +50,7 @@ if [[ "$PR_NUMBER" == 423 && "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-
     AGENTS.md
     crates/katana-linter/src/utils/parser.rs
     crates/katana-platform/src/cache/default/migration.rs
+    crates/katana-ui/src/preview_pane/document_surface/controls_sheet_tabs.rs
     crates/katana-ui/src/shell_ui/mod.rs
     just/maintenance.just
     just/tests.just
@@ -71,7 +72,7 @@ if [[ "$PR_NUMBER" == 423 && "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-
     scripts/screenshot/run.sh
   )
   introduction_diff=$(git diff --raw --no-abbrev --no-renames -z "$BASE_SHA" HEAD -- "${introduction_files[@]}" | shasum -a 256)
-  if [[ "${introduction_diff%% *}" == de67663b8ddae3202f959278b8f1c81e1a9dad88b42c1a90d674392d52d2fdcc ]]; then
+  if [[ "${introduction_diff%% *}" == 6bc2943dbc735e3580692cd51d1c7f80f3cc6a5f2463bf82c810567040c2669a ]]; then
     hotfix_excluded=("${scratch_excluded[@]}" ':(exclude,top,literal).github/scripts/check-docs-change-scope.sh')
     for path in "${introduction_files[@]}"; do
       hotfix_excluded+=(":(exclude,top,literal)$path")
