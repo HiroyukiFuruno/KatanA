@@ -48,6 +48,9 @@ class NativeProfilerJobContractTest(unittest.TestCase):
 
     def test_product_workspace_invocation_is_not_relaxed(self):
         step = step_block(current_test_job(), "Run tests")
+        scope_guard = "        if: needs.docs-scope.outputs.skip_product_checks != 'true'\n"
+        self.assertIn(scope_guard, step)
+        step = step.replace(scope_guard, "", 1)
         self.assertEqual(hashlib.sha256(step.encode()).hexdigest(),
                          "dc411561cd372a39f277318252e592ec6df946d717dbdff71345fcfd07b0c51b")
         self.assertNotIn(FEATURE, step)

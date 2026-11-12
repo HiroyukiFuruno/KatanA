@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - name: Check Documentation change scope
+      - name: Check change scope
         id: docs_scope
         continue-on-error: true
         shell: bash
@@ -41,22 +41,30 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
         run: bash .github/scripts/check-docs-change-scope.sh
+      - name: Verify scratch management
+        if: steps.docs_scope.outcome == 'success' && steps.docs_scope.outputs.scratch_only == 'true'
+        shell: bash
+        run: |
+          python3 -B -m unittest discover -s scripts/ci -p test_with_scratch.py -v
+          python3 -B -m unittest discover -s scripts/ci -p test_native_profiler_job_contract.py -v
+          bash -n scripts/screenshot/run.sh
+          bash scripts/release/test-collect-artifacts.sh
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
-        if: steps.docs_scope.outcome != 'success' || steps.docs_scope.outputs.docs_only != 'true'
+        if: steps.docs_scope.outcome != 'success' || (steps.docs_scope.outputs.docs_only != 'true' && steps.docs_scope.outputs.scratch_only != 'true')
         with:
           toolchain: stable
           components: llvm-tools-preview
       - name: Install release validation tools
-        if: steps.docs_scope.outcome != 'success' || steps.docs_scope.outputs.docs_only != 'true'
+        if: steps.docs_scope.outcome != 'success' || (steps.docs_scope.outputs.docs_only != 'true' && steps.docs_scope.outputs.scratch_only != 'true')
         uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1
           fallback: none
       - name: Install native hook contract tools
-        if: steps.docs_scope.outcome != 'success' || steps.docs_scope.outputs.docs_only != 'true'
+        if: steps.docs_scope.outcome != 'success' || (steps.docs_scope.outputs.docs_only != 'true' && steps.docs_scope.outputs.scratch_only != 'true')
         run: brew install lefthook just
       - name: Run PR readiness check
-        if: steps.docs_scope.outcome != 'success' || steps.docs_scope.outputs.docs_only != 'true'
+        if: steps.docs_scope.outcome != 'success' || (steps.docs_scope.outputs.docs_only != 'true' && steps.docs_scope.outputs.scratch_only != 'true')
         # WHY: check-pr-ready が preflight を内包するため、同じ公開検査を二重実行しない。
         shell: bash
         env:

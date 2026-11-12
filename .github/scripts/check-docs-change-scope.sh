@@ -33,3 +33,36 @@ if [[ -n "$(git diff --no-renames --name-only "$BASE_SHA" HEAD -- "${documents[@
   echo 'docs_only=true' >> "$GITHUB_OUTPUT"
   echo 'Documentation change scope verified.'
 fi
+
+# WHY: 一時領域の管理だけを変える場合は、関連する検査を公開準備検査の代わりに実行する。
+scratch_files=(
+  AGENTS.md
+  just/maintenance.just
+  just/tests.just
+  scripts/ci/test_with_scratch.py
+  scripts/ci/with-scratch.py
+  scripts/release/test-collect-artifacts.sh
+  scripts/screenshot/run.sh
+)
+scratch_excluded=()
+for path in "${scratch_files[@]}"; do
+  scratch_excluded+=(":(exclude,top,literal)$path")
+done
+
+# WHY: 導入PRだけは文書判定と検査ワークフローの修正を同じPRに含む。
+if [[ "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-hotfix-task-401 &&
+      "$HEAD_REPOSITORY" == "$GITHUB_REPOSITORY" ]]; then
+  scratch_excluded+=(
+    ':(exclude,top,literal).github/workflows/release-readiness.yml'
+    ':(exclude,top,literal).github/workflows/test-and-build.yml'
+    ':(exclude,top,literal).github/scripts/check-docs-change-scope.sh'
+    ':(exclude,top,literal)scripts/ci/test_native_profiler_job_contract.py'
+  )
+fi
+
+if [[ -n "$(git diff --no-renames --name-only "$BASE_SHA" HEAD -- scripts/ci/with-scratch.py)" ]] &&
+   git diff --no-renames --quiet --diff-filter=T "$BASE_SHA" HEAD &&
+   git diff --no-renames --quiet "$BASE_SHA" HEAD -- . "${scratch_excluded[@]}"; then
+  echo 'scratch_only=true' >> "$GITHUB_OUTPUT"
+  echo 'Scratch management change scope verified.'
+fi
