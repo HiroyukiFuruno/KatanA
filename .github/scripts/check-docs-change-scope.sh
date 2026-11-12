@@ -49,7 +49,7 @@ for path in "${scratch_files[@]}"; do
   scratch_excluded+=(":(exclude,top,literal)$path")
 done
 
-# WHY: 導入PRだけは文書判定と検査ワークフローの修正を同じPRに含む。
+# WHY: 導入PRだけは検査ワークフローと、push 前の Windows 検査に必要なツール更新を含む。
 if [[ "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-hotfix-task-401 &&
       "$HEAD_REPOSITORY" == "$GITHUB_REPOSITORY" ]]; then
   scratch_excluded+=(
@@ -57,6 +57,7 @@ if [[ "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-hotfix-task-401 &&
     ':(exclude,top,literal).github/workflows/test-and-build.yml'
     ':(exclude,top,literal).github/scripts/check-docs-change-scope.sh'
     ':(exclude,top,literal)scripts/ci/test_native_profiler_job_contract.py'
+    ':(exclude,top,literal)platforms/windows/ci/Dockerfile'
   )
 fi
 
