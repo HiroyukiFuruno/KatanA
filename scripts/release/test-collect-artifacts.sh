@@ -3,13 +3,10 @@ set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 COLLECTOR="${ROOT_DIR}/scripts/release/collect-artifacts.sh"
-TMP_ROOT=$(mktemp -d -t katana-collect-artifacts.XXXXXX)
-
-cleanup() {
-    mkdir -p "$ROOT_DIR/tmp/trash"
-    mv "$TMP_ROOT" "$ROOT_DIR/tmp/trash/"
-}
-trap cleanup EXIT
+if [[ "${1:-}" != "--in-scratch" ]]; then
+    exec python3 -B "$ROOT_DIR/scripts/ci/with-scratch.py" -- bash "$0" --in-scratch
+fi
+TMP_ROOT="${KATANA_SCRATCH_DIR:?scratch directory is required}"
 
 fail() {
     echo "FAIL: $*" >&2

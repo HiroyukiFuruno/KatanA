@@ -32,6 +32,7 @@ test-wgpu-native-surface-size:
 # デバッグ情報の容量対策で全test・coverage・受入を削減していないことを確認する。
 test-ci-resource-contract:
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_isolated_test_config.py -v
+    {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_with_scratch.py -v
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_native_profiler_job_contract.py -v
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/runner -p test_impacted.py -v

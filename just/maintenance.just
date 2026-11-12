@@ -10,6 +10,11 @@ sweep:
 clean: sweep
     @{{RTK_CMD}}python3 scripts/ci/cargo_clean_guard.py --manifest-path Cargo.toml --cargo "{{CARGO}}"
 
+# 使い捨ての生成物は KATANA_SCRATCH_DIR に置き、コマンド終了後に回収する。
+[positional-arguments]
+with-scratch +command:
+    @{{RTK_CMD}}python3 -B scripts/ci/with-scratch.py -- "$@"
+
 # Update dependency crates safely (respects Cargo.toml SemVer)
 update-safe:
     {{CARGO}} update
