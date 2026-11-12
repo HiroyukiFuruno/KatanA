@@ -31,7 +31,9 @@ class WindowsCompiledCacheContractTests(unittest.TestCase):
     def test_hits_do_not_skip_original_tests_or_gain_reuse_authority(self):
         job = current_test_job()
         tests = step_block(job, "Run tests")
-        self.assertNotIn("if:", tests)
+        scope_guard = "        if: needs.docs-scope.outputs.skip_product_checks != 'true'\n"
+        self.assertIn(scope_guard, tests)
+        self.assertNotIn("if:", tests.replace(scope_guard, "", 1))
         self.assertEqual(
             tests.count("bash scripts/ci/with-office-test-worker.sh 'cargo test --workspace'"),
             1,
