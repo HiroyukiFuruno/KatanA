@@ -336,7 +336,8 @@ jobs:
           # WHY: リリース時の LLVM で実行行を計測し、stable 更新による判定の変動を防ぐ。
           RUSTUP_TOOLCHAIN: "1.99.1"
         run: |
-          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component llvm-tools-preview
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal
+          rustup component add llvm-tools-preview
           JOBS=1 just coverage
 
       - name: Compare observed test inventory diagnostics
