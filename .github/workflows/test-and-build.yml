@@ -50,10 +50,10 @@ jobs:
 
   test:
     name: Test and Build (${{ matrix.os }})
-    # WHY: Draft PRでは重い検査を起動せず、pushとReady PRだけを実行する。
+    # WHY: Draft では実行せず、文書判定が失敗した場合は通常の検査を実行する。
     needs: docs-scope
     if: >-
-      !cancelled() && (needs.docs-scope.result == 'success' || needs.docs-scope.result == 'skipped') && (
+      !cancelled() && (
       github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.draft) ||
       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
     # 全テストを維持し、巨大なOffice/V8依存のデバッグ情報だけでrunnerを満杯にしない。
@@ -340,7 +340,7 @@ jobs:
     name: Lint (${{ matrix.os }})
     needs: docs-scope
     if: >-
-      !cancelled() && (needs.docs-scope.result == 'success' || needs.docs-scope.result == 'skipped') &&
+      !cancelled() &&
       ((github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
     strategy:
       fail-fast: false
@@ -416,7 +416,7 @@ jobs:
     name: Dependency Supply Chain
     needs: docs-scope
     if: >-
-      !cancelled() && (needs.docs-scope.result == 'success' || needs.docs-scope.result == 'skipped') &&
+      !cancelled() &&
       ((github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
       && needs.docs-scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
@@ -437,7 +437,7 @@ jobs:
     name: CodeQL Security Scan
     needs: docs-scope
     if: >-
-      !cancelled() && (needs.docs-scope.result == 'success' || needs.docs-scope.result == 'skipped') &&
+      !cancelled() &&
       ((github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'))
       && needs.docs-scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
