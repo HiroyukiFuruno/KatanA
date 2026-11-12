@@ -21,8 +21,10 @@ class CargoCleanProcessGuardTest(unittest.TestCase):
     def test_actual_just_cargo_wrapper_preserves_metadata_json(self):
         configured = configured_cargo()
         with tempfile.TemporaryDirectory() as directory:
-            manifest = create_crate(Path(directory))
-            result = run_clean_guard(manifest, os.environ.copy(), configured)
+            root = Path(directory)
+            manifest = create_crate(root)
+            environment = {**os.environ, "CARGO_TARGET_DIR": str(root / "target")}
+            result = run_clean_guard(manifest, environment, configured)
             self.assertEqual(0, result.returncode, result.stderr)
             self.assertIn("target is absent", result.stdout)
 

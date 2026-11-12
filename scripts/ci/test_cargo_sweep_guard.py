@@ -96,13 +96,14 @@ class CargoSweepGuardTest(unittest.TestCase):
             try:
                 with self.assertRaises(guard.CleanupUnavailable):
                     guard.profile_directories(guard.cargo_target_directory(manifest))
+                os.environ["CARGO_TARGET_DIR"] = str(target)
+                custom = target / "ci" / ".fingerprint"
+                custom.mkdir(parents=True)
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    self.assertEqual(0, guard.run_guard(manifest, dry_run=True))
             finally:
                 restore_environment("CARGO_TARGET_DIR", previous)
-            custom = target / "ci" / ".fingerprint"
-            custom.mkdir(parents=True)
-            output = io.StringIO()
-            with contextlib.redirect_stdout(output):
-                self.assertEqual(0, guard.run_guard(manifest, dry_run=True))
             self.assertIn("unknown directory in Cargo target", output.getvalue())
             self.assertFalse((target / "debug").exists())
             self.assertFalse((target / "release").exists())
