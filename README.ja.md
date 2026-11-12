@@ -4,7 +4,7 @@
 
 macOS, Windows, Linux 向けの高速・軽量なMarkdownワークスペース — Rustとeguiで構築。
 
-**[🌐 公式ウェブサイト](https://katana-desktop.katana-projects.org/)** | **[📚 ドキュメント](https://katana-desktop.katana-projects.org/docs/getting-started)**
+**[🌐 公式ウェブサイト](https://katana-series.katana-projects.org/ja/)** | **[📚 ドキュメント](https://katana-series.katana-projects.org/ja/start/)**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml/badge.svg)](https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml)
