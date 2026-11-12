@@ -32,18 +32,45 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+      - name: Check README change scope
+        id: readme_scope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          readmes=(README.md README.ja.md)
+          excluded=(':(exclude,top,literal)README.md' ':(exclude,top,literal)README.ja.md')
+
+          # WHY: #422 は README と、この判定を導入するワークフローを同時に更新する。
+          if [[ "$PR_NUMBER" == 422 && "$HEAD_REPOSITORY" == "$GITHUB_REPOSITORY" ]]; then
+            excluded+=(':(exclude,top,literal).github/workflows/release-readiness.yml')
+          fi
+
+          # WHY: マージ結果に README の内容変更があり、許可対象以外に差分がない場合だけ適用する。
+          if [[ -n "$(git diff --no-renames --name-only --diff-filter=M "$BASE_SHA" HEAD -- "${readmes[@]}")" ]] &&
+             git diff --no-renames --quiet --diff-filter=ACDRTUXB "$BASE_SHA" HEAD -- "${readmes[@]}" &&
+             git diff --no-renames --quiet "$BASE_SHA" HEAD -- . "${excluded[@]}"; then
+            echo 'readme_only=true' >> "$GITHUB_OUTPUT"
+            echo 'README change scope verified. No release version increment required.'
+          fi
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        if: steps.readme_scope.outputs.readme_only != 'true'
         with:
           toolchain: stable
           components: llvm-tools-preview
       - name: Install release validation tools
+        if: steps.readme_scope.outputs.readme_only != 'true'
         uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2.88.0
         with:
           tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1
           fallback: none
       - name: Install native hook contract tools
+        if: steps.readme_scope.outputs.readme_only != 'true'
         run: brew install lefthook just
       - name: Run PR readiness check
+        if: steps.readme_scope.outputs.readme_only != 'true'
         # WHY: check-pr-ready が preflight を内包するため、同じ公開検査を二重実行しない。
         shell: bash
         env:
