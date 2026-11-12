@@ -72,7 +72,7 @@ if [[ "$PR_NUMBER" == 423 && "${GITHUB_HEAD_REF:-}" == release/v0.22.47-scratch-
     scripts/screenshot/run.sh
   )
   introduction_diff=$(git diff --raw --no-abbrev --no-renames -z "$BASE_SHA" HEAD -- "${introduction_files[@]}" | shasum -a 256)
-  if [[ "${introduction_diff%% *}" == 6bc2943dbc735e3580692cd51d1c7f80f3cc6a5f2463bf82c810567040c2669a ]]; then
+  if [[ "${introduction_diff%% *}" == ca2d4c41cd4ff23578a59977d55c17fc61471c45d7f2cb9e6bfba9ad67eec442 ]]; then
     hotfix_excluded=("${scratch_excluded[@]}" ':(exclude,top,literal).github/scripts/check-docs-change-scope.sh')
     for path in "${introduction_files[@]}"; do
       hotfix_excluded+=(":(exclude,top,literal)$path")
