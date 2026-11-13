@@ -80,16 +80,7 @@ mod tests {
         let mut source = super::super::source::DocumentSurfaceSource::local(&fixture)
             .expect("representative xlsx source");
         let viewer_source = source.take_viewer_source().expect("viewer source");
-        let worker = std::env::current_exe()
-            .expect("test executable")
-            .parent()
-            .and_then(std::path::Path::parent)
-            .expect("test profile directory")
-            .join(if cfg!(windows) {
-                "kdv-office-worker.exe"
-            } else {
-                "kdv-office-worker"
-            });
+        let worker = super::super::painter_tests::office_worker();
         let config = DocumentSessionConfig::new(DocumentViewport::new(800, 240))
             .office_worker(OfficeWorkerConfig::new(worker));
         let mut session = DocumentSession::open(viewer_source, config).expect("xlsx session");

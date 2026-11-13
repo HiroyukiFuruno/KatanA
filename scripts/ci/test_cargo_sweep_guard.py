@@ -96,13 +96,14 @@ class CargoSweepGuardTest(unittest.TestCase):
             try:
                 with self.assertRaises(guard.CleanupUnavailable):
                     guard.profile_directories(guard.cargo_target_directory(manifest))
+                os.environ["CARGO_TARGET_DIR"] = str(target)
+                custom = target / "ci" / ".fingerprint"
+                custom.mkdir(parents=True)
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    self.assertEqual(0, guard.run_guard(manifest, dry_run=True))
             finally:
                 restore_environment("CARGO_TARGET_DIR", previous)
-            custom = target / "ci" / ".fingerprint"
-            custom.mkdir(parents=True)
-            output = io.StringIO()
-            with contextlib.redirect_stdout(output):
-                self.assertEqual(0, guard.run_guard(manifest, dry_run=True))
             self.assertIn("unknown directory in Cargo target", output.getvalue())
             self.assertFalse((target / "debug").exists())
             self.assertFalse((target / "release").exists())
@@ -169,7 +170,10 @@ def create_crate(root):
         "use std::{env, fs, thread, time::Duration};\n"
         "fn main() {\n"
         "  let barrier = std::path::PathBuf::from(env::var_os(\"CARGO_SYNC_BARRIER\").unwrap());\n"
-        "  fs::write(barrier.join(\"entered\"), b\"ready\").unwrap();\n"
+        "  let output = std::path::PathBuf::from(env::var_os(\"OUT_DIR\").unwrap()).join(\"active-probe\");\n"
+        "  fs::write(&output, b\"active build\").unwrap();\n"
+        "  fs::write(barrier.join(\"entering\"), output.to_string_lossy().as_bytes()).unwrap();\n"
+        "  fs::rename(barrier.join(\"entering\"), barrier.join(\"entered\")).unwrap();\n"
         "  while !barrier.join(\"release\").exists() {\n"
         "    thread::sleep(Duration::from_millis(10));\n"
         "  }\n"

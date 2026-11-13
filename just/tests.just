@@ -32,6 +32,7 @@ test-wgpu-native-surface-size:
 # デバッグ情報の容量対策で全test・coverage・受入を削減していないことを確認する。
 test-ci-resource-contract:
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_isolated_test_config.py -v
+    {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_with_scratch.py -v
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_ci_resource_contract.py -v
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/ci -p test_native_profiler_job_contract.py -v
     {{RTK_CMD}}python3 -B -m unittest discover -s scripts/runner -p test_impacted.py -v
@@ -100,7 +101,7 @@ check-docker-volume-lifecycle:
 
 # Verify test execution in isolated Linux environment
 check-linux: check-linux-office-worker-contract check-docker-volume-lifecycle
-    {{DOCKER}} compose -f platforms/linux/ci/compose.yml run --rm -e RUST_TEST_THREADS="{{RUST_TEST_THREADS}}" -e RUSTFLAGS="{{RUSTFLAGS}} -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "ulimit -c 0 && cargo sweep --time 7 --dry-run && python3 scripts/ci/test_html_fixture_host_contract.py && python3 scripts/ci/test_html_host_process_group.py && cargo build --locked -p katana-ui --bin kdv-office-worker && python3 -B scripts/ci/isolated-test-config.py -- env KATANA_KDV_OFFICE_WORKER=/app/target/debug/kdv-office-worker cargo test --locked -q --workspace"
+    {{DOCKER}} compose -f platforms/linux/ci/compose.yml run --rm -e RUST_TEST_THREADS="{{RUST_TEST_THREADS}}" -e RUSTFLAGS="{{RUSTFLAGS}} -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "ulimit -c 0 && cargo sweep --time 7 --dry-run && python3 scripts/ci/test_html_fixture_host_contract.py && python3 scripts/ci/test_html_host_process_group.py && bash scripts/ci/with-office-test-worker.sh 'cargo test --locked -q --workspace'"
 
 # Verify Windows cross-compilation without running tests
 check-windows:

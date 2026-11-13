@@ -11,13 +11,14 @@ cd "$ROOT_DIR"
 
 TARGET_DIR=$(cargo metadata --locked --format-version 1 --no-deps | python3 "$ROOT_DIR/scripts/ci/office_worker_target.py")
 
-cargo build --locked -p katana-ui --bin kdv-office-worker
+# WHY: 実文書の表示期限を検査するため、変換ワーカーは配布時と同じ最適化で実行する。
+cargo build --release --locked -p katana-ui --bin kdv-office-worker
 
 case "${OS:-}:${OSTYPE:-}" in
     Windows_NT:*|*:msys*|*:cygwin*) OFFICE_WORKER_NAME="kdv-office-worker.exe" ;;
     *) OFFICE_WORKER_NAME="kdv-office-worker" ;;
 esac
-OFFICE_WORKER="$TARGET_DIR/debug/$OFFICE_WORKER_NAME"
+OFFICE_WORKER="$TARGET_DIR/release/$OFFICE_WORKER_NAME"
 [[ -x "$OFFICE_WORKER" ]] || {
     echo "FAIL: Office worker is missing or not executable: $OFFICE_WORKER" >&2
     exit 1

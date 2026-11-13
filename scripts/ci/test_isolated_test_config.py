@@ -105,7 +105,8 @@ class IsolatedTestConfig(unittest.TestCase):
         for file in ("scripts/ci/coverage.sh", "scripts/ci/with-office-test-worker.sh",
                      "scripts/ci/document-fixture-acceptance.sh", ".github/workflows/test-and-build.yml"):
             self.assertIn("scripts/ci/isolated-test-config.py", (ROOT / file).read_text(encoding="utf-8"), file)
-        self.assertIn("scripts/ci/isolated-test-config.py", just.split("\ncheck-linux:", 1)[1].split("\n\n", 1)[0])
+        linux = just.split("\ncheck-linux:", 1)[1].split("\n\n", 1)[0]
+        self.assertIn("bash scripts/ci/with-office-test-worker.sh 'cargo test --locked -q --workspace'", linux)
         self.assertIn("scripts/ci/isolated-test-config.py", (ROOT / "just/setup.just").read_text(encoding="utf-8").split("\nwatch:", 1)[1].split("\n\n", 1)[0])
         workflow = (ROOT / ".github/workflows/test-and-build.yml").read_text(encoding="utf-8")
         for name in ("Measure cold real-font lookup (Windows)", "Test CommonMark cache contracts",

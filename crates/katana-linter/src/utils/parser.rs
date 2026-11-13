@@ -60,26 +60,14 @@ impl LinterParserOps {
         let chars: Vec<char> = trimmed.chars().collect();
         if chars.len() == 1 {
             let c = chars[0];
-            /* WHY: Allow if it's not an ASCII alphabet (a-z, A-Z) */
-            if !c.is_ascii_alphabetic() {
-                return true;
-            }
-            /* WHY: Allow single letter "x" (often used as close button in UI, etc.) */
-            if c == 'x' || c == 'X' {
-                return true;
-            }
-            return false;
+            /* WHY: UI の閉じるボタンで使う x は単独の文字でも許容する。 */
+            return !c.is_ascii_alphabetic() || c.eq_ignore_ascii_case(&'x');
         }
 
         /* WHY: All characters are non-alphabetic (symbol, emoji, number, or whitespace only) */
-        if trimmed
+        trimmed
             .chars()
             .all(|c| !c.is_alphabetic() || Self::is_emoji_or_symbol(c))
-        {
-            return true;
-        }
-
-        false
     }
 
     pub fn is_emoji_or_symbol(c: char) -> bool {

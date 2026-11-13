@@ -17,6 +17,9 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 source "${SCRIPT_DIR}/build-environment.sh"
 # WHY: 呼出元指定のCargo target rootへ全生成物を隔離し、既定配置は維持する。
 BUILD_TARGET_DIR="${CARGO_TARGET_DIR:-${REPO_ROOT}/target}"
+if [[ -z "${CARGO_TARGET_DIR:-}" && -n "${KATANA_SCRATCH_DIR:-}" ]]; then
+  BUILD_TARGET_DIR="${KATANA_SCRATCH_DIR}/cargo-target"
+fi
 SCREENSHOT_TARGET_DIR="${BUILD_TARGET_DIR}/screenshot-harness"
 EXTERNAL_HYPERLINK_FIXTURE="${BUILD_TARGET_DIR}/screenshot-fixtures/representative-with-external-hyperlink.pptx"
 FIXTURE_TARGET_DIR="${BUILD_TARGET_DIR}/screenshot-fixtures"

@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 TESTS_JUST="$ROOT_DIR/just/tests.just"
 CHECK_LINUX_RECIPE=$(sed -n '/^check-linux:/,/^$/p' "$TESTS_JUST")
-EXPECTED_CHAIN='cargo build --locked -p katana-ui --bin kdv-office-worker && python3 -B scripts/ci/isolated-test-config.py -- env KATANA_KDV_OFFICE_WORKER=/app/target/debug/kdv-office-worker cargo test --locked -q --workspace'
+EXPECTED_CHAIN="bash scripts/ci/with-office-test-worker.sh 'cargo test --locked -q --workspace'"
 
 fail() {
     echo "FAIL: $*" >&2
@@ -13,7 +13,7 @@ fail() {
 
 [[ -f "$TESTS_JUST" ]] || fail "Linux test recipe is missing: $TESTS_JUST"
 [[ "$CHECK_LINUX_RECIPE" == *"$EXPECTED_CHAIN"* ]] || {
-    fail "check-linux must build the Office worker and pass its absolute debug path to workspace tests"
+    fail "check-linux must run the full workspace suite with the shared Office worker helper"
 }
 for contract in test_html_fixture_host_contract.py test_html_host_process_group.py; do
     [[ "$CHECK_LINUX_RECIPE" == *"python3 scripts/ci/$contract"* ]] || {

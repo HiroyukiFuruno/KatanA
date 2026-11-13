@@ -28,24 +28,25 @@ class CargoCleanGuardTest(unittest.TestCase):
             process = launch_build(manifest, environment)
             try:
                 wait_for_barrier(barrier / "entered", process)
-                active_fingerprint = target / "debug" / ".fingerprint"
+                active_artifact = Path((barrier / "entered").read_text(encoding="utf-8"))
+                self.assertTrue(active_artifact.resolve().is_relative_to(target.resolve()))
                 refused = run_clean_guard(manifest, environment, "CARGO_NET_OFFLINE=true cargo")
                 self.assertEqual(75, refused.returncode, refused.stderr)
-                self.assertTrue(active_fingerprint.is_dir())
+                self.assertEqual(b"active build", active_artifact.read_bytes())
                 barrier.joinpath("release").touch()
                 output, _ = process.communicate(timeout=60)
                 self.assertEqual(0, process.returncode, output)
                 if sweep_guard.fcntl is None or os.name != "posix":
                     cleaned = run_clean_guard(manifest, environment, "CARGO_NET_OFFLINE=true cargo")
                     self.assertEqual(75, cleaned.returncode, cleaned.stderr)
-                    self.assertTrue(active_fingerprint.exists())
+                    self.assertTrue(active_artifact.is_file())
                 else:
                     (target / "CACHEDIR.TAG").write_text(
                         "Signature: 8a477f597d28d172789f06886806bc55\n",
                         encoding="ascii",
                     )
                     cleaned = run_clean_guard(manifest, environment, "env cargo")
-                    assert_cleaned(self, cleaned, active_fingerprint)
+                    assert_cleaned(self, cleaned, active_artifact)
             finally:
                 finally_release(process, barrier)
 
@@ -143,9 +144,9 @@ def assert_manual_lock_cycle(test_case, manifest, target, environment, artifact)
     test_case.assertFalse(artifact.exists())
 
 
-def assert_cleaned(test_case, result, fingerprint):
+def assert_cleaned(test_case, result, artifact):
     test_case.assertEqual(0, result.returncode, result.stderr)
-    test_case.assertFalse(fingerprint.exists())
+    test_case.assertFalse(artifact.exists())
 
 
 if __name__ == "__main__":

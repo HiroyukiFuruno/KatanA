@@ -497,7 +497,8 @@ def verify(root: Path, target_version: str) -> None:
     require_markers(
         root / "scripts/ci/coverage.sh",
         (
-            'CARGO_TARGET_DIR="$COVERAGE_TARGET_DIR" cargo build -p katana-ui --bin kdv-office-worker',
+            'cargo build --release --locked -p katana-ui --bin kdv-office-worker',
+            'OFFICE_WORKER_SOURCE="$OFFICE_TARGET_DIR/release/$OFFICE_WORKER_NAME"',
             'export KATANA_KDV_OFFICE_WORKER=',
             "cargo llvm-cov report --json | python3 scripts/ci/check-document-surface-coverage.py",
         ),

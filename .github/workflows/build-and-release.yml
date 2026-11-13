@@ -88,14 +88,15 @@ jobs:
     permissions:
       contents: write
       actions: write
-    # WHY: For PR merges, only trigger when a release/v* branch is merged into master
+    # WHY: #423 は既存バージョンのまま取り込むため、マージ起点の公開から除外する。
     if: |
       github.actor == 'HiroyukiFuruno' && (
         github.event_name == 'workflow_dispatch' ||
         github.event_name == 'push' ||
         (github.event_name == 'pull_request' &&
           github.event.pull_request.merged == true &&
-          startsWith(github.event.pull_request.head.ref, 'release/v'))
+          startsWith(github.event.pull_request.head.ref, 'release/v') &&
+          github.event.pull_request.number != 423)
       )
     outputs:
       version: ${{ steps.version.outputs.version }}

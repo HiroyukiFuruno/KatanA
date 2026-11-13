@@ -85,12 +85,13 @@ class WorkerSnapshotTests(unittest.TestCase):
 class CoverageWiringTests(unittest.TestCase):
     def test_snapshot_is_wired_before_all_four_selectors(self):
         source = (ROOT / "scripts/ci/coverage.sh").read_text()
-        build = source.index("cargo build -p katana-ui --bin kdv-office-worker")
+        build = source.index("cargo build --release --locked -p katana-ui --bin kdv-office-worker")
         snapshot = source.index("worker_snapshot.py")
         phases = [source.index(f"llvm_cov {name}") for name in
                   ("workspace-lib-bin", "workspace-integration", "ui-parallel", "ui-serial")]
         self.assertLess(build, snapshot)
         self.assertLess(snapshot, min(phases))
+        self.assertIn('OFFICE_WORKER_SOURCE="$OFFICE_TARGET_DIR/release/$OFFICE_WORKER_NAME"', source)
         self.assertEqual(source.count("llvm_cov "), 4)
         self.assertIn('--directory "$COVERAGE_TARGET_DIR/tmp"', source)
         self.assertNotIn('--name "$OFFICE_WORKER_NAME"', source)
@@ -109,6 +110,7 @@ class CoverageWiringTests(unittest.TestCase):
             command = "\n".join((
                 "set -euo pipefail",
                 f"COVERAGE_TARGET_DIR={shlex.quote(str(root / 'target'))}",
+                f"OFFICE_TARGET_DIR={shlex.quote(str(root / 'target'))}",
                 "OFFICE_WORKER_NAME=kdv-office-worker",
                 snippet,
                 f"touch {shlex.quote(str(marker))}",
